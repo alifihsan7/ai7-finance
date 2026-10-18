@@ -104,8 +104,8 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
       balance: balanceMap["BRI 2"] ?? 0,
       spent: expenseMap["BRI 2"] ?? 0,
       allocated: Math.round(baselineSalary * 0.067),
-      accentColor: "text-purpleLock",
-      barColor: "bg-purpleLock",
+      accentColor: "text-coralFall",
+      barColor: "bg-coralFall",
       badge: "Terkunci",
     },
   ];
