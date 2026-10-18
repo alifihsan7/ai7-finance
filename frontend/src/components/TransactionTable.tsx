@@ -1,4 +1,5 @@
 import React from "react";
+import { Edit2, Trash2 } from "lucide-react";
 
 export interface Transaction {
   id: number;
@@ -14,9 +15,18 @@ export interface Transaction {
 interface TransactionTableProps {
   transactions: Transaction[];
   formatRupiah: (val: number) => string;
+  onEdit?: (tx: Transaction) => void;
+  onDelete?: (tx: Transaction) => void;
 }
 
-export function TransactionTable({ transactions, formatRupiah }: TransactionTableProps) {
+export function TransactionTable({
+  transactions,
+  formatRupiah,
+  onEdit,
+  onDelete,
+}: TransactionTableProps) {
+  const showActions = Boolean(onEdit || onDelete);
+
   return (
     <div className="border border-obsidian-border rounded-xl overflow-hidden bg-obsidian-card shadow-xs">
       <div className="overflow-x-auto">
@@ -28,12 +38,13 @@ export function TransactionTable({ transactions, formatRupiah }: TransactionTabl
               <th className="py-3.5 px-5">Kategori</th>
               <th className="py-3.5 px-5">Akun</th>
               <th className="py-3.5 px-5 text-right">Nominal</th>
+              {showActions && <th className="py-3.5 px-5 text-center w-24">Aksi</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-obsidian-border">
             {transactions.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-10 text-center text-slateText-muted">
+                <td colSpan={showActions ? 6 : 5} className="py-10 text-center text-slateText-muted">
                   Tidak ada transaksi yang cocok dengan filter pencarian.
                 </td>
               </tr>
@@ -46,7 +57,7 @@ export function TransactionTable({ transactions, formatRupiah }: TransactionTabl
                 const isTransfer = isTransferIn || isTransferOut;
 
                 return (
-                  <tr key={tx.id} className="hover:bg-obsidian-hover transition">
+                  <tr key={tx.id} className="hover:bg-obsidian-hover transition group">
                     <td className="py-3.5 px-5 text-slateText-secondary font-mono whitespace-nowrap text-xs sm:text-sm">
                       {tx.date}
                     </td>
@@ -70,6 +81,30 @@ export function TransactionTable({ transactions, formatRupiah }: TransactionTabl
                     >
                       {isPositive ? "+" : "-"} {formatRupiah(tx.amount)}
                     </td>
+                    {showActions && (
+                      <td className="py-3.5 px-5 text-center">
+                        <div className="flex items-center justify-center gap-1.5 opacity-80 group-hover:opacity-100 transition">
+                          {onEdit && (
+                            <button
+                              onClick={() => onEdit(tx)}
+                              title="Edit Transaksi"
+                              className="p-1.5 rounded-lg text-slateText-muted hover:text-amberGold hover:bg-amberGold/10 border border-transparent hover:border-amberGold/20 transition"
+                            >
+                              <Edit2 size={15} />
+                            </button>
+                          )}
+                          {onDelete && (
+                            <button
+                              onClick={() => onDelete(tx)}
+                              title="Hapus Transaksi"
+                              className="p-1.5 rounded-lg text-slateText-muted hover:text-coralFall hover:bg-coralFall/10 border border-transparent hover:border-coralFall/20 transition"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })
