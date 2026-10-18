@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.api.v1.router import api_router
 from app.db.session import engine, Base
 import app.models.transaction
+import app.models.subscription
 
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)
