@@ -18,6 +18,7 @@ import {
   Bell,
   BarChart2,
   LayoutDashboard,
+  ArrowLeftRight,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { AccountGrid } from "@/components/AccountGrid";
@@ -25,6 +26,7 @@ import { MandiriEnvelopes } from "@/components/MandiriEnvelopes";
 import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionTable, Transaction } from "@/components/TransactionTable";
 import { SubscriptionsView, SubscriptionItem, SubscriptionsData } from "@/components/SubscriptionsView";
+import { TransferModal } from "@/components/TransferModal";
 
 interface MonthlySummary {
   month: string;
@@ -62,6 +64,7 @@ export default function ObsidianDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaycheckModalOpen, setIsPaycheckModalOpen] = useState(false);
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [paycheckLoading, setPaycheckLoading] = useState(false);
 
@@ -501,6 +504,23 @@ export default function ObsidianDashboard() {
                 <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                 <span className="whitespace-nowrap">Tambah Tagihan</span>
               </button>
+            ) : activeNav === "Rekening & Akun" ? (
+              <>
+                <button
+                  onClick={() => setIsTransferModalOpen(true)}
+                  className="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap"
+                >
+                  <ArrowLeftRight className="w-4 h-4 shrink-0 text-cyanHub" />
+                  <span className="whitespace-nowrap font-semibold">Transfer Antar Akun</span>
+                </button>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap"
+                >
+                  <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                  <span className="whitespace-nowrap">Catat Transaksi</span>
+                </button>
+              </>
             ) : (
               <>
                 <button
@@ -708,9 +728,18 @@ export default function ObsidianDashboard() {
             <AccountGrid summary={summary} formatRupiah={formatRupiah} />
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-base text-slateText-primary">Histori Transaksi per Rekening</h3>
-                <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div className="flex items-center gap-3">
+                  <h3 className="font-bold text-base text-slateText-primary">Histori Transaksi per Rekening</h3>
+                  <button
+                    onClick={() => setIsTransferModalOpen(true)}
+                    className="text-xs px-2.5 py-1 rounded bg-cyanHub/10 border border-cyanHub/30 text-cyanHub hover:bg-cyanHub/20 transition inline-flex items-center gap-1.5 font-mono"
+                  >
+                    <ArrowLeftRight className="w-3.5 h-3.5" />
+                    <span>Pindah Saldo</span>
+                  </button>
+                </div>
+                <div className="flex gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
                   {(["all", "Mandiri", "Jago", "BRI 1", "BRI 2"] as const).map((acc) => (
                     <button
                       key={acc}
@@ -1159,6 +1188,13 @@ export default function ObsidianDashboard() {
           </div>
         </div>
       )}
+
+      {/* Transfer Modal */}
+      <TransferModal
+        isOpen={isTransferModalOpen}
+        onClose={() => setIsTransferModalOpen(false)}
+        onSuccess={fetchData}
+      />
     </div>
   );
 }

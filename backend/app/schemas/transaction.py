@@ -88,3 +88,19 @@ class PaycheckResponse(BaseModel):
     cycle_end: dt_date
     allocations: List[PaycheckAllocationItem]
     created_transactions: List[TransactionOut]
+
+class TransferCreate(BaseModel):
+    from_account: str
+    to_account: str
+    amount: int
+    description: Optional[str] = "Transfer Antar Rekening"
+    date: Optional[dt_date] = None
+
+class TransferResponse(BaseModel):
+    status: str
+    from_account: str
+    to_account: str
+    amount: int
+    out_transaction_id: int
+    in_transaction_id: int
+    date: dt_date

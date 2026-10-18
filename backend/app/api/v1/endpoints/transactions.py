@@ -17,6 +17,8 @@ from app.schemas.transaction import (
     PaycheckRequest,
     PaycheckResponse,
     PaycheckAllocationItem,
+    TransferCreate,
+    TransferResponse,
 )
 from app.core.config import settings
 
@@ -84,6 +86,55 @@ def create_transaction(
     db.commit()
     db.refresh(tx)
     return tx
+
+@router.post("/transfer", response_model=TransferResponse)
+def execute_transfer(
+    payload: TransferCreate,
+    db: Session = Depends(get_db)
+):
+    if payload.amount <= 0:
+        raise HTTPException(status_code=400, detail="Nominal transfer harus lebih besar dari 0")
+    if payload.from_account == payload.to_account:
+        raise HTTPException(status_code=400, detail="Rekening asal dan tujuan tidak boleh sama")
+
+    now_wib = datetime.now(WIB)
+    tx_date = payload.date or now_wib.date()
+    desc = payload.description or f"Transfer {payload.from_account} -> {payload.to_account}"
+
+    tx_out = Transaction(
+        type="transfer_out",
+        amount=payload.amount,
+        account=payload.from_account,
+        category="Transfer",
+        description=f"Transfer ke {payload.to_account}: {desc}",
+        raw_text=f"transfer out: {payload.from_account} -> {payload.to_account} ({desc})",
+        date=tx_date
+    )
+    tx_in = Transaction(
+        type="transfer_in",
+        amount=payload.amount,
+        account=payload.to_account,
+        category="Transfer",
+        description=f"Transfer dari {payload.from_account}: {desc}",
+        raw_text=f"transfer in: {payload.from_account} -> {payload.to_account} ({desc})",
+        date=tx_date
+    )
+
+    db.add(tx_out)
+    db.add(tx_in)
+    db.commit()
+    db.refresh(tx_out)
+    db.refresh(tx_in)
+
+    return TransferResponse(
+        status="success",
+        from_account=payload.from_account,
+        to_account=payload.to_account,
+        amount=payload.amount,
+        out_transaction_id=tx_out.id,
+        in_transaction_id=tx_in.id,
+        date=tx_date
+    )
 
 @router.post("/paycheck", response_model=PaycheckResponse)
 def execute_paycheck_split(
