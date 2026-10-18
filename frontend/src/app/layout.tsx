@@ -1,9 +1,24 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
 
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+  weight: "100 900",
+  display: "swap",
+});
+
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-geist-mono",
+  weight: "100 900",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "ai7.finance — Deep Sea Financial System",
-  description: "Bi-weekly paycheck allocation & financial dashboard",
+  title: "ai7.finance — Obsidian Financial System",
+  description: "Bi-weekly paycheck allocation & personal finance dashboard",
 };
 
 export default function RootLayout({
@@ -12,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
-      <body className="bg-abyss text-foam antialiased selection:bg-sodium selection:text-abyss">
+    <html lang="id" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="bg-obsidian-bg text-slateText-primary font-sans antialiased selection:bg-amberGold selection:text-obsidian-bg min-h-screen">
         {children}
       </body>
     </html>

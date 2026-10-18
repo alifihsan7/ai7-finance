@@ -9,22 +9,31 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        abyss: "#0a1c22",
-        trench: "#0f262d",
-        shelf: "#15323a",
-        line: "#244650",
-        foam: "#e4eeea",
-        mist: "#8fa9aa",
-        sodium: "#f2b84b",
-        rise: "#5fd3a5",
-        fall: "#ff7a66",
+        obsidian: {
+          bg: "#0B0D11",
+          panel: "#12151D",
+          card: "#181C26",
+          hover: "#1F2432",
+          border: "#252B3B",
+          borderStrong: "#353D54",
+        },
+        slateText: {
+          primary: "#F8FAFC",
+          secondary: "#94A3B8",
+          muted: "#64748B",
+        },
+        amberGold: "#F59E0B",
+        mintRise: "#10B981",
+        coralFall: "#F43F5E",
+        cyanHub: "#06B6D4",
+        purpleLock: "#8B5CF6",
       },
       fontFamily: {
-        sans: ["'Hanken Grotesk'", "var(--font-geist-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["'Familjen Grotesk'", "'Hanken Grotesk'", "sans-serif"],
+        sans: ["var(--font-geist-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
       },
       borderWidth: {
-        hairline: "0.5px",
+        hairline: "1px",
       },
     },
   },

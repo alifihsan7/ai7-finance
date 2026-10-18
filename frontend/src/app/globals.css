@@ -1,42 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --abyss: #0a1c22;
-  --trench: #0f262d;
-  --shelf: #15323a;
-  --line: #244650;
-  --foam: #e4eeea;
-  --mist: #8fa9aa;
-  --sodium: #f2b84b;
-  --rise: #5fd3a5;
-  --fall: #ff7a66;
+  --obsidian-bg: #0B0D11;
+  --obsidian-panel: #12151D;
+  --obsidian-card: #181C26;
+  --obsidian-hover: #1F2432;
+  --obsidian-border: #252B3B;
+  --obsidian-border-strong: #353D54;
+  --slate-primary: #F8FAFC;
+  --slate-secondary: #94A3B8;
+  --slate-muted: #64748B;
+  --amber-gold: #F59E0B;
+  --mint-rise: #10B981;
+  --coral-fall: #F43F5E;
 }
 
 body {
-  color: var(--foam);
-  background-color: var(--abyss);
-  font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--slate-primary);
+  background-color: var(--obsidian-bg);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
   font-feature-settings: 'tnum' 1, 'lnum' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar for Deep Sea Theme */
+/* Custom Scrollbar for Obsidian Slate Theme */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--abyss);
+  background: var(--obsidian-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--line);
-  border-radius: 3px;
+  background: var(--obsidian-border);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--mist);
+  background: var(--slate-muted);
 }
