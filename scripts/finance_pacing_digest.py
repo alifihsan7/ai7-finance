@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 import os
 import sys
+
+# Auto-reexec inside the project's dedicated virtualenv to ensure native bcrypt & pydantic support
+VENV_PYTHON = "/home/alifihsan/ai7-finance/venv/bin/python"
+if sys.executable != VENV_PYTHON and os.path.exists(VENV_PYTHON):
+    os.execv(VENV_PYTHON, [VENV_PYTHON] + sys.argv)
+
 import requests
 from datetime import datetime
 import zoneinfo
