@@ -20,7 +20,7 @@ const ACCOUNT_COLORS: Record<string, { bar: string; border: string; text: string
   "Jago": { bar: "bg-purple-500", border: "border-purple-500", text: "text-purple-400" },
   "Bibit": { bar: "bg-teal-500", border: "border-teal-500", text: "text-teal-400" },
   "BRI 1": { bar: "bg-cyanHub", border: "border-cyanHub", text: "text-cyanHub" },
-  "BRI 2": { bar: "bg-purpleLock", border: "border-purpleLock", text: "text-purpleLock" },
+  "BRI 2": { bar: "bg-coralFall", border: "border-coralFall", text: "text-coralFall" },
 };
 
 const DEFAULT_BUCKETS: BucketAllocationItem[] = [
@@ -63,13 +63,13 @@ export function StrataAllocationBar({
             Plafon standar {formatRupiah(effectiveSalary)} / {cycleDays} hari langsung dipecah ke {activeBuckets.length} pos rekening & portofolio
           </p>
         </div>
-        <span className="text-xs font-mono font-medium text-amberGold px-2.5 py-1 rounded bg-amberGold/10 border border-amberGold/20 shrink-0 self-start sm:self-auto">
+        <span className="text-xs font-mono font-semibold text-amberGold px-3 py-1 rounded-lg bg-amberGold/15 border border-amberGold/30 shrink-0 self-start sm:self-center">
           {formulaLabel}
         </span>
       </div>
 
       {/* Horizontal Stacked Bar */}
-      <div className="flex gap-1.5 h-6 rounded-lg overflow-hidden p-1 bg-obsidian-panel border border-obsidian-border">
+      <div className="flex gap-1.5 h-6 rounded-lg overflow-hidden p-1 bg-obsidian-panel border border-obsidian-border shadow-inner">
         {activeBuckets.map((b, idx) => {
           const color = ACCOUNT_COLORS[b.account] || { bar: "bg-blue-500", border: "border-blue-500", text: "text-blue-400" };
           const isFirst = idx === 0;
@@ -80,13 +80,11 @@ export function StrataAllocationBar({
             <div
               key={b.account}
               style={{ flex: b.percentage }}
-              className={`${color.bar} ${isFirst ? "rounded-l-md" : ""} ${isLast ? "rounded-r-md" : ""} transition-all hover:brightness-110 flex items-center justify-center text-xs font-mono font-bold ${
-                b.account === "Mandiri" ? "text-obsidian-bg" : "text-white"
-              }`}
+              className={`${color.bar} ${isFirst ? "rounded-l-md" : ""} ${isLast ? "rounded-r-md" : ""} transition-all hover:brightness-110 flex items-center justify-center text-xs font-mono font-bold shadow-xs`}
               title={`${b.account}: ${b.percentage.toFixed(1)}%`}
             >
               {showText ? (
-                <span className="text-[10px] leading-none select-none">
+                <span className={`text-[10px] leading-none select-none font-bold ${b.account === "Mandiri" ? "text-slate-950 font-black" : "text-white drop-shadow-xs"}`}>
                   {b.percentage < 10 ? b.percentage.toFixed(1) : Math.round(b.percentage)}%
                 </span>
               ) : null}
