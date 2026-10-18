@@ -43,6 +43,7 @@ interface MonthlySummary {
   expense: number;
   net: number;
   savings_rate: number;
+  total_balance: number;
   accounts: { account: string; balance: number }[];
   categories: { category: string; total: number; count: number; percentage: number }[];
   safe_to_spend?: {
@@ -172,9 +173,10 @@ export default function ObsidianDashboard() {
   const [summary, setSummary] = useState<MonthlySummary>({
     month: "2026-10",
     income: 1500000,
-    expense: 70000,
-    net: 1430000,
-    savings_rate: 95.3,
+    expense: 265000,
+    net: 1235000,
+    savings_rate: 82.3,
+    total_balance: 4355049,
     accounts: [
       { account: "Mandiri", balance: 755000 },
       { account: "Jago", balance: 475000 },
@@ -633,12 +635,12 @@ export default function ObsidianDashboard() {
                     <span className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider">
                       Total Kekayaan Bersih (Net Worth)
                     </span>
-                    <span className="text-xs font-mono font-medium text-mintRise px-2 py-0.5 rounded bg-mintRise/10 border border-mintRise/20">
-                      Tabungan: {summary.savings_rate}%
+                    <span className="text-xs font-mono font-medium text-amberGold px-2 py-0.5 rounded bg-amberGold/10 border border-amberGold/20">
+                      Seluruh 5 Rekening
                     </span>
                   </div>
                   <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slateText-primary my-3 font-mono">
-                    {formatRupiah(summary.income - summary.expense)}{" "}
+                    {formatRupiah(summary.total_balance ?? (summary.income - summary.expense))}{" "}
                     <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
                       IDR
                     </span>
@@ -654,6 +656,10 @@ export default function ObsidianDashboard() {
                   <span className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium">
                     <ArrowDownRight className="w-4 h-4" />
                     {formatRupiah(summary.expense)} belanja
+                  </span>
+                  <span className="text-obsidian-borderStrong">•</span>
+                  <span className="inline-flex items-center gap-1.5 text-slateText-secondary font-mono font-medium">
+                    Net: {formatRupiah(summary.income - summary.expense)}
                   </span>
                 </div>
               </div>
