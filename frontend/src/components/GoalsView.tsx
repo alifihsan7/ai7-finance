@@ -141,7 +141,7 @@ export function GoalsView({
     <div className="space-y-8 sm:space-y-10">
       {/* Top Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
-        <div className="bg-[#0E1015] border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
+        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-6 space-y-2.5 shadow-sm">
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Total Target Finansial
           </div>
@@ -153,7 +153,7 @@ export function GoalsView({
           </div>
         </div>
 
-        <div className="bg-[#0E1015] border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
+        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-6 space-y-2.5 shadow-sm">
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Total Terkumpul
           </div>
@@ -165,7 +165,7 @@ export function GoalsView({
           </div>
         </div>
 
-        <div className="bg-[#0E1015] border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
+        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-6 space-y-2.5 shadow-sm">
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Rata-rata Capaian
           </div>
@@ -177,7 +177,7 @@ export function GoalsView({
           </div>
         </div>
 
-        <div className="bg-[#0E1015] border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
+        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-6 space-y-2.5 shadow-sm">
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Status Sasaran
           </div>
@@ -214,7 +214,7 @@ export function GoalsView({
 
       {/* Milestone Cards Grid */}
       {goals.length === 0 ? (
-        <div className="bg-[#0E1015] border border-white/[0.08] rounded-2xl p-12 text-center space-y-4">
+        <div className="bg-obsidian-panel border border-obsidian-border rounded-2xl p-12 text-center space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-amberGold/10 border border-amberGold/20 flex items-center justify-center mx-auto text-amberGold">
             <Target className="w-7 h-7" />
           </div>
@@ -241,7 +241,7 @@ export function GoalsView({
             return (
               <div
                 key={goal.id}
-                className="group relative bg-[#0E1015] border border-white/[0.08] hover:border-white/[0.2] rounded-2xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 overflow-hidden"
+                className="group relative bg-obsidian-card border border-obsidian-border hover:border-obsidian-borderStrong rounded-2xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 overflow-hidden"
               >
                 {/* Subtle corner ambient glow */}
                 <div
@@ -252,25 +252,25 @@ export function GoalsView({
                   {/* Top Header: Icon + Category Badge + Account + Actions */}
                   <div className="flex items-start justify-between gap-3.5">
                     <div className="flex items-center gap-3.5 min-w-0">
-                      {/* Glass icon container */}
-                      <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0 shadow-xs">
+                      {/* Icon container */}
+                      <div className="w-12 h-12 rounded-xl bg-obsidian-panel border border-obsidian-border flex items-center justify-center shrink-0 shadow-xs">
                         {renderGoalIcon(goal.icon, goal.name, goal.category)}
                       </div>
 
                       <div className="min-w-0 space-y-1">
                         {/* Ghost badges with glowing status dot */}
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-[11px] font-medium text-slateText-secondary">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-obsidian-panel border border-obsidian-border text-[11px] font-medium text-slateText-secondary">
                             <span className={`w-1.5 h-1.5 rounded-full ${theme.dot}`} />
                             {goal.category}
                           </span>
 
                           {goal.linked_account ? (
-                            <span className="text-[11px] font-mono text-slateText-muted bg-white/[0.02] border border-white/[0.06] px-2 py-0.5 rounded-full truncate">
+                            <span className="text-[11px] font-mono text-slateText-muted bg-obsidian-panel border border-obsidian-border px-2 py-0.5 rounded-full truncate">
                               Rek. {goal.linked_account}
                             </span>
                           ) : (
-                            <span className="text-[11px] font-mono text-slateText-muted bg-white/[0.02] border border-white/[0.06] px-2 py-0.5 rounded-full">
+                            <span className="text-[11px] font-mono text-slateText-muted bg-obsidian-panel border border-obsidian-border px-2 py-0.5 rounded-full">
                               Manual
                             </span>
                           )}
@@ -286,14 +286,14 @@ export function GoalsView({
                     <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => onEdit(goal)}
-                        className="p-1.5 text-slateText-muted hover:text-white hover:bg-white/[0.08] rounded-lg transition-colors"
+                        className="p-1.5 text-slateText-muted hover:text-white hover:bg-obsidian-panel rounded-lg transition-colors border border-transparent hover:border-obsidian-border"
                         title="Ubah Target"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDelete(goal.id)}
-                        className="p-1.5 text-slateText-muted hover:text-coralFall hover:bg-coralFall/10 rounded-lg transition-colors"
+                        className="p-1.5 text-slateText-muted hover:text-coralFall hover:bg-coralFall/10 rounded-lg transition-colors border border-transparent hover:border-coralFall/20"
                         title="Hapus Target"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -321,7 +321,7 @@ export function GoalsView({
 
                   {/* Sleek Minimal Progress Bar */}
                   <div className="space-y-2 pt-1">
-                    <div className="h-2 w-full bg-white/[0.06] rounded-full overflow-hidden p-[1px]">
+                    <div className="h-2 w-full bg-obsidian-panel rounded-full overflow-hidden p-[1px] border border-obsidian-border/50">
                       <div
                         className={`h-full bg-gradient-to-r ${theme.gradient} ${theme.glow} transition-all duration-700 rounded-full`}
                         style={{ width: `${Math.min(100, Math.max(3, goal.percentage))}%` }}
@@ -334,7 +334,7 @@ export function GoalsView({
                   </div>
 
                   {/* Clean Projections Separator (Generous Padding, No Box) */}
-                  <div className="border-t border-white/[0.08] pt-4.5 space-y-2 text-xs">
+                  <div className="border-t border-obsidian-border pt-4.5 space-y-2 text-xs">
                     {isCompleted ? (
                       <div className="flex items-center gap-2 text-emerald-400 font-medium">
                         <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -373,7 +373,7 @@ export function GoalsView({
 
                   {/* Clean Notes with generous margin */}
                   {goal.notes && (
-                    <p className="text-xs text-slateText-muted line-clamp-2 leading-relaxed pt-3 border-t border-white/[0.04]">
+                    <p className="text-xs text-slateText-muted line-clamp-2 leading-relaxed pt-3 border-t border-obsidian-border/50">
                       {goal.notes}
                     </p>
                   )}

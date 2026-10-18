@@ -1157,7 +1157,7 @@ export default function ObsidianDashboard() {
                       <div
                         key={g.id}
                         onClick={() => setActiveNav("Target Finansial")}
-                        className="bg-[#0E1015] border border-white/[0.07] hover:border-white/[0.18] rounded-xl p-4 space-y-3 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 shadow-sm"
+                        className="bg-obsidian-card border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl p-4 space-y-3 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 shadow-sm"
                       >
                         <div className="flex justify-between items-center gap-2">
                           <span className="text-sm font-semibold text-white truncate flex items-center gap-2">
@@ -1448,7 +1448,7 @@ export default function ObsidianDashboard() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Catat Transaksi Baru"
-        subtitle="Tersimpan langsung ke database PostgreSQL & otomatis memotong amplop anggaran"
+        subtitle="Catat transaksi untuk otomatis memperbarui saldo rekening & amplop anggaran"
         icon={<Plus className="w-5 h-5" />}
         accent={formType === "expense" ? "coral" : "mint"}
         maxWidth="md"
