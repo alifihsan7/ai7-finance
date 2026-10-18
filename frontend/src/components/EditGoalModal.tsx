@@ -177,7 +177,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
       subtitle="Perbarui nominal sasaran, akun rekening tertaut, atau proyeksi tanggal"
       icon={<Target className="w-5 h-5 text-amberGold" />}
       accent="amber"
-      maxWidth="md"
+      maxWidth="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
@@ -196,7 +196,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
@@ -215,20 +215,30 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
           />
         </div>
 
-        {/* Sinkronisasi Akun */}
-        <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-            Sinkronisasi Saldo Rekening
-          </label>
-          <CustomSelect
-            options={accountOptions}
-            value={linkedAccount}
-            onChange={(val) => setLinkedAccount(val)}
-            placeholder="Pilih rekening terhubung"
-          />
-          <p className="text-[11px] text-slateText-muted mt-1.5">
-            Jika memilih rekening, progres target akan otomatis mengikuti saldo riil rekening tersebut secara real-time.
-          </p>
+        {/* 2 Kolom: Rekening & Kategori */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Sinkronisasi Rekening
+            </label>
+            <CustomSelect
+              options={accountOptions}
+              value={linkedAccount}
+              onChange={(val) => setLinkedAccount(val)}
+              placeholder="Pilih rekening terhubung"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Kategori
+            </label>
+            <CustomSelect
+              options={CATEGORY_OPTIONS}
+              value={category}
+              onChange={(val) => setCategory(val)}
+            />
+          </div>
         </div>
 
         {!linkedAccount && (
@@ -245,41 +255,28 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
           </div>
         )}
 
-        {/* Kategori & Warna */}
-        <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-              Kategori
-            </label>
-            <CustomSelect
-              options={CATEGORY_OPTIONS}
-              value={category}
-              onChange={(val) => setCategory(val)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-              Tema Warna
-            </label>
-            <div className="flex items-center gap-2 pt-0.5 flex-wrap">
-              {COLOR_OPTIONS.map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setColor(c.value)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
-                    color === c.value
-                      ? "bg-obsidian-hover border-amberGold text-white shadow-xs"
-                      : "bg-obsidian-panel border-obsidian-border text-slateText-secondary hover:text-white hover:border-obsidian-borderStrong"
-                  }`}
-                >
-                  <span className={`w-2.5 h-2.5 rounded-full ${c.dot}`} />
-                  <span>{c.label}</span>
-                  {color === c.value && <Check className="w-3.5 h-3.5 text-amberGold ml-0.5" />}
-                </button>
-              ))}
-            </div>
+        {/* Tema Warna - Grid 5 Kolom Proporsional */}
+        <div>
+          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            Tema Warna Aksen
+          </label>
+          <div className="grid grid-cols-5 gap-2 pt-0.5">
+            {COLOR_OPTIONS.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                onClick={() => setColor(c.value)}
+                className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl border text-xs font-medium transition-all ${
+                  color === c.value
+                    ? "bg-obsidian-hover border-amberGold text-white shadow-xs"
+                    : "bg-obsidian-panel border-obsidian-border text-slateText-secondary hover:text-white hover:border-obsidian-borderStrong"
+                }`}
+              >
+                <span className={`w-2.5 h-2.5 rounded-full ${c.dot} shrink-0`} />
+                <span className="truncate">{c.label}</span>
+                {color === c.value && <Check className="w-3.5 h-3.5 text-amberGold shrink-0" />}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -288,7 +285,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
           <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
             Pilih Ikon
           </label>
-          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-1">
+          <div className="grid grid-cols-6 gap-2 pt-0.5">
             {ICON_OPTIONS.map((item) => {
               const IconComp = item.icon;
               const isSelected = icon === item.id;
@@ -311,31 +308,32 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
           </div>
         </div>
 
-        {/* Tanggal Target */}
-        <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-            Target Tanggal Dicapai (Opsional)
-          </label>
-          <input
-            type="date"
-            value={targetDate}
-            onChange={(e) => setTargetDate(e.target.value)}
-            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-slateText-primary focus:outline-none focus:border-amberGold transition"
-          />
-        </div>
+        {/* 2 Kolom: Tanggal & Catatan */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Target Tanggal (Opsional)
+            </label>
+            <input
+              type="date"
+              value={targetDate}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-slateText-primary focus:outline-none focus:border-amberGold transition"
+            />
+          </div>
 
-        {/* Catatan */}
-        <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-            Catatan / Rencana (Opsional)
-          </label>
-          <textarea
-            rows={2}
-            placeholder="Catatan tambahan, strategi alokasi, atau tujuan..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition resize-none placeholder:text-slateText-muted"
-          />
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Catatan / Rencana (Opsional)
+            </label>
+            <input
+              type="text"
+              placeholder="Strategi alokasi atau tujuan..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition placeholder:text-slateText-muted"
+            />
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -343,14 +341,14 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong transition"
+            className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong transition"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-2.5 rounded-xl text-xs sm:text-sm bg-amberGold text-obsidian-bg font-semibold hover:bg-amber-400 transition-colors flex items-center gap-2 shadow-xs disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl text-xs sm:text-sm bg-amberGold text-obsidian-bg font-semibold hover:bg-amber-400 transition-colors flex items-center gap-2 shadow-xs disabled:opacity-50"
           >
             {loading ? "Menyimpan..." : (
               <>

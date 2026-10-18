@@ -42,9 +42,9 @@ export function CustomModal({
 
   const maxWidthStyles = {
     sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
+    md: "max-w-lg",
+    lg: "max-w-xl",
+    xl: "max-w-2xl",
   };
 
   const accentStyles = {
@@ -72,16 +72,16 @@ export function CustomModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className={`relative bg-obsidian-card border border-obsidian-borderStrong/90 rounded-2xl w-full shadow-2xl p-6 sm:p-7 animate-in zoom-in-95 duration-200 ${maxWidthStyles[maxWidth]}`}
+        className={`relative bg-obsidian-card border border-obsidian-borderStrong/90 rounded-2xl w-full shadow-2xl flex flex-col max-h-[90vh] my-auto animate-in zoom-in-95 duration-200 ${maxWidthStyles[maxWidth]}`}
       >
         {/* Subtle Accent Glow Line at Top */}
-        <div className="absolute top-0 left-3 right-3 h-[2px] rounded-full pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-4 right-4 h-[2px] rounded-full pointer-events-none overflow-hidden z-20">
           <div className={`w-full h-full ${currentAccent.bar}`} />
         </div>
 
@@ -89,34 +89,38 @@ export function CustomModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 p-1.5 rounded-lg text-slateText-muted hover:text-slateText-primary hover:bg-obsidian-hover border border-transparent hover:border-obsidian-border transition-all"
+          className="absolute top-4 sm:top-5 right-4 sm:right-5 p-1.5 rounded-lg text-slateText-muted hover:text-slateText-primary hover:bg-obsidian-hover border border-transparent hover:border-obsidian-border transition-all z-20"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Modal Header */}
-        <div className="flex items-start gap-3.5 mb-5 pr-8">
-          {icon && (
-            <div
-              className={`p-2.5 rounded-xl border shrink-0 ${currentAccent.icon}`}
-            >
-              {icon}
-            </div>
-          )}
-          <div>
-            <h3 className="font-bold text-base sm:text-lg text-slateText-primary leading-tight">
-              {title}
-            </h3>
-            {subtitle && (
-              <p className="text-xs text-slateText-secondary mt-1 leading-relaxed">
-                {subtitle}
-              </p>
+        {/* Modal Header (Fixed at top of modal) */}
+        <div className="p-5 sm:p-6 pb-4 border-b border-obsidian-border/50 shrink-0">
+          <div className="flex items-start gap-3.5 pr-8">
+            {icon && (
+              <div
+                className={`p-2.5 rounded-xl border shrink-0 ${currentAccent.icon}`}
+              >
+                {icon}
+              </div>
             )}
+            <div>
+              <h3 className="font-bold text-base sm:text-lg text-slateText-primary leading-tight">
+                {title}
+              </h3>
+              {subtitle && (
+                <p className="text-xs text-slateText-secondary mt-1 leading-relaxed">
+                  {subtitle}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Modal Content Body */}
-        <div>{children}</div>
+        {/* Modal Scrollable Body */}
+        <div className="p-5 sm:p-6 overflow-y-auto scrollbar-thin">
+          {children}
+        </div>
       </div>
     </div>
   );

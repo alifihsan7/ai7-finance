@@ -985,7 +985,7 @@ export default function ObsidianDashboard() {
             {activeNav === "Target Finansial" ? (
               <button
                 onClick={() => setIsAddGoalModalOpen(true)}
-                className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap"
+                className="px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap"
               >
                 <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                 <span className="whitespace-nowrap">Tambah Target</span>
