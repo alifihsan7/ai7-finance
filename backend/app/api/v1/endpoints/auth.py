@@ -1,7 +1,7 @@
 from typing import Optional
 import secrets
 import requests
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from google.oauth2 import id_token
@@ -21,12 +21,14 @@ from app.schemas.user import (
 )
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
+from app.core.rate_limit import login_limiter, register_limiter
 from app.api.deps import get_strict_current_user
 
 router = APIRouter()
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: UserCreate, db: Session = Depends(get_db)):
+def register(payload: UserCreate, request: Request, db: Session = Depends(get_db)):
+    register_limiter.check(request)
     # Check existing username or email
     clean_username = payload.username.strip().lower()
     existing = db.query(User).filter(
@@ -63,7 +65,8 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     )
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: UserLogin, db: Session = Depends(get_db)):
+def login(payload: UserLogin, request: Request, db: Session = Depends(get_db)):
+    login_limiter.check(request)
     login_id = payload.username_or_email.strip().lower()
     user = db.query(User).filter(
         or_(
