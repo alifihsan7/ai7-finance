@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.parser import parse_transaction, parse_multi_transactions
 from app.db.session import SessionLocal, Base, engine
 from app.models.transaction import Transaction
+from app.models.account import Account
 
 API_BASE = f"https://api.telegram.org/bot{settings.BOT_TOKEN}"
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)

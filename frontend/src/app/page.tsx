@@ -26,6 +26,8 @@ import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionTable, Transaction } from "@/components/TransactionTable";
 import { SubscriptionsView, SubscriptionItem, SubscriptionsData } from "@/components/SubscriptionsView";
 import { TransferModal } from "@/components/TransferModal";
+import { AddAccountModal } from "@/components/AddAccountModal";
+import { AccountItem } from "@/components/AccountGrid";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
@@ -107,13 +109,15 @@ const SUB_ACCOUNT_OPTIONS = [
 ];
 
 export default function ObsidianDashboard() {
-  const [activeTab, setActiveTab] = useState<"all" | "Mandiri" | "Jago" | "Bibit" | "BRI 1" | "BRI 2">("all");
+  const [activeTab, setActiveTab] = useState<string>("all");
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaycheckModalOpen, setIsPaycheckModalOpen] = useState(false);
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
+  const [customAccounts, setCustomAccounts] = useState<AccountItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Period filter state
@@ -276,10 +280,11 @@ export default function ObsidianDashboard() {
       if (selectedPeriod.start) txParams.append("start_date", selectedPeriod.start);
       if (selectedPeriod.end) txParams.append("end_date", selectedPeriod.end);
 
-      const [txRes, sumRes, subRes] = await Promise.all([
+      const [txRes, sumRes, subRes, accRes] = await Promise.all([
         fetch(`/api/v1/transactions?${txParams.toString()}`),
         fetch(`/api/v1/analytics/summary?${periodParams.toString()}`),
         fetch("/api/v1/subscriptions"),
+        fetch("/api/v1/accounts"),
       ]);
 
       if (txRes.ok) {
@@ -297,6 +302,13 @@ export default function ObsidianDashboard() {
       if (subRes.ok) {
         const subData = await subRes.json();
         setSubsData(subData);
+      }
+
+      if (accRes.ok) {
+        const accData = await accRes.json();
+        if (Array.isArray(accData)) {
+          setCustomAccounts(accData);
+        }
       }
     } catch (err) {
       console.error("Fetch error:", err);
@@ -316,6 +328,42 @@ export default function ObsidianDashboard() {
       maximumFractionDigits: 0,
     }).format(val);
   };
+
+  // Dynamic account options for modals
+  const availableAccountOptions = useMemo(() => {
+    const list = [...TX_ACCOUNT_OPTIONS];
+    const existing = new Set(list.map((o) => o.value.toLowerCase()));
+    customAccounts.forEach((ca) => {
+      if (!existing.has(ca.name.toLowerCase())) {
+        list.push({
+          value: ca.name,
+          label: `${ca.name} (${ca.tag || "Akun Tambahan"})`,
+          color: ca.color === "cyanHub" ? "bg-cyan-500" : ca.color === "teal" ? "bg-teal-500" : ca.color === "purpleLock" ? "bg-purple-500" : ca.color === "blue" ? "bg-blue-600" : ca.color === "coralFall" ? "bg-rose-500" : "bg-amber-500",
+          description: ca.tag || "Rekening kustom",
+        });
+      }
+    });
+    return list;
+  }, [customAccounts]);
+
+  // Dynamic tab list for transaction filtering
+  const allAccountTabs = useMemo(() => {
+    const tabs = [
+      { id: "all", label: "Semua" },
+      { id: "Mandiri", label: "Mandiri" },
+      { id: "Jago", label: "Bank Jago" },
+      { id: "Bibit", label: "Bibit" },
+      { id: "BRI 1", label: "BRI 1" },
+      { id: "BRI 2", label: "BRI 2" },
+    ];
+    const existing = new Set(tabs.map((t) => t.id.toLowerCase()));
+    customAccounts.forEach((ca) => {
+      if (!existing.has(ca.name.toLowerCase()) && ca.name.toLowerCase() !== "cash") {
+        tabs.push({ id: ca.name, label: ca.name });
+      }
+    });
+    return tabs;
+  }, [customAccounts]);
 
   const mandiriExpenses = useMemo(() => {
     const expenses = { makan: 0, jajan: 0, laundry: 0, galon: 0 };
@@ -718,7 +766,7 @@ export default function ObsidianDashboard() {
             </div>
 
             <StrataAllocationBar />
-            <AccountGrid summary={summary} formatRupiah={formatRupiah} />
+            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} />
             <MandiriEnvelopes mandiriExpenses={mandiriExpenses} formatRupiah={formatRupiah} />
             <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
 
@@ -817,32 +865,39 @@ export default function ObsidianDashboard() {
         {/* ============================================================== */}
         {activeNav === "Rekening & Akun" && (
           <div className="space-y-8">
-            <AccountGrid summary={summary} formatRupiah={formatRupiah} />
+            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} />
 
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   <h3 className="font-bold text-base text-slateText-primary">Histori Transaksi per Rekening</h3>
                   <button
                     onClick={() => setIsTransferModalOpen(true)}
-                    className="text-xs px-2.5 py-1 rounded bg-cyanHub/10 border border-cyanHub/30 text-cyanHub hover:bg-cyanHub/20 transition inline-flex items-center gap-1.5 font-mono"
+                    className="text-xs px-2.5 py-1 rounded-lg bg-cyanHub/10 border border-cyanHub/30 text-cyanHub hover:bg-cyanHub/20 transition inline-flex items-center gap-1.5 font-mono"
                   >
                     <ArrowLeftRight className="w-3.5 h-3.5" />
                     <span>Pindah Saldo</span>
                   </button>
+                  <button
+                    onClick={() => setIsAddAccountModalOpen(true)}
+                    className="text-xs px-2.5 py-1 rounded-lg bg-amberGold/10 border border-amberGold/30 text-amberGold hover:bg-amberGold/20 transition inline-flex items-center gap-1.5 font-mono font-semibold"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tambah Akun</span>
+                  </button>
                 </div>
                 <div className="flex gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-                  {(["all", "Mandiri", "Jago", "Bibit", "BRI 1", "BRI 2"] as const).map((acc) => (
+                  {allAccountTabs.map((tab) => (
                     <button
-                      key={acc}
-                      onClick={() => setActiveTab(acc)}
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
                       className={`text-xs px-3 py-1.5 rounded-lg font-mono transition ${
-                        activeTab === acc
+                        activeTab === tab.id
                           ? "bg-amberGold text-[#0B0D11] font-bold"
                           : "bg-obsidian-card border border-obsidian-border text-slateText-secondary hover:text-slateText-primary"
                       }`}
                     >
-                      {acc === "all" ? "Semua" : acc}
+                      {tab.label}
                     </button>
                   ))}
                 </div>
@@ -860,17 +915,10 @@ export default function ObsidianDashboard() {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-1.5 border-b border-obsidian-border w-full sm:w-auto pb-1.5 overflow-x-auto">
-                {[
-                  { id: "all", label: "Semua Akun" },
-                  { id: "Mandiri", label: "Mandiri" },
-                  { id: "Jago", label: "Bank Jago" },
-                  { id: "Bibit", label: "Bibit" },
-                  { id: "BRI 1", label: "BRI 1" },
-                  { id: "BRI 2", label: "BRI 2" },
-                ].map((tab) => (
+                {allAccountTabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as "all" | "Mandiri" | "Jago" | "Bibit" | "BRI 1" | "BRI 2")}
+                    onClick={() => setActiveTab(tab.id)}
                     className={`text-sm px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
                       activeTab === tab.id
                         ? "text-slateText-primary bg-obsidian-card border border-obsidian-borderStrong font-semibold shadow-xs"
@@ -1023,7 +1071,7 @@ export default function ObsidianDashboard() {
               <CustomSelect
                 value={formAccount}
                 onChange={setFormAccount}
-                options={TX_ACCOUNT_OPTIONS}
+                options={availableAccountOptions}
               />
             </div>
             <div>
@@ -1298,6 +1346,14 @@ export default function ObsidianDashboard() {
       <TransferModal
         isOpen={isTransferModalOpen}
         onClose={() => setIsTransferModalOpen(false)}
+        accountOptions={availableAccountOptions}
+        onSuccess={fetchData}
+      />
+
+      {/* Add Account Modal */}
+      <AddAccountModal
+        isOpen={isAddAccountModalOpen}
+        onClose={() => setIsAddAccountModalOpen(false)}
         onSuccess={fetchData}
       />
 
