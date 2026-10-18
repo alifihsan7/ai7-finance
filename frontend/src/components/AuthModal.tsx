@@ -326,7 +326,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                     <li>Buat <b>OAuth Client ID</b> (Type: <i>Web application</i>).</li>
                     <li>Tambahkan Authorized Javascript Origins:
                       <code className="block mt-0.5 p-1 bg-[#181C26] rounded text-emerald-400 font-mono text-[10px]">
-                        https://alifihsan-studio.tailbdd42d.ts.net:8443
+                        {typeof window !== "undefined" ? window.location.origin : "http://localhost:8080"}
                       </code>
                     </li>
                     <li>Salin <b>Client ID</b> dan masukkan ke konfigurasi <code>GOOGLE_CLIENT_ID</code> di server.</li>

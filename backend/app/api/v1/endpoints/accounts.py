@@ -18,28 +18,26 @@ router = APIRouter()
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 
 DEFAULT_ACCOUNTS = [
-    {"name": "Mandiri", "type": "operasional", "tag": "Saku Operasional (55%)", "color": "amberGold", "initial_balance": 38972},
-    {"name": "Bank Jago", "type": "operasional", "tag": "Subs & Tagihan (18.3%)", "color": "purpleLock", "initial_balance": 0},
-    {"name": "Bibit", "type": "investasi", "tag": "Investasi Portofolio (13.3%)", "color": "teal", "initial_balance": 2200000},
-    {"name": "BRI 1", "type": "darurat", "tag": "Hub & Dana Darurat (6.7%)", "color": "cyanHub", "initial_balance": 756660},
-    {"name": "BRI 2", "type": "tabungan", "tag": "Tabungan Terkunci (6.7%)", "color": "purpleLock", "initial_balance": 900000},
+    {"name": "Rekening Utama", "type": "operasional", "tag": "Saku Operasional", "color": "amberGold", "initial_balance": 0},
+    {"name": "Rekening Tagihan", "type": "operasional", "tag": "Subs & Tagihan", "color": "purpleLock", "initial_balance": 0},
+    {"name": "Investasi", "type": "investasi", "tag": "Portofolio Aset", "color": "teal", "initial_balance": 0},
+    {"name": "Dana Darurat", "type": "darurat", "tag": "Cadangan Likuid", "color": "cyanHub", "initial_balance": 0},
     {"name": "Cash", "type": "operasional", "tag": "Uang Tunai Fisik", "color": "amberGold", "initial_balance": 0},
 ]
 
 def ensure_default_accounts(db: Session, user_id: int):
-    if user_id == 1:
+    has_account = db.query(Account).filter(Account.user_id == user_id).first()
+    if not has_account:
         for d in DEFAULT_ACCOUNTS:
-            exists = db.query(Account).filter(Account.user_id == 1, Account.name == d["name"]).first()
-            if not exists:
-                acc = Account(
-                    user_id=1,
-                    name=d["name"],
-                    type=d["type"],
-                    tag=d["tag"],
-                    color=d["color"],
-                    initial_balance=d["initial_balance"],
-                )
-                db.add(acc)
+            acc = Account(
+                user_id=user_id,
+                name=d["name"],
+                type=d["type"],
+                tag=d["tag"],
+                color=d["color"],
+                initial_balance=d["initial_balance"],
+            )
+            db.add(acc)
         db.commit()
 
 @router.get("", response_model=List[AccountResponse])

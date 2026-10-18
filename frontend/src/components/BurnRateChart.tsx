@@ -33,7 +33,7 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
   const chartData = summary.safe_to_spend?.burn_chart || [];
   const dayOfCycle = summary.safe_to_spend?.day_of_cycle || 1;
   const cycleDays = summary.safe_to_spend?.cycle_days || (chartData.length > 0 ? chartData.length : 14);
-  const pocketAccount = summary.safe_to_spend?.pocket_account || "Mandiri";
+  const pocketAccount = summary.safe_to_spend?.pocket_account || "Saku Belanja";
   const maxBudget = summary.safe_to_spend?.pocket_budget && summary.safe_to_spend.pocket_budget > 0
     ? summary.safe_to_spend.pocket_budget
     : 825000;

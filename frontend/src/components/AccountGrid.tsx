@@ -20,6 +20,7 @@ interface AccountGridProps {
       pocket_remaining: number;
       cycle_days?: number;
       pocket_budget?: number;
+      pocket_account?: string;
     };
   };
   customAccounts?: AccountItem[];
@@ -56,12 +57,12 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
     ? summary.safe_to_spend.pocket_budget
     : Math.round(baselineSalary * 0.55);
 
-  // Akun utama bawaan siklus
-  const defaultAccounts = [
+  // Akun default generic jika user belum memiliki rekening kustom
+  const genericDefaultAccounts = [
     {
-      name: "Mandiri",
-      tag: "Saku Operasional (55%)",
-      balance: balanceMap["Mandiri"] ?? 0,
+      name: "Rekening Utama",
+      tag: "Saku Operasional",
+      balance: 0,
       spent: pocketSpent,
       allocated: pocketBudget,
       accentColor: "text-amberGold",
@@ -69,73 +70,57 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
       badge: cycleBadge,
     },
     {
-      name: "Bank Jago",
-      tag: "Subs & Tagihan (18.3%)",
-      balance: balanceMap["Bank Jago"] ?? 0,
-      spent: expenseMap["Bank Jago"] ?? 0,
-      allocated: Math.round(baselineSalary * 0.183),
+      name: "Rekening Tagihan",
+      tag: "Subs & Tagihan",
+      balance: 0,
+      spent: 0,
+      allocated: 0,
       accentColor: "text-purple-400",
       barColor: "bg-purple-500",
       badge: cycleBadge,
     },
     {
-      name: "Bibit",
-      tag: "Investasi Portofolio (13.3%)",
-      balance: balanceMap["Bibit"] ?? 0,
-      spent: expenseMap["Bibit"] ?? 0,
-      allocated: Math.round(baselineSalary * 0.133),
+      name: "Investasi",
+      tag: "Investasi Portofolio",
+      balance: 0,
+      spent: 0,
+      allocated: 0,
       accentColor: "text-teal-400",
       barColor: "bg-teal-500",
       badge: "Portofolio",
     },
     {
-      name: "BRI 1",
-      tag: "Hub & Dana Darurat (6.7%)",
-      balance: balanceMap["BRI 1"] ?? 0,
-      spent: expenseMap["BRI 1"] ?? 0,
-      allocated: Math.round(baselineSalary * 0.067),
+      name: "Dana Darurat",
+      tag: "Cadangan Likuid",
+      balance: 0,
+      spent: 0,
+      allocated: 0,
       accentColor: "text-cyanHub",
       barColor: "bg-cyanHub",
-      badge: cycleBadge,
-    },
-    {
-      name: "BRI 2",
-      tag: "Tabungan Terkunci (6.7%)",
-      balance: balanceMap["BRI 2"] ?? 0,
-      spent: expenseMap["BRI 2"] ?? 0,
-      allocated: Math.round(baselineSalary * 0.067),
-      accentColor: "text-coralFall",
-      barColor: "bg-coralFall",
-      badge: "Terkunci",
+      badge: "Darurat",
     },
   ];
 
-  const defaultNames = new Set(
-    defaultAccounts
-      .map((a) => a.name.toLowerCase())
-      .concat(["jago", "bank jago", "mandiri", "bibit", "bri 1", "bri 2", "cash"])
-  );
+  const pocketAccountName = (summary.safe_to_spend?.pocket_account || "").toLowerCase();
 
-  // Tambahkan rekening kustom dinamis yang didaftarkan user
-  const dynamicAccounts = customAccounts
-    .filter((ca) => !defaultNames.has(ca.name.toLowerCase()) && ca.name.toLowerCase() !== "cash")
-    .map((ca) => {
-      const colorScheme = COLOR_MAP[ca.color || "amberGold"] || COLOR_MAP.amberGold;
-      const bal = ca.current_balance ?? balanceMap[ca.name] ?? 0;
-      return {
-        name: ca.name,
-        tag: ca.tag || (ca.type === "investasi" ? "Pos Investasi" : ca.type === "tabungan" ? "Pos Tabungan" : "Rekening Pribadi"),
-        balance: bal,
-        spent: 0,
-        allocated: 0,
-        accentColor: colorScheme.text,
-        barColor: colorScheme.bg,
-        badge: ca.type ? ca.type.toUpperCase() : "AKUN",
-        isCustom: true,
-      };
-    });
-
-  const allDisplayAccounts = [...defaultAccounts, ...dynamicAccounts];
+  const allDisplayAccounts = customAccounts.length > 0
+    ? customAccounts.map((ca) => {
+        const colorScheme = COLOR_MAP[ca.color || "amberGold"] || COLOR_MAP.amberGold;
+        const bal = ca.current_balance ?? balanceMap[ca.name] ?? 0;
+        const isPocket = ca.name.toLowerCase() === pocketAccountName || (pocketAccountName === "" && ca.name.toLowerCase().includes("mandiri"));
+        return {
+          name: ca.name,
+          tag: ca.tag || (ca.type === "investasi" ? "Pos Investasi" : ca.type === "tabungan" ? "Pos Tabungan" : "Rekening Operasional"),
+          balance: bal,
+          spent: isPocket ? pocketSpent : (expenseMap[ca.name] ?? 0),
+          allocated: isPocket ? pocketBudget : 0,
+          accentColor: colorScheme.text,
+          barColor: colorScheme.bg,
+          badge: isPocket ? cycleBadge : (ca.type ? ca.type.toUpperCase() : "AKUN"),
+          isCustom: true,
+        };
+      })
+    : genericDefaultAccounts;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">

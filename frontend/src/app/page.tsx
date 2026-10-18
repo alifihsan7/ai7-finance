@@ -94,11 +94,10 @@ interface MonthlySummary {
 }
 
 const TX_ACCOUNT_OPTIONS = [
-  { value: "Mandiri", label: "Mandiri (Saku Operasional)", color: "bg-blue-500", description: "Pos belanja harian & saku" },
-  { value: "Bank Jago", label: "Bank Jago (Subs & Bills)", color: "bg-purple-500", description: "Pos langganan rutin" },
-  { value: "Bibit", label: "Bibit (Investasi Reksadana/Saham)", color: "bg-teal-500", description: "Portofolio tabungan investasi" },
-  { value: "BRI 1", label: "BRI 1 (Income Hub)", color: "bg-cyan-500", description: "Rekening penampung utama" },
-  { value: "BRI 2", label: "BRI 2 (Nabung / Dana Dingin)", color: "bg-emerald-500", description: "Pos tabungan & investasi" },
+  { value: "Rekening Utama", label: "Rekening Utama (Operasional)", color: "bg-blue-500", description: "Pos belanja harian & saku" },
+  { value: "Rekening Tagihan", label: "Rekening Tagihan (Subs & Bills)", color: "bg-purple-500", description: "Pos langganan rutin" },
+  { value: "Investasi", label: "Investasi (Portofolio)", color: "bg-teal-500", description: "Portofolio tabungan investasi" },
+  { value: "Dana Darurat", label: "Dana Darurat (Cadangan Likuid)", color: "bg-cyan-500", description: "Pos cadangan dana darurat" },
   { value: "Cash", label: "Cash (Uang Tunai)", color: "bg-amber-500", description: "Uang tunai fisik" },
 ];
 
@@ -112,7 +111,7 @@ const TX_CATEGORY_OPTIONS = [
   { value: "Social & Hiburan", label: "Social & Hiburan" },
   { value: "Kesehatan & Gym", label: "Kesehatan & Gym" },
   { value: "Langganan & Servis", label: "Langganan & Servis" },
-  { value: "Uang Saku Ortu", label: "Uang Saku Ortu" },
+  { value: "Keluarga & Sosial", label: "Keluarga & Sosial" },
   { value: "Dana Darurat", label: "Dana Darurat" },
   { value: "Lainnya", label: "Lainnya" },
 ];
@@ -127,12 +126,13 @@ const SUB_CATEGORY_OPTIONS = [
 ];
 
 const SUB_ACCOUNT_OPTIONS = [
-  { value: "Jago", label: "Bank Jago (Subs)", color: "bg-purple-500" },
-  { value: "Mandiri", label: "Mandiri (Saku)", color: "bg-blue-500" },
-  { value: "BRI 1", label: "BRI 1 (Hub)", color: "bg-cyan-500" },
+  { value: "Rekening Tagihan", label: "Rekening Tagihan (Autodebet)", color: "bg-purple-500" },
+  { value: "Rekening Utama", label: "Rekening Utama (Operasional)", color: "bg-blue-500" },
+  { value: "Kartu Kredit", label: "Kartu Kredit / PayLater", color: "bg-cyan-500" },
 ];
 
 export default function FinanceDashboard() {
+  const googleSheetUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL;
   const [activeTab, setActiveTab] = useState<string>("all");
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -399,49 +399,43 @@ export default function FinanceDashboard() {
 
   // Dynamic account options for modals
   const availableAccountOptions = useMemo(() => {
-    const list = [...TX_ACCOUNT_OPTIONS];
-    const existing = new Set(["mandiri", "bank jago", "jago", "bibit", "bri 1", "bri 2", "cash"]);
-    customAccounts.forEach((ca) => {
-      const lower = ca.name.toLowerCase().trim();
-      if (!existing.has(lower)) {
-        existing.add(lower);
-        list.push({
-          value: ca.name,
-          label: `${ca.name} (${ca.tag || "Akun Tambahan"})`,
-          color: ca.color === "cyanHub" ? "bg-cyan-500" : ca.color === "teal" ? "bg-teal-500" : ca.color === "purpleLock" ? "bg-purple-500" : ca.color === "blue" ? "bg-blue-600" : ca.color === "coralFall" ? "bg-rose-500" : "bg-amber-500",
-          description: ca.tag || "Rekening kustom",
-        });
-      }
-    });
-    return list;
+    if (customAccounts.length > 0) {
+      return customAccounts.map((ca) => ({
+        value: ca.name,
+        label: `${ca.name} (${ca.tag || "Akun"})`,
+        color: ca.color === "cyanHub" ? "bg-cyan-500" : ca.color === "teal" ? "bg-teal-500" : ca.color === "purpleLock" ? "bg-purple-500" : ca.color === "blue" ? "bg-blue-600" : ca.color === "coralFall" ? "bg-rose-500" : "bg-amber-500",
+        description: ca.tag || "Rekening aktif",
+      }));
+    }
+    return TX_ACCOUNT_OPTIONS;
   }, [customAccounts]);
 
   // Dynamic tab list for transaction filtering
   const allAccountTabs = useMemo(() => {
-    const tabs = [
-      { id: "all", label: "Semua" },
-      { id: "Mandiri", label: "Mandiri" },
-      { id: "Bank Jago", label: "Bank Jago" },
-      { id: "Bibit", label: "Bibit" },
-      { id: "BRI 1", label: "BRI 1" },
-      { id: "BRI 2", label: "BRI 2" },
-    ];
-    // Map known aliases so both "jago" and "bank jago" match the same item
-    const existing = new Set(["all", "mandiri", "bank jago", "jago", "bibit", "bri 1", "bri 2", "cash"]);
-    customAccounts.forEach((ca) => {
-      const lower = ca.name.toLowerCase().trim();
-      if (!existing.has(lower)) {
-        existing.add(lower);
+    const tabs = [{ id: "all", label: "Semua" }];
+    if (customAccounts.length > 0) {
+      customAccounts.forEach((ca) => {
         tabs.push({ id: ca.name, label: ca.name });
-      }
-    });
+      });
+    } else {
+      TX_ACCOUNT_OPTIONS.forEach((opt) => {
+        tabs.push({ id: opt.value, label: opt.value });
+      });
+    }
     return tabs;
   }, [customAccounts]);
+
+  const pocketAccountName = (summary.safe_to_spend?.pocket_account || "").toLowerCase();
 
   const mandiriExpenses = useMemo(() => {
     const expenses = { makan: 0, jajan: 0, laundry: 0, galon: 0 };
     transactions.forEach((tx) => {
-      if (tx.type === "expense" && tx.account.toLowerCase().includes("mandiri")) {
+      const acc = (tx.account || "").toLowerCase();
+      const isTargetPocket = pocketAccountName
+        ? acc === pocketAccountName || acc.includes(pocketAccountName)
+        : acc.includes("mandiri") || acc.includes("utama");
+
+      if (tx.type === "expense" && isTargetPocket) {
         const cat = tx.category.toLowerCase();
         if (cat.includes("makan")) expenses.makan += tx.amount;
         else if (cat.includes("jajan") || cat.includes("ngopi")) expenses.jajan += tx.amount;
@@ -450,7 +444,7 @@ export default function FinanceDashboard() {
       }
     });
     return expenses;
-  }, [transactions]);
+  }, [transactions, pocketAccountName]);
 
   const handleCreateTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -869,9 +863,9 @@ export default function FinanceDashboard() {
                   <Download className="w-4 h-4 shrink-0" />
                   <span>Ekspor CSV Transaksi</span>
                 </a>
-                {currentUser?.id === 1 && (
+                {googleSheetUrl && (
                   <a
-                    href="https://docs.google.com/spreadsheets/d/1yq0SQLZ9QVUTeRksKNJtDKTyDGxUKn5fkUVnBxplhn4/edit"
+                    href={googleSheetUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition"
@@ -1099,9 +1093,9 @@ export default function FinanceDashboard() {
                     </div>
                   </a>
 
-                  {currentUser?.id === 1 && (
+                  {googleSheetUrl && (
                     <a
-                      href="https://docs.google.com/spreadsheets/d/1yq0SQLZ9QVUTeRksKNJtDKTyDGxUKn5fkUVnBxplhn4/edit"
+                      href={googleSheetUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => setIsExportMenuOpen(false)}
@@ -1435,10 +1429,10 @@ export default function FinanceDashboard() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
                   <h3 className="font-bold text-base sm:text-lg text-slateText-primary">
-                    Amplop Bank Jago (Plafon Rp 475.000 • 31.7%)
+                    Amplop Tagihan Rutin & Utilitas
                   </h3>
                   <p className="text-xs text-slateText-secondary mt-0.5">
-                    Khusus autodebet tagihan rutin dan portofolio investasi Bibit
+                    Alokasi autodebet tagihan berkala, langganan digital, dan komitmen bulanan
                   </p>
                 </div>
                 <button
@@ -1452,7 +1446,7 @@ export default function FinanceDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-obsidian-panel border border-obsidian-border rounded-lg p-5 space-y-3">
                   <div className="flex justify-between items-center gap-2">
-                    <span className="font-semibold text-slateText-primary text-sm truncate">Tagihan & Langganan Digital</span>
+                    <span className="font-semibold text-slateText-primary text-sm truncate">Komitmen Tagihan Berjalan</span>
                     <span className="text-xs font-mono px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-mintRise shrink-0 whitespace-nowrap">
                       Autodebet
                     </span>
@@ -1467,16 +1461,16 @@ export default function FinanceDashboard() {
 
                 <div className="bg-obsidian-panel border border-obsidian-border rounded-lg p-5 space-y-3">
                   <div className="flex justify-between items-center gap-2">
-                    <span className="font-semibold text-slateText-primary text-sm truncate">Bibit & Investasi Reksadana</span>
+                    <span className="font-semibold text-slateText-primary text-sm truncate">Pos Tabungan & Investasi</span>
                     <span className="text-xs font-mono px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-cyanHub shrink-0 whitespace-nowrap">
                       Pertumbuhan Aset
                     </span>
                   </div>
                   <div className="text-xl font-bold font-mono text-slateText-primary">
-                    {formatRupiah(Math.max(0, 475000 - subsData.total_monthly_commitment))}
+                    {formatRupiah(summary.total_balance > 0 ? Math.round(summary.total_balance * 0.2) : 0)}
                   </div>
                   <div className="text-xs text-slateText-muted">
-                    Sisa alokasi Jago setelah tagihan bulanan
+                    Estimasi 20% pertumbuhan modal dan investasi
                   </div>
                 </div>
               </div>
@@ -1484,14 +1478,18 @@ export default function FinanceDashboard() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
-                <div className="text-cyanHub font-bold text-sm">BRI 1 • Hub Transfer & Dana Darurat (6.7%)</div>
-                <div className="text-2xl font-bold font-mono text-slateText-primary">Rp 100.000</div>
-                <p className="text-xs text-slateText-muted">Disimpan sebagai cadangan likuid jika ada kebutuhan mendesak.</p>
+                <div className="text-cyanHub font-bold text-sm">Pos Dana Darurat (Cadangan Likuid)</div>
+                <div className="text-2xl font-bold font-mono text-slateText-primary">
+                  {formatRupiah(summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0)}
+                </div>
+                <p className="text-xs text-slateText-muted">Disimpan sebagai cadangan likuid jika ada kebutuhan tak terduga.</p>
               </div>
               <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
-                <div className="text-purpleLock font-bold text-sm">BRI 2 • Tabungan Terkunci (6.7%)</div>
-                <div className="text-2xl font-bold font-mono text-slateText-primary">Rp 100.000</div>
-                <p className="text-xs text-slateText-muted">Tidak boleh disentuh untuk operasional harian / tujuan jangka panjang.</p>
+                <div className="text-purpleLock font-bold text-sm">Pos Tabungan Terkunci (Tujuan Finansial)</div>
+                <div className="text-2xl font-bold font-mono text-slateText-primary">
+                  {formatRupiah(summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0)}
+                </div>
+                <p className="text-xs text-slateText-muted">Tidak boleh disentuh untuk operasional belanja harian.</p>
               </div>
             </div>
           </div>

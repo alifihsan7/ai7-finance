@@ -15,6 +15,10 @@ interface StrataAllocationBarProps {
 }
 
 const ACCOUNT_COLORS: Record<string, { bar: string; border: string; text: string }> = {
+  "Kebutuhan Pokok": { bar: "bg-amberGold", border: "border-amberGold", text: "text-amberGold" },
+  "Tagihan & Rutin": { bar: "bg-purple-500", border: "border-purple-500", text: "text-purple-400" },
+  "Tabungan & Investasi": { bar: "bg-teal-500", border: "border-teal-500", text: "text-teal-400" },
+  "Dana Darurat": { bar: "bg-cyanHub", border: "border-cyanHub", text: "text-cyanHub" },
   "Mandiri": { bar: "bg-amberGold", border: "border-amberGold", text: "text-amberGold" },
   "Bank Jago": { bar: "bg-purple-500", border: "border-purple-500", text: "text-purple-400" },
   "Jago": { bar: "bg-purple-500", border: "border-purple-500", text: "text-purple-400" },
@@ -24,11 +28,10 @@ const ACCOUNT_COLORS: Record<string, { bar: string; border: string; text: string
 };
 
 const DEFAULT_BUCKETS: BucketAllocationItem[] = [
-  { account: "Mandiri", percentage: 55.0, purpose: "Saku Harian" },
-  { account: "Bank Jago", percentage: 18.3, purpose: "Subs & Bills" },
-  { account: "Bibit", percentage: 13.3, purpose: "Portofolio" },
-  { account: "BRI 1", percentage: 6.7, purpose: "Hub & Darurat" },
-  { account: "BRI 2", percentage: 6.7, purpose: "Tabungan Kunci" },
+  { account: "Kebutuhan Pokok", percentage: 50.0, purpose: "Belanja & Operasional" },
+  { account: "Tagihan & Rutin", percentage: 20.0, purpose: "Subs & Utilitas" },
+  { account: "Tabungan & Investasi", percentage: 20.0, purpose: "Pertumbuhan Aset" },
+  { account: "Dana Darurat", percentage: 10.0, purpose: "Cadangan Likuid" },
 ];
 
 export function StrataAllocationBar({
