@@ -57,6 +57,10 @@ class SafeToSpendInfo(BaseModel):
     burn_chart: List[CycleBurnDay]
 
 class MonthlySummary(BaseModel):
+    period_type: str = "cycle"  # cycle | week | month | custom
+    period_label: str = ""
+    start_date: str
+    end_date: str
     month: str
     year: int
     month_num: int
