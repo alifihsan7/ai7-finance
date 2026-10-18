@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, BigInteger, String, DateTime, ForeignKey, func
 from app.db.session import Base
+from app.models.user import User
 
 class Account(Base):
     __tablename__ = "accounts"

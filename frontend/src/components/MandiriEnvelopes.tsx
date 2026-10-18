@@ -8,28 +8,40 @@ interface MandiriEnvelopesProps {
     galon: number;
   };
   formatRupiah: (val: number) => string;
+  cycleDays?: number;
+  pocketAccount?: string;
+  pocketBudget?: number;
 }
 
-export function MandiriEnvelopes({ mandiriExpenses, formatRupiah }: MandiriEnvelopesProps) {
+export function MandiriEnvelopes({
+  mandiriExpenses,
+  formatRupiah,
+  cycleDays = 14,
+  pocketAccount = "Mandiri",
+  pocketBudget,
+}: MandiriEnvelopesProps) {
+  const totalPlafond = pocketBudget && pocketBudget > 0 ? pocketBudget : 825000;
+  const scale = totalPlafond / 825000;
+
   const envelopes = [
     {
       title: "Makan Harian",
-      limit: 450000,
+      limit: Math.round(450000 * scale),
       spent: mandiriExpenses.makan,
     },
     {
       title: "Jajan & Kopi",
-      limit: 100000,
+      limit: Math.round(100000 * scale),
       spent: mandiriExpenses.jajan,
     },
     {
       title: "Laundry",
-      limit: 70000,
+      limit: Math.round(70000 * scale),
       spent: mandiriExpenses.laundry,
     },
     {
       title: "Galon & Air",
-      limit: 44000,
+      limit: Math.round(44000 * scale),
       spent: mandiriExpenses.galon,
     },
   ];
@@ -39,14 +51,14 @@ export function MandiriEnvelopes({ mandiriExpenses, formatRupiah }: MandiriEnvel
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-slateText-primary">
-            Amplop Belanja Mandiri (Plafon Rp 825.000)
+            Amplop Belanja {pocketAccount} (Plafon {formatRupiah(totalPlafond)})
           </h2>
           <p className="text-xs sm:text-sm text-slateText-secondary mt-0.5">
-            Monitoring limit pos belanja harian agar pengeluaran terkontrol sampai gajian berikutnya
+            Monitoring limit pos belanja harian agar pengeluaran terkontrol sampai siklus berikutnya
           </p>
         </div>
         <span className="text-xs text-amberGold font-mono font-medium px-2.5 py-1 rounded bg-amberGold/10 border border-amberGold/20 shrink-0 self-start sm:self-auto">
-          Reset Tiap 14 Hari
+          Reset Tiap {cycleDays} Hari
         </span>
       </div>
 

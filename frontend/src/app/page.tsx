@@ -68,6 +68,9 @@ interface MonthlySummary {
   safe_to_spend?: {
     cycle_start: string;
     cycle_end: string;
+    cycle_type?: string;
+    cycle_days?: number;
+    pocket_account?: string;
     day_of_cycle: number;
     days_remaining: number;
     pocket_budget: number;
@@ -147,9 +150,9 @@ export default function ObsidianDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption>({
     id: "cycle_current",
     type: "cycle",
-    label: "Siklus 14 Hari (Aktif)",
-    start: "2026-10-11",
-    end: "2026-10-24",
+    label: "Memuat Siklus...",
+    start: "",
+    end: "",
     is_current: true,
   });
   const [activePaycheckSession, setActivePaycheckSession] = useState<{
@@ -382,6 +385,16 @@ export default function ObsidianDashboard() {
       if (sumRes.ok) {
         const sumData = await sumRes.json();
         setSummary(sumData);
+        if (!selectedPeriod.start && sumData.start_date) {
+          setSelectedPeriod({
+            id: `cycle_${sumData.start_date}`,
+            type: sumData.period_type || "cycle",
+            label: sumData.period_label || "Siklus Aktif",
+            start: sumData.start_date,
+            end: sumData.end_date,
+            is_current: true,
+          });
+        }
       }
 
       if (subRes.ok) {
@@ -922,7 +935,7 @@ export default function ObsidianDashboard() {
             {/* Profile Footer */}
             <div className="pt-4 border-t border-obsidian-border text-xs mt-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-slateText-primary font-semibold">Alif Ihsan</span>
+                <span className="text-slateText-primary font-semibold">{currentUser?.full_name || "Pengguna AI7"}</span>
                 <span className="inline-flex items-center gap-1 text-[11px] text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20">
                   <span className="w-1.5 h-1.5 rounded-full bg-mintRise animate-pulse"></span>
                   Live Synced
@@ -935,7 +948,7 @@ export default function ObsidianDashboard() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Mode Siklus</span>
-                  <span className="text-amberGold font-medium">14 Hari</span>
+                  <span className="text-amberGold font-medium">{summary.safe_to_spend?.cycle_days || 30} Hari</span>
                 </div>
               </div>
             </div>
@@ -1025,12 +1038,13 @@ export default function ObsidianDashboard() {
                 {activeNav === "Analisis & Tren" && "Analisis Tren & Burn-Rate Pengeluaran"}
               </h1>
               <PeriodSelector
+                key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
                 currentPeriod={selectedPeriod}
                 onSelectPeriod={(p) => setSelectedPeriod(p)}
               />
             </div>
             <p className="text-sm text-slateText-secondary mt-1.5">
-              {activeNav === "Ringkasan" && "Sistem keuangan 2-mingguan terintegrasi PostgreSQL & Telegram Bot"}
+              {activeNav === "Ringkasan" && "Sistem keuangan terintegrasi PostgreSQL & Telegram Bot (@AI7Fin4nc3_bot)"}
               {activeNav === "Target Finansial" && "Pantau akumulasi target dana dingin BRI 2, portofolio Bibit, dan pencapaian finansial"}
               {activeNav === "Alokasi Amplop" && "Monitoring plafon belanja 4 amplop Mandiri & pos pendukung"}
               {activeNav === "Rekening & Akun" && "Kekayaan bersih terbagi dalam seluruh rekening aktif dengan alokasi khusus"}
@@ -1320,7 +1334,13 @@ export default function ObsidianDashboard() {
               </div>
             )}
 
-            <MandiriEnvelopes mandiriExpenses={mandiriExpenses} formatRupiah={formatRupiah} />
+            <MandiriEnvelopes
+              mandiriExpenses={mandiriExpenses}
+              formatRupiah={formatRupiah}
+              cycleDays={summary.safe_to_spend?.cycle_days || 14}
+              pocketAccount={summary.safe_to_spend?.pocket_account || "Mandiri"}
+              pocketBudget={summary.safe_to_spend?.pocket_budget}
+            />
             <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
 
             <div className="space-y-4">
@@ -1362,7 +1382,13 @@ export default function ObsidianDashboard() {
         {activeNav === "Alokasi Amplop" && (
           <div className="space-y-8">
             <StrataAllocationBar />
-            <MandiriEnvelopes mandiriExpenses={mandiriExpenses} formatRupiah={formatRupiah} />
+            <MandiriEnvelopes
+              mandiriExpenses={mandiriExpenses}
+              formatRupiah={formatRupiah}
+              cycleDays={summary.safe_to_spend?.cycle_days || 14}
+              pocketAccount={summary.safe_to_spend?.pocket_account || "Mandiri"}
+              pocketBudget={summary.safe_to_spend?.pocket_budget}
+            />
 
             {/* Pos Jago & Pos BRI */}
             <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-6 space-y-5">

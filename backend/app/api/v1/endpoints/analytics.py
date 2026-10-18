@@ -34,7 +34,17 @@ def get_available_periods(
 
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
-    cycle_label_suffix = f"{cycle_days} Hari"
+    cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "biweekly"
+    anchor_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else None
+
+    if cycle_days == 30 or cycle_type == "monthly":
+        label_prefix = "Siklus Bulanan"
+    elif cycle_days == 14 or cycle_type == "biweekly":
+        label_prefix = "Siklus 2-Mingguan"
+    elif cycle_days == 7 or cycle_type == "weekly":
+        label_prefix = "Siklus Mingguan"
+    else:
+        label_prefix = f"Siklus {cycle_days} Hari"
 
     # 1. Ambil semua gajian unik milik user
     paycheck_rows = db.query(Transaction.date).filter(
@@ -44,16 +54,16 @@ def get_available_periods(
     ).order_by(Transaction.date.desc()).distinct().all()
 
     cycles = []
-    # Jika tidak ada gajian sama sekali, buat 1 default cycle
+    # Jika tidak ada riwayat gajian, gunakan anchor onboarding atau hari ini
     if not paycheck_rows:
-        default_start = today_wib
+        default_start = anchor_start or today_wib
         default_end = default_start + timedelta(days=cycle_days - 1)
         cycles.append({
             "id": f"cycle_{default_start}",
             "type": "cycle",
             "start": str(default_start),
             "end": str(default_end),
-            "label": f"Siklus {cycle_label_suffix} ({default_start.strftime('%d %b')} – {default_end.strftime('%d %b %Y')})",
+            "label": f"{label_prefix} ({default_start.strftime('%d %b')} – {default_end.strftime('%d %b %Y')}) (Aktif)",
             "is_current": True
         })
     else:
@@ -67,7 +77,7 @@ def get_available_periods(
                 "type": "cycle",
                 "start": str(c_start),
                 "end": str(c_end),
-                "label": f"Siklus {c_start.strftime('%d %b')} – {c_end.strftime('%d %b %Y')}{status_text}",
+                "label": f"{label_prefix} ({c_start.strftime('%d %b')} – {c_end.strftime('%d %b %Y')}){status_text}",
                 "is_current": is_cur
             })
 
@@ -191,8 +201,42 @@ def get_monthly_summary(
 
         cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
         cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
-        end_date = start_date + timedelta(days=cycle_days - 1)
-        period_label = f"Siklus {cycle_days} Hari ({start_date.strftime('%d %b')} – {end_date.strftime('%d %b %Y')})"
+        cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "biweekly"
+        anchor_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else None
+
+        if paychecks:
+            latest_cycle_start = paychecks[0].date
+        elif anchor_start:
+            latest_cycle_start = anchor_start
+        else:
+            latest_cycle_start = today_wib
+
+        if start:
+            try:
+                start_date = datetime.strptime(start, "%Y-%m-%d").date()
+            except Exception:
+                start_date = latest_cycle_start
+        else:
+            start_date = latest_cycle_start
+
+        if end:
+            try:
+                end_date = datetime.strptime(end, "%Y-%m-%d").date()
+            except Exception:
+                end_date = start_date + timedelta(days=cycle_days - 1)
+        else:
+            end_date = start_date + timedelta(days=cycle_days - 1)
+
+        if cycle_days == 30 or cycle_type == "monthly":
+            label_prefix = "Siklus Bulanan"
+        elif cycle_days == 14 or cycle_type == "biweekly":
+            label_prefix = "Siklus 2-Mingguan"
+        elif cycle_days == 7 or cycle_type == "weekly":
+            label_prefix = "Siklus Mingguan"
+        else:
+            label_prefix = f"Siklus {cycle_days} Hari"
+
+        period_label = f"{label_prefix} ({start_date.strftime('%d %b')} – {end_date.strftime('%d %b %Y')})"
 
     query_end_date = end_date + timedelta(days=1)
 
@@ -300,6 +344,7 @@ def get_monthly_summary(
 
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "biweekly"
     pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
 
     pocket_income_row = db.query(
@@ -311,7 +356,7 @@ def get_monthly_summary(
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
     ).first()
-    base_pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else 825000
+    base_pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else int(55000 * cycle_days)
     pocket_budget = base_pocket_budget if period_type == "cycle" else int(base_pocket_budget / cycle_days * total_days)
     
     pocket_spent_row = db.query(
@@ -377,6 +422,9 @@ def get_monthly_summary(
     safe_info = SafeToSpendInfo(
         cycle_start=cycle_start,
         cycle_end=cycle_end,
+        cycle_type=cycle_type,
+        cycle_days=cycle_days,
+        pocket_account=pocket_account,
         day_of_cycle=day_of_cycle,
         days_remaining=days_remaining,
         pocket_budget=pocket_budget,

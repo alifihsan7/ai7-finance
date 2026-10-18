@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Calendar, ChevronDown, Check, Clock, CalendarDays, SlidersHorizontal } from "lucide-react";
+import { authFetch } from "@/lib/api";
 
 export interface PeriodOption {
   id: string;
@@ -38,15 +39,22 @@ export function PeriodSelector({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/api/v1/analytics/periods")
+    authFetch("/api/v1/analytics/periods")
       .then((res) => res.json())
       .then((data) => {
         if (data) {
+          const cycles: PeriodOption[] = data.cycles || [];
           setPeriodGroups({
-            cycles: data.cycles || [],
+            cycles,
             weeks: data.weeks || [],
             months: data.months || [],
           });
+
+          // Auto-sync initial active cycle if placeholder was passed
+          const activeCycle = cycles.find((c) => c.is_current) || cycles[0];
+          if (activeCycle && (currentPeriod.id === "cycle_current" || !currentPeriod.id)) {
+            onSelectPeriod(activeCycle);
+          }
         }
       })
       .catch((err) => console.error("Error fetching periods:", err));
@@ -159,7 +167,7 @@ export function PeriodSelector({
             {activeTab === "cycle" && (
               <>
                 <div className="text-[11px] font-semibold uppercase tracking-wider text-slateText-muted px-2 py-1">
-                  Siklus Gajian 14 Harian
+                  Siklus Anggaran Dinamis
                 </div>
                 {periodGroups.cycles.length === 0 ? (
                   <div className="text-xs text-slateText-muted p-3 text-center">

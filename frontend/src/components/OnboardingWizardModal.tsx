@@ -173,6 +173,24 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
   const formatRp = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
   const totalInitialBalance = accounts.reduce((acc, curr) => acc + curr.initial_balance, 0);
 
+  const getCycleTypeLabel = () => {
+    if (cycleType === "monthly") return "Bulanan Penuh";
+    if (cycleType === "biweekly") return "2-Mingguan";
+    if (cycleType === "weekly") return "Mingguan";
+    return "Kustom";
+  };
+
+  const getEstimatedEndDate = () => {
+    if (!startDateStr) return "";
+    try {
+      const d = new Date(startDateStr);
+      d.setDate(d.getDate() + getEffectiveCycleDays() - 1);
+      return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+    } catch {
+      return "";
+    }
+  };
+
   return (
     <CustomModal
       isOpen={isOpen}
@@ -520,9 +538,12 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
               <div className="p-3 rounded-xl bg-[#181C26] border border-[#252B3B] space-y-1">
                 <span className="text-[10px] text-slate-400 font-medium">Siklus Anggaran</span>
                 <p className="font-semibold text-slate-200">
-                  {getEffectiveCycleDays()} Hari ({cycleType})
+                  {getEffectiveCycleDays()} Hari ({getCycleTypeLabel()})
                 </p>
-                <p className="text-[10px] text-cyan-400">Saku: {pocketAccount}</p>
+                <p className="text-[10px] text-cyan-400">
+                  Mulai {startDateStr ? new Date(startDateStr).toLocaleDateString("id-ID", { day: "numeric", month: "short" }) : "Hari ini"}{getEstimatedEndDate() ? ` s.d. ${getEstimatedEndDate()}` : ""}
+                </p>
+                <p className="text-[10px] text-slate-400">Saku: {pocketAccount}</p>
               </div>
 
               <div className="p-3 rounded-xl bg-[#181C26] border border-[#252B3B] space-y-1">
