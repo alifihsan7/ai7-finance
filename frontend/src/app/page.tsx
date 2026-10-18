@@ -606,7 +606,7 @@ export default function ObsidianDashboard() {
             <p className="text-sm text-slateText-secondary mt-1.5">
               {activeNav === "Ringkasan" && "Sistem keuangan 2-mingguan terintegrasi PostgreSQL & Telegram Bot"}
               {activeNav === "Alokasi Amplop" && "Monitoring plafon belanja 4 amplop Mandiri & pos pendukung"}
-              {activeNav === "Rekening & Akun" && "Kekayaan bersih terbagi dalam 4 rekening dengan alokasi khusus"}
+              {activeNav === "Rekening & Akun" && "Kekayaan bersih terbagi dalam seluruh rekening aktif dengan alokasi khusus"}
               {activeNav === "Buku Transaksi" && "Histori seluruh pencatatan pengeluaran & pemasukan real-time"}
               {activeNav === "Langganan & Tagihan" && "Kelola komitmen tagihan berulang dari pos Bank Jago (31.7%)"}
               {activeNav === "Analisis & Tren" && "Evaluasi kecepatan belanja kumulatif vs batas aman harian"}

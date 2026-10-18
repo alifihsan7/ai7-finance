@@ -81,7 +81,9 @@ export function CustomModal({
         className={`relative bg-obsidian-card border border-obsidian-borderStrong/90 rounded-2xl w-full shadow-2xl p-6 sm:p-7 animate-in zoom-in-95 duration-200 ${maxWidthStyles[maxWidth]}`}
       >
         {/* Subtle Accent Glow Line at Top */}
-        <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl ${currentAccent.bar}`} />
+        <div className="absolute top-0 left-3 right-3 h-[2px] rounded-full pointer-events-none overflow-hidden">
+          <div className={`w-full h-full ${currentAccent.bar}`} />
+        </div>
 
         {/* Close Button */}
         <button
