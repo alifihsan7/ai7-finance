@@ -149,14 +149,16 @@ def execute_paycheck_split(
     # Standard Excel formula
     if total == 1500000:
         mandiri_amt = 825000
-        jago_amt = 475000
+        jago_amt = 275000
+        bibit_amt = 200000
         bri1_amt = 100000
         bri2_amt = 100000
     else:
         mandiri_amt = int(round(total * 0.55))
-        jago_amt = int(round(total * 0.31666667))
+        jago_amt = int(round(total * 0.18333333))
+        bibit_amt = int(round(total * 0.13333333))
         bri1_amt = int(round(total * 0.06666667))
-        bri2_amt = total - (mandiri_amt + jago_amt + bri1_amt)
+        bri2_amt = total - (mandiri_amt + jago_amt + bibit_amt + bri1_amt)
 
     allocations_plan = [
         {
@@ -170,8 +172,15 @@ def execute_paycheck_split(
             "account": "Bank Jago",
             "amount": jago_amt,
             "percentage": round(jago_amt / total * 100, 1),
-            "purpose": "Langganan & Investasi Bibit",
-            "desc": "Gajian (Alokasi Subs & Bibit Jago)",
+            "purpose": "Langganan & Tagihan Rutin",
+            "desc": "Gajian (Alokasi Subs Jago)",
+        },
+        {
+            "account": "Bibit",
+            "amount": bibit_amt,
+            "percentage": round(bibit_amt / total * 100, 1),
+            "purpose": "Investasi Reksadana/Saham",
+            "desc": "Gajian (Alokasi Investasi Bibit)",
         },
         {
             "account": "BRI 1",

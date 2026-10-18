@@ -275,7 +275,9 @@ def normalize_account(raw: str):
     r = raw.strip().lower()
     if "mandiri" in r:
         return "Mandiri"
-    elif "jago" in r or "bibit" in r:
+    elif "bibit" in r:
+        return "Bibit"
+    elif "jago" in r:
         return "Bank Jago"
     elif "bri 1" in r or "bri1" in r:
         return "BRI 1"
@@ -437,18 +439,21 @@ def handle_gajian(chat_id: int, text: str, db: Session):
 
     if total == 1500000:
         mandiri_amt = 825000
-        jago_amt = 475000
+        jago_amt = 275000
+        bibit_amt = 200000
         bri1_amt = 100000
         bri2_amt = 100000
     else:
         mandiri_amt = int(round(total * 0.55))
-        jago_amt = int(round(total * 0.31666667))
+        jago_amt = int(round(total * 0.18333333))
+        bibit_amt = int(round(total * 0.13333333))
         bri1_amt = int(round(total * 0.06666667))
-        bri2_amt = total - (mandiri_amt + jago_amt + bri1_amt)
+        bri2_amt = total - (mandiri_amt + jago_amt + bibit_amt + bri1_amt)
 
     allocations = [
         ("Mandiri", mandiri_amt, "Uang Saku Harian Mandiri (Makan, Jajan, Laundry, Galon)"),
-        ("Bank Jago", jago_amt, "Alokasi Subs & Invest Bibit Jago"),
+        ("Bank Jago", jago_amt, "Alokasi Langganan & Tagihan Rutin Jago"),
+        ("Bibit", bibit_amt, "Alokasi Investasi Reksadana/Saham Bibit"),
         ("BRI 1", bri1_amt, "Alokasi Dana Darurat BRI 1"),
         ("BRI 2", bri2_amt, "Alokasi Tabungan Kunci BRI 2"),
     ]
@@ -472,17 +477,19 @@ def handle_gajian(chat_id: int, text: str, db: Session):
 💰 **Total Uang Saku:** {format_rp(total)}
 📅 **Siklus 14 Hari:** {cycle_start.strftime('%d %b')} – {cycle_end.strftime('%d %b %Y')}
 
-📊 **Distribusi Otomatis ke 4 Rekening:**
+📊 **Distribusi Otomatis ke 5 Rekening / Pos:**
 • **Mandiri (55%):** {format_rp(mandiri_amt)}
   └ *Makan Rp 450k | Jajan Rp 100k | Laundry Rp 70k | Galon Rp 44k*
-• **Bank Jago (31.7%):** {format_rp(jago_amt)}
-  └ *Subs Rp 275k | Bibit Invest Rp 200k*
+• **Bank Jago (18.3%):** {format_rp(jago_amt)}
+  └ *Langganan & Tagihan Rutin*
+• **Bibit (13.3%):** {format_rp(bibit_amt)}
+  └ *Investasi Tabungan Reksadana/Saham*
 • **BRI 1 (6.7%):** {format_rp(bri1_amt)}
   └ *Hub Gajian & Dana Darurat*
 • **BRI 2 (6.7%):** {format_rp(bri2_amt)}
   └ *Tabungan Terkunci*
 
-✅ Keempat rekening telah otomatis dikreditkan di PostgreSQL dan tersinkronisasi ke Dashboard Web!"""
+✅ Kelima rekening telah otomatis dikreditkan di PostgreSQL dan tersinkronisasi ke Dashboard Web!"""
 
     send_message(chat_id, msg)
 
@@ -652,6 +659,8 @@ def process_update(update: dict):
             handle_start(chat_id)
         elif cmd in ["/gajian"]:
             handle_gajian(chat_id, text, db)
+        elif cmd in ["/transfer", "🔄 transfer"]:
+            handle_transfer(chat_id, text, db)
         elif cmd in ["/rekap", "/bulan"]:
             handle_rekap(chat_id, db)
         elif cmd in ["/saldo"]:

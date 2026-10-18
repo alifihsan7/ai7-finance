@@ -62,7 +62,8 @@ interface MonthlySummary {
 
 const TX_ACCOUNT_OPTIONS = [
   { value: "Mandiri", label: "Mandiri (Saku Operasional)", color: "bg-blue-500", description: "Pos belanja harian & saku" },
-  { value: "Jago", label: "Bank Jago (Subs & Bills)", color: "bg-purple-500", description: "Pos langganan rutin" },
+  { value: "Bank Jago", label: "Bank Jago (Subs & Bills)", color: "bg-purple-500", description: "Pos langganan rutin" },
+  { value: "Bibit", label: "Bibit (Investasi Reksadana/Saham)", color: "bg-teal-500", description: "Portofolio tabungan investasi" },
   { value: "BRI 1", label: "BRI 1 (Income Hub)", color: "bg-cyan-500", description: "Rekening penampung utama" },
   { value: "BRI 2", label: "BRI 2 (Nabung / Dana Dingin)", color: "bg-emerald-500", description: "Pos tabungan & investasi" },
   { value: "Cash", label: "Cash (Uang Tunai)", color: "bg-amber-500", description: "Uang tunai fisik" },
@@ -94,7 +95,7 @@ const SUB_ACCOUNT_OPTIONS = [
 ];
 
 export default function ObsidianDashboard() {
-  const [activeTab, setActiveTab] = useState<"all" | "Mandiri" | "Jago" | "BRI 1" | "BRI 2">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "Mandiri" | "Jago" | "Bibit" | "BRI 1" | "BRI 2">("all");
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -788,7 +789,7 @@ export default function ObsidianDashboard() {
                   </button>
                 </div>
                 <div className="flex gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-                  {(["all", "Mandiri", "Jago", "BRI 1", "BRI 2"] as const).map((acc) => (
+                  {(["all", "Mandiri", "Jago", "Bibit", "BRI 1", "BRI 2"] as const).map((acc) => (
                     <button
                       key={acc}
                       onClick={() => setActiveTab(acc)}
@@ -820,12 +821,13 @@ export default function ObsidianDashboard() {
                   { id: "all", label: "Semua Akun" },
                   { id: "Mandiri", label: "Mandiri" },
                   { id: "Jago", label: "Bank Jago" },
+                  { id: "Bibit", label: "Bibit" },
                   { id: "BRI 1", label: "BRI 1" },
                   { id: "BRI 2", label: "BRI 2" },
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as "all" | "Mandiri" | "Jago" | "BRI 1" | "BRI 2")}
+                    onClick={() => setActiveTab(tab.id as "all" | "Mandiri" | "Jago" | "Bibit" | "BRI 1" | "BRI 2")}
                     className={`text-sm px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
                       activeTab === tab.id
                         ? "text-slateText-primary bg-obsidian-card border border-obsidian-borderStrong font-semibold shadow-xs"

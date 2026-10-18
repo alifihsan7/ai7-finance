@@ -6,6 +6,7 @@ ACCOUNT_PATTERNS = [
     (r"\b(?:bri\s*2|bri2)\b", "BRI 2"),
     (r"\b(?:mandiri|livin)\b", "Mandiri"),
     (r"\b(?:bank\s*jago|jago)\b", "Bank Jago"),
+    (r"\b(?:bibit)\b", "Bibit"),
     (r"\b(?:bca|halo\s*bca)\b", "BCA"),
     (r"\b(?:bni)\b", "BNI"),
     (r"\b(?:seabank)\b", "SeaBank"),
@@ -75,7 +76,7 @@ CATEGORY_RULES = [
 # Intelligent fallback account based on category when no account is explicitly typed
 CATEGORY_DEFAULT_ACCOUNT = {
     "Langganan & Servis": "Bank Jago",
-    "Investasi & Tabungan": "Bank Jago",
+    "Investasi & Tabungan": "Bibit",
 }
 
 def parse_amount(text: str):
