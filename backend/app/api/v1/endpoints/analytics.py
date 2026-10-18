@@ -1,14 +1,21 @@
 from typing import Optional
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import zoneinfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func, case
+from sqlalchemy import func, case, desc
 
 from app.db.session import get_db
 from app.models.transaction import Transaction
-from app.schemas.transaction import MonthlySummary, CategorySummary, AccountBalance, DailyTrendItem
+from app.schemas.transaction import (
+    MonthlySummary,
+    CategorySummary,
+    AccountBalance,
+    DailyTrendItem,
+    CycleBurnDay,
+    SafeToSpendInfo,
+)
 from app.core.config import settings
 
 router = APIRouter()
@@ -107,6 +114,97 @@ def get_monthly_summary(
         ) for t in trend_rows
     ]
 
+    # 14-day cycle calculation anchored to latest paycheck or current date
+    latest_paycheck = db.query(Transaction).filter(
+        Transaction.type == "income",
+        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
+    ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
+
+    today_wib = now_wib.date()
+    if latest_paycheck:
+        cycle_start = latest_paycheck.date
+    else:
+        cycle_start = today_wib
+
+    cycle_end = cycle_start + timedelta(days=13)
+    days_passed = (today_wib - cycle_start).days + 1
+    day_of_cycle = min(14, max(1, days_passed))
+    days_remaining = max(1, 14 - day_of_cycle + 1)
+
+    pocket_budget = 825000  # Standar jatah saku Mandiri 14 hari
+    
+    mandiri_spent_row = db.query(
+        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
+    ).filter(
+        Transaction.account == "Mandiri",
+        Transaction.type == "expense",
+        Transaction.date >= cycle_start,
+        Transaction.date <= cycle_end
+    ).first()
+    pocket_spent = int(mandiri_spent_row.spent if mandiri_spent_row else 0)
+    pocket_remaining = max(0, pocket_budget - pocket_spent)
+    safe_daily = int(pocket_remaining / days_remaining)
+
+    ideal_daily_rate = pocket_budget / 14
+    ideal_pace_today = int(ideal_daily_rate * day_of_cycle)
+
+    if pocket_spent < ideal_pace_today * 0.9:
+        pace_status = "ahead"
+    elif pocket_spent <= ideal_pace_today * 1.1:
+        pace_status = "on_track"
+    else:
+        pace_status = "warning"
+
+    daily_mandiri_rows = db.query(
+        Transaction.date,
+        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
+    ).filter(
+        Transaction.account == "Mandiri",
+        Transaction.type == "expense",
+        Transaction.date >= cycle_start,
+        Transaction.date <= cycle_end
+    ).group_by(Transaction.date).all()
+    spent_by_date = {str(r.date): int(r.spent) for r in daily_mandiri_rows}
+
+    burn_chart = []
+    cumulative = 0
+    for d in range(1, 15):
+        day_date = cycle_start + timedelta(days=d-1)
+        day_str = str(day_date)
+        day_spent = spent_by_date.get(day_str, 0)
+        
+        if day_date <= today_wib:
+            cumulative += day_spent
+            burn_chart.append(CycleBurnDay(
+                day=d,
+                date=day_str,
+                spent=day_spent,
+                cumulative_spent=cumulative,
+                ideal_pace=int(ideal_daily_rate * d)
+            ))
+        else:
+            burn_chart.append(CycleBurnDay(
+                day=d,
+                date=day_str,
+                spent=0,
+                cumulative_spent=cumulative,
+                ideal_pace=int(ideal_daily_rate * d)
+            ))
+
+    safe_info = SafeToSpendInfo(
+        cycle_start=cycle_start,
+        cycle_end=cycle_end,
+        day_of_cycle=day_of_cycle,
+        days_remaining=days_remaining,
+        pocket_budget=pocket_budget,
+        pocket_spent=pocket_spent,
+        pocket_remaining=pocket_remaining,
+        safe_daily=safe_daily,
+        pace_status=pace_status,
+        ideal_pace_today=ideal_pace_today,
+        burn_chart=burn_chart
+    )
+
     return MonthlySummary(
         month=month_str,
         year=yr,
@@ -118,5 +216,6 @@ def get_monthly_summary(
         categories=categories,
         accounts=accounts,
         total_balance=total_balance,
-        daily_trend=daily_trend
+        daily_trend=daily_trend,
+        safe_to_spend=safe_info
     )
