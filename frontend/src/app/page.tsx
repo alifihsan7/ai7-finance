@@ -1266,10 +1266,20 @@ export default function ObsidianDashboard() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-obsidian-border/80">
                   <div className="bg-obsidian-card/60 border border-obsidian-border/50 rounded-lg p-2.5 min-w-0">
-                    <div className="text-[11px] text-slateText-muted font-medium truncate">Sisa Kuota Mandiri</div>
+                    <div className="flex items-center justify-between text-[11px] text-slateText-muted font-medium gap-1">
+                      <span className="truncate">Sisa Kuota {summary.safe_to_spend?.pocket_account || "Belanja"}</span>
+                      {summary.safe_to_spend?.pocket_budget ? (
+                        <span className="text-amberGold font-mono text-[10px] shrink-0 font-semibold">
+                          {Math.max(0, Math.round(((summary.safe_to_spend.pocket_remaining || 0) / summary.safe_to_spend.pocket_budget) * 100))}%
+                        </span>
+                      ) : null}
+                    </div>
                     <div className="text-xs sm:text-sm font-bold font-mono text-slateText-primary mt-0.5 truncate whitespace-nowrap">
                       {formatRupiah(summary.safe_to_spend?.pocket_remaining || 0)}
-                      <span className="text-slateText-muted font-normal text-[11px]"> / 825k</span>
+                      <span className="text-slateText-muted font-normal text-[11px]">
+                        {" "}
+                        / {summary.safe_to_spend?.pocket_budget ? `${Math.round(summary.safe_to_spend.pocket_budget / 1000)}k` : "825k"}
+                      </span>
                     </div>
                   </div>
                   <div className="bg-obsidian-card/60 border border-obsidian-border/50 rounded-lg p-2.5 min-w-0">
