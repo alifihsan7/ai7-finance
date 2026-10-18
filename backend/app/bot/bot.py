@@ -2,7 +2,7 @@ import os
 import sys
 import time
 import requests
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import zoneinfo
 
 from typing import Optional
@@ -50,6 +50,7 @@ Bot ini dirancang khusus untuk mencatat keuangan lo secara instan tanpa ribet.
 • `bayar wifi indihome 350rb mandiri`
 
 📌 **Perintah Tersedia:**
+• `/gajian [nominal]` - Catat gajian & split otomatis ke 4 rekening
 • `/rekap` - Ringkasan pengeluaran bulan ini
 • `/saldo` - Estimasi saldo per rekening
 • `/transaksi` - 5 transaksi terakhir
@@ -175,6 +176,70 @@ def handle_batal(chat_id: int, db: Session):
 Catatan tersebut sudah dihapus dari database PostgreSQL."""
     send_message(chat_id, msg)
 
+def handle_gajian(chat_id: int, text: str, db: Session):
+    parts = text.split()
+    total = 1500000
+    if len(parts) > 1:
+        from app.core.parser import parse_amount
+        parsed_amt, _ = parse_amount(parts[1])
+        if parsed_amt and parsed_amt > 0:
+            total = int(parsed_amt)
+
+    now = datetime.now(WIB)
+    cycle_start = now.date()
+    cycle_end = cycle_start + timedelta(days=13)
+
+    if total == 1500000:
+        mandiri_amt = 825000
+        jago_amt = 475000
+        bri1_amt = 100000
+        bri2_amt = 100000
+    else:
+        mandiri_amt = int(round(total * 0.55))
+        jago_amt = int(round(total * 0.31666667))
+        bri1_amt = int(round(total * 0.06666667))
+        bri2_amt = total - (mandiri_amt + jago_amt + bri1_amt)
+
+    allocations = [
+        ("Mandiri", mandiri_amt, "Uang Saku Harian Mandiri (Makan, Jajan, Laundry, Galon)"),
+        ("Bank Jago", jago_amt, "Alokasi Subs & Invest Bibit Jago"),
+        ("BRI 1", bri1_amt, "Alokasi Dana Darurat BRI 1"),
+        ("BRI 2", bri2_amt, "Alokasi Tabungan Kunci BRI 2"),
+    ]
+
+    for acc, amt, desc in allocations:
+        tx = Transaction(
+            type="income",
+            amount=amt,
+            account=acc,
+            category="Uang Saku Ortu",
+            description=f"Gajian ({desc})",
+            raw_text=f"paycheck split /gajian: {total} -> {acc} {amt}",
+            date=cycle_start
+        )
+        db.add(tx)
+
+    db.commit()
+
+    msg = f"""🎉 **GAJIAN MASUK & ALOKASI OTOMATIS TERCATAT!**
+
+💰 **Total Uang Saku:** {format_rp(total)}
+📅 **Siklus 14 Hari:** {cycle_start.strftime('%d %b')} – {cycle_end.strftime('%d %b %Y')}
+
+📊 **Distribusi Otomatis ke 4 Rekening:**
+• **Mandiri (55%):** {format_rp(mandiri_amt)}
+  └ *Makan Rp 450k | Jajan Rp 100k | Laundry Rp 70k | Galon Rp 44k*
+• **Bank Jago (31.7%):** {format_rp(jago_amt)}
+  └ *Subs Rp 275k | Bibit Invest Rp 200k*
+• **BRI 1 (6.7%):** {format_rp(bri1_amt)}
+  └ *Hub Gajian & Dana Darurat*
+• **BRI 2 (6.7%):** {format_rp(bri2_amt)}
+  └ *Tabungan Terkunci*
+
+✅ Keempat rekening telah otomatis dikreditkan di PostgreSQL dan tersinkronisasi ke Dashboard Web!"""
+
+    send_message(chat_id, msg)
+
 def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
     parsed = parse_transaction(text)
     if not parsed["success"]:
@@ -233,6 +298,8 @@ def process_update(update: dict):
     try:
         if cmd in ["/start", "/help"]:
             handle_start(chat_id)
+        elif cmd in ["/gajian"]:
+            handle_gajian(chat_id, text, db)
         elif cmd in ["/rekap", "/bulan"]:
             handle_rekap(chat_id, db)
         elif cmd in ["/saldo"]:

@@ -1,7 +1,7 @@
 import io
 import csv
 from typing import Optional, List
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import zoneinfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -11,7 +11,13 @@ from sqlalchemy import desc
 
 from app.db.session import get_db
 from app.models.transaction import Transaction
-from app.schemas.transaction import TransactionCreate, TransactionOut
+from app.schemas.transaction import (
+    TransactionCreate,
+    TransactionOut,
+    PaycheckRequest,
+    PaycheckResponse,
+    PaycheckAllocationItem,
+)
 from app.core.config import settings
 
 router = APIRouter()
@@ -78,6 +84,94 @@ def create_transaction(
     db.commit()
     db.refresh(tx)
     return tx
+
+@router.post("/paycheck", response_model=PaycheckResponse)
+def execute_paycheck_split(
+    payload: PaycheckRequest,
+    db: Session = Depends(get_db)
+):
+    now_wib = datetime.now(WIB)
+    cycle_start = payload.date or now_wib.date()
+    cycle_end = cycle_start + timedelta(days=13)
+    total = payload.total_amount
+
+    # Standard Excel formula
+    if total == 1500000:
+        mandiri_amt = 825000
+        jago_amt = 475000
+        bri1_amt = 100000
+        bri2_amt = 100000
+    else:
+        mandiri_amt = int(round(total * 0.55))
+        jago_amt = int(round(total * 0.31666667))
+        bri1_amt = int(round(total * 0.06666667))
+        bri2_amt = total - (mandiri_amt + jago_amt + bri1_amt)
+
+    allocations_plan = [
+        {
+            "account": "Mandiri",
+            "amount": mandiri_amt,
+            "percentage": round(mandiri_amt / total * 100, 1),
+            "purpose": "Uang Saku Harian (Makan, Jajan, Laundry, Galon)",
+            "desc": "Gajian (Alokasi Saku Harian Mandiri)",
+        },
+        {
+            "account": "Bank Jago",
+            "amount": jago_amt,
+            "percentage": round(jago_amt / total * 100, 1),
+            "purpose": "Langganan & Investasi Bibit",
+            "desc": "Gajian (Alokasi Subs & Bibit Jago)",
+        },
+        {
+            "account": "BRI 1",
+            "amount": bri1_amt,
+            "percentage": round(bri1_amt / total * 100, 1),
+            "purpose": "Hub Gajian & Dana Darurat",
+            "desc": "Gajian (Alokasi Dana Darurat BRI 1)",
+        },
+        {
+            "account": "BRI 2",
+            "amount": bri2_amt,
+            "percentage": round(bri2_amt / total * 100, 1),
+            "purpose": "Tabungan Terkunci",
+            "desc": "Gajian (Alokasi Tabungan Kunci BRI 2)",
+        },
+    ]
+
+    created_txs = []
+    for item in allocations_plan:
+        tx = Transaction(
+            type="income",
+            amount=item["amount"],
+            account=item["account"],
+            category="Uang Saku Ortu",
+            description=item["desc"],
+            raw_text=f"paycheck-split: total {total} -> {item['account']} {item['amount']}",
+            date=cycle_start
+        )
+        db.add(tx)
+        created_txs.append(tx)
+
+    db.commit()
+    for tx in created_txs:
+        db.refresh(tx)
+
+    return PaycheckResponse(
+        success=True,
+        total_amount=total,
+        cycle_start=cycle_start,
+        cycle_end=cycle_end,
+        allocations=[
+            PaycheckAllocationItem(
+                account=item["account"],
+                amount=item["amount"],
+                percentage=item["percentage"],
+                purpose=item["purpose"]
+            )
+            for item in allocations_plan
+        ],
+        created_transactions=created_txs
+    )
 
 @router.delete("/{tx_id}")
 def delete_transaction(

@@ -1,5 +1,5 @@
 from typing import Optional, List
-from datetime import date, datetime
+from datetime import date as dt_date, datetime as dt_datetime
 from pydantic import BaseModel
 
 class TransactionBase(BaseModel):
@@ -8,7 +8,7 @@ class TransactionBase(BaseModel):
     account: str
     category: str
     description: str
-    date: Optional[date] = None
+    date: Optional[dt_date] = None
 
 class TransactionCreate(TransactionBase):
     pass
@@ -16,7 +16,7 @@ class TransactionCreate(TransactionBase):
 class TransactionOut(TransactionBase):
     id: int
     raw_text: Optional[str] = None
-    created_at: datetime
+    created_at: dt_datetime
 
     class Config:
         from_attributes = True
@@ -48,3 +48,22 @@ class MonthlySummary(BaseModel):
     accounts: List[AccountBalance]
     total_balance: int
     daily_trend: List[DailyTrendItem]
+
+class PaycheckRequest(BaseModel):
+    total_amount: int = 1500000
+    date: Optional[dt_date] = None
+    note: Optional[str] = "Uang Saku Ortu 2-Mingguan"
+
+class PaycheckAllocationItem(BaseModel):
+    account: str
+    amount: int
+    percentage: float
+    purpose: str
+
+class PaycheckResponse(BaseModel):
+    success: bool
+    total_amount: int
+    cycle_start: dt_date
+    cycle_end: dt_date
+    allocations: List[PaycheckAllocationItem]
+    created_transactions: List[TransactionOut]
