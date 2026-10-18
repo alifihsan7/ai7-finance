@@ -10,6 +10,8 @@ import {
   CreditCard,
   ArrowUpRight,
   ArrowDownRight,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 
 interface Transaction {
@@ -38,7 +40,9 @@ export default function ObsidianDashboard() {
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPaycheckModalOpen, setIsPaycheckModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [paycheckLoading, setPaycheckLoading] = useState(false);
 
   // Form state for new transaction
   const [formType, setFormType] = useState<"expense" | "income">("expense");
@@ -165,6 +169,28 @@ export default function ObsidianDashboard() {
       fetchData();
     } catch (err) {
       console.error("API Error:", err);
+    }
+  };
+
+  const handleExecutePaycheck = async () => {
+    try {
+      setPaycheckLoading(true);
+      const res = await fetch("/api/v1/transactions/paycheck", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          total_amount: 1500000,
+          note: "Gajian 2-Mingguan",
+        }),
+      });
+      if (res.ok) {
+        setIsPaycheckModalOpen(false);
+        await fetchData();
+      }
+    } catch (err) {
+      console.error("Paycheck API Error:", err);
+    } finally {
+      setPaycheckLoading(false);
     }
   };
 
@@ -317,8 +343,15 @@ export default function ObsidianDashboard() {
               className="px-3.5 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition flex items-center gap-2"
             >
               <Download className="w-4 h-4 text-slateText-muted" />
-              <span>Ekspor CSV</span>
+              <span className="hidden sm:inline">Ekspor CSV</span>
             </a>
+            <button
+              onClick={() => setIsPaycheckModalOpen(true)}
+              className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition flex items-center justify-center gap-2 shadow-xs"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Gajian Masuk</span>
+            </button>
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex-1 sm:flex-none px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition flex items-center justify-center gap-2 shadow-sm"
@@ -831,6 +864,110 @@ export default function ObsidianDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* GAJIAN AUTO-SPLIT MODAL */}
+      {isPaycheckModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-obsidian-card border border-obsidian-borderStrong rounded-xl w-full max-w-lg p-6 sm:p-7 shadow-2xl relative">
+            <button
+              onClick={() => setIsPaycheckModalOpen(false)}
+              className="absolute top-5 right-5 text-slateText-muted hover:text-slateText-primary"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2.5 rounded-lg bg-mintRise/15 border border-mintRise/30 text-mintRise">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-slateText-primary">
+                  Alokasi Gajian Otomatis (Auto-Split)
+                </h3>
+                <p className="text-xs text-slateText-secondary">
+                  Siklus 14 hari baru • Distribusi formula langsung ke 4 rekening
+                </p>
+              </div>
+            </div>
+
+            <div className="my-5 p-4 rounded-lg bg-obsidian-panel border border-obsidian-border space-y-3.5">
+              <div className="flex justify-between items-center pb-3 border-b border-obsidian-border">
+                <span className="text-xs font-semibold text-slateText-muted uppercase tracking-wider">
+                  Total Transferan Ortu
+                </span>
+                <span className="font-mono font-extrabold text-2xl text-mintRise">
+                  Rp 1.500.000
+                </span>
+              </div>
+
+              <div className="space-y-3 text-xs sm:text-sm">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amberGold"></span>
+                    <span className="font-medium text-slateText-primary">Mandiri (55.0%)</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-mono font-bold text-slateText-primary">Rp 825.000</span>
+                    <div className="text-xs text-slateText-muted">Makan, Jajan, Laundry, Galon</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-mintRise"></span>
+                    <span className="font-medium text-slateText-primary">Bank Jago / Bibit (31.7%)</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-mono font-bold text-slateText-primary">Rp 475.000</span>
+                    <div className="text-xs text-slateText-muted">Subs Netflix/Spotify & Bibit</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-cyanHub"></span>
+                    <span className="font-medium text-slateText-primary">BRI 1 (6.7%)</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-mono font-bold text-slateText-primary">Rp 100.000</span>
+                    <div className="text-xs text-slateText-muted">Hub & Dana Darurat</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-purpleLock"></span>
+                    <span className="font-medium text-slateText-primary">BRI 2 (6.7%)</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-mono font-bold text-slateText-primary">Rp 100.000</span>
+                    <div className="text-xs text-slateText-muted">Tabungan Terkunci</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsPaycheckModalOpen(false)}
+                className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border rounded-lg"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleExecutePaycheck}
+                disabled={paycheckLoading}
+                className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-mintRise text-[#0B0D11] hover:bg-emerald-400 rounded-lg transition flex items-center gap-2 shadow-xs"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{paycheckLoading ? "Menyimpan ke DB..." : "Konfirmasi & Split Sekarang"}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
