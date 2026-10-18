@@ -53,12 +53,7 @@ CATEGORY_RULES = [
     ])
 ]
 
-def parse_amount(text):
-    """
-    Parses amount expressions like:
-    25k, 25rb, 25ribu, 25000, 25.000, 25,000, 1.5jt, 1.5juta, 1.5m
-    Returns (amount_int, matched_substring) or (None, None)
-    """
+def parse_amount(text: str):
     pattern = r'(?i)\b(?:rp\.?\s*)?(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta|m|mio)?\b'
     matches = list(re.finditer(pattern, text))
     
@@ -66,11 +61,6 @@ def parse_amount(text):
         num_str = match.group(1).replace(',', '.')
         unit = (match.group(2) or '').lower()
         
-        # Check if num_str has thousand dots without unit (e.g. 25.000 or 1.500.000)
-        dots_count = match.group(1).count('.')
-        commas_count = match.group(1).count(',')
-        
-        # Handle cases like 25.000 or 150.000 without unit
         if not unit:
             cleaned = match.group(1).replace('.', '').replace(',', '')
             if cleaned.isdigit() and int(cleaned) > 0:
@@ -94,36 +84,22 @@ def parse_amount(text):
     return None, None
 
 def parse_transaction(text: str):
-    """
-    Parses natural language transaction text.
-    Returns a dict with:
-      success: bool
-      type: 'expense' | 'income'
-      amount: int
-      account: str
-      category: str
-      description: str
-      error: str (if success is False)
-    """
     raw = text.strip()
     if not raw:
         return {"success": False, "error": "Pesan kosong"}
         
     amount, matched_num = parse_amount(raw)
-    if not amount:
+    if not amount or not matched_num:
         return {
             "success": False, 
             "error": "Nominal tidak terdeteksi. Contoh format: `kopi 25k bca` atau `gaji 10jt bca`"
         }
         
-    # Remove matched amount from remaining text to parse keywords
     remaining = raw.replace(matched_num, " ").lower()
     
-    # Check account
     selected_account = "Cash"
     found_acc_keyword = None
     for kw, acc_name in ACCOUNTS.items():
-        # Match as whole word
         if re.search(rf'\b{re.escape(kw)}\b', remaining):
             selected_account = acc_name
             found_acc_keyword = kw
@@ -132,7 +108,6 @@ def parse_transaction(text: str):
     if found_acc_keyword:
         remaining = re.sub(rf'\b{re.escape(found_acc_keyword)}\b', " ", remaining)
         
-    # Check income vs expense
     is_income = False
     for ikw in INCOME_KEYWORDS:
         if re.search(rf'\b{re.escape(ikw)}\b', raw.lower()):
@@ -141,7 +116,6 @@ def parse_transaction(text: str):
             
     tx_type = "income" if is_income else "expense"
     
-    # Check category
     selected_category = "Pemasukan" if is_income else "Lain-lain"
     if not is_income:
         for cat_name, cat_kws in CATEGORY_RULES:
@@ -154,15 +128,12 @@ def parse_transaction(text: str):
             if matched:
                 break
                 
-    # Clean description
-    # Remove excessive punctuation and spaces
     desc_clean = re.sub(r'[^\w\s-]', '', remaining).strip()
     desc_clean = re.sub(r'\s+', ' ', desc_clean)
     
     if not desc_clean:
         desc_clean = selected_category
     else:
-        # Capitalize nicely
         desc_clean = desc_clean.capitalize()
         
     return {

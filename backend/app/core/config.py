@@ -1,0 +1,28 @@
+import os
+from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "AI7 Finance API"
+    VERSION: str = "1.0.0"
+    API_V1_STR: str = "/api/v1"
+    
+    # Database
+    DATABASE_URL: str = os.getenv(
+        "DATABASE_URL", 
+        "postgresql://user:password@localhost:5432/ai7_finance"
+    )
+    
+    # Telegram Bot
+    BOT_TOKEN: str = os.getenv("BOT_TOKEN", "REDACTED_TELEGRAM_BOT_TOKEN")
+    ALLOWED_USER_ID: int = int(os.getenv("ALLOWED_USER_ID", "000000000"))
+    
+    # Timezone
+    TIMEZONE: str = "Asia/Jakarta"
+
+    class Config:
+        case_sensitive = True
+
+settings = Settings()
