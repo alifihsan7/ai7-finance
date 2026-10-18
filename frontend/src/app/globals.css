@@ -41,3 +41,36 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--slate-muted);
 }
+
+/* Custom Scrollbar for Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--obsidian-border) var(--obsidian-bg);
+}
+
+/* Remove native up/down stepper arrows from number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Custom dark styling for native date picker icons */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) hue-rotate(180deg) brightness(0.9);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  filter: invert(1) brightness(1.2);
+}
+
+/* Selection highlight in Obsidian Slate theme */
+::selection {
+  background-color: rgba(245, 158, 11, 0.25);
+  color: #F8FAFC;
+}

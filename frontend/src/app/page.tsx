@@ -6,7 +6,6 @@ import {
   Plus,
   Download,
   RefreshCw,
-  X,
   CreditCard,
   ArrowUpRight,
   ArrowDownRight,
@@ -27,6 +26,10 @@ import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionTable, Transaction } from "@/components/TransactionTable";
 import { SubscriptionsView, SubscriptionItem, SubscriptionsData } from "@/components/SubscriptionsView";
 import { TransferModal } from "@/components/TransferModal";
+import { CustomModal } from "@/components/ui/CustomModal";
+import { CustomSelect } from "@/components/ui/CustomSelect";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 interface MonthlySummary {
   month: string;
@@ -57,6 +60,39 @@ interface MonthlySummary {
   };
 }
 
+const TX_ACCOUNT_OPTIONS = [
+  { value: "Mandiri", label: "Mandiri (Saku Operasional)", color: "bg-blue-500", description: "Pos belanja harian & saku" },
+  { value: "Jago", label: "Bank Jago (Subs & Bills)", color: "bg-purple-500", description: "Pos langganan rutin" },
+  { value: "BRI 1", label: "BRI 1 (Income Hub)", color: "bg-cyan-500", description: "Rekening penampung utama" },
+  { value: "BRI 2", label: "BRI 2 (Nabung / Dana Dingin)", color: "bg-emerald-500", description: "Pos tabungan & investasi" },
+  { value: "Cash", label: "Cash (Uang Tunai)", color: "bg-amber-500", description: "Uang tunai fisik" },
+];
+
+const TX_CATEGORY_OPTIONS = [
+  { value: "Makanan & Minuman", label: "Makanan & Minuman" },
+  { value: "Jajan / Ngopi", label: "Jajan / Ngopi" },
+  { value: "Laundry", label: "Laundry" },
+  { value: "Galon / Air", label: "Galon / Air" },
+  { value: "Uang Saku Ortu", label: "Uang Saku Ortu" },
+  { value: "Langganan & Servis", label: "Langganan & Servis" },
+  { value: "Lainnya", label: "Lainnya" },
+];
+
+const SUB_CATEGORY_OPTIONS = [
+  { value: "Produktivitas & AI", label: "Produktivitas & AI" },
+  { value: "Hiburan / Streaming", label: "Hiburan / Streaming" },
+  { value: "Cloud Backup", label: "Cloud Backup" },
+  { value: "Gym & Fitness", label: "Gym & Fitness" },
+  { value: "Tagihan Utilitas", label: "Tagihan Utilitas" },
+  { value: "Lainnya", label: "Lainnya" },
+];
+
+const SUB_ACCOUNT_OPTIONS = [
+  { value: "Jago", label: "Bank Jago (Subs)", color: "bg-purple-500" },
+  { value: "Mandiri", label: "Mandiri (Saku)", color: "bg-blue-500" },
+  { value: "BRI 1", label: "BRI 1 (Hub)", color: "bg-cyan-500" },
+];
+
 export default function ObsidianDashboard() {
   const [activeTab, setActiveTab] = useState<"all" | "Mandiri" | "Jago" | "BRI 1" | "BRI 2">("all");
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
@@ -67,6 +103,9 @@ export default function ObsidianDashboard() {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [paycheckLoading, setPaycheckLoading] = useState(false);
+  const [subToDelete, setSubToDelete] = useState<number | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [paycheckTotal, setPaycheckTotal] = useState<string>("1500000");
 
   // Form state for new transaction
   const [formType, setFormType] = useState<"expense" | "income">("expense");
@@ -312,13 +351,21 @@ export default function ObsidianDashboard() {
     }
   };
 
-  const handleDeleteSubscription = async (id: number) => {
-    if (!confirm("Hapus langganan ini?")) return;
+  const handleDeleteSubscription = (id: number) => {
+    setSubToDelete(id);
+  };
+
+  const handleConfirmDeleteSubscription = async () => {
+    if (!subToDelete) return;
     try {
-      await fetch(`/api/v1/subscriptions/${id}`, { method: "DELETE" });
-      fetchData();
+      setDeleteLoading(true);
+      await fetch(`/api/v1/subscriptions/${subToDelete}`, { method: "DELETE" });
+      await fetchData();
+      setSubToDelete(null);
     } catch (err) {
       console.error("Delete subscription error:", err);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -336,13 +383,14 @@ export default function ObsidianDashboard() {
   };
 
   const handleExecutePaycheck = async () => {
+    const numAmount = parseInt(paycheckTotal.replace(/\D/g, ""), 10) || 1500000;
     try {
       setPaycheckLoading(true);
       const res = await fetch("/api/v1/transactions/paycheck", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          total_amount: 1500000,
+          total_amount: numAmount,
           note: "Gajian 2-Mingguan",
         }),
       });
@@ -855,345 +903,355 @@ export default function ObsidianDashboard() {
       </main>
 
       {/* QUICK ADD TRANSACTION MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-obsidian-card border border-obsidian-borderStrong rounded-xl w-full max-w-md p-6 shadow-2xl relative">
+      <CustomModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Catat Transaksi Baru"
+        subtitle="Tersimpan langsung ke database PostgreSQL & otomatis memotong amplop anggaran"
+        icon={<Plus className="w-5 h-5" />}
+        accent={formType === "expense" ? "coral" : "mint"}
+        maxWidth="md"
+      >
+        <form onSubmit={handleCreateTransaction} className="space-y-4">
+          <div className="grid grid-cols-2 gap-2 bg-obsidian-panel p-1 rounded-xl border border-obsidian-border">
             <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-5 right-5 text-slateText-muted hover:text-slateText-primary"
+              type="button"
+              onClick={() => setFormType("expense")}
+              className={`py-2 text-xs sm:text-sm font-semibold rounded-lg transition ${
+                formType === "expense"
+                  ? "bg-coralFall text-[#0B0D11] shadow-xs"
+                  : "text-slateText-secondary hover:text-slateText-primary"
+              }`}
             >
-              <X className="w-5 h-5" />
+              Pengeluaran
             </button>
-
-            <h3 className="font-bold text-lg text-slateText-primary mb-1">Catat Transaksi Baru</h3>
-            <p className="text-xs text-slateText-secondary mb-5">
-              Tersimpan langsung ke database PostgreSQL & otomatis memotong amplop anggaran
-            </p>
-
-            <form onSubmit={handleCreateTransaction} className="space-y-4">
-              <div className="grid grid-cols-2 gap-2 bg-obsidian-panel p-1 rounded-lg border border-obsidian-border">
-                <button
-                  type="button"
-                  onClick={() => setFormType("expense")}
-                  className={`py-2 text-xs sm:text-sm font-semibold rounded-md transition ${
-                    formType === "expense"
-                      ? "bg-coralFall text-[#0B0D11] shadow-xs"
-                      : "text-slateText-secondary hover:text-slateText-primary"
-                  }`}
-                >
-                  Pengeluaran
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormType("income")}
-                  className={`py-2 text-xs sm:text-sm font-semibold rounded-md transition ${
-                    formType === "income"
-                      ? "bg-mintRise text-[#0B0D11] shadow-xs"
-                      : "text-slateText-secondary hover:text-slateText-primary"
-                  }`}
-                >
-                  Pemasukan
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slateText-secondary mb-1.5">Nominal (Rp)</label>
-                <input
-                  type="number"
-                  required
-                  placeholder="Contoh: 25000"
-                  value={formAmount}
-                  onChange={(e) => setFormAmount(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3.5 py-2.5 text-base text-slateText-primary font-mono focus:outline-none focus:border-amberGold"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slateText-secondary mb-1.5">Keterangan</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Nasi Padang + Es Teh"
-                  value={formDesc}
-                  onChange={(e) => setFormDesc(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3.5 py-2 text-sm text-slateText-primary focus:outline-none focus:border-amberGold"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-slateText-secondary mb-1.5">Akun Rekening</label>
-                  <select
-                    value={formAccount}
-                    onChange={(e) => setFormAccount(e.target.value)}
-                    className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3 py-2 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold"
-                  >
-                    <option value="Mandiri">Mandiri (Saku)</option>
-                    <option value="Jago">Bank Jago</option>
-                    <option value="BRI 1">BRI 1 (Hub)</option>
-                    <option value="BRI 2">BRI 2 (Nabung)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slateText-secondary mb-1.5">Kategori</label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3 py-2 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold"
-                  >
-                    <option value="Makanan & Minuman">Makanan & Minuman</option>
-                    <option value="Jajan / Ngopi">Jajan / Ngopi</option>
-                    <option value="Laundry">Laundry</option>
-                    <option value="Galon / Air">Galon / Air</option>
-                    <option value="Uang Saku Ortu">Uang Saku Ortu</option>
-                    <option value="Langganan & Servis">Langganan & Servis</option>
-                    <option value="Lainnya">Lainnya</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-3 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border rounded-lg"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 text-xs sm:text-sm font-bold bg-amberGold text-[#0B0D11] hover:bg-amber-400 rounded-lg transition"
-                >
-                  Simpan Transaksi
-                </button>
-              </div>
-            </form>
+            <button
+              type="button"
+              onClick={() => setFormType("income")}
+              className={`py-2 text-xs sm:text-sm font-semibold rounded-lg transition ${
+                formType === "income"
+                  ? "bg-mintRise text-[#0B0D11] shadow-xs"
+                  : "text-slateText-secondary hover:text-slateText-primary"
+              }`}
+            >
+              Pemasukan
+            </button>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Nominal Transaksi
+            </label>
+            <CurrencyInput
+              value={formAmount}
+              onChange={setFormAmount}
+              placeholder="0"
+              required
+              accent={formType === "expense" ? "coral" : "mint"}
+              quickAmounts={
+                formType === "expense"
+                  ? [15000, 25000, 50000, 100000]
+                  : [500000, 1000000, 1500000]
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Keterangan
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="Contoh: Nasi Padang + Es Teh"
+              value={formDesc}
+              onChange={(e) => setFormDesc(e.target.value)}
+              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                Akun Rekening
+              </label>
+              <CustomSelect
+                value={formAccount}
+                onChange={setFormAccount}
+                options={TX_ACCOUNT_OPTIONS}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                Kategori
+              </label>
+              <CustomSelect
+                value={formCategory}
+                onChange={setFormCategory}
+                options={TX_CATEGORY_OPTIONS}
+              />
+            </div>
+          </div>
+
+          <div className="pt-3 flex justify-end gap-3 border-t border-obsidian-border/50 mt-5">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl transition"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className={`px-5 py-2.5 text-xs sm:text-sm font-bold text-[#0B0D11] hover:brightness-110 rounded-xl transition inline-flex items-center gap-2 shadow-md cursor-pointer ${
+                formType === "expense" ? "bg-coralFall" : "bg-mintRise"
+              }`}
+            >
+              Simpan Transaksi
+            </button>
+          </div>
+        </form>
+      </CustomModal>
 
       {/* QUICK ADD SUBSCRIPTION MODAL */}
-      {isSubModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-obsidian-card border border-obsidian-borderStrong rounded-xl w-full max-w-md p-6 shadow-2xl relative">
-            <button
-              onClick={() => setIsSubModalOpen(false)}
-              className="absolute top-5 right-5 text-slateText-muted hover:text-slateText-primary"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h3 className="font-bold text-lg text-slateText-primary mb-1">Tambah Langganan / Tagihan Rutin</h3>
-            <p className="text-xs text-slateText-secondary mb-5">
-              Dialokasikan ke pos Bank Jago (31.7%) dan dipantau tanggal jatuh temponya
-            </p>
-
-            <form onSubmit={handleCreateSubscription} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slateText-secondary mb-1.5">Nama Layanan</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Netflix, Spotify, Gym, ChatGPT"
-                  value={subName}
-                  onChange={(e) => setSubName(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3.5 py-2 text-sm text-slateText-primary focus:outline-none focus:border-amberGold"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-slateText-secondary mb-1.5">Nominal / Bulan (Rp)</label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="Contoh: 54000"
-                    value={subAmount}
-                    onChange={(e) => setSubAmount(e.target.value)}
-                    className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3 py-2 text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slateText-secondary mb-1.5">Tanggal Jatuh Tempo (1-31)</label>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    max={31}
-                    placeholder="Contoh: 25"
-                    value={subBillingDay}
-                    onChange={(e) => setSubBillingDay(e.target.value)}
-                    className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3 py-2 text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-slateText-secondary mb-1.5">Kategori</label>
-                  <select
-                    value={subCategory}
-                    onChange={(e) => setSubCategory(e.target.value)}
-                    className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3 py-2 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold"
-                  >
-                    <option value="Produktivitas & AI">Produktivitas & AI</option>
-                    <option value="Hiburan / Streaming">Hiburan / Streaming</option>
-                    <option value="Cloud Backup">Cloud Backup</option>
-                    <option value="Gym & Fitness">Gym & Fitness</option>
-                    <option value="Tagihan Utilitas">Tagihan Utilitas</option>
-                    <option value="Lainnya">Lainnya</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slateText-secondary mb-1.5">Akun Autodebet</label>
-                  <select
-                    value={subAccount}
-                    onChange={(e) => setSubAccount(e.target.value)}
-                    className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3 py-2 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold"
-                  >
-                    <option value="Jago">Bank Jago (Subs)</option>
-                    <option value="Mandiri">Mandiri</option>
-                    <option value="BRI 1">BRI 1</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slateText-secondary mb-1.5">Catatan Tambahan (Opsional)</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Share family plan / Kartu debit Jago"
-                  value={subNotes}
-                  onChange={(e) => setSubNotes(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3.5 py-2 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold"
-                />
-              </div>
-
-              <div className="pt-3 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsSubModalOpen(false)}
-                  className="px-4 py-2 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border rounded-lg"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 text-xs sm:text-sm font-bold bg-amberGold text-[#0B0D11] hover:bg-amber-400 rounded-lg transition"
-                >
-                  Simpan Tagihan
-                </button>
-              </div>
-            </form>
+      <CustomModal
+        isOpen={isSubModalOpen}
+        onClose={() => setIsSubModalOpen(false)}
+        title="Tambah Langganan / Tagihan Rutin"
+        subtitle="Dialokasikan ke pos Bank Jago (31.7%) dan dipantau tanggal jatuh temponya"
+        icon={<Bell className="w-5 h-5" />}
+        accent="amber"
+        maxWidth="md"
+      >
+        <form onSubmit={handleCreateSubscription} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Nama Layanan
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="Contoh: Netflix, Spotify, Gym, ChatGPT"
+              value={subName}
+              onChange={(e) => setSubName(e.target.value)}
+              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+            />
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                Nominal / Bulan
+              </label>
+              <CurrencyInput
+                value={subAmount}
+                onChange={setSubAmount}
+                placeholder="0"
+                required
+                accent="amber"
+                quickAmounts={[25000, 50000, 100000, 200000]}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                Jatuh Tempo (Tgl 1-31)
+              </label>
+              <input
+                type="number"
+                required
+                min={1}
+                max={31}
+                placeholder="Contoh: 25"
+                value={subBillingDay}
+                onChange={(e) => setSubBillingDay(e.target.value)}
+                className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold transition"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                Kategori
+              </label>
+              <CustomSelect
+                value={subCategory}
+                onChange={setSubCategory}
+                options={SUB_CATEGORY_OPTIONS}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                Akun Autodebet
+              </label>
+              <CustomSelect
+                value={subAccount}
+                onChange={setSubAccount}
+                options={SUB_ACCOUNT_OPTIONS}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Catatan Tambahan (Opsional)
+            </label>
+            <input
+              type="text"
+              placeholder="Contoh: Share family plan / Kartu debit Jago"
+              value={subNotes}
+              onChange={(e) => setSubNotes(e.target.value)}
+              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+            />
+          </div>
+
+          <div className="pt-3 flex justify-end gap-3 border-t border-obsidian-border/50 mt-5">
+            <button
+              type="button"
+              onClick={() => setIsSubModalOpen(false)}
+              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl transition"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-amberGold text-[#0B0D11] hover:brightness-110 rounded-xl transition inline-flex items-center gap-2 shadow-md cursor-pointer"
+            >
+              Simpan Tagihan
+            </button>
+          </div>
+        </form>
+      </CustomModal>
 
       {/* GAJIAN AUTO-SPLIT MODAL */}
-      {isPaycheckModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-obsidian-card border border-obsidian-borderStrong rounded-xl w-full max-w-lg p-6 sm:p-7 shadow-2xl relative">
-            <button
-              onClick={() => setIsPaycheckModalOpen(false)}
-              className="absolute top-5 right-5 text-slateText-muted hover:text-slateText-primary"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      <CustomModal
+        isOpen={isPaycheckModalOpen}
+        onClose={() => setIsPaycheckModalOpen(false)}
+        title="Alokasi Gajian Otomatis (Auto-Split)"
+        subtitle="Siklus 14 hari baru • Distribusi formula langsung ke 4 rekening"
+        icon={<Sparkles className="w-5 h-5" />}
+        accent="mint"
+        maxWidth="lg"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Nominal Transferan Masuk
+            </label>
+            <CurrencyInput
+              value={paycheckTotal}
+              onChange={setPaycheckTotal}
+              placeholder="1500000"
+              accent="mint"
+              quickAmounts={[1000000, 1500000, 2000000, 2500000]}
+            />
+          </div>
 
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2.5 rounded-lg bg-mintRise/15 border border-mintRise/30 text-mintRise">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg text-slateText-primary">Alokasi Gajian Otomatis (Auto-Split)</h3>
-                <p className="text-xs text-slateText-secondary">
-                  Siklus 14 hari baru • Distribusi formula langsung ke 4 rekening
-                </p>
-              </div>
+          <div className="p-4 rounded-xl bg-obsidian-panel border border-obsidian-border space-y-3.5">
+            <div className="flex justify-between items-center pb-3 border-b border-obsidian-border">
+              <span className="text-xs font-semibold text-slateText-muted uppercase tracking-wider">
+                Total Alokasi Dihitung
+              </span>
+              <span className="font-mono font-extrabold text-xl text-mintRise">
+                Rp {parseInt(paycheckTotal.replace(/\D/g, "") || "0", 10).toLocaleString("id-ID")}
+              </span>
             </div>
 
-            <div className="my-5 p-4 rounded-lg bg-obsidian-panel border border-obsidian-border space-y-3.5">
-              <div className="flex justify-between items-center pb-3 border-b border-obsidian-border">
-                <span className="text-xs font-semibold text-slateText-muted uppercase tracking-wider">
-                  Total Transferan Ortu
-                </span>
-                <span className="font-mono font-extrabold text-2xl text-mintRise">Rp 1.500.000</span>
-              </div>
+            <div className="space-y-3 text-xs sm:text-sm">
+              {(() => {
+                const total = parseInt(paycheckTotal.replace(/\D/g, "") || "0", 10);
+                const mandiri = Math.round(total * 0.55);
+                const jago = Math.round(total * 0.317);
+                const bri1 = Math.round(total * 0.067);
+                const bri2 = total - mandiri - jago - bri1;
+                return (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amberGold"></span>
+                        <span className="font-medium text-slateText-primary">Mandiri (55.0%)</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-mono font-bold text-slateText-primary">Rp {mandiri.toLocaleString("id-ID")}</span>
+                        <div className="text-[11px] text-slateText-muted">Makan, Jajan, Laundry, Galon</div>
+                      </div>
+                    </div>
 
-              <div className="space-y-3 text-xs sm:text-sm">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amberGold"></span>
-                    <span className="font-medium text-slateText-primary">Mandiri (55.0%)</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-mono font-bold text-slateText-primary">Rp 825.000</span>
-                    <div className="text-xs text-slateText-muted">Makan, Jajan, Laundry, Galon</div>
-                  </div>
-                </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-mintRise"></span>
+                        <span className="font-medium text-slateText-primary">Bank Jago / Bibit (31.7%)</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-mono font-bold text-slateText-primary">Rp {jago.toLocaleString("id-ID")}</span>
+                        <div className="text-[11px] text-slateText-muted">Subs Netflix/Spotify & Bibit</div>
+                      </div>
+                    </div>
 
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-mintRise"></span>
-                    <span className="font-medium text-slateText-primary">Bank Jago / Bibit (31.7%)</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-mono font-bold text-slateText-primary">Rp 475.000</span>
-                    <div className="text-xs text-slateText-muted">Subs Netflix/Spotify & Bibit</div>
-                  </div>
-                </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-cyanHub"></span>
+                        <span className="font-medium text-slateText-primary">BRI 1 (6.7%)</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-mono font-bold text-slateText-primary">Rp {bri1.toLocaleString("id-ID")}</span>
+                        <div className="text-[11px] text-slateText-muted">Hub & Dana Darurat</div>
+                      </div>
+                    </div>
 
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-cyanHub"></span>
-                    <span className="font-medium text-slateText-primary">BRI 1 (6.7%)</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-mono font-bold text-slateText-primary">Rp 100.000</span>
-                    <div className="text-xs text-slateText-muted">Hub & Dana Darurat</div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-purpleLock"></span>
-                    <span className="font-medium text-slateText-primary">BRI 2 (6.7%)</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-mono font-bold text-slateText-primary">Rp 100.000</span>
-                    <div className="text-xs text-slateText-muted">Tabungan Terkunci</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsPaycheckModalOpen(false)}
-                className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border rounded-lg"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleExecutePaycheck}
-                disabled={paycheckLoading}
-                className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-mintRise text-[#0B0D11] hover:bg-emerald-400 rounded-lg transition flex items-center gap-2 shadow-xs"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>{paycheckLoading ? "Menyimpan ke DB..." : "Konfirmasi & Split Sekarang"}</span>
-              </button>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-purpleLock"></span>
+                        <span className="font-medium text-slateText-primary">BRI 2 (6.6%)</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-mono font-bold text-slateText-primary">Rp {bri2.toLocaleString("id-ID")}</span>
+                        <div className="text-[11px] text-slateText-muted">Tabungan Terkunci</div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
+
+          <div className="pt-2 flex justify-end gap-3 border-t border-obsidian-border/50">
+            <button
+              type="button"
+              onClick={() => setIsPaycheckModalOpen(false)}
+              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl transition"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleExecutePaycheck}
+              disabled={paycheckLoading}
+              className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-mintRise text-[#0B0D11] hover:brightness-110 rounded-xl transition inline-flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{paycheckLoading ? "Menyimpan ke DB..." : "Konfirmasi & Split Sekarang"}</span>
+            </button>
+          </div>
         </div>
-      )}
+      </CustomModal>
 
       {/* Transfer Modal */}
       <TransferModal
         isOpen={isTransferModalOpen}
         onClose={() => setIsTransferModalOpen(false)}
         onSuccess={fetchData}
+      />
+
+      {/* Confirm Delete Subscription Modal */}
+      <ConfirmModal
+        isOpen={subToDelete !== null}
+        onClose={() => setSubToDelete(null)}
+        onConfirm={handleConfirmDeleteSubscription}
+        title="Hapus Langganan?"
+        message="Apakah kamu yakin ingin menghapus tagihan rutin ini? Data akan dihapus dari pemantauan bulanan."
+        confirmText="Hapus Tagihan"
+        loading={deleteLoading}
       />
     </div>
   );
