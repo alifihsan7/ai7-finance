@@ -96,7 +96,11 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
     },
   ];
 
-  const defaultNames = new Set(defaultAccounts.map((a) => a.name.toLowerCase()));
+  const defaultNames = new Set(
+    defaultAccounts
+      .map((a) => a.name.toLowerCase())
+      .concat(["jago", "bank jago", "mandiri", "bibit", "bri 1", "bri 2", "cash"])
+  );
 
   // Tambahkan rekening kustom dinamis yang didaftarkan user
   const dynamicAccounts = customAccounts
