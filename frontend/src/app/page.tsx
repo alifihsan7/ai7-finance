@@ -504,9 +504,9 @@ export default function ObsidianDashboard() {
   }, [transactions, activeTab, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans">
+    <div className="h-screen bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans overflow-hidden">
       {/* SIDEBAR NAVIGATION (Matching user screenshot exactly) */}
-      <aside className="w-full md:w-68 lg:w-72 bg-obsidian-panel border-r border-obsidian-border p-5 lg:p-6 md:min-h-screen flex flex-col justify-between shrink-0">
+      <aside className="w-full md:w-68 lg:w-72 bg-obsidian-panel border-r border-obsidian-border p-5 lg:p-6 md:h-screen flex flex-col justify-between shrink-0 overflow-y-auto">
         <div>
           {/* Logo & Brand */}
           <div className="flex items-center gap-2.5">
@@ -530,7 +530,7 @@ export default function ObsidianDashboard() {
             {[
               { name: "Ringkasan", icon: LayoutDashboard, count: null },
               { name: "Alokasi Amplop", icon: Layers, count: "4" },
-              { name: "Rekening & Akun", icon: Wallet, count: "4" },
+              { name: "Rekening & Akun", icon: Wallet, count: (customAccounts.length || 5).toString() },
               { name: "Buku Transaksi", icon: CreditCard, count: transactions.length },
               { name: "Langganan & Tagihan", icon: Bell, count: subsData.items.length },
               { name: "Analisis & Tren", icon: BarChart2, count: null },
