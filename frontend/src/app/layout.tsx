@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -16,12 +16,33 @@ const geistMono = localFont({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#0B0D11",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "ai7.finance — Obsidian Financial System",
   description: "Bi-weekly paycheck allocation & personal finance dashboard",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "AI7 Finance",
+  },
   icons: {
-    icon: "/ai7-icon-rounded.svg",
-    apple: "/ai7-icon-rounded.svg",
+    icon: [
+      { url: "/ai7-icon-rounded.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 

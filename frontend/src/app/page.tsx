@@ -20,6 +20,8 @@ import {
   ArrowLeftRight,
   Clock,
   Calendar,
+  Menu,
+  X,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { AccountGrid } from "@/components/AccountGrid";
@@ -121,6 +123,7 @@ export default function ObsidianDashboard() {
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [customAccounts, setCustomAccounts] = useState<AccountItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -554,8 +557,8 @@ export default function ObsidianDashboard() {
 
   return (
     <div className="h-screen h-[100dvh] bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans overflow-hidden">
-      {/* SIDEBAR NAVIGATION (Matching user screenshot exactly) */}
-      <aside className="w-full md:w-56 lg:w-64 xl:w-72 bg-obsidian-panel border-r border-obsidian-border p-4 sm:p-5 lg:p-6 md:h-screen flex flex-col justify-between shrink-0 overflow-y-hidden">
+      {/* DESKTOP/TABLET SIDEBAR NAVIGATION */}
+      <aside className="hidden md:flex md:w-56 lg:w-64 xl:w-72 bg-obsidian-panel border-r border-obsidian-border p-4 sm:p-5 lg:p-6 md:h-screen flex-col justify-between shrink-0 overflow-y-hidden">
         <div>
           {/* Logo & Brand */}
           <div className="flex items-center gap-2.5">
@@ -633,9 +636,244 @@ export default function ObsidianDashboard() {
         </div>
       </aside>
 
+      {/* MOBILE STICKY TOP APP BAR */}
+      <header className="md:hidden sticky top-0 z-30 w-full bg-obsidian-panel/95 backdrop-blur-md border-b border-obsidian-border px-3.5 py-2.5 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <img
+            src="/ai7-icon-rounded.svg"
+            alt="AI7 Finance"
+            className="w-7 h-7 rounded-lg border border-obsidian-border shadow-xs shrink-0"
+          />
+          <div className="min-w-0">
+            <div className="font-bold text-sm tracking-tight text-slateText-primary leading-none truncate">
+              ai7<span className="text-amberGold">.</span>finance
+            </div>
+            <div className="text-[10px] font-mono text-amberGold tracking-wider font-semibold mt-0.5 truncate">
+              {activeNav}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={fetchData}
+            title="Refresh Data"
+            className="p-1.5 text-slateText-secondary hover:text-slateText-primary bg-obsidian-card border border-obsidian-border rounded-lg transition active:scale-95"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-amberGold" : ""}`} />
+          </button>
+          <button
+            onClick={() => setIsPaycheckModalOpen(true)}
+            title="Gajian Masuk"
+            className="px-2 py-1.5 bg-mintRise/15 text-mintRise border border-mintRise/30 font-semibold text-[11px] rounded-lg transition shadow-xs active:scale-95 flex items-center gap-1"
+          >
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            <span className="whitespace-nowrap">Gajian</span>
+          </button>
+          <button
+            onClick={() => setIsMobileDrawerOpen(true)}
+            title="Buka Menu"
+            className="p-1.5 text-slateText-secondary hover:text-slateText-primary bg-obsidian-card border border-obsidian-border rounded-lg transition active:scale-95"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
+
+      {/* MOBILE SLIDE-OVER DRAWER */}
+      {isMobileDrawerOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsMobileDrawerOpen(false)}
+          />
+
+          {/* Drawer Content */}
+          <div className="relative w-[280px] max-w-[85vw] bg-obsidian-panel border-r border-obsidian-border p-5 flex flex-col justify-between h-full z-10 overflow-y-auto">
+            <div>
+              {/* Header with Close */}
+              <div className="flex items-center justify-between pb-4 border-b border-obsidian-border">
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src="/ai7-icon-rounded.svg"
+                    alt="AI7 Finance"
+                    className="w-8 h-8 rounded-lg border border-obsidian-border shadow-xs shrink-0"
+                  />
+                  <div>
+                    <div className="font-bold text-base tracking-tight text-slateText-primary leading-none">
+                      ai7<span className="text-amberGold">.</span>finance
+                    </div>
+                    <div className="text-[10px] text-slateText-muted tracking-wider uppercase font-medium mt-1">
+                      Obsidian Slate
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="p-1.5 rounded-lg text-slateText-muted hover:text-slateText-primary hover:bg-obsidian-card transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation Items */}
+              <nav className="mt-5 flex flex-col space-y-1.5">
+                {[
+                  { name: "Ringkasan", icon: LayoutDashboard, count: null },
+                  { name: "Alokasi Amplop", icon: Layers, count: "4" },
+                  { name: "Rekening & Akun", icon: Wallet, count: (customAccounts.length || 5).toString() },
+                  { name: "Buku Transaksi", icon: CreditCard, count: transactions.length },
+                  { name: "Langganan & Tagihan", icon: Bell, count: subsData.items.length },
+                  { name: "Analisis & Tren", icon: BarChart2, count: null },
+                ].map((item) => {
+                  const isActive = activeNav === item.name;
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => {
+                        setActiveNav(item.name);
+                        setIsMobileDrawerOpen(false);
+                      }}
+                      className={`flex justify-between items-center w-full px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all text-left whitespace-nowrap select-none ${
+                        isActive
+                          ? "text-slateText-primary bg-obsidian-hover border border-obsidian-borderStrong text-amberGold shadow-xs font-semibold"
+                          : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-card"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5 min-w-0">
+                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-slateText-muted"}`} />
+                        <span className="truncate whitespace-nowrap">{item.name}</span>
+                      </span>
+                      {item.count !== null && (
+                        <span className="text-xs text-amberGold font-mono px-2 py-0.5 rounded-md bg-amberGold/10 border border-amberGold/20 whitespace-nowrap shrink-0 ml-2">
+                          {item.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+
+              {/* Quick Actions inside Drawer */}
+              <div className="mt-6 pt-4 border-t border-obsidian-border space-y-2">
+                <span className="text-[11px] font-semibold text-slateText-muted uppercase tracking-wider block mb-1">
+                  Aksi Cepat
+                </span>
+                <button
+                  onClick={() => {
+                    setIsMobileDrawerOpen(false);
+                    setIsTransferModalOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg bg-cyanHub/15 text-cyanHub border border-cyanHub/30 hover:bg-cyanHub/25 transition"
+                >
+                  <ArrowLeftRight className="w-4 h-4 shrink-0" />
+                  <span>Transfer Antar Rekening</span>
+                </button>
+                <a
+                  href="/api/v1/transactions/export"
+                  download
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg bg-obsidian-card border border-obsidian-border text-slateText-secondary hover:text-slateText-primary transition"
+                >
+                  <Download className="w-4 h-4 shrink-0" />
+                  <span>Ekspor CSV Transaksi</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Profile Footer */}
+            <div className="pt-4 border-t border-obsidian-border text-xs mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-slateText-primary font-semibold">Alif Ihsan</span>
+                <span className="inline-flex items-center gap-1 text-[11px] text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-mintRise animate-pulse"></span>
+                  Live Synced
+                </span>
+              </div>
+              <div className="text-slateText-muted space-y-1 text-[11px]">
+                <div className="flex items-center justify-between">
+                  <span>Telegram Bot</span>
+                  <span className="font-mono text-slateText-primary">@AI7Fin4nc3_bot</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Mode Siklus</span>
+                  <span className="text-amberGold font-medium">14 Hari</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE BOTTOM NAVIGATION BAR */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-obsidian-panel/95 backdrop-blur-md border-t border-obsidian-border px-3 py-1 flex items-center justify-around safe-bottom shadow-2xl">
+        <button
+          onClick={() => setActiveNav("Ringkasan")}
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-[56px] ${
+            activeNav === "Ringkasan"
+              ? "text-amberGold font-semibold"
+              : "text-slateText-secondary hover:text-slateText-primary"
+          }`}
+        >
+          <LayoutDashboard className="w-5 h-5 shrink-0" />
+          <span className="text-[10px] mt-0.5 leading-tight">Ringkasan</span>
+        </button>
+
+        <button
+          onClick={() => setActiveNav("Alokasi Amplop")}
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-[56px] ${
+            activeNav === "Alokasi Amplop"
+              ? "text-amberGold font-semibold"
+              : "text-slateText-secondary hover:text-slateText-primary"
+          }`}
+        >
+          <Layers className="w-5 h-5 shrink-0" />
+          <span className="text-[10px] mt-0.5 leading-tight">Amplop</span>
+        </button>
+
+        {/* Center Floating Plus Action */}
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="-mt-5 w-12 h-12 rounded-full bg-amberGold text-[#0B0D11] shadow-lg shadow-amberGold/30 flex items-center justify-center font-bold active:scale-90 transition border-2 border-obsidian-panel shrink-0"
+          title="Catat Transaksi Baru"
+        >
+          <Plus className="w-6 h-6 stroke-[3]" />
+        </button>
+
+        <button
+          onClick={() => setActiveNav("Buku Transaksi")}
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-[56px] ${
+            activeNav === "Buku Transaksi"
+              ? "text-amberGold font-semibold"
+              : "text-slateText-secondary hover:text-slateText-primary"
+          }`}
+        >
+          <CreditCard className="w-5 h-5 shrink-0" />
+          <span className="text-[10px] mt-0.5 leading-tight">Buku Kas</span>
+        </button>
+
+        <button
+          onClick={() => setIsMobileDrawerOpen(true)}
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-[56px] ${
+            ["Rekening & Akun", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav)
+              ? "text-amberGold font-semibold"
+              : "text-slateText-secondary hover:text-slateText-primary"
+          }`}
+        >
+          <div className="relative">
+            <Menu className="w-5 h-5 shrink-0" />
+            {["Rekening & Akun", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav) && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amberGold"></span>
+            )}
+          </div>
+          <span className="text-[10px] mt-0.5 leading-tight">Menu</span>
+        </button>
+      </nav>
+
       {/* MAIN VIEWPORT */}
       <main className="flex-1 overflow-y-auto w-full">
-        <div className="p-4 sm:p-6 md:p-6 lg:p-8 xl:p-10 max-w-7xl mx-auto w-full space-y-6 sm:space-y-8">
+        <div className="p-3.5 sm:p-5 md:p-6 lg:p-8 xl:p-10 pb-24 md:pb-10 max-w-7xl mx-auto w-full space-y-5 sm:space-y-8">
         {/* Dynamic Header */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 pb-6 border-b border-obsidian-border">
           <div>
@@ -752,19 +990,17 @@ export default function ObsidianDashboard() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs sm:text-sm pt-3 border-t border-obsidian-border/80">
-                  <div className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium whitespace-nowrap">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs pt-3 border-t border-obsidian-border/80">
+                  <div className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium whitespace-nowrap min-w-0">
                     <ArrowUpRight className="w-4 h-4 shrink-0" />
-                    <span>{formatRupiah(summary.income)} pemasukan</span>
+                    <span className="truncate">{formatRupiah(summary.income)} in</span>
                   </div>
-                  <span className="text-obsidian-borderStrong shrink-0">•</span>
-                  <div className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium whitespace-nowrap">
+                  <div className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium whitespace-nowrap min-w-0">
                     <ArrowDownRight className="w-4 h-4 shrink-0" />
-                    <span>{formatRupiah(summary.expense)} belanja</span>
+                    <span className="truncate">{formatRupiah(summary.expense)} out</span>
                   </div>
-                  <span className="text-obsidian-borderStrong shrink-0">•</span>
-                  <div className="inline-flex items-center gap-1.5 text-slateText-secondary font-mono font-medium whitespace-nowrap">
-                    <span>Net: {formatRupiah(summary.income - summary.expense)}</span>
+                  <div className="col-span-2 sm:col-span-1 inline-flex items-center gap-1.5 text-slateText-secondary font-mono font-medium whitespace-nowrap min-w-0">
+                    <span className="truncate">Net: {formatRupiah(summary.income - summary.expense)}</span>
                   </div>
                 </div>
               </div>
