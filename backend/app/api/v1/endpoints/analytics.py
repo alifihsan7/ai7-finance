@@ -371,3 +371,22 @@ def get_monthly_summary(
         daily_trend=daily_trend,
         safe_to_spend=safe_info
     )
+
+@router.post("/sync-sheets")
+def sync_sheets_endpoint(
+    cycle_start: Optional[str] = Query(None, description="Format YYYY-MM-DD"),
+    db: Session = Depends(get_db)
+):
+    from app.services.sheets_sync import sync_cycle_snapshot
+    start_d = None
+    if cycle_start:
+        try:
+            start_d = datetime.strptime(cycle_start, "%Y-%m-%d").date()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid date format, use YYYY-MM-DD")
+    try:
+        res = sync_cycle_snapshot(db, cycle_start_date=start_d)
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Google Sheets sync failed: {str(e)}")
+

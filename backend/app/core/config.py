@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     # Timezone
     TIMEZONE: str = "Asia/Jakarta"
 
+    # Google Sheets Integration
+    GOOGLE_SERVICE_ACCOUNT_FILE: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "/home/alifihsan/ai7-finance/credentials_google.json")
+    GOOGLE_SHEETS_SPREADSHEET_ID: str = os.getenv("GOOGLE_SHEETS_SPREADSHEET_ID", "")
+
     class Config:
         case_sensitive = True
 

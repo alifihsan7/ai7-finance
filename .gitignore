@@ -1,9 +1,12 @@
 # Environment secrets & tokens
 .env
+*credentials*.json
+service_account.json
 
 # SQLite Databases
 *.db
 *.sqlite3
+*.xlsx
 
 # Python caches & virtual environments
 __pycache__/
