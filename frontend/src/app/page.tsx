@@ -800,11 +800,11 @@ export default function ObsidianDashboard() {
             <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-base sm:text-lg font-bold text-slateText-primary">Transaksi Terakhir</h2>
+              <div className="flex justify-between items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-slateText-primary truncate">Transaksi Terakhir</h2>
                 <button
                   onClick={() => setActiveNav("Buku Transaksi")}
-                  className="text-xs text-amberGold hover:underline font-medium"
+                  className="text-xs text-amberGold hover:underline font-medium shrink-0 whitespace-nowrap"
                 >
                   Buka Buku Transaksi Lengkap ({transactions.length}) →
                 </button>
@@ -828,8 +828,8 @@ export default function ObsidianDashboard() {
             <MandiriEnvelopes mandiriExpenses={mandiriExpenses} formatRupiah={formatRupiah} />
 
             {/* Pos Jago & Pos BRI */}
-            <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-6 space-y-5">
-              <div className="flex justify-between items-center">
+            <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-6 space-y-5">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
                   <h3 className="font-bold text-base sm:text-lg text-slateText-primary">
                     Amplop Bank Jago (Plafon Rp 475.000 • 31.7%)
@@ -840,7 +840,7 @@ export default function ObsidianDashboard() {
                 </div>
                 <button
                   onClick={() => setActiveNav("Langganan & Tagihan")}
-                  className="text-xs text-amberGold hover:underline font-mono"
+                  className="text-xs text-amberGold hover:underline font-mono shrink-0 whitespace-nowrap"
                 >
                   Atur Tagihan ({subsData.items.length}) →
                 </button>
@@ -848,9 +848,9 @@ export default function ObsidianDashboard() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-obsidian-panel border border-obsidian-border rounded-lg p-5 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-slateText-primary text-sm">Tagihan & Langganan Digital</span>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-mintRise">
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="font-semibold text-slateText-primary text-sm truncate">Tagihan & Langganan Digital</span>
+                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-mintRise shrink-0 whitespace-nowrap">
                       Autodebet
                     </span>
                   </div>
@@ -863,9 +863,9 @@ export default function ObsidianDashboard() {
                 </div>
 
                 <div className="bg-obsidian-panel border border-obsidian-border rounded-lg p-5 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-slateText-primary text-sm">Bibit & Investasi Reksadana</span>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-cyanHub">
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="font-semibold text-slateText-primary text-sm truncate">Bibit & Investasi Reksadana</span>
+                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-cyanHub shrink-0 whitespace-nowrap">
                       Pertumbuhan Aset
                     </span>
                   </div>
@@ -903,18 +903,18 @@ export default function ObsidianDashboard() {
 
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div className="flex items-center gap-2.5">
-                  <h3 className="font-bold text-base text-slateText-primary">Histori Transaksi per Rekening</h3>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-bold text-base text-slateText-primary whitespace-nowrap">Histori Transaksi per Rekening</h3>
                   <button
                     onClick={() => setIsTransferModalOpen(true)}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-cyanHub/10 border border-cyanHub/30 text-cyanHub hover:bg-cyanHub/20 transition inline-flex items-center gap-1.5 font-mono"
+                    className="text-xs px-2.5 py-1 rounded-lg bg-cyanHub/10 border border-cyanHub/30 text-cyanHub hover:bg-cyanHub/20 transition inline-flex items-center gap-1.5 font-mono shrink-0 whitespace-nowrap"
                   >
                     <ArrowLeftRight className="w-3.5 h-3.5" />
                     <span>Pindah Saldo</span>
                   </button>
                   <button
                     onClick={() => setIsAddAccountModalOpen(true)}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-amberGold/10 border border-amberGold/30 text-amberGold hover:bg-amberGold/20 transition inline-flex items-center gap-1.5 font-mono font-semibold"
+                    className="text-xs px-2.5 py-1 rounded-lg bg-amberGold/10 border border-amberGold/30 text-amberGold hover:bg-amberGold/20 transition inline-flex items-center gap-1.5 font-mono font-semibold shrink-0 whitespace-nowrap"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Tambah Akun</span>
@@ -925,7 +925,7 @@ export default function ObsidianDashboard() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`text-xs px-3 py-1.5 rounded-lg font-mono transition ${
+                      className={`text-xs px-3 py-1.5 rounded-lg font-mono transition shrink-0 whitespace-nowrap ${
                         activeTab === tab.id
                           ? "bg-amberGold text-[#0B0D11] font-bold"
                           : "bg-obsidian-card border border-obsidian-border text-slateText-secondary hover:text-slateText-primary"
@@ -958,7 +958,7 @@ export default function ObsidianDashboard() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`text-sm px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
+                    className={`text-sm px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap shrink-0 ${
                       activeTab === tab.id
                         ? "text-slateText-primary bg-obsidian-card border border-obsidian-borderStrong font-semibold shadow-xs"
                         : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-hover"
@@ -969,7 +969,7 @@ export default function ObsidianDashboard() {
                 ))}
               </div>
 
-              <div className="relative w-full sm:w-72">
+              <div className="relative w-full sm:w-72 shrink-0">
                 <Search className="w-4 h-4 text-slateText-muted absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
@@ -1017,11 +1017,11 @@ export default function ObsidianDashboard() {
               <div className="space-y-3.5">
                 {summary.categories.map((c) => (
                   <div key={c.category} className="space-y-1.5">
-                    <div className="flex justify-between text-xs sm:text-sm">
-                      <span className="font-medium text-slateText-primary">
+                    <div className="flex justify-between items-center gap-2 text-xs sm:text-sm">
+                      <span className="font-medium text-slateText-primary truncate">
                         {c.category} ({c.count} transaksi)
                       </span>
-                      <span className="font-mono font-bold text-amberGold">
+                      <span className="font-mono font-bold text-amberGold shrink-0 whitespace-nowrap">
                         {formatRupiah(c.total)} ({c.percentage}%)
                       </span>
                     </div>

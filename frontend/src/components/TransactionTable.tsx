@@ -30,15 +30,15 @@ export function TransactionTable({
   return (
     <div className="border border-obsidian-border rounded-xl overflow-hidden bg-obsidian-card shadow-xs">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm border-collapse">
+        <table className="w-full min-w-[700px] text-left text-sm border-collapse">
           <thead>
             <tr className="border-b border-obsidian-border bg-obsidian-panel text-slateText-secondary font-medium">
-              <th className="py-3.5 px-5">Tanggal</th>
-              <th className="py-3.5 px-5">Keterangan</th>
-              <th className="py-3.5 px-5">Kategori</th>
-              <th className="py-3.5 px-5">Akun</th>
-              <th className="py-3.5 px-5 text-right">Nominal</th>
-              {showActions && <th className="py-3.5 px-5 text-center w-24">Aksi</th>}
+              <th className="py-3.5 px-4 sm:px-5 whitespace-nowrap w-28">Tanggal</th>
+              <th className="py-3.5 px-4 sm:px-5 min-w-[200px]">Keterangan</th>
+              <th className="py-3.5 px-4 sm:px-5 whitespace-nowrap w-44">Kategori</th>
+              <th className="py-3.5 px-4 sm:px-5 whitespace-nowrap w-32">Akun</th>
+              <th className="py-3.5 px-4 sm:px-5 text-right whitespace-nowrap w-36">Nominal</th>
+              {showActions && <th className="py-3.5 px-4 sm:px-5 text-center whitespace-nowrap w-24">Aksi</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-obsidian-border">
@@ -58,13 +58,15 @@ export function TransactionTable({
 
                 return (
                   <tr key={tx.id} className="hover:bg-obsidian-hover transition group">
-                    <td className="py-3.5 px-5 text-slateText-secondary font-mono whitespace-nowrap text-xs sm:text-sm">
+                    <td className="py-3.5 px-4 sm:px-5 text-slateText-secondary font-mono whitespace-nowrap text-xs sm:text-sm">
                       {tx.date}
                     </td>
-                    <td className="py-3.5 px-5 text-slateText-primary font-medium">{tx.description}</td>
-                    <td className="py-3.5 px-5">
+                    <td className="py-3.5 px-4 sm:px-5 text-slateText-primary font-medium min-w-[200px] leading-snug">
+                      {tx.description}
+                    </td>
+                    <td className="py-3.5 px-4 sm:px-5 whitespace-nowrap">
                       <span
-                        className={`px-2.5 py-1 rounded-md text-xs font-mono border ${
+                        className={`inline-block px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap ${
                           isTransfer
                             ? "bg-cyanHub/10 border-cyanHub/30 text-cyanHub"
                             : "bg-obsidian-panel border-obsidian-border text-slateText-secondary"
@@ -73,16 +75,18 @@ export function TransactionTable({
                         {tx.category}
                       </span>
                     </td>
-                    <td className="py-3.5 px-5 text-slateText-secondary font-mono text-xs sm:text-sm">{tx.account}</td>
+                    <td className="py-3.5 px-4 sm:px-5 text-slateText-secondary font-mono text-xs sm:text-sm whitespace-nowrap">
+                      {tx.account}
+                    </td>
                     <td
-                      className={`py-3.5 px-5 text-right font-mono font-bold whitespace-nowrap text-sm sm:text-base ${
+                      className={`py-3.5 px-4 sm:px-5 text-right font-mono font-bold whitespace-nowrap text-sm sm:text-base ${
                         isPositive ? "text-mintRise" : isTransferOut ? "text-cyanHub" : "text-coralFall"
                       }`}
                     >
                       {isPositive ? "+" : "-"} {formatRupiah(tx.amount)}
                     </td>
                     {showActions && (
-                      <td className="py-3.5 px-5 text-center">
+                      <td className="py-3.5 px-4 sm:px-5 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-1.5 opacity-80 group-hover:opacity-100 transition">
                           {onEdit && (
                             <button

@@ -124,17 +124,17 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-obsidian-border/80 text-xs font-mono text-slateText-secondary">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
           <span>Kecepatan Target:</span>
           <strong className="text-slateText-primary">Rp 58.928 / hari</strong>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
           <span>Kumulatif Target Hari Ini:</span>
           <strong className="text-slateText-primary">
             {formatRupiah(summary.safe_to_spend?.ideal_pace_today || 0)}
           </strong>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
           <span>Realisasi Saat Ini:</span>
           <strong
             className={

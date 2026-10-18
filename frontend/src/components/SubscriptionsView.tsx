@@ -40,12 +40,12 @@ export function SubscriptionsView({
   return (
     <div className="space-y-8">
       {/* Top Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
-          <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider">
+          <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Total Komitmen Bulanan
           </div>
-          <div className="text-2xl font-bold font-mono text-amberGold">
+          <div className="text-2xl font-bold font-mono text-amberGold tracking-tight truncate">
             {formatRupiah(subsData.total_monthly_commitment)}
           </div>
           <div className="text-xs text-slateText-secondary font-mono">
@@ -54,10 +54,10 @@ export function SubscriptionsView({
         </div>
 
         <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
-          <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider">
+          <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Langganan Aktif
           </div>
-          <div className="text-2xl font-bold font-mono text-mintRise">
+          <div className="text-2xl font-bold font-mono text-mintRise tracking-tight truncate">
             {subsData.active_count} Layanan
           </div>
           <div className="text-xs text-slateText-secondary font-mono">
@@ -66,10 +66,10 @@ export function SubscriptionsView({
         </div>
 
         <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
-          <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider">
+          <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Jatuh Tempo Pekan Ini
           </div>
-          <div className="text-2xl font-bold font-mono text-coralFall">
+          <div className="text-2xl font-bold font-mono text-coralFall tracking-tight truncate">
             {subsData.upcoming_this_week} Tagihan
           </div>
           <div className="text-xs text-slateText-secondary font-mono">
@@ -79,16 +79,16 @@ export function SubscriptionsView({
 
         <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 flex flex-col justify-between">
           <div>
-            <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider">
+            <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
               Perintah Bot Telegram
             </div>
-            <div className="text-sm font-mono text-slateText-primary mt-1 font-bold">
+            <div className="text-sm font-mono text-slateText-primary mt-1 font-bold truncate">
               /subs atau /tagihan
             </div>
           </div>
           <button
             onClick={onOpenModal}
-            className="mt-3 px-3 py-1.5 text-xs font-semibold bg-amberGold text-[#0B0D11] hover:bg-amber-400 rounded-lg transition flex items-center justify-center gap-1.5"
+            className="mt-3 px-3 py-1.5 text-xs font-semibold bg-amberGold text-[#0B0D11] hover:bg-amber-400 rounded-lg transition flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Manual</span>
@@ -98,16 +98,16 @@ export function SubscriptionsView({
 
       {/* Subscriptions Grid Cards */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <h3 className="font-bold text-base sm:text-lg text-slateText-primary">
             Daftar Layanan & Tagihan Terjadwal
           </h3>
-          <span className="text-xs text-slateText-secondary font-mono">
+          <span className="text-xs text-slateText-secondary font-mono shrink-0">
             Total {subsData.items.length} langganan terdaftar
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {subsData.items.map((sub) => {
             const isUpcoming = (sub.days_until_due ?? 99) <= 3;
             return (
@@ -119,15 +119,15 @@ export function SubscriptionsView({
                     : "border-obsidian-border hover:border-obsidian-borderStrong"
                 }`}
               >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="text-base font-bold text-slateText-primary flex items-center gap-2">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-base font-bold text-slateText-primary truncate">
                       {sub.name}
                     </div>
-                    <span className="text-xs text-slateText-muted font-mono">{sub.category}</span>
+                    <span className="text-xs text-slateText-muted font-mono truncate block mt-0.5">{sub.category}</span>
                   </div>
                   <span
-                    className={`text-xs font-mono px-2 py-0.5 rounded border ${
+                    className={`text-xs font-mono px-2 py-0.5 rounded border shrink-0 whitespace-nowrap ${
                       sub.is_active
                         ? isUpcoming
                           ? "bg-coralFall/10 border-coralFall/30 text-coralFall font-bold"
@@ -144,13 +144,13 @@ export function SubscriptionsView({
                 </div>
 
                 <div>
-                  <div className="text-2xl font-bold font-mono text-slateText-primary">
+                  <div className="text-2xl font-bold font-mono text-slateText-primary tracking-tight truncate">
                     {formatRupiah(sub.amount)}
                     <span className="text-xs font-normal text-slateText-muted font-sans"> / bulan</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-slateText-secondary font-mono mt-1">
-                    <Calendar className="w-3.5 h-3.5 text-amberGold" />
-                    <span>Setiap tanggal {sub.billing_day} ({sub.next_billing_date})</span>
+                  <div className="flex items-center gap-1.5 text-xs text-slateText-secondary font-mono mt-1 truncate">
+                    <Calendar className="w-3.5 h-3.5 text-amberGold shrink-0" />
+                    <span className="truncate">Setiap tanggal {sub.billing_day} ({sub.next_billing_date})</span>
                   </div>
                 </div>
 
