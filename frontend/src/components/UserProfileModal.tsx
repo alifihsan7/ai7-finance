@@ -210,7 +210,7 @@ export function UserProfileModal({
             </div>
             <div>
               <p className="text-xs font-semibold text-slate-100">{user.full_name}</p>
-              <p className="text-[11px] text-slate-400 font-mono">@{user.username} • User #{user.id}</p>
+              <p className="text-[11px] text-slate-400 font-mono">@{user.username}{user.email ? ` • ${user.email}` : ""}</p>
             </div>
           </div>
           <button
