@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, BigInteger, Float, String, Boolean, DateTime, Date, Text, ForeignKey, func
 from app.db.session import Base
+from app.models.user import User
 
 class PaycheckConfig(Base):
     __tablename__ = "paycheck_configs"
@@ -11,6 +12,7 @@ class PaycheckConfig(Base):
     gate_name = Column(String(50), nullable=False, default="Flip")
     cycle_type = Column(String(30), nullable=False, default="biweekly")
     cycle_days = Column(Integer, nullable=False, default=14)
+    cycle_start_date = Column(Date, nullable=True)
     pocket_account = Column(String(50), nullable=False, default="Mandiri")
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

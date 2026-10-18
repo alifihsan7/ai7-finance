@@ -54,6 +54,9 @@ class CycleBurnDay(BaseModel):
 class SafeToSpendInfo(BaseModel):
     cycle_start: dt_date
     cycle_end: dt_date
+    cycle_type: Optional[str] = "biweekly"
+    cycle_days: Optional[int] = 14
+    pocket_account: Optional[str] = "Mandiri"
     day_of_cycle: int
     days_remaining: int
     pocket_budget: int

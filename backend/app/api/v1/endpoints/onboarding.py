@@ -64,6 +64,7 @@ def complete_onboarding(
                 gate_name=payload.gate_name or "Flip",
                 cycle_type=payload.cycle_type,
                 cycle_days=payload.cycle_days,
+                cycle_start_date=tx_date,
                 pocket_account=payload.pocket_account,
                 is_active=True,
             )
@@ -75,6 +76,7 @@ def complete_onboarding(
             cfg.gate_name = payload.gate_name or "Flip"
             cfg.cycle_type = payload.cycle_type
             cfg.cycle_days = payload.cycle_days
+            cfg.cycle_start_date = tx_date
             cfg.pocket_account = payload.pocket_account
 
         # 3. Create Buckets

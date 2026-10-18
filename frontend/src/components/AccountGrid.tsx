@@ -18,6 +18,8 @@ interface AccountGridProps {
     safe_to_spend?: {
       pocket_spent: number;
       pocket_remaining: number;
+      cycle_days?: number;
+      pocket_budget?: number;
     };
   };
   customAccounts?: AccountItem[];
@@ -41,6 +43,11 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
   }, {});
 
   const pocketSpent = summary.safe_to_spend?.pocket_spent ?? 0;
+  const cycleDays = summary.safe_to_spend?.cycle_days ?? 14;
+  const cycleBadge = `${cycleDays} Hari`;
+  const pocketBudget = summary.safe_to_spend?.pocket_budget && summary.safe_to_spend.pocket_budget > 0
+    ? summary.safe_to_spend.pocket_budget
+    : 825000;
 
   // Akun utama bawaan siklus
   const defaultAccounts = [
@@ -49,27 +56,27 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
       tag: "Saku Operasional (55%)",
       balance: balanceMap["Mandiri"] ?? 0,
       spent: pocketSpent,
-      allocated: 825000,
+      allocated: pocketBudget,
       accentColor: "text-amberGold",
       barColor: "bg-amberGold",
-      badge: "14 Hari",
+      badge: cycleBadge,
     },
     {
       name: "Bank Jago",
       tag: "Subs & Tagihan (18.3%)",
       balance: balanceMap["Bank Jago"] ?? 0,
       spent: 265000,
-      allocated: 275000,
+      allocated: Math.round(pocketBudget * (18.3 / 55)),
       accentColor: "text-purple-400",
       barColor: "bg-purple-500",
-      badge: "14 Hari",
+      badge: cycleBadge,
     },
     {
       name: "Bibit",
       tag: "Investasi Portofolio (13.3%)",
       balance: balanceMap["Bibit"] ?? 0,
       spent: 0,
-      allocated: 200000,
+      allocated: Math.round(pocketBudget * (13.3 / 55)),
       accentColor: "text-teal-400",
       barColor: "bg-teal-500",
       badge: "Portofolio",
@@ -79,10 +86,10 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
       tag: "Hub & Dana Darurat (6.7%)",
       balance: balanceMap["BRI 1"] ?? 0,
       spent: 775583,
-      allocated: 100000,
+      allocated: Math.round(pocketBudget * (6.7 / 55)),
       accentColor: "text-cyanHub",
       barColor: "bg-cyanHub",
-      badge: "14 Hari",
+      badge: cycleBadge,
     },
     {
       name: "BRI 2",

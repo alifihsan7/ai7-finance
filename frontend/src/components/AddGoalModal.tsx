@@ -141,7 +141,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
       isOpen={isOpen}
       onClose={onClose}
       title="Buat Target Finansial Baru"
-      subtitle="Tetapkan milestone tabungan atau investasi untuk dipantau setiap siklus 14 hari"
+      subtitle="Tetapkan milestone tabungan atau investasi untuk dipantau setiap siklus anggaran"
       icon={<Target className="w-5 h-5 text-amberGold" />}
       accent="amber"
       maxWidth="lg"
