@@ -58,7 +58,7 @@ export function StrataAllocationBar({
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-slateText-primary">Distribusi Alokasi Uang Saku</h2>
+          <h2 className="text-base sm:text-lg font-bold text-slateText-primary">Distribusi Alokasi Anggaran</h2>
           <p className="text-xs sm:text-sm text-slateText-secondary mt-0.5">
             Plafon standar {formatRupiah(effectiveSalary)} / {cycleDays} hari langsung dipecah ke {activeBuckets.length} pos rekening & portofolio
           </p>

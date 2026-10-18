@@ -25,7 +25,7 @@ A personal finance tracking ecosystem designed for high-efficiency input on mobi
 
 1. Clone repository:
    ```bash
-   git clone https://github.com/alifihsan7/ai7-finance.git
+   git clone https://github.com/<username>/ai7-finance.git
    cd ai7-finance
    ```
 2. Install dependencies:

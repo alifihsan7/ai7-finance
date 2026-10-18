@@ -233,7 +233,7 @@ export default function PaycheckModal({
         body: JSON.stringify({
           total_amount: numTotal,
           date: cycleDate,
-          note: "Uang Saku Ortu 2-Mingguan",
+          note: "Alokasi Gajian Siklus",
           allocations: customAmounts,
         }),
       });
@@ -403,7 +403,7 @@ export default function PaycheckModal({
           ? "Panduan transfer m-banking & jembatan Flip bebas biaya admin"
           : view === "customize"
           ? "Konfigurasi rekening hub, jembatan transfer, dan pos alokasi dinamis"
-          : "Distribusi dana masuk orang tua dengan penyesuaian nominal per bagian"
+          : "Distribusi alokasi pemasukan gajian ke pos-pos rekening Anda"
       }
       icon={<Sparkles className="w-5 h-5 text-mintRise" />}
       accent="mint"

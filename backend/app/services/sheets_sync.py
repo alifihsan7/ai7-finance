@@ -38,7 +38,7 @@ DEFAULT_ENVELOPES = [
 ACCOUNT_FUNCTIONS = {
     "Bibit": "Portofolio Investasi Reksadana & Saham",
     "BRI 2": "Tabungan Dana Dingin Terkunci",
-    "Mandiri": "Uang Saku Operasional Belanja Harian",
+    "Mandiri": "Pos Belanja Operasional Harian",
     "BRI 1": "Penampung Gaji Masuk (Income Hub)",
     "Bank Jago": "Pos Tagihan Langganan Rutin & Gym"
 }

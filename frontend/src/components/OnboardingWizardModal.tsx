@@ -52,7 +52,7 @@ const DEFAULT_INITIAL_ACCOUNTS: InitialAccountInput[] = [
 ];
 
 const DEFAULT_BUCKETS: BucketInput[] = [
-  { account: "Mandiri", percentage: 55.0, via_gate: true, via_secondary: null, purpose: "Uang Saku Harian & Makan" },
+  { account: "Mandiri", percentage: 55.0, via_gate: true, via_secondary: null, purpose: "Kebutuhan Pokok & Operasional" },
   { account: "Bank Jago", percentage: 18.33, via_gate: true, via_secondary: null, purpose: "Langganan & Tagihan Rutin" },
   { account: "Bibit", percentage: 13.33, via_gate: true, via_secondary: "Bank Jago", purpose: "Investasi Portofolio" },
   { account: "BRI 2", percentage: 6.67, via_gate: false, via_secondary: null, purpose: "Tabungan Terkunci" },
@@ -358,8 +358,8 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: "biweekly", label: "2-Mingguan", desc: "14 Hari (Gajian Ortu)" },
-                  { id: "monthly", label: "Bulanan", desc: "30 Hari (Gaji Kantor)" },
+                  { id: "biweekly", label: "2-Mingguan", desc: "14 Hari (Bi-Weekly)" },
+                  { id: "monthly", label: "Bulanan", desc: "30 Hari (Gaji Bulanan)" },
                   { id: "weekly", label: "Mingguan", desc: "7 Hari (Frekuensi Cepat)" },
                   { id: "custom", label: "Kustom N-Hari", desc: "Fleksibel Bebas" },
                 ].map((item) => {

@@ -249,7 +249,7 @@ export function GoalsView({
           <div>
             <h3 className="text-base font-bold text-slateText-primary">Belum Ada Target Finansial</h3>
             <p className="text-xs sm:text-sm text-slateText-secondary mt-1 max-w-md mx-auto">
-              Mulai tetapkan target dana dingin BRI 2 atau portofolio investasi Bibit lo untuk memantau capaian finansial 14-harian.
+              Mulai tetapkan target tabungan masa depan atau portofolio investasi lo untuk memantau capaian finansial siklus.
             </p>
           </div>
           <button

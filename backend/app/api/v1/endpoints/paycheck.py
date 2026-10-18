@@ -53,7 +53,7 @@ def get_or_seed_buckets(db: Session, config_id: int = 1) -> List[PaycheckBucket]
                 percentage=55.0,
                 via_gate=True,
                 via_secondary=None,
-                purpose="Uang Saku Harian (Makan, Jajan, Laundry, Galon)",
+                purpose="Pos Belanja Operasional & Kebutuhan Pokok",
                 sort_order=1
             ),
             PaycheckBucket(

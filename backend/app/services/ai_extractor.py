@@ -55,7 +55,7 @@ def extract_from_media(
 
 Rekening yang terdaftar di sistem:
 {acc_list_str}
-Default rekening pengeluaran harian/uang saku adalah 'Mandiri'.
+Default rekening pengeluaran harian adalah rekening operasional utama.
 
 Kategori pengeluaran yang didukung:
 - Makanan & Minuman (makan nasi, warteg, resto, grabfood, gofood)
@@ -70,7 +70,7 @@ Kategori pengeluaran yang didukung:
 - Hiburan (Bioskop XXI, game steam)
 - Lain-lain
 
-Pemasukan: kategori 'Uang Saku Ortu' atau 'Pemasukan Lain'.
+Pemasukan: kategori 'Gajian' atau 'Pemasukan Lain'.
 
 Aturan Ekstraksi:
 1. Analisis konten dengan teliti. Jika ini struk/QRIS, cari TOTAL AKHIR/TOTAL BAYAR (bukan subtotal atau kembalian).
