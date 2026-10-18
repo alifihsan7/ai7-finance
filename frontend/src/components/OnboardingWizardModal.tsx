@@ -148,13 +148,21 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || "Gagal menyelesaikan proses onboarding");
+      let data: Record<string, unknown> | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        // non-JSON response fallback
       }
 
-      setStoredUser(data);
-      onComplete(data);
+      if (!res.ok || !data) {
+        const detail = (data as { detail?: string })?.detail;
+        throw new Error(detail || `Gagal menyelesaikan proses onboarding (Status: ${res.status})`);
+      }
+
+      const userData = data as unknown as UserProfile;
+      setStoredUser(userData);
+      onComplete(userData);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan pada server saat onboarding");
     } finally {

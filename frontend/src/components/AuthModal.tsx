@@ -45,14 +45,21 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || "Gagal masuk. Periksa kembali username dan password.");
+      let data: Record<string, unknown> | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        // non-JSON response fallback
+      }
+      if (!res.ok || !data) {
+        const detail = (data as { detail?: string })?.detail;
+        throw new Error(detail || `Gagal masuk (Status: ${res.status}). Periksa username dan password.`);
       }
 
-      setAuthToken(data.access_token);
-      setStoredUser(data.user);
-      onSuccess(data.user, false);
+      const authData = data as { access_token: string; user: UserProfile };
+      setAuthToken(authData.access_token);
+      setStoredUser(authData.user);
+      onSuccess(authData.user, false);
       onClose();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan saat masuk");
@@ -93,14 +100,21 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || "Gagal mendaftar akun baru.");
+      let data: Record<string, unknown> | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        // non-JSON response fallback
+      }
+      if (!res.ok || !data) {
+        const detail = (data as { detail?: string })?.detail;
+        throw new Error(detail || `Gagal mendaftar akun baru (Status: ${res.status}).`);
       }
 
-      setAuthToken(data.access_token);
-      setStoredUser(data.user);
-      onSuccess(data.user, true); // Trigger onboarding wizard for new user!
+      const authData = data as { access_token: string; user: UserProfile };
+      setAuthToken(authData.access_token);
+      setStoredUser(authData.user);
+      onSuccess(authData.user, true); // Trigger onboarding wizard for new user!
       onClose();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan saat mendaftar");

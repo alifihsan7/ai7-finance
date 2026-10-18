@@ -51,10 +51,18 @@ export function UserProfileModal({
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || "Gagal memperbarui profil");
+      let data: Record<string, unknown> | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        // non-JSON fallback
       }
+      if (!res.ok || !data) {
+        const detail = (data as { detail?: string })?.detail;
+        throw new Error(detail || `Gagal memperbarui profil (Status: ${res.status})`);
+      }
+
+      const updatedUser = data as unknown as UserProfile;
 
       // If telegram ID changed
       const tgNum = telegramIdStr.trim() ? parseInt(telegramIdStr.trim(), 10) : null;
@@ -71,8 +79,8 @@ export function UserProfileModal({
         setStoredUser(tgData);
         onUserUpdated(tgData);
       } else {
-        setStoredUser(data);
-        onUserUpdated(data);
+        setStoredUser(updatedUser);
+        onUserUpdated(updatedUser);
       }
 
       setMsg({ type: "success", text: "Profil dan pengaturan akun berhasil diperbarui!" });
