@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Search,
   Plus,
   Download,
   RefreshCw,
+  ChevronDown,
   CreditCard,
   ArrowUpRight,
   ArrowDownRight,
@@ -141,6 +142,8 @@ export default function ObsidianDashboard() {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
   const [customAccounts, setCustomAccounts] = useState<AccountItem[]>([]);
   const availableAccountNames = useMemo(() => {
     const defaults = ["BRI 2", "Bibit", "BRI 1", "Mandiri", "Bank Jago"];
@@ -219,6 +222,20 @@ export default function ObsidianDashboard() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+        setIsExportMenuOpen(false);
+      }
+    };
+    if (isExportMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isExportMenuOpen]);
 
   useEffect(() => {
     const initUser = async () => {
@@ -1026,11 +1043,11 @@ export default function ObsidianDashboard() {
           </div>
         )}
 
-        {/* Dynamic Header */}
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 pb-6 border-b border-obsidian-border">
-          <div>
+        {/* Refined Obsidian Slate Top Header */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-6 border-b border-obsidian-border">
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slateText-primary">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slateText-primary whitespace-nowrap">
                 {activeNav === "Ringkasan" && "Ringkasan Portofolio & Alokasi"}
                 {activeNav === "Target Finansial" && "Target Finansial & Milestone Tabungan"}
                 {activeNav === "Alokasi Amplop" && "Alokasi Amplop & Plafon Belanja"}
@@ -1045,69 +1062,82 @@ export default function ObsidianDashboard() {
                 onSelectPeriod={(p) => setSelectedPeriod(p)}
               />
             </div>
-            <p className="text-sm text-slateText-secondary mt-1.5">
-              {activeNav === "Ringkasan" && "Sistem keuangan terintegrasi PostgreSQL & Telegram Bot (@AI7Fin4nc3_bot)"}
-              {activeNav === "Target Finansial" && "Pantau akumulasi target dana dingin BRI 2, portofolio Bibit, dan pencapaian finansial"}
-              {activeNav === "Alokasi Amplop" && "Monitoring plafon belanja 4 amplop Mandiri & pos pendukung"}
-              {activeNav === "Rekening & Akun" && "Kekayaan bersih terbagi dalam seluruh rekening aktif dengan alokasi khusus"}
-              {activeNav === "Buku Transaksi" && "Histori seluruh pencatatan pengeluaran & pemasukan real-time"}
-              {activeNav === "Langganan & Tagihan" && "Kelola komitmen tagihan berulang dari pos Bank Jago (31.7%)"}
-              {activeNav === "Analisis & Tren" && "Evaluasi kecepatan belanja kumulatif vs batas aman harian"}
+            <p className="text-xs sm:text-sm text-slateText-secondary mt-1.5 line-clamp-1">
+              {activeNav === "Ringkasan" && "Ikhtisar saldo real-time, laju belanja harian, dan alokasi anggaran"}
+              {activeNav === "Target Finansial" && "Pantau akumulasi tabungan, portofolio investasi, dan milestone finansial"}
+              {activeNav === "Alokasi Amplop" && "Monitoring batas belanja amplop kebutuhan pokok dan pos operasional"}
+              {activeNav === "Rekening & Akun" && "Rincian saldo all-time dan pergerakan kas pada seluruh rekening aktif"}
+              {activeNav === "Buku Transaksi" && "Histori seluruh pencatatan pengeluaran, pemasukan, dan transfer kas"}
+              {activeNav === "Langganan & Tagihan" && "Kelola komitmen tagihan berulang dan evaluasi tanggal jatuh tempo"}
+              {activeNav === "Analisis & Tren" && "Evaluasi kecepatan belanja kumulatif vs batas aman anggaran"}
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full xl:w-auto">
+          {/* Action Toolbar */}
+          <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto justify-end shrink-0">
+            {/* Refresh Button (Icon-Only Compact) */}
             <button
               onClick={fetchData}
-              title="Refresh Data"
-              className="px-3 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+              title="Refresh Data Transaksi & Saldo"
+              className="p-2.5 text-slateText-secondary hover:text-slateText-primary bg-obsidian-card hover:bg-obsidian-hover border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl transition inline-flex items-center justify-center shrink-0 shadow-xs active:scale-95 cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-amberGold" : ""}`} />
-              <span className="hidden sm:inline whitespace-nowrap">Refresh</span>
             </button>
-            <a
-              href="/api/v1/transactions/export"
-              download
-              className="px-3 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
-            >
-              <Download className="w-4 h-4 text-slateText-muted shrink-0" />
-              <span className="hidden sm:inline whitespace-nowrap">Ekspor CSV</span>
-            </a>
-            {currentUser?.id === 1 && (
-              <a
-                href="https://docs.google.com/spreadsheets/d/1yq0SQLZ9QVUTeRksKNJtDKTyDGxUKn5fkUVnBxplhn4/edit"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 text-xs sm:text-sm font-medium border border-emerald-500/30 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
-                title="Buka Google Sheets Rapor"
+
+            {/* Export Dropdown Menu */}
+            <div className="relative" ref={exportMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsExportMenuOpen((prev) => !prev)}
+                className="px-3.5 py-2.5 text-xs sm:text-sm font-medium border border-obsidian-border rounded-xl bg-obsidian-card text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-xs active:scale-95"
               >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="hidden sm:inline whitespace-nowrap">Google Sheets</span>
-              </a>
-            )}
-            <button
-              onClick={() => {
-                if (currentUser) {
-                  setIsProfileModalOpen(true);
-                } else {
-                  setIsAuthModalOpen(true);
-                }
-              }}
-              title="Profil & Pengaturan Akun"
-              className="px-3 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
-            >
-              <div className="w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px] flex items-center justify-center shrink-0">
-                {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
-              </div>
-              <span className="hidden sm:inline font-semibold">
-                {currentUser ? currentUser.full_name : "Masuk / Akun"}
-              </span>
-            </button>
+                <Download className="w-4 h-4 text-slateText-muted shrink-0" />
+                <span className="font-semibold text-slateText-primary hidden sm:inline">Ekspor</span>
+                <ChevronDown className={`w-3.5 h-3.5 text-slateText-muted shrink-0 transition-transform duration-200 ${isExportMenuOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {isExportMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 p-1.5 bg-obsidian-panel/95 backdrop-blur-md border border-obsidian-borderStrong rounded-xl shadow-2xl z-50 text-xs font-mono space-y-1 animate-fadeIn">
+                  <a
+                    href="/api/v1/transactions/export"
+                    download
+                    onClick={() => setIsExportMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slateText-primary hover:bg-obsidian-hover hover:text-amberGold transition"
+                  >
+                    <Download className="w-4 h-4 text-slateText-muted shrink-0" />
+                    <div className="text-left font-sans">
+                      <div className="font-semibold text-xs text-slateText-primary">Unduh CSV Transaksi</div>
+                      <div className="text-[10px] text-slateText-muted">Seluruh histori ledger</div>
+                    </div>
+                  </a>
+
+                  {currentUser?.id === 1 && (
+                    <a
+                      href="https://docs.google.com/spreadsheets/d/1yq0SQLZ9QVUTeRksKNJtDKTyDGxUKn5fkUVnBxplhn4/edit"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsExportMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-emerald-400 hover:bg-emerald-500/10 transition border-t border-obsidian-border/50"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <div className="text-left font-sans min-w-0">
+                        <div className="font-semibold text-xs text-emerald-400 flex items-center gap-1">
+                          Google Sheets Rapor
+                          <ExternalLink className="w-3 h-3 opacity-70" />
+                        </div>
+                        <div className="text-[10px] text-slateText-muted">Spreadsheet sinkronisasi</div>
+                      </div>
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Contextual Primary Actions */}
             {activeNav === "Target Finansial" ? (
               <button
                 onClick={() => setIsAddGoalModalOpen(true)}
-                className="px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap"
+                className="px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
               >
                 <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                 <span className="whitespace-nowrap">Tambah Target</span>
@@ -1115,7 +1145,7 @@ export default function ObsidianDashboard() {
             ) : activeNav === "Langganan & Tagihan" ? (
               <button
                 onClick={() => setIsSubModalOpen(true)}
-                className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap"
+                className="px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
               >
                 <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                 <span className="whitespace-nowrap">Tambah Tagihan</span>
@@ -1124,14 +1154,14 @@ export default function ObsidianDashboard() {
               <>
                 <button
                   onClick={() => setIsTransferModalOpen(true)}
-                  className="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap"
+                  className="px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0 text-cyanHub" />
                   <span className="whitespace-nowrap font-semibold">Transfer Antar Akun</span>
                 </button>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap"
+                  className="px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Catat Transaksi</span>
@@ -1141,14 +1171,14 @@ export default function ObsidianDashboard() {
               <>
                 <button
                   onClick={() => setIsPaycheckModalOpen(true)}
-                  className="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap"
+                  className="px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <Sparkles className="w-4 h-4 shrink-0 text-mintRise" />
                   <span className="whitespace-nowrap font-semibold">Gajian Masuk</span>
                 </button>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap"
+                  className="px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Catat Transaksi</span>
