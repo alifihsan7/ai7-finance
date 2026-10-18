@@ -87,11 +87,21 @@ def get_monthly_summary(
     acc_rows = db.query(
         Transaction.account,
         func.sum(
-            case((Transaction.type == "income", Transaction.amount), else_=-Transaction.amount)
+            case(
+                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
+                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                else_=0
+            )
         ).label("balance")
-    ).group_by(Transaction.account).order_by(func.sum(
-        case((Transaction.type == "income", Transaction.amount), else_=-Transaction.amount)
-    ).desc()).all()
+    ).group_by(Transaction.account).order_by(
+        func.sum(
+            case(
+                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
+                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                else_=0
+            )
+        ).desc()
+    ).all()
 
     accounts = [AccountBalance(account=a.account, balance=int(a.balance or 0)) for a in acc_rows]
     total_balance = sum(a.balance for a in accounts)

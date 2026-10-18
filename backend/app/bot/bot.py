@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import time
 import requests
 from datetime import datetime, date, timedelta
@@ -64,7 +65,8 @@ MAIN_KEYBOARD = {
     "keyboard": [
         [{"text": "📊 Rekap"}, {"text": "💳 Saldo"}],
         [{"text": "🔔 Tagihan / Subs"}, {"text": "📜 Transaksi"}],
-        [{"text": "💰 Info Gajian"}, {"text": "🌐 Web Dashboard"}],
+        [{"text": "💰 Info Gajian"}, {"text": "🔄 Transfer"}],
+        [{"text": "🌐 Web Dashboard"}],
     ],
     "resize_keyboard": True,
     "is_persistent": True,
@@ -75,6 +77,7 @@ def setup_bot_commands():
         {"command": "menu", "description": "📱 Buka tombol menu navigasi"},
         {"command": "rekap", "description": "📊 Rekap pengeluaran & pacing belanja"},
         {"command": "saldo", "description": "💳 Estimasi saldo 4 rekening"},
+        {"command": "transfer", "description": "🔄 Transfer antar rekening"},
         {"command": "subs", "description": "🔔 Jadwal langganan & tagihan rutin"},
         {"command": "transaksi", "description": "📜 5 transaksi terakhir"},
         {"command": "gajian", "description": "💰 Auto-split gajian 14-harian"},
@@ -266,6 +269,124 @@ def handle_subs(chat_id: int, db: Session):
     lines.append("💡 _Saldo pos Jago lo disiapkan otomatis dari 31.7% gajian._")
     send_message(chat_id, "\n".join(lines))
 
+def normalize_account(raw: str):
+    if not raw:
+        return None
+    r = raw.strip().lower()
+    if "mandiri" in r:
+        return "Mandiri"
+    elif "jago" in r or "bibit" in r:
+        return "Bank Jago"
+    elif "bri 1" in r or "bri1" in r:
+        return "BRI 1"
+    elif "bri 2" in r or "bri2" in r:
+        return "BRI 2"
+    elif "cash" in r or "tunai" in r:
+        return "Cash"
+    return None
+
+def handle_transfer(chat_id: int, text: str, db: Session):
+    clean = text.strip()
+    if clean.lower() in ["/transfer", "transfer", "tf", "🔄 transfer"]:
+        guide = """🔄 **Panduan Transfer Antar Rekening**
+
+Gunakan format:
+`/transfer [nominal] dari [asal] ke [tujuan] [catatan]`
+atau singkat:
+`tf 100k mandiri ke bri 1 [catatan]`
+
+💡 **Contoh Praktis:**
+• `/transfer 200k dari mandiri ke bri 1 dana darurat`
+• `tf 150rb mandiri ke jago top up subs`
+• `tf 50k bri 1 ke mandiri tarik tunai`
+
+🏦 **Pilihan Rekening:**
+`Mandiri`, `Jago`, `BRI 1`, `BRI 2`, `Cash`
+
+ℹ️ _Transfer antar rekening hanya memindahkan saldo & tidak memotong batas pengeluaran (Safe-to-Spend)._"""
+        send_message(chat_id, guide)
+        return
+
+    pattern = re.compile(r"^(?:/transfer|transfer|tf)\s+([\d\.\,kKrbRB]+)\s+(?:dari\s+)?([a-zA-Z0-9\s]+?)\s+ke\s+([a-zA-Z0-9\s]+?)(?:\s*[:\-]\s*(.*)|\s+(.*))?$", re.IGNORECASE)
+    match = pattern.match(clean)
+    if not match:
+        send_message(chat_id, "⚠️ Format transfer tidak dikenali.\n\nContoh:\n`tf 100k mandiri ke bri 1`\natau ketik `/transfer` untuk panduan lengkap.")
+        return
+
+    amt_str, from_raw, to_raw, desc1, desc2 = match.groups()
+    from app.core.parser import parse_amount
+    amt, _ = parse_amount(amt_str)
+    if not amt or amt <= 0:
+        send_message(chat_id, "⚠️ Nominal transfer tidak valid.")
+        return
+
+    from_acc = normalize_account(from_raw)
+    to_acc = normalize_account(to_raw)
+
+    if not from_acc:
+        send_message(chat_id, f"⚠️ Rekening asal `{from_raw}` tidak dikenali.\nPilihan: Mandiri, Jago, BRI 1, BRI 2, Cash.")
+        return
+    if not to_acc:
+        send_message(chat_id, f"⚠️ Rekening tujuan `{to_raw}` tidak dikenali.\nPilihan: Mandiri, Jago, BRI 1, BRI 2, Cash.")
+        return
+    if from_acc == to_acc:
+        send_message(chat_id, "⚠️ Rekening asal dan rekening tujuan tidak boleh sama.")
+        return
+
+    desc = (desc1 or desc2 or "Transfer Antar Rekening").strip()
+    now_wib = datetime.now(WIB)
+    tx_date = now_wib.date()
+
+    tx_out = Transaction(
+        type="transfer_out",
+        amount=int(amt),
+        account=from_acc,
+        category="Transfer",
+        description=f"Transfer ke {to_acc}: {desc}",
+        raw_text=f"bot transfer: {clean}",
+        date=tx_date
+    )
+    tx_in = Transaction(
+        type="transfer_in",
+        amount=int(amt),
+        account=to_acc,
+        category="Transfer",
+        description=f"Transfer dari {from_acc}: {desc}",
+        raw_text=f"bot transfer: {clean}",
+        date=tx_date
+    )
+
+    db.add(tx_out)
+    db.add(tx_in)
+    db.commit()
+
+    def get_acc_balance(acc_name):
+        row = db.query(
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
+                        (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                        else_=0
+                    )
+                ), 0
+            )
+        ).filter(Transaction.account == acc_name).scalar()
+        return int(row or 0)
+
+    bal_from = get_acc_balance(from_acc)
+    bal_to = get_acc_balance(to_acc)
+
+    res_msg = f"""🔄 **Transfer Antar Rekening Berhasil!**
+
+💸 **Nominal:** `{format_rp(int(amt))}`
+📤 **Dari:** {from_acc} (Sisa Saldo: `{format_rp(bal_from)}`)
+📥 **Ke:** {to_acc} (Saldo Baru: `{format_rp(bal_to)}`)
+📝 **Keterangan:** {desc}
+
+ℹ️ _Saldo berhasil dipindahkan. Transaksi ini tidak memotong kuota Safe-to-Spend._"""
+    send_message(chat_id, res_msg)
+
 def handle_batal(chat_id: int, db: Session):
     last = db.query(Transaction).order_by(desc(Transaction.id)).first()
     if not last:
@@ -278,6 +399,16 @@ def handle_batal(chat_id: int, db: Session):
         "account": last.account,
         "category": last.category
     }
+
+    if last.type == "transfer_in":
+        prev = db.query(Transaction).filter(
+            Transaction.id == last.id - 1,
+            Transaction.type == "transfer_out",
+            Transaction.amount == last.amount
+        ).first()
+        if prev:
+            db.delete(prev)
+
     db.delete(last)
     db.commit()
 
@@ -515,6 +646,8 @@ def process_update(update: dict):
             send_dashboard_link(chat_id)
         elif lower_text in ["📱 menu", "menu"] or cmd in ["/menu"]:
             handle_menu(chat_id)
+        elif lower_text in ["🔄 transfer", "transfer", "tf"] or cmd in ["/transfer", "/tf"] or lower_text.startswith("transfer ") or lower_text.startswith("tf "):
+            handle_transfer(chat_id, text, db)
         elif cmd in ["/start", "/help"]:
             handle_start(chat_id)
         elif cmd in ["/gajian"]:
