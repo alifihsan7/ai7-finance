@@ -694,6 +694,26 @@ export default function ObsidianDashboard() {
                     : "Siklus Anggaran"}
                 </span>
               </div>
+              {summary.safe_to_spend && (
+                <div className="space-y-1 pt-0.5">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-slateText-muted">
+                      Hari ke-{summary.safe_to_spend.day_of_cycle || 1}/{summary.safe_to_spend.cycle_days || 14}
+                    </span>
+                    <span className="text-amberGold font-mono font-semibold">
+                      {Math.min(100, Math.round(((summary.safe_to_spend.day_of_cycle || 1) / (summary.safe_to_spend.cycle_days || 14)) * 100))}%
+                    </span>
+                  </div>
+                  <div className="w-full h-1 bg-obsidian-panel rounded-full overflow-hidden border border-obsidian-border/40">
+                    <div
+                      className="h-full bg-gradient-to-r from-amberGold/80 to-amberGold rounded-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(100, Math.round(((summary.safe_to_spend.day_of_cycle || 1) / (summary.safe_to_spend.cycle_days || 14)) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </button>
         </div>
@@ -895,6 +915,26 @@ export default function ObsidianDashboard() {
                       : `${summary.safe_to_spend?.cycle_days || 30} Hari`}
                   </span>
                 </div>
+                {summary.safe_to_spend && (
+                  <div className="space-y-1 pt-0.5">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span>
+                        Hari ke-{summary.safe_to_spend.day_of_cycle || 1}/{summary.safe_to_spend.cycle_days || 14}
+                      </span>
+                      <span className="text-amberGold font-mono font-semibold">
+                        {Math.min(100, Math.round(((summary.safe_to_spend.day_of_cycle || 1) / (summary.safe_to_spend.cycle_days || 14)) * 100))}%
+                      </span>
+                    </div>
+                    <div className="w-full h-1 bg-obsidian-panel rounded-full overflow-hidden border border-obsidian-border/40">
+                      <div
+                        className="h-full bg-gradient-to-r from-amberGold/80 to-amberGold rounded-full transition-all duration-300"
+                        style={{
+                          width: `${Math.min(100, Math.round(((summary.safe_to_spend.day_of_cycle || 1) / (summary.safe_to_spend.cycle_days || 14)) * 100))}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
