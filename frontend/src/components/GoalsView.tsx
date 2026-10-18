@@ -138,14 +138,14 @@ export function GoalsView({
   const overallPercentage = totalTarget > 0 ? Math.round((totalCurrent / totalTarget) * 1000) / 10 : 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 sm:space-y-10">
       {/* Top Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-[#0E1015] border border-white/[0.07] rounded-xl p-5 space-y-2 shadow-xs">
-          <div className="text-xs font-medium text-slateText-muted uppercase tracking-wider truncate">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+        <div className="bg-[#0E1015] border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
+          <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Total Target Finansial
           </div>
-          <div className="text-2xl font-bold font-mono text-white tracking-tight truncate">
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight truncate">
             {formatRupiah(totalTarget)}
           </div>
           <div className="text-xs text-slateText-secondary font-mono">
@@ -153,11 +153,11 @@ export function GoalsView({
           </div>
         </div>
 
-        <div className="bg-[#0E1015] border border-white/[0.07] rounded-xl p-5 space-y-2 shadow-xs">
-          <div className="text-xs font-medium text-slateText-muted uppercase tracking-wider truncate">
+        <div className="bg-[#0E1015] border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
+          <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Total Terkumpul
           </div>
-          <div className="text-2xl font-bold font-mono text-emerald-400 tracking-tight truncate">
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-400 tracking-tight truncate">
             {formatRupiah(totalCurrent)}
           </div>
           <div className="text-xs text-slateText-secondary font-mono">
@@ -165,11 +165,11 @@ export function GoalsView({
           </div>
         </div>
 
-        <div className="bg-[#0E1015] border border-white/[0.07] rounded-xl p-5 space-y-2 shadow-xs">
-          <div className="text-xs font-medium text-slateText-muted uppercase tracking-wider truncate">
+        <div className="bg-[#0E1015] border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
+          <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Rata-rata Capaian
           </div>
-          <div className="text-2xl font-bold font-mono text-cyan-400 tracking-tight truncate">
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-cyan-400 tracking-tight truncate">
             {overallPercentage}%
           </div>
           <div className="text-xs text-slateText-secondary font-mono truncate">
@@ -177,11 +177,11 @@ export function GoalsView({
           </div>
         </div>
 
-        <div className="bg-[#0E1015] border border-white/[0.07] rounded-xl p-5 space-y-2 shadow-xs">
-          <div className="text-xs font-medium text-slateText-muted uppercase tracking-wider truncate">
+        <div className="bg-[#0E1015] border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
+          <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Status Sasaran
           </div>
-          <div className="text-2xl font-bold font-mono text-white tracking-tight truncate">
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight truncate">
             {goals.filter((g) => g.remaining_amount === 0).length} / {goals.length}{" "}
             <span className="text-xs font-normal text-slateText-muted font-sans">Tercapai</span>
           </div>
@@ -192,20 +192,20 @@ export function GoalsView({
       </div>
 
       {/* Action Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-1">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-slateText-primary flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-slateText-primary flex items-center gap-2.5">
             <Target className="w-5 h-5 text-amberGold" />
             Milestone Tracker Tabungan & Investasi
           </h2>
-          <p className="text-xs sm:text-sm text-slateText-secondary mt-0.5">
+          <p className="text-xs sm:text-sm text-slateText-secondary mt-1">
             Pantau akumulasi target dana dingin BRI 2, portofolio Bibit, dan alokasi tabungan masa depan
           </p>
         </div>
 
         <button
           onClick={onOpenAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-amberGold text-obsidian-bg font-semibold rounded-lg hover:bg-amber-400 transition-colors shadow-xs text-sm shrink-0"
+          className="flex items-center gap-2 px-4.5 py-2.5 bg-amberGold text-obsidian-bg font-semibold rounded-xl hover:bg-amber-400 transition-colors shadow-xs text-sm shrink-0"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
           <span>Tambah Target Baru</span>
@@ -214,7 +214,7 @@ export function GoalsView({
 
       {/* Milestone Cards Grid */}
       {goals.length === 0 ? (
-        <div className="bg-[#0E1015] border border-white/[0.07] rounded-2xl p-12 text-center space-y-4">
+        <div className="bg-[#0E1015] border border-white/[0.08] rounded-2xl p-12 text-center space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-amberGold/10 border border-amberGold/20 flex items-center justify-center mx-auto text-amberGold">
             <Target className="w-7 h-7" />
           </div>
@@ -233,7 +233,7 @@ export function GoalsView({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-7 lg:gap-8">
           {goals.map((goal) => {
             const theme = COLOR_THEMES[goal.color] || COLOR_THEMES.emerald;
             const isCompleted = goal.remaining_amount === 0;
@@ -241,26 +241,26 @@ export function GoalsView({
             return (
               <div
                 key={goal.id}
-                className="group relative bg-[#0E1015] border border-white/[0.08] hover:border-white/[0.18] rounded-2xl p-5.5 flex flex-col justify-between transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 overflow-hidden"
+                className="group relative bg-[#0E1015] border border-white/[0.08] hover:border-white/[0.2] rounded-2xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 overflow-hidden"
               >
                 {/* Subtle corner ambient glow */}
                 <div
-                  className={`pointer-events-none absolute -top-16 -right-16 w-36 h-36 rounded-full blur-3xl opacity-15 transition-opacity group-hover:opacity-25 ${theme.radialGlow}`}
+                  className={`pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-15 transition-opacity group-hover:opacity-30 ${theme.radialGlow}`}
                 />
 
-                <div className="space-y-4 relative z-1">
+                <div className="space-y-6 relative z-1">
                   {/* Top Header: Icon + Category Badge + Account + Actions */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-start justify-between gap-3.5">
+                    <div className="flex items-center gap-3.5 min-w-0">
                       {/* Glass icon container */}
-                      <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0 shadow-xs">
+                      <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0 shadow-xs">
                         {renderGoalIcon(goal.icon, goal.name, goal.category)}
                       </div>
 
-                      <div className="min-w-0">
+                      <div className="min-w-0 space-y-1">
                         {/* Ghost badges with glowing status dot */}
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-[11px] font-medium text-slateText-secondary">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-[11px] font-medium text-slateText-secondary">
                             <span className={`w-1.5 h-1.5 rounded-full ${theme.dot}`} />
                             {goal.category}
                           </span>
@@ -276,7 +276,7 @@ export function GoalsView({
                           )}
                         </div>
 
-                        <h3 className="font-semibold text-base text-white mt-1 truncate tracking-tight">
+                        <h3 className="font-bold text-base sm:text-lg text-white truncate tracking-tight">
                           {goal.name}
                         </h3>
                       </div>
@@ -286,55 +286,55 @@ export function GoalsView({
                     <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => onEdit(goal)}
-                        className="p-1.5 text-slateText-muted hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors"
+                        className="p-1.5 text-slateText-muted hover:text-white hover:bg-white/[0.08] rounded-lg transition-colors"
                         title="Ubah Target"
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
+                        <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDelete(goal.id)}
                         className="p-1.5 text-slateText-muted hover:text-coralFall hover:bg-coralFall/10 rounded-lg transition-colors"
                         title="Hapus Target"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
 
                   {/* Amounts & Percentage Display */}
-                  <div className="pt-1">
+                  <div className="space-y-2 pt-1">
                     <div className="flex items-baseline justify-between gap-2">
                       <div className="flex items-baseline gap-1 text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight">
-                        <span className="text-xs font-sans font-normal text-slateText-muted">Rp</span>
+                        <span className="text-sm font-sans font-normal text-slateText-muted">Rp</span>
                         <span>{formatNumber(goal.current_amount)}</span>
                       </div>
                       <div
-                        className={`text-xs font-mono font-bold px-2 py-0.5 rounded-md border ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}
+                        className={`text-xs font-mono font-bold px-2.5 py-1 rounded-md border ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}
                       >
                         {goal.percentage}%
                       </div>
                     </div>
-                    <div className="flex justify-between items-center text-xs font-mono text-slateText-muted mt-1">
+                    <div className="flex justify-between items-center text-xs font-mono text-slateText-muted">
                       <span>Target: {formatRupiah(goal.target_amount)}</span>
                     </div>
                   </div>
 
                   {/* Sleek Minimal Progress Bar */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2 pt-1">
                     <div className="h-2 w-full bg-white/[0.06] rounded-full overflow-hidden p-[1px]">
                       <div
                         className={`h-full bg-gradient-to-r ${theme.gradient} ${theme.glow} transition-all duration-700 rounded-full`}
                         style={{ width: `${Math.min(100, Math.max(3, goal.percentage))}%` }}
                       />
                     </div>
-                    <div className="flex justify-between items-center text-[11px] font-mono text-slateText-muted">
+                    <div className="flex justify-between items-center text-xs font-mono text-slateText-muted">
                       <span>{isCompleted ? "Tercapai 100%" : `${goal.percentage}% terkumpul`}</span>
                       <span>{isCompleted ? "Selesai" : `Sisa ${formatRupiah(goal.remaining_amount)}`}</span>
                     </div>
                   </div>
 
-                  {/* Clean Projections Separator (No Box-in-a-Box) */}
-                  <div className="border-t border-white/[0.06] pt-3 text-xs space-y-1.5">
+                  {/* Clean Projections Separator (Generous Padding, No Box) */}
+                  <div className="border-t border-white/[0.08] pt-4.5 space-y-2 text-xs">
                     {isCompleted ? (
                       <div className="flex items-center gap-2 text-emerald-400 font-medium">
                         <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -342,7 +342,7 @@ export function GoalsView({
                       </div>
                     ) : goal.estimated_cycles !== null ? (
                       <div className="flex items-start justify-between gap-2 text-slateText-secondary">
-                        <div className="flex items-center gap-1.5 min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
                           <Clock className="w-3.5 h-3.5 text-slateText-muted shrink-0" />
                           <span className="text-slateText-primary font-medium truncate">
                             ~{goal.estimated_cycles} siklus lagi{" "}
@@ -352,28 +352,28 @@ export function GoalsView({
                           </span>
                         </div>
                         {goal.estimated_finish_date && (
-                          <div className="text-[11px] font-mono text-slateText-muted shrink-0">
+                          <div className="text-xs font-mono text-slateText-muted shrink-0">
                             Est: <span className="text-slateText-secondary">{formatDateIndo(goal.estimated_finish_date)}</span>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="text-slateText-muted text-[11px]">
+                      <div className="text-slateText-muted text-xs">
                         Konsisten sisihkan dana rutin untuk melihat perkiraan tuntas.
                       </div>
                     )}
 
                     {goal.target_date && (
-                      <div className="flex items-center gap-2 text-[11px] text-slateText-muted">
+                      <div className="flex items-center gap-2 text-xs text-slateText-muted pt-0.5">
                         <Calendar className="w-3.5 h-3.5 text-slateText-muted shrink-0" />
                         <span>Deadline: <span className="font-mono text-slateText-secondary">{formatDateIndo(goal.target_date)}</span></span>
                       </div>
                     )}
                   </div>
 
-                  {/* Clean Notes (No quotation marks, no italic slanting) */}
+                  {/* Clean Notes with generous margin */}
                   {goal.notes && (
-                    <p className="text-[11px] text-slateText-muted line-clamp-2 leading-relaxed pt-1">
+                    <p className="text-xs text-slateText-muted line-clamp-2 leading-relaxed pt-3 border-t border-white/[0.04]">
                       {goal.notes}
                     </p>
                   )}
