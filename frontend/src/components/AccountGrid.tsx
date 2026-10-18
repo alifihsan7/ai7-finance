@@ -172,20 +172,38 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
 
             <div className="mt-4 pt-3 border-t border-obsidian-border/50">
               {acc.name === "Bibit" ? (
-                <div>
-                  <div className="flex justify-between items-center gap-1.5 text-[11px] sm:text-xs text-teal-400 font-mono mb-1.5">
-                    <span className="truncate">Target Portofolio</span>
-                    <span className="shrink-0 whitespace-nowrap">+{formatRupiah(acc.allocated)}/siklus</span>
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5 text-[11px] text-teal-400 font-mono">
+                    <span className="whitespace-nowrap">Target Portofolio</span>
+                    <span className="whitespace-nowrap font-medium text-teal-300">+{formatRupiah(acc.allocated)}/siklus</span>
                   </div>
                   <div className="h-1.5 bg-obsidian-panel rounded-full overflow-hidden">
                     <div style={{ width: "100%" }} className="h-full bg-teal-500"></div>
                   </div>
                 </div>
               ) : hasPlafon ? (
-                <div>
-                  <div className="flex justify-between items-center gap-1.5 text-[11px] sm:text-xs text-slateText-secondary font-mono mb-1.5">
-                    <span className="shrink-0 whitespace-nowrap">Terpakai {pctUsed}%</span>
-                    <span className="truncate text-right">Plafon: {formatRupiah(acc.allocated)}</span>
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[11px] font-mono">
+                    <span className="text-slateText-secondary whitespace-nowrap">
+                      Terpakai{" "}
+                      <strong
+                        className={
+                          pctUsed > 85
+                            ? "text-coralFall"
+                            : pctUsed > 60
+                            ? "text-amberGold"
+                            : "text-slateText-primary"
+                        }
+                      >
+                        {pctUsed}%
+                      </strong>
+                    </span>
+                    <span className="text-slateText-muted whitespace-nowrap text-right">
+                      Plafon:{" "}
+                      <strong className="text-slateText-primary font-medium">
+                        {formatRupiah(acc.allocated)}
+                      </strong>
+                    </span>
                   </div>
                   <div className="h-1.5 bg-obsidian-panel rounded-full overflow-hidden">
                     <div
@@ -197,7 +215,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between text-xs text-slateText-muted font-mono">
+                <div className="flex items-center justify-between text-xs text-slateText-muted font-mono py-1">
                   <span>Status</span>
                   <span className="text-mintRise shrink-0 whitespace-nowrap">● Aktif</span>
                 </div>
