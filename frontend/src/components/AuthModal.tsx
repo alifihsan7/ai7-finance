@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LogIn, UserPlus, Shield, Sparkles, AlertCircle, KeyRound, AtSign, User, Info } from "lucide-react";
+import { LogIn, UserPlus, Shield, AlertCircle, KeyRound, AtSign, User, Info } from "lucide-react";
 import { CustomModal } from "./ui/CustomModal";
 import { setAuthToken, setStoredUser, UserProfile } from "@/lib/api";
 
@@ -229,12 +229,6 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
     }
   };
 
-  const fillQuickAlif = () => {
-    setLoginId("alifihsan");
-    setLoginPassword("alifihsan2026");
-    setError(null);
-  };
-
   return (
     <CustomModal
       isOpen={isOpen}
@@ -394,18 +388,6 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   required
                 />
               </div>
-            </div>
-
-            {/* Quick Demo Pre-fill for Alif */}
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={fillQuickAlif}
-                className="w-full py-1.5 px-3 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-[11px] text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition-colors"
-              >
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                Quick Login Akun Utama (Alif Ihsan)
-              </button>
             </div>
 
             <div className="pt-2">
