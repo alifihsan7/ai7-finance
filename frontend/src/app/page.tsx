@@ -676,17 +676,22 @@ export default function ObsidianDashboard() {
                 Active
               </span>
             </div>
-            <div className="text-[11px] text-slateText-secondary space-y-1 pt-1 border-t border-obsidian-border/50">
-              <div className="flex items-center justify-between">
-                <span className="text-slateText-muted">Telegram</span>
-                <span className="font-mono text-slateText-primary text-[10px]">
+            <div className="text-[11px] text-slateText-secondary space-y-1.5 pt-1.5 border-t border-obsidian-border/50">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slateText-muted shrink-0 text-[11px]">Telegram</span>
+                <span className="font-mono text-slateText-primary text-[10px] truncate text-right">
                   {currentUser?.telegram_chat_id ? `ID: ${currentUser.telegram_chat_id}` : "Belum Taut"}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slateText-muted">Siklus</span>
-                <span className="text-amberGold font-medium text-[10px]">
-                  {summary.period_label || "Siklus Anggaran"}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slateText-muted shrink-0 text-[11px]">Siklus</span>
+                <span
+                  className="text-amberGold font-medium text-[10px] truncate text-right max-w-[140px]"
+                  title={summary.period_label || "Siklus Anggaran"}
+                >
+                  {summary.period_label
+                    ? summary.period_label.replace(/^Siklus\s+/i, "").replace(/\s+202\d\)/, ")")
+                    : "Siklus Anggaran"}
                 </span>
               </div>
             </div>
@@ -875,14 +880,20 @@ export default function ObsidianDashboard() {
                   Live Synced
                 </span>
               </div>
-              <div className="text-slateText-muted space-y-1 text-[11px]">
-                <div className="flex items-center justify-between">
-                  <span>Telegram Bot</span>
-                  <span className="font-mono text-slateText-primary">@AI7Fin4nc3_bot</span>
+              <div className="text-slateText-muted space-y-1.5 text-[11px]">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="shrink-0">Telegram</span>
+                  <span className="font-mono text-slateText-primary text-[10px] truncate text-right">
+                    {currentUser?.telegram_chat_id ? `ID: ${currentUser.telegram_chat_id}` : "Belum Taut"}
+                  </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span>Mode Siklus</span>
-                  <span className="text-amberGold font-medium">{summary.safe_to_spend?.cycle_days || 30} Hari</span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="shrink-0">Siklus</span>
+                  <span className="text-amberGold font-medium text-[10px] truncate text-right">
+                    {summary.period_label
+                      ? summary.period_label.replace(/^Siklus\s+/i, "").replace(/\s+202\d\)/, ")")
+                      : `${summary.safe_to_spend?.cycle_days || 30} Hari`}
+                  </span>
                 </div>
               </div>
             </div>
