@@ -31,7 +31,13 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
+import { PeriodSelector, PeriodOption } from "@/components/PeriodSelector";
+
 interface MonthlySummary {
+  period_type?: string;
+  period_label?: string;
+  start_date?: string;
+  end_date?: string;
   month: string;
   income: number;
   expense: number;
@@ -103,6 +109,16 @@ export default function ObsidianDashboard() {
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Period filter state
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption>({
+    id: "cycle_current",
+    type: "cycle",
+    label: "Siklus 14 Hari (Aktif)",
+    start: "2026-10-11",
+    end: "2026-10-24",
+    is_current: true,
+  });
   const [paycheckLoading, setPaycheckLoading] = useState(false);
   const [subToDelete, setSubToDelete] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -240,15 +256,27 @@ export default function ObsidianDashboard() {
   const fetchData = async () => {
     try {
       setLoading(true);
+
+      const periodParams = new URLSearchParams();
+      periodParams.append("period_type", selectedPeriod.type);
+      if (selectedPeriod.start) periodParams.append("start", selectedPeriod.start);
+      if (selectedPeriod.end) periodParams.append("end", selectedPeriod.end);
+      if (selectedPeriod.month) periodParams.append("month", selectedPeriod.month);
+
+      const txParams = new URLSearchParams();
+      txParams.append("limit", "100");
+      if (selectedPeriod.start) txParams.append("start_date", selectedPeriod.start);
+      if (selectedPeriod.end) txParams.append("end_date", selectedPeriod.end);
+
       const [txRes, sumRes, subRes] = await Promise.all([
-        fetch("/api/v1/transactions?limit=50"),
-        fetch("/api/v1/analytics/summary"),
+        fetch(`/api/v1/transactions?${txParams.toString()}`),
+        fetch(`/api/v1/analytics/summary?${periodParams.toString()}`),
         fetch("/api/v1/subscriptions"),
       ]);
 
       if (txRes.ok) {
         const txData = await txRes.json();
-        if (Array.isArray(txData) && txData.length > 0) {
+        if (Array.isArray(txData)) {
           setTransactions(txData);
         }
       }
@@ -271,7 +299,7 @@ export default function ObsidianDashboard() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [selectedPeriod]);
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -513,9 +541,10 @@ export default function ObsidianDashboard() {
                 {activeNav === "Langganan & Tagihan" && "Pelacak Langganan & Tagihan Rutin"}
                 {activeNav === "Analisis & Tren" && "Analisis Tren & Burn-Rate Pengeluaran"}
               </h1>
-              <span className="px-3 py-1 rounded-md text-xs font-mono font-medium bg-obsidian-card border border-obsidian-border text-slateText-secondary">
-                11 Okt – 24 Okt (Hari 8/14)
-              </span>
+              <PeriodSelector
+                currentPeriod={selectedPeriod}
+                onSelectPeriod={(p) => setSelectedPeriod(p)}
+              />
             </div>
             <p className="text-sm text-slateText-secondary mt-1.5">
               {activeNav === "Ringkasan" && "Sistem keuangan 2-mingguan terintegrasi PostgreSQL & Telegram Bot"}
@@ -619,7 +648,7 @@ export default function ObsidianDashboard() {
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm pt-3 border-t border-obsidian-border/80">
                   <span className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium">
                     <ArrowUpRight className="w-4 h-4" />
-                    {formatRupiah(summary.income)} gajian siklus ini
+                    {formatRupiah(summary.income)} pemasukan periode ini
                   </span>
                   <span className="text-obsidian-borderStrong">•</span>
                   <span className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium">
@@ -664,10 +693,11 @@ export default function ObsidianDashboard() {
                     </strong>
                   </div>
                   <div className="flex justify-between text-slateText-secondary">
-                    <span>Waktu Siklus:</span>
+                    <span>Rentang Waktu:</span>
                     <span className="text-slateText-primary">
-                      Hari ke-{summary.safe_to_spend?.day_of_cycle || 1} dari 14 (
-                      {summary.safe_to_spend?.days_remaining || 14} hari tersisa)
+                      {summary.safe_to_spend?.days_remaining === 0
+                        ? "Periode Berakhir"
+                        : `Hari ke-${summary.safe_to_spend?.day_of_cycle || 1} (${summary.safe_to_spend?.days_remaining || 0} hari tersisa)`}
                     </span>
                   </div>
                 </div>

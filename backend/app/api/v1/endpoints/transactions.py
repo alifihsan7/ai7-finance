@@ -26,27 +26,36 @@ router = APIRouter()
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 
 @router.get("", response_model=List[TransactionOut])
-def list_transactions(
+def get_transactions(
+    skip: int = 0,
+    limit: int = 50,
     month: Optional[str] = Query(None, description="Format YYYY-MM"),
+    start_date: Optional[str] = Query(None, description="Format YYYY-MM-DD"),
+    end_date: Optional[str] = Query(None, description="Format YYYY-MM-DD"),
     category: Optional[str] = None,
     account: Optional[str] = None,
     type: Optional[str] = None,
     search: Optional[str] = None,
-    limit: int = 100,
-    offset: int = 0,
     db: Session = Depends(get_db)
 ):
     query = db.query(Transaction)
 
-    if month:
+    if start_date and end_date:
+        try:
+            s_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
+            e_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
+            query = query.filter(Transaction.date >= s_dt, Transaction.date <= e_dt)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid start_date/end_date format, use YYYY-MM-DD")
+    elif month and month != "all":
         try:
             yr, mo = map(int, month.split("-"))
-            start_date = date(yr, mo, 1)
+            s_dt = date(yr, mo, 1)
             if mo == 12:
-                end_date = date(yr + 1, 1, 1)
+                e_dt = date(yr + 1, 1, 1)
             else:
-                end_date = date(yr, mo + 1, 1)
-            query = query.filter(Transaction.date >= start_date, Transaction.date < end_date)
+                e_dt = date(yr, mo + 1, 1)
+            query = query.filter(Transaction.date >= s_dt, Transaction.date < e_dt)
         except Exception:
             raise HTTPException(status_code=400, detail="Invalid month format, use YYYY-MM")
 
@@ -63,7 +72,7 @@ def list_transactions(
             (Transaction.raw_text.ilike(search_filter))
         )
 
-    return query.order_by(desc(Transaction.id)).offset(offset).limit(limit).all()
+    return query.order_by(Transaction.date.desc(), Transaction.id.desc()).offset(skip).limit(limit).all()
 
 @router.post("", response_model=TransactionOut)
 def create_transaction(

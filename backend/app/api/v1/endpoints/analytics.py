@@ -21,33 +21,172 @@ from app.core.config import settings
 router = APIRouter()
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 
+@router.get("/periods")
+def get_available_periods(db: Session = Depends(get_db)):
+    now_wib = datetime.now(WIB)
+    today_wib = now_wib.date()
+
+    # 1. Ambil semua gajian unik
+    paycheck_rows = db.query(Transaction.date).filter(
+        Transaction.type == "income",
+        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
+    ).order_by(Transaction.date.desc()).distinct().all()
+
+    cycles = []
+    # Jika tidak ada gajian sama sekali, buat 1 default cycle
+    if not paycheck_rows:
+        default_start = today_wib
+        default_end = default_start + timedelta(days=13)
+        cycles.append({
+            "id": f"cycle_{default_start}",
+            "type": "cycle",
+            "start": str(default_start),
+            "end": str(default_end),
+            "label": f"Siklus 14 Hari ({default_start.strftime('%d %b')} – {default_end.strftime('%d %b %Y')})",
+            "is_current": True
+        })
+    else:
+        for idx, row in enumerate(paycheck_rows):
+            c_start = row.date
+            c_end = c_start + timedelta(days=13)
+            is_cur = (c_start <= today_wib <= c_end) or (idx == 0 and today_wib >= c_start)
+            status_text = " (Aktif)" if is_cur else ""
+            cycles.append({
+                "id": f"cycle_{c_start}",
+                "type": "cycle",
+                "start": str(c_start),
+                "end": str(c_end),
+                "label": f"Siklus {c_start.strftime('%d %b')} – {c_end.strftime('%d %b %Y')}{status_text}",
+                "is_current": is_cur
+            })
+
+    # 2. Minggu ini & minggu lalu
+    this_week_start = today_wib - timedelta(days=today_wib.weekday())
+    this_week_end = this_week_start + timedelta(days=6)
+    last_week_start = this_week_start - timedelta(days=7)
+    last_week_end = last_week_start + timedelta(days=6)
+
+    weeks = [
+        {
+            "id": f"week_{this_week_start}",
+            "type": "week",
+            "start": str(this_week_start),
+            "end": str(this_week_end),
+            "label": f"Minggu Ini ({this_week_start.strftime('%d %b')} – {this_week_end.strftime('%d %b %Y')})",
+            "is_current": True
+        },
+        {
+            "id": f"week_{last_week_start}",
+            "type": "week",
+            "start": str(last_week_start),
+            "end": str(last_week_end),
+            "label": f"Minggu Lalu ({last_week_start.strftime('%d %b')} – {last_week_end.strftime('%d %b %Y')})",
+            "is_current": False
+        }
+    ]
+
+    # 3. Bulan (bulan ini & 5 bulan ke belakang)
+    months = []
+    curr_yr = now_wib.year
+    curr_mo = now_wib.month
+    for i in range(6):
+        target_mo = curr_mo - i
+        target_yr = curr_yr
+        while target_mo <= 0:
+            target_mo += 12
+            target_yr -= 1
+        m_start = date(target_yr, target_mo, 1)
+        next_m = date(target_yr + 1, 1, 1) if target_mo == 12 else date(target_yr, target_mo + 1, 1)
+        m_end = next_m - timedelta(days=1)
+        is_cur = (target_yr == curr_yr and target_mo == curr_mo)
+        months.append({
+            "id": f"month_{target_yr:04d}_{target_mo:02d}",
+            "type": "month",
+            "month": f"{target_yr:04d}-{target_mo:02d}",
+            "start": str(m_start),
+            "end": str(m_end),
+            "label": f"Bulan {m_start.strftime('%B %Y')}{' (Bulan Ini)' if is_cur else ''}",
+            "is_current": is_cur
+        })
+
+    return {
+        "cycles": cycles,
+        "weeks": weeks,
+        "months": months
+    }
+
 @router.get("/summary", response_model=MonthlySummary)
 def get_monthly_summary(
     month: Optional[str] = Query(None, description="Format YYYY-MM"),
+    period_type: Optional[str] = Query("cycle", description="cycle | week | month | custom"),
+    start: Optional[str] = Query(None, description="Format YYYY-MM-DD"),
+    end: Optional[str] = Query(None, description="Format YYYY-MM-DD"),
     db: Session = Depends(get_db)
 ):
     now_wib = datetime.now(WIB)
-    if not month:
-        yr = now_wib.year
-        mo = now_wib.month
-        month_str = f"{yr:04d}-{mo:02d}"
+    today_wib = now_wib.date()
+
+    # Cari daftar seluruh gajian yang ada di database untuk referensi siklus
+    paychecks = db.query(Transaction).filter(
+        Transaction.type == "income",
+        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
+    ).order_by(desc(Transaction.date), desc(Transaction.id)).all()
+
+    # Default cycle anchor
+    if paychecks:
+        latest_cycle_start = paychecks[0].date
     else:
+        latest_cycle_start = today_wib
+
+    # Tentukan start_date & end_date berdasarkan period_type
+    period_label = ""
+    if period_type == "custom" and start and end:
         try:
-            yr, mo = map(int, month.split("-"))
-            month_str = f"{yr:04d}-{mo:02d}"
+            start_date = datetime.strptime(start, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end, "%Y-%m-%d").date()
+            period_label = f"Kustom: {start_date.strftime('%d %b')} – {end_date.strftime('%d %b %Y')}"
         except Exception:
-            raise HTTPException(status_code=400, detail="Invalid month format, use YYYY-MM")
+            raise HTTPException(status_code=400, detail="Invalid start/end date format, use YYYY-MM-DD")
+    elif period_type == "week":
+        # Minggu ini (Senin - Minggu)
+        start_date = today_wib - timedelta(days=today_wib.weekday())
+        end_date = start_date + timedelta(days=6)
+        period_label = f"Minggu Ini ({start_date.strftime('%d %b')} – {end_date.strftime('%d %b %Y')})"
+    elif period_type == "month":
+        if month:
+            try:
+                yr, mo = map(int, month.split("-"))
+            except Exception:
+                raise HTTPException(status_code=400, detail="Invalid month format, use YYYY-MM")
+        else:
+            yr = now_wib.year
+            mo = now_wib.month
+        start_date = date(yr, mo, 1)
+        next_month = date(yr + 1, 1, 1) if mo == 12 else date(yr, mo + 1, 1)
+        end_date = next_month - timedelta(days=1)
+        period_label = f"Bulan {start_date.strftime('%B %Y')}"
+    else:
+        # Default: Siklus gajian 14 hari
+        period_type = "cycle"
+        if start:
+            try:
+                start_date = datetime.strptime(start, "%Y-%m-%d").date()
+            except Exception:
+                start_date = latest_cycle_start
+        else:
+            start_date = latest_cycle_start
+        end_date = start_date + timedelta(days=13)
+        period_label = f"Siklus 14 Hari ({start_date.strftime('%d %b')} – {end_date.strftime('%d %b %Y')})"
 
-    start_date = date(yr, mo, 1)
-    end_date = date(yr + 1, 1, 1) if mo == 12 else date(yr, mo + 1, 1)
+    query_end_date = end_date + timedelta(days=1)
 
-    # Monthly totals (income and expense)
+    # Monthly totals (income and expense) dalam rentang periode terpilih
     totals = db.query(
         Transaction.type,
         func.coalesce(func.sum(Transaction.amount), 0).label("total")
     ).filter(
         Transaction.date >= start_date,
-        Transaction.date < end_date
+        Transaction.date < query_end_date
     ).group_by(Transaction.type).all()
 
     income_total = 0
@@ -61,14 +200,14 @@ def get_monthly_summary(
     net_total = income_total - expense_total
     savings_rate = round((net_total / income_total * 100), 1) if income_total > 0 else 0.0
 
-    # Expense by category
+    # Expense by category dalam periode
     cat_rows = db.query(
         Transaction.category,
         func.sum(Transaction.amount).label("total"),
         func.count(Transaction.id).label("count")
     ).filter(
         Transaction.date >= start_date,
-        Transaction.date < end_date,
+        Transaction.date < query_end_date,
         Transaction.type == "expense"
     ).group_by(Transaction.category).order_by(func.sum(Transaction.amount).desc()).all()
 
@@ -83,7 +222,7 @@ def get_monthly_summary(
             percentage=pct
         ))
 
-    # All-time account balances
+    # All-time account balances (selalu all-time agar saldo rekening akurat)
     acc_rows = db.query(
         Transaction.account,
         func.sum(
@@ -106,14 +245,14 @@ def get_monthly_summary(
     accounts = [AccountBalance(account=a.account, balance=int(a.balance or 0)) for a in acc_rows]
     total_balance = sum(a.balance for a in accounts)
 
-    # Daily trend in current month
+    # Daily trend dalam periode
     trend_rows = db.query(
         Transaction.date,
         func.sum(case((Transaction.type == "income", Transaction.amount), else_=0)).label("income"),
         func.sum(case((Transaction.type == "expense", Transaction.amount), else_=0)).label("expense")
     ).filter(
         Transaction.date >= start_date,
-        Transaction.date < end_date
+        Transaction.date < query_end_date
     ).group_by(Transaction.date).order_by(Transaction.date.asc()).all()
 
     daily_trend = [
@@ -124,24 +263,23 @@ def get_monthly_summary(
         ) for t in trend_rows
     ]
 
-    # 14-day cycle calculation anchored to latest paycheck or current date
-    latest_paycheck = db.query(Transaction).filter(
-        Transaction.type == "income",
-        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
-    ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
+    # Safe to spend calculation
+    cycle_start = start_date
+    cycle_end = end_date
+    total_days = (cycle_end - cycle_start).days + 1
+    total_days = max(1, total_days)
 
-    today_wib = now_wib.date()
-    if latest_paycheck:
-        cycle_start = latest_paycheck.date
+    if today_wib < cycle_start:
+        day_of_cycle = 1
+        days_remaining = total_days
+    elif today_wib > cycle_end:
+        day_of_cycle = total_days
+        days_remaining = 0
     else:
-        cycle_start = today_wib
+        day_of_cycle = (today_wib - cycle_start).days + 1
+        days_remaining = max(1, total_days - day_of_cycle + 1)
 
-    cycle_end = cycle_start + timedelta(days=13)
-    days_passed = (today_wib - cycle_start).days + 1
-    day_of_cycle = min(14, max(1, days_passed))
-    days_remaining = max(1, 14 - day_of_cycle + 1)
-
-    pocket_budget = 825000  # Standar jatah saku Mandiri 14 hari
+    pocket_budget = 825000 if period_type == "cycle" else int(825000 / 14 * total_days)
     
     mandiri_spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
@@ -153,9 +291,9 @@ def get_monthly_summary(
     ).first()
     pocket_spent = int(mandiri_spent_row.spent if mandiri_spent_row else 0)
     pocket_remaining = max(0, pocket_budget - pocket_spent)
-    safe_daily = int(pocket_remaining / days_remaining)
+    safe_daily = int(pocket_remaining / days_remaining) if days_remaining > 0 else 0
 
-    ideal_daily_rate = pocket_budget / 14
+    ideal_daily_rate = pocket_budget / total_days
     ideal_pace_today = int(ideal_daily_rate * day_of_cycle)
 
     if pocket_spent < ideal_pace_today * 0.9:
@@ -178,7 +316,7 @@ def get_monthly_summary(
 
     burn_chart = []
     cumulative = 0
-    for d in range(1, 15):
+    for d in range(1, total_days + 1):
         day_date = cycle_start + timedelta(days=d-1)
         day_str = str(day_date)
         day_spent = spent_by_date.get(day_str, 0)
@@ -216,9 +354,13 @@ def get_monthly_summary(
     )
 
     return MonthlySummary(
-        month=month_str,
-        year=yr,
-        month_num=mo,
+        period_type=period_type,
+        period_label=period_label,
+        start_date=str(start_date),
+        end_date=str(end_date),
+        month=f"{start_date.year:04d}-{start_date.month:02d}",
+        year=start_date.year,
+        month_num=start_date.month,
         income=income_total,
         expense=expense_total,
         net=net_total,
