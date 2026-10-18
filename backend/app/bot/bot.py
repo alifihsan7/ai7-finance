@@ -65,9 +65,10 @@ def get_safe_to_spend_snippet(db: Session) -> str:
 MAIN_KEYBOARD = {
     "keyboard": [
         [{"text": "📊 Rekap"}, {"text": "💳 Saldo"}],
-        [{"text": "🔔 Tagihan / Subs"}, {"text": "📜 Transaksi"}],
-        [{"text": "💰 Info Gajian"}, {"text": "🔄 Transfer"}],
-        [{"text": "🌐 Web Dashboard"}, {"text": "📑 Google Sheets"}],
+        [{"text": "🎯 Target & Goals"}, {"text": "🔔 Tagihan / Subs"}],
+        [{"text": "📜 Transaksi"}, {"text": "🔄 Transfer"}],
+        [{"text": "💰 Info Gajian"}, {"text": "📑 Google Sheets"}],
+        [{"text": "🌐 Web Dashboard"}],
     ],
     "resize_keyboard": True,
     "is_persistent": True,
@@ -78,6 +79,7 @@ def setup_bot_commands():
         {"command": "menu", "description": "📱 Buka tombol menu navigasi"},
         {"command": "rekap", "description": "📊 Rekap pengeluaran & pacing belanja"},
         {"command": "saldo", "description": "💳 Estimasi saldo seluruh rekening"},
+        {"command": "goals", "description": "🎯 Target tabungan & milestone finansial"},
         {"command": "transfer", "description": "🔄 Transfer antar rekening"},
         {"command": "subs", "description": "🔔 Jadwal langganan & tagihan rutin"},
         {"command": "transaksi", "description": "📜 5 transaksi terakhir"},
@@ -284,6 +286,44 @@ def handle_subs(chat_id: int, db: Session):
 
     lines.append(f"\n💵 **Total Komitmen Bulanan:** {format_rp(total)}")
     lines.append("💡 _Saldo pos Jago lo disiapkan otomatis dari 31.7% gajian._")
+    send_message(chat_id, "\n".join(lines))
+
+def handle_goals(chat_id: int, db: Session):
+    from app.models.goal import Goal
+    from app.api.v1.endpoints.goals import compute_goal_metrics
+
+    goals = db.query(Goal).filter(Goal.is_active == True).order_by(Goal.id.asc()).all()
+    if not goals:
+        send_message(chat_id, "🎯 **Belum ada Target Finansial**\n\nBuat target baru via Web Dashboard atau hubungi AI7.")
+        return
+
+    lines = ["🎯 **PROGRESS TARGET & GOALS FINANSIAL**\n"]
+    for idx, g in enumerate(goals, 1):
+        m = compute_goal_metrics(g, db)
+        pct = m["percentage"]
+        blocks_filled = min(10, max(0, int(round(pct / 10))))
+        bar = "█" * blocks_filled + "░" * (10 - blocks_filled)
+
+        status_line = ""
+        if m["remaining_amount"] == 0:
+            status_line = "🎉 **Target Tercapai!**"
+        elif m["estimated_cycles"] is not None:
+            c = m["estimated_cycles"]
+            mo = m["estimated_months"]
+            target_str = m["estimated_finish_date"].strftime("%d %b %Y") if m["estimated_finish_date"] else ""
+            status_line = f"⏳ **Estimasi:** ~{c} siklus gajian lagi (~{mo} bln • {target_str})"
+
+        linked_info = f" • _{m['linked_account']}_" if m.get("linked_account") else ""
+
+        lines.append(
+            f"{g.icon} **{g.name}**{linked_info}\n"
+            f"   `[{bar}]` **{pct}%**\n"
+            f"   • Terkumpul: `{format_rp(m['current_amount'])}` / `{format_rp(m['target_amount'])}`\n"
+            f"   • Sisa Target: **{format_rp(m['remaining_amount'])}**\n"
+            f"   • {status_line}\n"
+        )
+
+    lines.append("💡 _Saldo terupdate otomatis dari mutasi rekening atau dapat disesuaikan di Web Dashboard._")
     send_message(chat_id, "\n".join(lines))
 
 def send_chat_action(chat_id: int, action: str = "typing"):
@@ -982,7 +1022,9 @@ def process_update(update: dict):
             handle_rekap(chat_id, db)
         elif lower_text in ["💳 saldo", "saldo"]:
             handle_saldo(chat_id, db)
-        elif lower_text in ["🔔 tagihan / subs", "tagihan", "subs", "langganan"]:
+        elif lower_text in ["🎯 target & goals", "🎯 target", "target", "goals", "milestone"] or cmd in ["/goals", "/target", "/milestone"]:
+            handle_goals(chat_id, db)
+        elif lower_text in ["🔔 tagihan / subs", "tagihan", "subs"]:
             handle_subs(chat_id, db)
         elif lower_text in ["📜 transaksi", "transaksi", "history"]:
             handle_transaksi(chat_id, db)

@@ -24,6 +24,7 @@ import {
   X,
   FileSpreadsheet,
   ExternalLink,
+  Target,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { AccountGrid } from "@/components/AccountGrid";
@@ -31,6 +32,9 @@ import { MandiriEnvelopes } from "@/components/MandiriEnvelopes";
 import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionTable, Transaction } from "@/components/TransactionTable";
 import { SubscriptionsView, SubscriptionItem, SubscriptionsData } from "@/components/SubscriptionsView";
+import { GoalsView } from "@/components/GoalsView";
+import { AddGoalModal } from "@/components/AddGoalModal";
+import { EditGoalModal, GoalItem } from "@/components/EditGoalModal";
 import { TransferModal } from "@/components/TransferModal";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
@@ -127,6 +131,11 @@ export default function ObsidianDashboard() {
   const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [customAccounts, setCustomAccounts] = useState<AccountItem[]>([]);
+  const availableAccountNames = useMemo(() => {
+    const defaults = ["BRI 2", "Bibit", "BRI 1", "Mandiri", "Bank Jago"];
+    const customs = customAccounts.map((a) => a.name);
+    return Array.from(new Set([...defaults, ...customs]));
+  }, [customAccounts]);
   const [loading, setLoading] = useState(false);
 
   // Period filter state
@@ -142,6 +151,10 @@ export default function ObsidianDashboard() {
   const [subToDelete, setSubToDelete] = useState<number | null>(null);
   const [txToDelete, setTxToDelete] = useState<Transaction | null>(null);
   const [txToEdit, setTxToEdit] = useState<Transaction | null>(null);
+  const [goals, setGoals] = useState<GoalItem[]>([]);
+  const [isAddGoalModalOpen, setIsAddGoalModalOpen] = useState(false);
+  const [goalToEdit, setGoalToEdit] = useState<GoalItem | null>(null);
+  const [goalToDelete, setGoalToDelete] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [paycheckTotal, setPaycheckTotal] = useState<string>("1500000");
 
@@ -294,11 +307,12 @@ export default function ObsidianDashboard() {
       if (selectedPeriod.start) txParams.append("start_date", selectedPeriod.start);
       if (selectedPeriod.end) txParams.append("end_date", selectedPeriod.end);
 
-      const [txRes, sumRes, subRes, accRes] = await Promise.all([
+      const [txRes, sumRes, subRes, accRes, goalRes] = await Promise.all([
         fetch(`/api/v1/transactions?${txParams.toString()}`),
         fetch(`/api/v1/analytics/summary?${periodParams.toString()}`),
         fetch("/api/v1/subscriptions"),
         fetch("/api/v1/accounts"),
+        fetch("/api/v1/goals"),
       ]);
 
       if (txRes.ok) {
@@ -322,6 +336,13 @@ export default function ObsidianDashboard() {
         const accData = await accRes.json();
         if (Array.isArray(accData)) {
           setCustomAccounts(accData);
+        }
+      }
+
+      if (goalRes.ok) {
+        const goalData = await goalRes.json();
+        if (Array.isArray(goalData)) {
+          setGoals(goalData);
         }
       }
     } catch (err) {
@@ -504,6 +525,20 @@ export default function ObsidianDashboard() {
     }
   };
 
+  const handleConfirmDeleteGoal = async () => {
+    if (!goalToDelete) return;
+    try {
+      setDeleteLoading(true);
+      await fetch(`/api/v1/goals/${goalToDelete}`, { method: "DELETE" });
+      await fetchData();
+      setGoalToDelete(null);
+    } catch (err) {
+      console.error("Delete goal error:", err);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const handleToggleSubscription = async (sub: SubscriptionItem) => {
     try {
       await fetch(`/api/v1/subscriptions/${sub.id}`, {
@@ -583,6 +618,7 @@ export default function ObsidianDashboard() {
           <nav className="mt-8 flex flex-col space-y-1">
             {[
               { name: "Ringkasan", icon: LayoutDashboard, count: null },
+              { name: "Target Finansial", icon: Target, count: goals.length },
               { name: "Alokasi Amplop", icon: Layers, count: "4" },
               { name: "Rekening & Akun", icon: Wallet, count: (customAccounts.length || 5).toString() },
               { name: "Buku Transaksi", icon: CreditCard, count: transactions.length },
@@ -723,6 +759,7 @@ export default function ObsidianDashboard() {
               <nav className="mt-5 flex flex-col space-y-1.5">
                 {[
                   { name: "Ringkasan", icon: LayoutDashboard, count: null },
+                  { name: "Target Finansial", icon: Target, count: goals.length },
                   { name: "Alokasi Amplop", icon: Layers, count: "4" },
                   { name: "Rekening & Akun", icon: Wallet, count: (customAccounts.length || 5).toString() },
                   { name: "Buku Transaksi", icon: CreditCard, count: transactions.length },
@@ -870,14 +907,14 @@ export default function ObsidianDashboard() {
         <button
           onClick={() => setIsMobileDrawerOpen(true)}
           className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-[56px] ${
-            ["Rekening & Akun", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav)
+            ["Rekening & Akun", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav)
               ? "text-amberGold font-semibold"
               : "text-slateText-secondary hover:text-slateText-primary"
           }`}
         >
           <div className="relative">
             <Menu className="w-5 h-5 shrink-0" />
-            {["Rekening & Akun", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav) && (
+            {["Rekening & Akun", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav) && (
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amberGold"></span>
             )}
           </div>
@@ -894,6 +931,7 @@ export default function ObsidianDashboard() {
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slateText-primary">
                 {activeNav === "Ringkasan" && "Ringkasan Portofolio & Alokasi"}
+                {activeNav === "Target Finansial" && "Target Finansial & Milestone Tabungan"}
                 {activeNav === "Alokasi Amplop" && "Alokasi Amplop & Plafon Belanja"}
                 {activeNav === "Rekening & Akun" && "Daftar Rekening & Saldo Akun"}
                 {activeNav === "Buku Transaksi" && "Buku Transaksi Lengkap (Ledger)"}
@@ -907,6 +945,7 @@ export default function ObsidianDashboard() {
             </div>
             <p className="text-sm text-slateText-secondary mt-1.5">
               {activeNav === "Ringkasan" && "Sistem keuangan 2-mingguan terintegrasi PostgreSQL & Telegram Bot"}
+              {activeNav === "Target Finansial" && "Pantau akumulasi target dana dingin BRI 2, portofolio Bibit, dan pencapaian finansial"}
               {activeNav === "Alokasi Amplop" && "Monitoring plafon belanja 4 amplop Mandiri & pos pendukung"}
               {activeNav === "Rekening & Akun" && "Kekayaan bersih terbagi dalam seluruh rekening aktif dengan alokasi khusus"}
               {activeNav === "Buku Transaksi" && "Histori seluruh pencatatan pengeluaran & pemasukan real-time"}
@@ -943,7 +982,15 @@ export default function ObsidianDashboard() {
               <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
               <span className="hidden sm:inline whitespace-nowrap">Google Sheets</span>
             </a>
-            {activeNav === "Langganan & Tagihan" ? (
+            {activeNav === "Target Finansial" ? (
+              <button
+                onClick={() => setIsAddGoalModalOpen(true)}
+                className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                <span className="whitespace-nowrap">Tambah Target</span>
+              </button>
+            ) : activeNav === "Langganan & Tagihan" ? (
               <button
                 onClick={() => setIsSubModalOpen(true)}
                 className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap"
@@ -1078,6 +1125,59 @@ export default function ObsidianDashboard() {
 
             <StrataAllocationBar />
             <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} />
+
+            {/* Quick Goals & Milestone Preview */}
+            {goals.length > 0 && (
+              <div className="bg-obsidian-panel border border-obsidian-border rounded-xl p-5 space-y-4">
+                <div className="flex justify-between items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Target className="w-5 h-5 text-amberGold shrink-0" />
+                    <h2 className="text-base font-bold text-slateText-primary truncate">
+                      Target & Milestone Tabungan
+                    </h2>
+                  </div>
+                  <button
+                    onClick={() => setActiveNav("Target Finansial")}
+                    className="text-xs text-amberGold hover:underline font-medium shrink-0 whitespace-nowrap"
+                  >
+                    Buka Seluruh Target ({goals.length}) →
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                  {goals.slice(0, 3).map((g) => {
+                    return (
+                      <div
+                        key={g.id}
+                        onClick={() => setActiveNav("Target Finansial")}
+                        className="bg-obsidian-card border border-obsidian-border/80 hover:border-obsidian-borderStrong rounded-lg p-3.5 space-y-2.5 cursor-pointer transition-colors"
+                      >
+                        <div className="flex justify-between items-center gap-2">
+                          <span className="text-sm font-semibold text-slateText-primary truncate flex items-center gap-1.5">
+                            <span>{g.icon}</span>
+                            <span className="truncate">{g.name}</span>
+                          </span>
+                          <span className="text-xs font-mono font-bold text-amberGold shrink-0">
+                            {g.percentage}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-obsidian-surface rounded-full overflow-hidden border border-obsidian-border/40">
+                          <div
+                            className="h-full bg-amberGold rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(100, Math.max(3, g.percentage))}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-[11px] font-mono text-slateText-muted">
+                          <span>{formatRupiah(g.current_amount)}</span>
+                          <span>{formatRupiah(g.target_amount)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <MandiriEnvelopes mandiriExpenses={mandiriExpenses} formatRupiah={formatRupiah} />
             <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
 
@@ -1099,6 +1199,19 @@ export default function ObsidianDashboard() {
               />
             </div>
           </>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: TARGET FINANSIAL */}
+        {/* ============================================================== */}
+        {activeNav === "Target Finansial" && (
+          <GoalsView
+            goals={goals}
+            formatRupiah={formatRupiah}
+            onOpenAddModal={() => setIsAddGoalModalOpen(true)}
+            onEdit={(goal) => setGoalToEdit(goal)}
+            onDelete={(id) => setGoalToDelete(id)}
+          />
         )}
 
         {/* ============================================================== */}
@@ -1783,6 +1896,34 @@ export default function ObsidianDashboard() {
         onSuccess={fetchData}
         accountOptions={SUB_ACCOUNT_OPTIONS}
         categoryOptions={SUB_CATEGORY_OPTIONS}
+      />
+
+      {/* Add Goal Modal */}
+      <AddGoalModal
+        isOpen={isAddGoalModalOpen}
+        onClose={() => setIsAddGoalModalOpen(false)}
+        onSuccess={fetchData}
+        availableAccounts={availableAccountNames}
+      />
+
+      {/* Edit Goal Modal */}
+      <EditGoalModal
+        goal={goalToEdit}
+        isOpen={goalToEdit !== null}
+        onClose={() => setGoalToEdit(null)}
+        onSuccess={fetchData}
+        availableAccounts={availableAccountNames}
+      />
+
+      {/* Confirm Delete Goal Modal */}
+      <ConfirmModal
+        isOpen={goalToDelete !== null}
+        onClose={() => setGoalToDelete(null)}
+        onConfirm={handleConfirmDeleteGoal}
+        title="Hapus Target Finansial?"
+        message="Apakah kamu yakin ingin menghapus target finansial ini? Progres capaian akan dihapus dari dashboard."
+        confirmText="Hapus Target"
+        loading={deleteLoading}
       />
     </div>
   );
