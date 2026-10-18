@@ -16,6 +16,7 @@ interface CustomSelectProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  accent?: "amber" | "mint" | "cyan";
 }
 
 export function CustomSelect({
@@ -25,6 +26,7 @@ export function CustomSelect({
   placeholder = "Pilih opsi...",
   disabled = false,
   className = "",
+  accent = "amber",
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -150,19 +152,31 @@ export function CustomSelect({
           disabled
             ? "opacity-50 cursor-not-allowed border-obsidian-border"
             : isOpen
-            ? "border-amberGold ring-1 ring-amberGold/30 text-slateText-primary"
+            ? accent === "mint"
+              ? "border-mintRise ring-1 ring-mintRise/30 text-slateText-primary"
+              : accent === "cyan"
+              ? "border-cyanHub ring-1 ring-cyanHub/30 text-slateText-primary"
+              : "border-amberGold ring-1 ring-amberGold/30 text-slateText-primary"
             : "border-obsidian-border hover:border-obsidian-borderStrong text-slateText-primary"
         }`}
       >
-        <span className="truncate min-w-0 font-medium flex items-center gap-2 pr-1">
+        <span className="min-w-0 flex-1 font-medium flex items-center gap-2 pr-1 overflow-hidden">
           {selectedOption?.color && (
             <span className={`w-2 h-2 rounded-full shrink-0 ${selectedOption.color}`} />
           )}
-          {selectedOption ? selectedOption.label : placeholder}
+          <span className="truncate block flex-1">
+            {selectedOption ? selectedOption.label : placeholder}
+          </span>
         </span>
         <ChevronDown
           className={`w-4 h-4 text-slateText-muted shrink-0 transition-transform duration-200 ${
-            isOpen ? "rotate-180 text-amberGold" : ""
+            isOpen
+              ? accent === "mint"
+                ? "rotate-180 text-mintRise"
+                : accent === "cyan"
+                ? "rotate-180 text-cyanHub"
+                : "rotate-180 text-amberGold"
+              : ""
           }`}
         />
       </button>

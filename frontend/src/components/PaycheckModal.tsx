@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { CustomModal } from "./ui/CustomModal";
 import { CurrencyInput } from "./ui/CurrencyInput";
+import { CustomSelect } from "./ui/CustomSelect";
 
 interface PaycheckConfig {
   id: number;
@@ -799,14 +800,15 @@ export default function PaycheckModal({
               <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
                 Pakai Gate Jembatan?
               </label>
-              <select
+              <CustomSelect
                 value={customConfig.use_gate ? "yes" : "no"}
-                onChange={(e) => setCustomConfig({ ...customConfig, use_gate: e.target.value === "yes" })}
-                className="w-full h-10 px-3 rounded-xl bg-obsidian-panel border border-obsidian-border text-sm text-slateText-primary focus:outline-none focus:border-mintRise transition cursor-pointer"
-              >
-                <option value="yes">Ya (Hemat Admin via Gate)</option>
-                <option value="no">Tidak (Direct Transfer BI-Fast)</option>
-              </select>
+                onChange={(val) => setCustomConfig({ ...customConfig, use_gate: val === "yes" })}
+                options={[
+                  { value: "yes", label: "Ya (Hemat via Gate)", color: "bg-mintRise" },
+                  { value: "no", label: "Tidak (Direct Transfer)", color: "bg-slate-400" },
+                ]}
+                accent="mint"
+              />
             </div>
 
             <div>
