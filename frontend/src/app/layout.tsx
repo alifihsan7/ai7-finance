@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "ai7.finance — Obsidian Financial System",
+  title: "ai7.finance — Financial System",
   description: "Bi-weekly paycheck allocation & personal finance dashboard",
   manifest: "/manifest.json",
   appleWebApp: {
