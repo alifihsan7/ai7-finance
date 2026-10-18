@@ -12,23 +12,31 @@ export function AccountGrid({ summary, formatRupiah }: AccountGridProps) {
   const accounts = [
     {
       name: "Mandiri",
-      tag: "Saku Operasional",
+      tag: "Saku Operasional (55%)",
       allocated: 825000,
       spent: summary.expense,
       accentColor: "text-amberGold",
       barColor: "bg-amberGold",
     },
     {
-      name: "Bank Jago / Bibit",
-      tag: "Subs & Investasi",
-      allocated: 475000,
+      name: "Bank Jago",
+      tag: "Subs & Tagihan (18.3%)",
+      allocated: 275000,
       spent: 0,
-      accentColor: "text-mintRise",
-      barColor: "bg-mintRise",
+      accentColor: "text-purple-400",
+      barColor: "bg-purple-500",
+    },
+    {
+      name: "Bibit",
+      tag: "Investasi Portofolio (13.3%)",
+      allocated: 200000,
+      spent: 0,
+      accentColor: "text-teal-400",
+      barColor: "bg-teal-500",
     },
     {
       name: "BRI 1",
-      tag: "Hub & Dana Darurat",
+      tag: "Hub & Dana Darurat (6.7%)",
       allocated: 100000,
       spent: 0,
       accentColor: "text-cyanHub",
@@ -36,7 +44,7 @@ export function AccountGrid({ summary, formatRupiah }: AccountGridProps) {
     },
     {
       name: "BRI 2",
-      tag: "Tabungan Terkunci",
+      tag: "Tabungan Terkunci (6.7%)",
       allocated: 100000,
       spent: 0,
       accentColor: "text-purpleLock",
@@ -45,7 +53,7 @@ export function AccountGrid({ summary, formatRupiah }: AccountGridProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       {accounts.map((acc) => {
         const remaining = acc.allocated - acc.spent;
         const pctUsed = Math.min(100, Math.round((acc.spent / acc.allocated) * 100));
