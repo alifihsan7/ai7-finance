@@ -77,7 +77,7 @@ def setup_bot_commands():
     commands = [
         {"command": "menu", "description": "📱 Buka tombol menu navigasi"},
         {"command": "rekap", "description": "📊 Rekap pengeluaran & pacing belanja"},
-        {"command": "saldo", "description": "💳 Estimasi saldo 4 rekening"},
+        {"command": "saldo", "description": "💳 Estimasi saldo seluruh rekening"},
         {"command": "transfer", "description": "🔄 Transfer antar rekening"},
         {"command": "subs", "description": "🔔 Jadwal langganan & tagihan rutin"},
         {"command": "transaksi", "description": "📜 5 transaksi terakhir"},
@@ -127,17 +127,15 @@ def handle_start(chat_id: int):
 
 Bot ini dirancang khusus terintegrasi dengan PostgreSQL dan formula alokasi 14 harian lo.
 
-💡 **Contoh Input Cepat (Otomatis Masuk Amplop):**
-• `nasi padang 25k` ➔ Masuk amplop Makan (Mandiri)
-• `kopi kenangan 22k` ➔ Masuk amplop Jajan (Mandiri)
-• `laundry 35rb` ➔ Masuk amplop Laundry (Mandiri)
-• `isi galon 8k` ➔ Masuk amplop Galon (Mandiri)
-• `netflix 54k` ➔ Masuk Langganan (Bank Jago)
-• `bibit 200k` ➔ Masuk Investasi (Bank Jago)
-• `bensin 30k cash` ➔ Spesifik rekening Cash
+💡 **Cara Input Praktis:**
+• ✍️ **Ketik Teks Bebas:** `nasi padang 25k`, `kopi tuku 22k`, `laundry 35rb`, `isi galon 8k`
+• 📸 **Kirim Foto Struk / QRIS:** Cukup kirim foto struk belanja atau screenshot QRIS kasir / Livin Mandiri
+• 🎙️ **Kirim Voice Note:** Cukup rekam suara lo (misal: *"beli makan siang 28 ribu pakai mandiri"*)
+• 🔄 **Transfer Rekening:** `tf 100k mandiri ke bri 1 tabungan`
 
 📌 **Perintah Tersedia:**
-• `/gajian [nominal]` - Catat gajian & split otomatis ke 4 rekening
+• `/gajian [nominal]` - Catat gajian & split otomatis ke 5 rekening
+• `/sheets` - Sinkronisasi & buka snapshot siklus 14 hari di Google Sheets
 • `/rekap` - Ringkasan pengeluaran bulan ini
 • `/saldo` - Estimasi saldo per rekening
 • `/subs` - Cek jadwal langganan & tagihan rutin
@@ -288,7 +286,41 @@ def handle_subs(chat_id: int, db: Session):
     lines.append("💡 _Saldo pos Jago lo disiapkan otomatis dari 31.7% gajian._")
     send_message(chat_id, "\n".join(lines))
 
-def normalize_account(raw: str):
+def send_chat_action(chat_id: int, action: str = "typing"):
+    try:
+        requests.post(f"{API_BASE}/sendChatAction", json={"chat_id": chat_id, "action": action}, timeout=5)
+    except Exception:
+        pass
+
+def download_telegram_file(file_id: str):
+    try:
+        url = f"{API_BASE}/getFile?file_id={file_id}"
+        resp = requests.get(url, timeout=15)
+        if resp.status_code == 200 and resp.json().get("ok"):
+            file_path = resp.json()["result"]["file_path"]
+            dl_url = f"https://api.telegram.org/file/bot{settings.BOT_TOKEN}/{file_path}"
+            dl_resp = requests.get(dl_url, timeout=30)
+            if dl_resp.status_code == 200:
+                return dl_resp.content, file_path
+    except Exception as e:
+        print(f"Error downloading Telegram file {file_id}: {e}")
+    return None, None
+
+def get_acc_balance(acc_name: str, db: Session) -> int:
+    row = db.query(
+        func.coalesce(
+            func.sum(
+                case(
+                    (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
+                    (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                    else_=0
+                )
+            ), 0
+        )
+    ).filter(Transaction.account == acc_name).scalar()
+    return int(row or 0)
+
+def normalize_account(raw: str, db: Optional[Session] = None):
     if not raw:
         return None
     r = raw.strip().lower()
@@ -304,7 +336,11 @@ def normalize_account(raw: str):
         return "BRI 2"
     elif "cash" in r or "tunai" in r:
         return "Cash"
-    return None
+    if db:
+        for acc in db.query(Account).all():
+            if acc.name.lower() in r or r in acc.name.lower():
+                return acc.name
+    return raw.strip().title()
 
 def handle_transfer(chat_id: int, text: str, db: Session):
     clean = text.strip()
@@ -381,22 +417,8 @@ atau singkat:
     db.add(tx_in)
     db.commit()
 
-    def get_acc_balance(acc_name):
-        row = db.query(
-            func.coalesce(
-                func.sum(
-                    case(
-                        (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                        (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
-                        else_=0
-                    )
-                ), 0
-            )
-        ).filter(Transaction.account == acc_name).scalar()
-        return int(row or 0)
-
-    bal_from = get_acc_balance(from_acc)
-    bal_to = get_acc_balance(to_acc)
+    bal_from = get_acc_balance(from_acc, db)
+    bal_to = get_acc_balance(to_acc, db)
 
     res_msg = f"""🔄 **Transfer Antar Rekening Berhasil!**
 
@@ -662,6 +684,271 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
 
     send_message(chat_id, "\n".join(lines), reply_to_message_id=message_id)
 
+def handle_media_message(chat_id: int, message: dict, message_id: int, db: Session):
+    photo = message.get("photo")
+    doc = message.get("document")
+    voice = message.get("voice")
+    audio = message.get("audio")
+    caption = (message.get("caption") or "").strip()
+
+    file_id = None
+    media_type = "image"
+    mime_type = "image/jpeg"
+    action_type = "upload_photo"
+
+    if photo:
+        file_id = photo[-1]["file_id"]
+        media_type = "image"
+        mime_type = "image/jpeg"
+        action_type = "upload_photo"
+    elif doc:
+        mime = doc.get("mime_type", "")
+        fn = (doc.get("file_name") or "").lower()
+        if mime.startswith("image/") or fn.endswith((".jpg", ".jpeg", ".png", ".webp")):
+            file_id = doc["file_id"]
+            media_type = "image"
+            mime_type = mime or "image/jpeg"
+            action_type = "upload_photo"
+        else:
+            send_message(chat_id, "⚠️ Dokumen ini bukan format gambar struk/QRIS yang didukung (.jpg, .png, .webp).", reply_to_message_id=message_id)
+            return
+    elif voice:
+        file_id = voice["file_id"]
+        media_type = "audio"
+        mime_type = voice.get("mime_type") or "audio/ogg"
+        action_type = "record_voice"
+    elif audio:
+        file_id = audio["file_id"]
+        media_type = "audio"
+        mime_type = audio.get("mime_type") or "audio/mp3"
+        action_type = "record_voice"
+    else:
+        return
+
+    send_chat_action(chat_id, action_type)
+    file_bytes, file_path = download_telegram_file(file_id)
+    if not file_bytes:
+        send_message(chat_id, "❌ Gagal mengunduh media dari Telegram. Silakan coba kirim ulang.", reply_to_message_id=message_id)
+        return
+
+    if media_type == "image" and file_path:
+        if file_path.lower().endswith(".png"):
+            mime_type = "image/png"
+        elif file_path.lower().endswith(".webp"):
+            mime_type = "image/webp"
+
+    db_accounts = [a.name for a in db.query(Account).all()]
+    all_accounts = list(set(["Mandiri", "Bank Jago", "Bibit", "BRI 1", "BRI 2"] + db_accounts))
+
+    from app.services.ai_extractor import extract_from_media
+    extraction = extract_from_media(
+        media_bytes=file_bytes,
+        mime_type=mime_type,
+        media_type=media_type,
+        caption=caption,
+        accounts=all_accounts
+    )
+
+    if not extraction.get("success"):
+        err = extraction.get("error", "Gagal memproses media.")
+        send_message(chat_id, f"❌ {err}", reply_to_message_id=message_id)
+        return
+
+    if not extraction.get("detected") or not extraction.get("transactions"):
+        reason = extraction.get("transcription") or "Tidak ditemukan rincian nominal pembayaran, struk, atau pengeluaran."
+        kind_name = "gambar/struk" if media_type == "image" else "voice note"
+        send_message(
+            chat_id,
+            f"⚠️ **Tidak Terdeteksi Transaksi pada {kind_name}**\n\n_{reason}_\n\n💡 _Tips: Pastikan foto struk/QRIS terang dan terbaca jelas, atau sebutkan nominal dan pengeluaran secara spesifik pada voice note._",
+            reply_to_message_id=message_id
+        )
+        return
+
+    now_wib = datetime.now(WIB)
+    time_str = now_wib.strftime("%Y-%m-%d %H:%M:%S")
+    start_date = date(now_wib.year, now_wib.month, 1)
+
+    MANDIRI_ENVELOPES = {
+        "Makanan & Minuman": 450000,
+        "Jajan / Ngopi": 100000,
+        "Laundry": 70000,
+        "Galon & Air": 44000,
+    }
+
+    tx_list = extraction.get("transactions", [])
+    transcription = extraction.get("transcription", "")
+    kind = extraction.get("kind", "media")
+
+    if media_type == "image":
+        media_header = "🤖📸 **Struk / QRIS Berhasil Dicatat Otomatis!**"
+        quote_line = f"🧾 _{transcription}_\n" if transcription else ""
+    else:
+        media_header = "🤖🎙️ **Voice Note Berhasil Dicatat Otomatis!**"
+        quote_line = f"🗣️ _\"{transcription}\"_\n" if transcription else ""
+
+    if len(tx_list) == 1:
+        item = tx_list[0]
+        tx_type = item.get("type", "expense")
+
+        if tx_type == "transfer":
+            from_acc = normalize_account(item.get("from_account", "Mandiri"), db) or "Mandiri"
+            to_acc = normalize_account(item.get("to_account", "Bibit"), db) or "Bibit"
+            amt = int(item.get("amount", 0))
+            desc = item.get("description", "Transfer Media")
+
+            tx_out = Transaction(
+                type="transfer_out",
+                amount=amt,
+                account=from_acc,
+                category="Transfer",
+                description=f"Transfer ke {to_acc}: {desc}",
+                raw_text=f"ai media transfer: {kind} {desc}",
+                date=now_wib.date()
+            )
+            tx_in = Transaction(
+                type="transfer_in",
+                amount=amt,
+                account=to_acc,
+                category="Transfer",
+                description=f"Transfer dari {from_acc}: {desc}",
+                raw_text=f"ai media transfer: {kind} {desc}",
+                date=now_wib.date()
+            )
+            db.add(tx_out)
+            db.add(tx_in)
+            db.commit()
+
+            bal_from = get_acc_balance(from_acc, db)
+            bal_to = get_acc_balance(to_acc, db)
+
+            reply = f"""{media_header}
+{quote_line}
+🔄 **Transfer Antar Rekening**
+
+💸 **Nominal:** `{format_rp(amt)}`
+📤 **Dari:** {from_acc} (Sisa Saldo: `{format_rp(bal_from)}`)
+📥 **Ke:** {to_acc} (Saldo Baru: `{format_rp(bal_to)}`)
+📝 **Keterangan:** {desc}
+🕒 _{time_str} WIB_
+
+ℹ️ _Saldo berhasil dipindahkan. Transaksi ini tidak memotong kuota Safe-to-Spend._"""
+            send_message(chat_id, reply, reply_to_message_id=message_id)
+            return
+
+        amt = int(item.get("amount", 0))
+        acc = normalize_account(item.get("account", "Mandiri"), db) or "Mandiri"
+        cat = item.get("category", "Lain-lain")
+        desc = item.get("description", "Pengeluaran Media")
+
+        tx = Transaction(
+            type=tx_type,
+            amount=amt,
+            account=acc,
+            category=cat,
+            description=desc,
+            raw_text=f"ai media {kind}: {desc} {amt}",
+            date=now_wib.date()
+        )
+        db.add(tx)
+        db.commit()
+        db.refresh(tx)
+
+        type_label = "Pemasukan" if tx.type == "income" else "Pengeluaran"
+        icon = "💰" if tx.type == "income" else "💸"
+
+        reply = f"""{media_header}
+{quote_line}
+{icon} **{type_label}:** {format_rp(tx.amount)}
+📂 **Kategori:** {tx.category}
+💳 **Rekening:** {tx.account}
+📝 **Keterangan:** {tx.description}
+🕒 _{time_str} WIB_"""
+
+        if tx.type == "expense" and tx.account == "Mandiri" and tx.category in MANDIRI_ENVELOPES:
+            limit = MANDIRI_ENVELOPES[tx.category]
+            spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+                Transaction.account == "Mandiri",
+                Transaction.type == "expense",
+                Transaction.category == tx.category,
+                Transaction.date >= start_date
+            ).scalar()
+            spent_int = int(spent or 0)
+            rem = limit - spent_int
+            pct = round(spent_int / limit * 100, 1)
+            status_icon = "⚠️" if pct > 85 else "📊"
+            reply += f"\n\n{status_icon} **Status Amplop Mandiri (Bulan Ini):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
+
+        if tx.type == "expense":
+            reply += f"\n\n{get_safe_to_spend_snippet(db)}"
+
+        send_message(chat_id, reply, reply_to_message_id=message_id)
+        return
+
+    # Multiple transactions
+    created_txs = []
+    total_amount = 0
+    categories_touched = set()
+
+    for item in tx_list:
+        tx_type = item.get("type", "expense")
+        amt = int(item.get("amount", 0))
+        acc = normalize_account(item.get("account", "Mandiri"), db) or "Mandiri"
+        cat = item.get("category", "Lain-lain")
+        desc = item.get("description", "Pengeluaran Media")
+
+        tx = Transaction(
+            type=tx_type,
+            amount=amt,
+            account=acc,
+            category=cat,
+            description=desc,
+            raw_text=f"ai media multi {kind}: {desc} {amt}",
+            date=now_wib.date()
+        )
+        db.add(tx)
+        created_txs.append(tx)
+        total_amount += amt
+        if acc == "Mandiri" and tx_type == "expense":
+            categories_touched.add(cat)
+
+    db.commit()
+    for tx in created_txs:
+        db.refresh(tx)
+
+    lines = [
+        media_header,
+        quote_line,
+        f"✅ **{len(created_txs)} Transaksi Berhasil Dicatat Sekaligus!**\n"
+    ]
+    for idx, tx in enumerate(created_txs, 1):
+        icon = "💰" if tx.type == "income" else "💸"
+        lines.append(f"{idx}. {icon} **{format_rp(tx.amount)}** • {tx.description}\n   📂 `{tx.category}` • 💳 `{tx.account}`")
+
+    lines.append(f"\n💵 **Total:** {format_rp(total_amount)}")
+    lines.append(f"🕒 _{time_str} WIB_")
+
+    mandiri_status_lines = []
+    for cat in categories_touched:
+        if cat in MANDIRI_ENVELOPES:
+            limit = MANDIRI_ENVELOPES[cat]
+            spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+                Transaction.account == "Mandiri",
+                Transaction.type == "expense",
+                Transaction.category == cat,
+                Transaction.date >= start_date
+            ).scalar()
+            spent_int = int(spent or 0)
+            rem = limit - spent_int
+            pct = round(spent_int / limit * 100, 1)
+            mandiri_status_lines.append(f"• **{cat}:** {format_rp(spent_int)} / {format_rp(limit)} ({pct}%) ➔ Sisa: {format_rp(rem)}")
+
+    if mandiri_status_lines:
+        lines.append("\n📊 **Status Amplop Mandiri (Bulan Ini):**\n" + "\n".join(mandiri_status_lines))
+
+    lines.append(f"\n{get_safe_to_spend_snippet(db)}")
+
+    send_message(chat_id, "\n".join([line for line in lines if line]), reply_to_message_id=message_id)
+
 def process_update(update: dict):
     message = update.get("message")
     if not message:
@@ -678,13 +965,19 @@ def process_update(update: dict):
         send_message(chat_id, "⛔ Akses ditolak. Bot ini bersifat privat.")
         return
 
-    if not text:
-        return
+    has_media = bool(message.get("photo") or message.get("voice") or message.get("audio") or message.get("document"))
 
-    lower_text = text.lower()
-    cmd = text.split()[0].lower()
     db = SessionLocal()
     try:
+        if has_media:
+            handle_media_message(chat_id, message, message_id, db)
+            return
+
+        if not text:
+            return
+
+        lower_text = text.lower()
+        cmd = text.split()[0].lower()
         if lower_text in ["📊 rekap", "rekap"]:
             handle_rekap(chat_id, db)
         elif lower_text in ["💳 saldo", "saldo"]:
