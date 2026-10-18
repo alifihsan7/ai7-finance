@@ -1,7 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
@@ -39,12 +39,21 @@ NEXT_DIR = os.path.join(STATIC_DIR, "_next")
 if os.path.exists(NEXT_DIR):
     app.mount("/_next", StaticFiles(directory=NEXT_DIR), name="next_static")
 
-if os.path.exists(INDEX_PATH):
-    @app.get("/", response_class=HTMLResponse)
-    def root():
-        with open(INDEX_PATH, "r", encoding="utf-8") as f:
-            return HTMLResponse(f.read())
-
 @app.get("/health")
 def health_check():
     return {"status": "ok", "project": settings.PROJECT_NAME, "version": settings.VERSION}
+
+if os.path.exists(INDEX_PATH):
+    @app.get("/")
+    def root():
+        return FileResponse(INDEX_PATH)
+
+if os.path.exists(STATIC_DIR):
+    @app.get("/{file_name:path}")
+    def serve_static(file_name: str):
+        target_path = os.path.join(STATIC_DIR, file_name)
+        if os.path.isfile(target_path):
+            return FileResponse(target_path)
+        if os.path.exists(INDEX_PATH):
+            return FileResponse(INDEX_PATH)
+        return JSONResponse({"detail": "Not Found"}, status_code=404)

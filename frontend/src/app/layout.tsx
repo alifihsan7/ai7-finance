@@ -19,6 +19,10 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "ai7.finance — Obsidian Financial System",
   description: "Bi-weekly paycheck allocation & personal finance dashboard",
+  icons: {
+    icon: "/ai7-icon-rounded.svg",
+    apple: "/ai7-icon-rounded.svg",
+  },
 };
 
 export default function RootLayout({

@@ -373,9 +373,11 @@ export default function ObsidianDashboard() {
         <div>
           {/* Logo & Brand */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amberGold/15 border border-amberGold/40 flex items-center justify-center text-amberGold font-mono font-bold text-base">
-              A7
-            </div>
+            <img
+              src="/ai7-icon-rounded.svg"
+              alt="AI7 Finance"
+              className="w-9 h-9 rounded-lg border border-obsidian-border shadow-xs"
+            />
             <div>
               <div className="font-bold text-lg tracking-tight text-slateText-primary leading-none">
                 ai7<span className="text-amberGold">.</span>finance
