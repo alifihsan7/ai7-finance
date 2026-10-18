@@ -1,47 +1,63 @@
 import re
 
-ACCOUNTS = {
-    "bca": "BCA",
-    "mandiri": "Mandiri",
-    "bri": "BRI",
-    "bni": "BNI",
-    "jago": "Bank Jago",
-    "seabank": "SeaBank",
-    "gopay": "GoPay",
-    "ovo": "OVO",
-    "dana": "DANA",
-    "shopeepay": "ShopeePay",
-    "spay": "ShopeePay",
-    "cash": "Cash",
-    "tunai": "Cash",
-    "dompet": "Cash"
-}
+# Specific regex patterns for account detection (multi-word patterns first)
+ACCOUNT_PATTERNS = [
+    (r"\b(?:bri\s*1|bri1)\b", "BRI 1"),
+    (r"\b(?:bri\s*2|bri2)\b", "BRI 2"),
+    (r"\b(?:mandiri|livin)\b", "Mandiri"),
+    (r"\b(?:bank\s*jago|jago)\b", "Bank Jago"),
+    (r"\b(?:bca|halo\s*bca)\b", "BCA"),
+    (r"\b(?:bni)\b", "BNI"),
+    (r"\b(?:seabank)\b", "SeaBank"),
+    (r"\b(?:gopay|go-pay)\b", "GoPay"),
+    (r"\b(?:ovo)\b", "OVO"),
+    (r"\b(?:dana)\b", "DANA"),
+    (r"\b(?:shopeepay|spay)\b", "ShopeePay"),
+    (r"\b(?:cash|tunai|dompet)\b", "Cash"),
+]
 
 INCOME_KEYWORDS = [
     "gaji", "income", "pemasukan", "terima", "dapat", "transfer masuk", 
-    "transferan", "freelance", "bonus", "cashback", "dividen", "angpao", "cuan"
+    "transferan", "freelance", "bonus", "cashback", "dividen", "angpao", "cuan", "uang saku"
 ]
 
+# Order matters: more specific envelopes first!
 CATEGORY_RULES = [
+    ("Jajan / Ngopi", [
+        "kopi", "coffee", "cafe", "kafe", "starbucks", "kenangan", "janji jiwa", 
+        "tomoro", "fore", "boba", "chatime", "es teh", "esteh", "mixue", "snack", 
+        "cemilan", "roti", "ice cream", "eskrim", "croissant", "jajan", "gorengan"
+    ]),
     ("Makanan & Minuman", [
-        "makan", "minum", "kopi", "coffee", "cafe", "kafe", "nasi", "ayam", "mie", 
-        "bakso", "sate", "burger", "pizza", "mcd", "kfc", "starbucks", "chatime", 
-        "es teh", "jus", "lunch", "dinner", "sarapan", "breakfast", "cemilan", "snack"
+        "makan", "minum", "nasi", "ayam", "mie", "bakso", "sate", "warteg", "padang", 
+        "geprek", "resto", "pecel", "bebek", "soto", "burger", "pizza", "mcd", "kfc", 
+        "lunch", "dinner", "sarapan", "breakfast", "kantin", "warung"
+    ]),
+    ("Laundry", [
+        "laundry", "cuci baju", "cuci pakaian", "londri", "setrika", "dry clean"
+    ]),
+    ("Galon & Air", [
+        "galon", "isi ulang", "aqua galon", "cleo galon", "le minerale galon", "air minum"
+    ]),
+    ("Langganan & Servis", [
+        "netflix", "spotify", "youtube premium", "yt premium", "icloud", "chatgpt", 
+        "github copilot", "subscription", "langganan", "wifi", "indihome", "biznet", 
+        "myrepublic", "firstmedia", "listrik", "pln", "token", "pulsa", "kuota", 
+        "paket data", "telkomsel", "byu", "xl", "indosat", "kos", "kost", "kontrakan"
+    ]),
+    ("Investasi & Tabungan", [
+        "bibit", "reksadana", "saham", "crypto", "nabung", "invest", "deposito"
     ]),
     ("Transportasi", [
-        "bensin", "pertalite", "pertamax", "solar", "gojek", "goride", "gocar", 
-        "grab", "grabcar", "grabike", "maxim", "parkir", "tol", "kereta", "krl", 
-        "mrt", "lrt", "busway", "transjakarta", "ojol", "angkot", "service motor", "cuci motor", "cuci mobil"
+        "bensin", "pertalite", "pertamax", "shell", "solar", "gojek", "goride", 
+        "gocar", "grab", "grabcar", "grabike", "maxim", "parkir", "tol", "kereta", 
+        "krl", "mrt", "lrt", "busway", "transjakarta", "ojol", "angkot", "service motor", 
+        "cuci motor", "cuci mobil"
     ]),
-    ("Belanja & Kebutuhan", [
+    ("Kebutuhan Harian", [
         "indomaret", "alfamart", "supermarket", "hypermart", "belanja", "sabun", 
-        "odol", "shampoo", "beras", "galon", "aqua", "baju", "celana", "sepatu", 
-        "tokped", "tokopedia", "shopee", "lazada", "tiktok shop", "skincare"
-    ]),
-    ("Tagihan & Langganan", [
-        "wifi", "indihome", "biznet", "myrepublic", "firstmedia", "listrik", "pln", 
-        "token", "pulsa", "kuota", "paket data", "telkomsel", "byu", "xl", "indosat", 
-        "netflix", "spotify", "youtube", "icloud", "chatgpt", "subscription", "kos", "kost", "kontrakan"
+        "odol", "shampoo", "beras", "baju", "celana", "sepatu", "tokped", "tokopedia", 
+        "shopee", "lazada", "tiktok shop", "skincare", "tisu", "deterjen"
     ]),
     ("Kesehatan & Gym", [
         "gym", "fitness", "membership", "suplemen", "whey", "creatine", "obat", 
@@ -52,6 +68,12 @@ CATEGORY_RULES = [
         "playstation", "wisata", "liburan", "karaoke"
     ])
 ]
+
+# Intelligent fallback account based on category when no account is explicitly typed
+CATEGORY_DEFAULT_ACCOUNT = {
+    "Langganan & Servis": "Bank Jago",
+    "Investasi & Tabungan": "Bank Jago",
+}
 
 def parse_amount(text: str):
     pattern = r'(?i)\b(?:rp\.?\s*)?(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta|m|mio)?\b'
@@ -92,22 +114,25 @@ def parse_transaction(text: str):
     if not amount or not matched_num:
         return {
             "success": False, 
-            "error": "Nominal tidak terdeteksi. Contoh format: `kopi 25k bca` atau `gaji 10jt bca`"
+            "error": "Nominal tidak terdeteksi. Contoh format: `nasi padang 25k` atau `kopi 20k mandiri`"
         }
         
-    remaining = raw.replace(matched_num, " ").lower()
+    remaining = raw.replace(matched_num, " ")
     
-    selected_account = "Cash"
-    found_acc_keyword = None
-    for kw, acc_name in ACCOUNTS.items():
-        if re.search(rf'\b{re.escape(kw)}\b', remaining):
+    # Check explicit account
+    selected_account = None
+    matched_acc_span = None
+    for pattern, acc_name in ACCOUNT_PATTERNS:
+        match = re.search(pattern, remaining, re.IGNORECASE)
+        if match:
             selected_account = acc_name
-            found_acc_keyword = kw
+            matched_acc_span = match.group(0)
             break
             
-    if found_acc_keyword:
-        remaining = re.sub(rf'\b{re.escape(found_acc_keyword)}\b', " ", remaining)
+    if matched_acc_span:
+        remaining = re.sub(re.escape(matched_acc_span), " ", remaining, flags=re.IGNORECASE)
         
+    # Check transaction type
     is_income = False
     for ikw in INCOME_KEYWORDS:
         if re.search(rf'\b{re.escape(ikw)}\b', raw.lower()):
@@ -116,7 +141,8 @@ def parse_transaction(text: str):
             
     tx_type = "income" if is_income else "expense"
     
-    selected_category = "Pemasukan" if is_income else "Lain-lain"
+    # Determine category
+    selected_category = "Pemasukan" if is_income else "Lainnya"
     if not is_income:
         for cat_name, cat_kws in CATEGORY_RULES:
             matched = False
@@ -127,6 +153,15 @@ def parse_transaction(text: str):
                     break
             if matched:
                 break
+
+    # If no explicit account was given, smart-infer from category or default to Mandiri
+    if not selected_account:
+        if selected_category in CATEGORY_DEFAULT_ACCOUNT:
+            selected_account = CATEGORY_DEFAULT_ACCOUNT[selected_category]
+        elif is_income:
+            selected_account = "BRI 1"  # Default hub for income
+        else:
+            selected_account = "Mandiri"  # Default daily operational pocket
                 
     desc_clean = re.sub(r'[^\w\s-]', '', remaining).strip()
     desc_clean = re.sub(r'\s+', ' ', desc_clean)

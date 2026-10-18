@@ -39,15 +39,16 @@ def send_message(chat_id: int, text: str, parse_mode: str = "Markdown", reply_to
 def handle_start(chat_id: int):
     msg = """👋 **Halo, Alif! Selamat datang di AI7 Finance Bot.**
 
-Bot ini dirancang khusus untuk mencatat keuangan lo secara instan tanpa ribet.
+Bot ini dirancang khusus terintegrasi dengan PostgreSQL dan formula alokasi 14 harian lo.
 
-💡 **Contoh Input Cepat:**
-• `kopi 25k bca`
-• `bensin 50rb cash`
-• `makan siang 35.000 gopay`
-• `gaji 10jt bca`
-• `beli baju 150k ovo`
-• `bayar wifi indihome 350rb mandiri`
+💡 **Contoh Input Cepat (Otomatis Masuk Amplop):**
+• `nasi padang 25k` ➔ Masuk amplop Makan (Mandiri)
+• `kopi kenangan 22k` ➔ Masuk amplop Jajan (Mandiri)
+• `laundry 35rb` ➔ Masuk amplop Laundry (Mandiri)
+• `isi galon 8k` ➔ Masuk amplop Galon (Mandiri)
+• `netflix 54k` ➔ Masuk Langganan (Bank Jago)
+• `bibit 200k` ➔ Masuk Investasi (Bank Jago)
+• `bensin 30k cash` ➔ Spesifik rekening Cash
 
 📌 **Perintah Tersedia:**
 • `/gajian [nominal]` - Catat gajian & split otomatis ke 4 rekening
@@ -271,6 +272,29 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
 💳 **Rekening:** {tx.account}
 📝 **Keterangan:** {tx.description}
 🕒 _{time_str} WIB_"""
+
+    # Real-time envelope budget feedback for Mandiri operational expenses
+    MANDIRI_ENVELOPES = {
+        "Makanan & Minuman": 450000,
+        "Jajan / Ngopi": 100000,
+        "Laundry": 70000,
+        "Galon & Air": 44000,
+    }
+
+    if tx.type == "expense" and tx.account == "Mandiri" and tx.category in MANDIRI_ENVELOPES:
+        limit = MANDIRI_ENVELOPES[tx.category]
+        start_date = date(now_wib.year, now_wib.month, 1)
+        spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+            Transaction.account == "Mandiri",
+            Transaction.type == "expense",
+            Transaction.category == tx.category,
+            Transaction.date >= start_date
+        ).scalar()
+        spent_int = int(spent or 0)
+        rem = limit - spent_int
+        pct = round(spent_int / limit * 100, 1)
+        status_icon = "⚠️" if pct > 85 else "📊"
+        reply += f"\n\n{status_icon} **Status Amplop Mandiri (Bulan Ini):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
 
     send_message(chat_id, reply, reply_to_message_id=message_id)
 
