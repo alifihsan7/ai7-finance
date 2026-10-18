@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
-        "postgresql://alifihsan:ai7finance2026@127.0.0.1:5432/ai7_finance"
+        "postgresql://postgres:postgres@localhost:5432/ai7_finance"
     )
     
     # Telegram Bot
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     ALLOWED_USER_ID: int = int(os.getenv("ALLOWED_USER_ID", "0"))
     
     # Web App URL
-    APP_BASE_URL: str = os.getenv("APP_BASE_URL", "https://alifihsan-studio.tailbdd42d.ts.net:8443")
+    APP_BASE_URL: str = os.getenv("APP_BASE_URL", "http://localhost:8080")
 
     # Timezone
     TIMEZONE: str = "Asia/Jakarta"

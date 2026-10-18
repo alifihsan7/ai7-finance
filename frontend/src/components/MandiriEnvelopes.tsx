@@ -17,7 +17,7 @@ export function MandiriEnvelopes({
   mandiriExpenses,
   formatRupiah,
   cycleDays = 14,
-  pocketAccount = "Mandiri",
+  pocketAccount = "Saku Belanja",
   pocketBudget,
 }: MandiriEnvelopesProps) {
   const totalPlafond = pocketBudget && pocketBudget > 0 ? pocketBudget : 825000;

@@ -1,3 +1,9 @@
 #!/bin/bash
-cd /home/alifihsan/ai7-finance/backend
-exec /home/alifihsan/ai7-finance/venv/bin/python -m app.bot.bot
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd "$DIR/backend" || exit 1
+
+if [ -f "$DIR/venv/bin/python" ]; then
+    exec "$DIR/venv/bin/python" -m app.bot.bot
+else
+    exec python3 -m app.bot.bot
+fi

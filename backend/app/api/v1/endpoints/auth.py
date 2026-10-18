@@ -312,7 +312,7 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
     # 1. Cari user berdasarkan google_id
     user = db.query(User).filter(User.google_id == google_id).first()
     if not user:
-        # 2. Cari user berdasarkan email (misal: akun Alif Ihsan yang sudah ada)
+        # 2. Cari user berdasarkan email yang cocok
         user = db.query(User).filter(User.email == email).first()
         if user:
             # Tautkan akun Google ke user eksisting

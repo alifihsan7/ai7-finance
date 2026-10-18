@@ -2,8 +2,10 @@
 import os
 import sys
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # Auto-reexec inside the project's dedicated virtualenv to ensure native bcrypt & pydantic support
-VENV_PYTHON = "/home/alifihsan/ai7-finance/venv/bin/python"
+VENV_PYTHON = os.path.join(BASE_DIR, "venv", "bin", "python")
 if sys.executable != VENV_PYTHON and os.path.exists(VENV_PYTHON):
     os.execv(VENV_PYTHON, [VENV_PYTHON] + sys.argv)
 
@@ -12,7 +14,7 @@ from datetime import datetime
 import zoneinfo
 
 # Load env from ai7-finance backend
-ENV_PATH = "/home/alifihsan/ai7-finance/backend/.env"
+ENV_PATH = os.path.join(BASE_DIR, "backend", ".env")
 env_vars = {}
 if os.path.exists(ENV_PATH):
     with open(ENV_PATH) as f:
@@ -23,10 +25,14 @@ if os.path.exists(ENV_PATH):
                 env_vars[k.strip()] = v.strip().strip("'\"")
 
 BOT_TOKEN = env_vars.get("BOT_TOKEN")
-CHAT_ID = env_vars.get("ALLOWED_USER_ID", "1357550611")
+CHAT_ID = env_vars.get("ALLOWED_USER_ID")
+if not CHAT_ID:
+    print("ALLOWED_USER_ID not configured; skipping subscription alerts.")
+    sys.exit(0)
+
 API_URL = "http://127.0.0.1:8080/api/v1/subscriptions"
 
-sys.path.insert(0, "/home/alifihsan/ai7-finance/backend")
+sys.path.insert(0, os.path.join(BASE_DIR, "backend"))
 try:
     from app.core.security import create_access_token
     AUTH_HEADERS = {"Authorization": f"Bearer {create_access_token(1)}"}
