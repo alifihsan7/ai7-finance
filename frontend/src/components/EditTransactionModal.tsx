@@ -205,7 +205,7 @@ export function EditTransactionModal({
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 py-2.5 bg-accent-gold hover:bg-accent-gold/90 text-obsidian-bg font-bold rounded-xl text-sm transition disabled:opacity-50"
+            className="flex-1 py-2.5 bg-amberGold hover:bg-amber-400 text-[#0B0D11] font-bold rounded-xl text-sm transition disabled:opacity-50 shadow-md cursor-pointer"
           >
             {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
