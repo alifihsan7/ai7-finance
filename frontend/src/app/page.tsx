@@ -608,16 +608,16 @@ export default function ObsidianDashboard() {
             </div>
           </div>
 
-          {/* Navigation Items (Direct Match to Screenshot) */}
+          {/* Navigation Items (Clean Obsidian Slate Minimalist) */}
           <nav className="mt-8 flex flex-col space-y-1">
             {[
-              { name: "Ringkasan", icon: LayoutDashboard, count: null },
-              { name: "Target Finansial", icon: Target, count: goals.length },
-              { name: "Alokasi Amplop", icon: Layers, count: "4" },
-              { name: "Rekening & Akun", icon: Wallet, count: (customAccounts.length || 5).toString() },
-              { name: "Buku Transaksi", icon: CreditCard, count: transactions.length },
-              { name: "Langganan & Tagihan", icon: Bell, count: subsData.items.length },
-              { name: "Analisis & Tren", icon: BarChart2, count: null },
+              { name: "Ringkasan", icon: LayoutDashboard },
+              { name: "Target Finansial", icon: Target },
+              { name: "Alokasi Amplop", icon: Layers },
+              { name: "Rekening & Akun", icon: Wallet },
+              { name: "Buku Transaksi", icon: CreditCard },
+              { name: "Langganan & Tagihan", icon: Bell },
+              { name: "Analisis & Tren", icon: BarChart2 },
             ].map((item) => {
               const isActive = activeNav === item.name;
               const Icon = item.icon;
@@ -625,21 +625,14 @@ export default function ObsidianDashboard() {
                 <button
                   key={item.name}
                   onClick={() => setActiveNav(item.name)}
-                  className={`flex justify-between items-center w-full px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all text-left whitespace-nowrap select-none ${
+                  className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-sm transition-all text-left whitespace-nowrap select-none ${
                     isActive
-                      ? "text-slateText-primary bg-obsidian-hover border border-obsidian-borderStrong text-amberGold shadow-xs font-semibold"
-                      : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-card"
+                      ? "text-amberGold bg-obsidian-hover border border-obsidian-borderStrong shadow-xs font-semibold"
+                      : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-card font-medium"
                   }`}
                 >
-                  <span className="flex items-center gap-2.5 min-w-0">
-                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-slateText-muted"}`} />
-                    <span className="truncate whitespace-nowrap">{item.name}</span>
-                  </span>
-                  {item.count !== null && (
-                    <span className="text-xs text-amberGold font-mono px-2 py-0.5 rounded-md bg-amberGold/10 border border-amberGold/20 whitespace-nowrap shrink-0 ml-2">
-                      {item.count}
-                    </span>
-                  )}
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-slateText-muted"}`} />
+                  <span className="truncate whitespace-nowrap">{item.name}</span>
                 </button>
               );
             })}
@@ -815,16 +808,16 @@ export default function ObsidianDashboard() {
                 </button>
               </div>
 
-              {/* Navigation Items */}
-              <nav className="mt-5 flex flex-col space-y-1.5">
+              {/* Navigation Items (Clean Obsidian Slate Minimalist) */}
+              <nav className="flex flex-col space-y-1">
                 {[
-                  { name: "Ringkasan", icon: LayoutDashboard, count: null },
-                  { name: "Target Finansial", icon: Target, count: goals.length },
-                  { name: "Alokasi Amplop", icon: Layers, count: "4" },
-                  { name: "Rekening & Akun", icon: Wallet, count: (customAccounts.length || 5).toString() },
-                  { name: "Buku Transaksi", icon: CreditCard, count: transactions.length },
-                  { name: "Langganan & Tagihan", icon: Bell, count: subsData.items.length },
-                  { name: "Analisis & Tren", icon: BarChart2, count: null },
+                  { name: "Ringkasan", icon: LayoutDashboard },
+                  { name: "Target Finansial", icon: Target },
+                  { name: "Alokasi Amplop", icon: Layers },
+                  { name: "Rekening & Akun", icon: Wallet },
+                  { name: "Buku Transaksi", icon: CreditCard },
+                  { name: "Langganan & Tagihan", icon: Bell },
+                  { name: "Analisis & Tren", icon: BarChart2 },
                 ].map((item) => {
                   const isActive = activeNav === item.name;
                   const Icon = item.icon;
@@ -835,21 +828,14 @@ export default function ObsidianDashboard() {
                         setActiveNav(item.name);
                         setIsMobileDrawerOpen(false);
                       }}
-                      className={`flex justify-between items-center w-full px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all text-left whitespace-nowrap select-none ${
+                      className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-sm transition-all text-left whitespace-nowrap select-none ${
                         isActive
-                          ? "text-slateText-primary bg-obsidian-hover border border-obsidian-borderStrong text-amberGold shadow-xs font-semibold"
-                          : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-card"
+                          ? "text-amberGold bg-obsidian-hover border border-obsidian-borderStrong shadow-xs font-semibold"
+                          : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-card font-medium"
                       }`}
                     >
-                      <span className="flex items-center gap-2.5 min-w-0">
-                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-slateText-muted"}`} />
-                        <span className="truncate whitespace-nowrap">{item.name}</span>
-                      </span>
-                      {item.count !== null && (
-                        <span className="text-xs text-amberGold font-mono px-2 py-0.5 rounded-md bg-amberGold/10 border border-amberGold/20 whitespace-nowrap shrink-0 ml-2">
-                          {item.count}
-                        </span>
-                      )}
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-slateText-muted"}`} />
+                      <span className="truncate whitespace-nowrap">{item.name}</span>
                     </button>
                   );
                 })}
