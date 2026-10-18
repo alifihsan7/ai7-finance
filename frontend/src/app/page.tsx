@@ -506,7 +506,7 @@ export default function ObsidianDashboard() {
   return (
     <div className="h-screen bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans overflow-hidden">
       {/* SIDEBAR NAVIGATION (Matching user screenshot exactly) */}
-      <aside className="w-full md:w-68 lg:w-72 bg-obsidian-panel border-r border-obsidian-border p-5 lg:p-6 md:h-screen flex flex-col justify-between shrink-0 overflow-y-auto">
+      <aside className="w-full md:w-68 lg:w-72 bg-obsidian-panel border-r border-obsidian-border p-5 lg:p-6 md:h-screen flex flex-col justify-between shrink-0 overflow-y-hidden">
         <div>
           {/* Logo & Brand */}
           <div className="flex items-center gap-2.5">
@@ -585,7 +585,8 @@ export default function ObsidianDashboard() {
       </aside>
 
       {/* MAIN VIEWPORT */}
-      <main className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full overflow-y-auto space-y-8">
+      <main className="flex-1 overflow-y-auto w-full">
+        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
         {/* Dynamic Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-obsidian-border">
           <div>
@@ -993,6 +994,7 @@ export default function ObsidianDashboard() {
             </div>
           </div>
         )}
+        </div>
       </main>
 
       {/* QUICK ADD TRANSACTION MODAL */}
