@@ -97,14 +97,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             },
           });
           const btn = document.getElementById("google-gsi-render-area");
-          if (btn) {
-            btn.innerHTML = "";
+          if (btn && btn.childElementCount === 0) {
             // @ts-expect-error google GIS global
             window.google.accounts.id.renderButton(btn, {
               type: "standard",
               shape: "rectangular",
               theme: "filled_black",
-              text: mode === "login" ? "signin_with" : "signup_with",
+              text: "continue_with",
               size: "large",
               logo_alignment: "left",
               width: 380,
@@ -116,7 +115,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       }
     };
 
-    const timer = setTimeout(initGsi, 100);
+    const timer = setTimeout(initGsi, 50);
 
     if (typeof window !== "undefined" && !document.getElementById("gsi-client-script")) {
       const script = document.createElement("script");
@@ -125,13 +124,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        setTimeout(initGsi, 100);
+        setTimeout(initGsi, 50);
       };
       document.body.appendChild(script);
     }
 
     return () => clearTimeout(timer);
-  }, [isOpen, googleConfig.client_id, mode]);
+  }, [isOpen, googleConfig.client_id]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,12 +239,8 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title={mode === "login" ? "Masuk ke AI7 Finance" : "Daftar Akun AI7 Finance"}
-      subtitle={
-        mode === "login"
-          ? "Akses data finansial multi-tenant terenkripsi Anda"
-          : "Mulai kelola finansial cerdas dengan sistem siklus dinamis"
-      }
+      title={mode === "login" ? "Masuk ke AI7 Finance" : "Daftar Akun Baru"}
+      subtitle="Akses dashboard & pencatatan keuangan multi-tenant Anda"
       icon={<Shield className="w-4 h-4" />}
       accent="mint"
       maxWidth="md"
@@ -256,10 +251,10 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           <button
             type="button"
             onClick={() => { setMode("login"); setError(null); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-lg transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-lg transition-all duration-150 cursor-pointer ${
               mode === "login"
                 ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                : "text-slate-400 hover:text-slate-200 border border-transparent"
             }`}
           >
             <LogIn className="w-3.5 h-3.5" />
@@ -268,10 +263,10 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           <button
             type="button"
             onClick={() => { setMode("register"); setError(null); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-lg transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-lg transition-all duration-150 cursor-pointer ${
               mode === "register"
                 ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                : "text-slate-400 hover:text-slate-200 border border-transparent"
             }`}
           >
             <UserPlus className="w-3.5 h-3.5" />
@@ -283,7 +278,9 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         <div className="space-y-2">
           {googleConfig.is_configured ? (
             <div className="space-y-2">
-              <div id="google-gsi-render-area" className="w-full flex justify-center min-h-[44px]" />
+              <div className="w-full flex justify-center h-[44px] min-h-[44px] overflow-hidden">
+                <div id="google-gsi-render-area" className="w-full flex justify-center min-h-[44px]" />
+              </div>
               {googleLoading && (
                 <div className="text-center text-xs text-emerald-400 animate-pulse flex items-center justify-center gap-2">
                   <span className="w-3 h-3 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
@@ -348,7 +345,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           <div className="flex items-center gap-3 pt-1">
             <div className="h-px bg-[#252B3B] flex-1" />
             <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-              atau dengan akun {mode === "login" ? "ai7" : "baru"}
+              atau dengan username & password
             </span>
             <div className="h-px bg-[#252B3B] flex-1" />
           </div>
@@ -364,7 +361,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
         {/* Login Form */}
         {mode === "login" ? (
-          <form onSubmit={handleLogin} className="space-y-3.5">
+          <form key="login-form" onSubmit={handleLogin} className="space-y-3.5 animate-in fade-in duration-150">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1.5">
                 Username atau Email
@@ -433,7 +430,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           </form>
         ) : (
           /* Register Form */
-          <form onSubmit={handleRegister} className="space-y-3">
+          <form key="register-form" onSubmit={handleRegister} className="space-y-3 animate-in fade-in duration-150">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
                 Nama Lengkap
