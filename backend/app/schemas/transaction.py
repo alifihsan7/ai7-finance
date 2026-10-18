@@ -4,14 +4,14 @@ from pydantic import BaseModel, Field
 
 class TransactionBase(BaseModel):
     type: str
-    amount: int = Field(..., gt=0, description="Nominal transaksi wajib lebih besar dari 0")
+    amount: int
     account: str
     category: str
     description: str
     date: Optional[dt_date] = None
 
 class TransactionCreate(TransactionBase):
-    pass
+    amount: int = Field(..., gt=0, description="Nominal transaksi wajib lebih besar dari 0")
 
 class TransactionUpdate(BaseModel):
     type: Optional[str] = None
