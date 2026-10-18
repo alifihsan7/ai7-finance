@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { ArrowLeftRight, X, CheckCircle2 } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2 } from "lucide-react";
+import { CustomModal } from "@/components/ui/CustomModal";
+import { CustomSelect } from "@/components/ui/CustomSelect";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 
 interface TransferModalProps {
   isOpen: boolean;
@@ -7,7 +10,13 @@ interface TransferModalProps {
   onSuccess: () => void;
 }
 
-const ACCOUNT_OPTIONS = ["Mandiri", "Bank Jago", "BRI 1", "BRI 2", "Cash"];
+const ACCOUNT_OPTIONS = [
+  { value: "Mandiri", label: "Mandiri (Saku Operasional)", color: "bg-blue-500", description: "Pos belanja harian & saku" },
+  { value: "Bank Jago", label: "Bank Jago (Subs & Bills)", color: "bg-purple-500", description: "Pos langganan 31.7%" },
+  { value: "BRI 1", label: "BRI 1 (Income Hub)", color: "bg-cyan-500", description: "Rekening penampung utama" },
+  { value: "BRI 2", label: "BRI 2 (Nabung / Dana Dingin)", color: "bg-emerald-500", description: "Pos tabungan & investasi" },
+  { value: "Cash", label: "Cash (Uang Tunai Dompet)", color: "bg-amber-500", description: "Uang tunai fisik" },
+];
 
 export function TransferModal({ isOpen, onClose, onSuccess }: TransferModalProps) {
   const [fromAccount, setFromAccount] = useState("Mandiri");
@@ -18,15 +27,13 @@ export function TransferModal({ isOpen, onClose, onSuccess }: TransferModalProps
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     const numAmount = parseInt(amount.replace(/[^\d]/g, ""), 10);
     if (!numAmount || numAmount <= 0) {
-      setError("Nominal transfer harus lebih besar dari 0");
+      setError("Nominal transfer harus lebih besar dari Rp 0");
       return;
     }
 
@@ -63,145 +70,109 @@ export function TransferModal({ isOpen, onClose, onSuccess }: TransferModalProps
     }
   };
 
-  const setQuickAmount = (val: number) => {
-    setAmount(val.toString());
-  };
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-obsidian-card border border-obsidian-borderStrong rounded-xl w-full max-w-md p-6 shadow-2xl relative">
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 text-slateText-muted hover:text-slateText-primary"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <CustomModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Transfer Antar Rekening"
+      subtitle="Pindah saldo tanpa memotong kuota belanja rutin (Safe-to-Spend tetap terjaga)"
+      icon={<ArrowLeftRight className="w-5 h-5" />}
+      accent="cyan"
+      maxWidth="md"
+    >
+      {error && (
+        <div className="mb-4 p-3 rounded-xl bg-coralFall/10 border border-coralFall/30 text-coralFall text-xs font-mono">
+          {error}
+        </div>
+      )}
 
-        <div className="flex items-center gap-3 mb-5">
-          <div className="p-2.5 rounded-lg bg-cyanHub/15 border border-cyanHub/30 text-cyanHub">
-            <ArrowLeftRight className="w-5 h-5" />
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Rekening Asal & Tujuan */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <h3 className="font-bold text-lg text-slateText-primary">Transfer Antar Rekening</h3>
-            <p className="text-xs text-slateText-secondary">
-              Pindah saldo tanpa memotong kuota belanja (Safe-to-Spend)
-            </p>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Dari Rekening
+            </label>
+            <CustomSelect
+              value={fromAccount}
+              onChange={setFromAccount}
+              options={ACCOUNT_OPTIONS}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              Ke Rekening
+            </label>
+            <CustomSelect
+              value={toAccount}
+              onChange={setToAccount}
+              options={ACCOUNT_OPTIONS}
+            />
           </div>
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-coralFall/10 border border-coralFall/30 text-coralFall text-xs font-mono">
-            {error}
-          </div>
-        )}
+        {/* Nominal with CurrencyInput */}
+        <div>
+          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            Nominal Transfer
+          </label>
+          <CurrencyInput
+            value={amount}
+            onChange={setAmount}
+            placeholder="0"
+            required
+            accent="cyan"
+            quickAmounts={[50000, 100000, 200000, 500000]}
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-                Dari Rekening
-              </label>
-              <select
-                value={fromAccount}
-                onChange={(e) => setFromAccount(e.target.value)}
-                className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3 py-2 text-sm text-slateText-primary focus:outline-none focus:border-cyanHub transition font-mono"
-              >
-                {ACCOUNT_OPTIONS.map((acc) => (
-                  <option key={acc} value={acc} disabled={acc === toAccount}>
-                    {acc}
-                  </option>
-                ))}
-              </select>
-            </div>
+        {/* Catatan / Keterangan */}
+        <div>
+          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            Keterangan / Catatan (Opsional)
+          </label>
+          <input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Contoh: Top up tabungan dingin"
+            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary placeholder-slateText-muted focus:outline-none focus:border-cyanHub transition"
+          />
+        </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-                Ke Rekening
-              </label>
-              <select
-                value={toAccount}
-                onChange={(e) => setToAccount(e.target.value)}
-                className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3 py-2 text-sm text-slateText-primary focus:outline-none focus:border-cyanHub transition font-mono"
-              >
-                {ACCOUNT_OPTIONS.map((acc) => (
-                  <option key={acc} value={acc} disabled={acc === fromAccount}>
-                    {acc}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+        {/* Tanggal */}
+        <div>
+          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            Tanggal Transaksi
+          </label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-cyanHub transition font-mono"
+          />
+        </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-              Nominal Transfer (Rp)
-            </label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Contoh: 100000"
-              required
-              className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3.5 py-2 text-sm text-slateText-primary placeholder-slateText-muted focus:outline-none focus:border-cyanHub transition font-mono"
-            />
-            <div className="flex gap-2 mt-2">
-              {[50000, 100000, 200000, 500000].map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setQuickAmount(v)}
-                  className="px-2.5 py-1 rounded bg-obsidian-panel border border-obsidian-border hover:border-cyanHub text-xs font-mono text-slateText-secondary hover:text-cyanHub transition"
-                >
-                  {(v / 1000).toString()}k
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-              Keterangan / Catatan (Opsional)
-            </label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Contoh: Top up investasi Bibit"
-              className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3.5 py-2 text-sm text-slateText-primary placeholder-slateText-muted focus:outline-none focus:border-cyanHub transition"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-              Tanggal Transaksi
-            </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3.5 py-2 text-sm text-slateText-primary focus:outline-none focus:border-cyanHub transition font-mono"
-            />
-          </div>
-
-          <div className="pt-3 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border rounded-lg"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-cyanHub text-[#0B0D11] hover:brightness-110 rounded-lg transition inline-flex items-center gap-2 shadow-xs"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{loading ? "Memproses..." : "Konfirmasi Transfer"}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        {/* Actions Footer */}
+        <div className="pt-3 flex justify-end gap-3 border-t border-obsidian-border/50 mt-5">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl transition"
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-cyanHub text-[#0B0D11] hover:brightness-110 rounded-xl transition inline-flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>{loading ? "Memproses..." : "Konfirmasi Transfer"}</span>
+          </button>
+        </div>
+      </form>
+    </CustomModal>
   );
 }
