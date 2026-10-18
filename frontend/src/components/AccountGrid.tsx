@@ -124,7 +124,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
   const allDisplayAccounts = [...defaultAccounts, ...dynamicAccounts];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
       {allDisplayAccounts.map((acc) => {
         const hasPlafon = acc.allocated > 0;
         const pctUsed = hasPlafon ? Math.min(100, Math.round((acc.spent / acc.allocated) * 100)) : 0;
@@ -132,25 +132,25 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
         return (
           <div
             key={acc.name}
-            className="bg-obsidian-card border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl p-5 transition-all shadow-xs flex flex-col justify-between"
+            className="bg-obsidian-card border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl p-4 sm:p-5 transition-all shadow-xs flex flex-col justify-between"
           >
             <div>
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="text-slateText-primary font-bold text-base flex items-center gap-2">
-                    <CreditCard className={`w-4 h-4 ${acc.accentColor}`} />
-                    <span>{acc.name}</span>
+              <div className="flex justify-between items-start gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="text-slateText-primary font-bold text-sm sm:text-base flex items-center gap-1.5 sm:gap-2">
+                    <CreditCard className={`w-4 h-4 shrink-0 ${acc.accentColor}`} />
+                    <span className="truncate">{acc.name}</span>
                   </div>
-                  <div className="text-xs text-slateText-muted mt-1">{acc.tag}</div>
+                  <div className="text-xs text-slateText-muted mt-0.5 truncate">{acc.tag}</div>
                 </div>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-obsidian-panel text-slateText-secondary border border-obsidian-border">
+                <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded-md bg-obsidian-panel text-slateText-secondary border border-obsidian-border shrink-0 whitespace-nowrap">
                   {acc.badge}
                 </span>
               </div>
 
-              <div className="mt-5">
+              <div className="mt-4 sm:mt-5">
                 <div className="text-xs text-slateText-muted">Saldo Rekening</div>
-                <div className="text-2xl font-bold font-mono text-slateText-primary mt-0.5">
+                <div className="text-xl sm:text-2xl font-bold font-mono text-slateText-primary mt-0.5 tracking-tight truncate">
                   {formatRupiah(acc.balance)}
                 </div>
               </div>
@@ -159,9 +159,9 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
             <div className="mt-4 pt-3 border-t border-obsidian-border/50">
               {acc.name === "Bibit" ? (
                 <div>
-                  <div className="flex justify-between text-xs text-teal-400 font-mono mb-1.5">
-                    <span>Target Portofolio</span>
-                    <span>+{formatRupiah(acc.allocated)}/siklus</span>
+                  <div className="flex justify-between items-center gap-1.5 text-[11px] sm:text-xs text-teal-400 font-mono mb-1.5">
+                    <span className="truncate">Target Portofolio</span>
+                    <span className="shrink-0 whitespace-nowrap">+{formatRupiah(acc.allocated)}/siklus</span>
                   </div>
                   <div className="h-1.5 bg-obsidian-panel rounded-full overflow-hidden">
                     <div style={{ width: "100%" }} className="h-full bg-teal-500"></div>
@@ -169,9 +169,9 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
                 </div>
               ) : hasPlafon ? (
                 <div>
-                  <div className="flex justify-between text-xs text-slateText-secondary font-mono mb-1.5">
-                    <span>Terpakai {pctUsed}%</span>
-                    <span>Plafon: {formatRupiah(acc.allocated)}</span>
+                  <div className="flex justify-between items-center gap-1.5 text-[11px] sm:text-xs text-slateText-secondary font-mono mb-1.5">
+                    <span className="shrink-0 whitespace-nowrap">Terpakai {pctUsed}%</span>
+                    <span className="truncate text-right">Plafon: {formatRupiah(acc.allocated)}</span>
                   </div>
                   <div className="h-1.5 bg-obsidian-panel rounded-full overflow-hidden">
                     <div
@@ -185,7 +185,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
               ) : (
                 <div className="flex items-center justify-between text-xs text-slateText-muted font-mono">
                   <span>Status</span>
-                  <span className="text-mintRise">● Aktif</span>
+                  <span className="text-mintRise shrink-0 whitespace-nowrap">● Aktif</span>
                 </div>
               )}
             </div>
