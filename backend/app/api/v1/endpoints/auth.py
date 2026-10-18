@@ -180,7 +180,7 @@ def link_telegram_custom_bot(
 
     # 2. Siapkan webhook secret unik
     secret = user.telegram_webhook_secret or secrets.token_urlsafe(32)
-    webhook_url = f"https://alifihsan-studio.tailbdd42d.ts.net:8443/api/v1/bot/webhook/{secret}"
+    webhook_url = f"{settings.APP_BASE_URL.rstrip('/')}/api/v1/bot/webhook/{secret}"
 
     # 3. Daftarkan webhook ke Telegram API
     try:

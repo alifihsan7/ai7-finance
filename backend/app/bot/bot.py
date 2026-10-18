@@ -135,7 +135,7 @@ def handle_menu(chat_id: int, bot_token: Optional[str] = None):
     send_message(chat_id, msg, reply_markup=MAIN_KEYBOARD, bot_token=bot_token)
 
 def send_dashboard_link(chat_id: int, bot_token: Optional[str] = None):
-    url = "https://alifihsan-studio.tailbdd42d.ts.net:8443"
+    url = settings.APP_BASE_URL
     inline_kb = {
         "inline_keyboard": [
             [{"text": "🚀 Buka Web Dashboard", "url": url}]
@@ -564,7 +564,7 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
     bri2_amt = total - (mandiri_amt + jago_amt + bibit_amt + bri1_amt)
 
     allocations = [
-        ("Mandiri", mandiri_amt, "Uang Saku Harian Mandiri (Makan, Jajan, Laundry, Galon)"),
+        ("Mandiri", mandiri_amt, "Pos Belanja Operasional & Kebutuhan Pokok"),
         ("Bank Jago", jago_amt, "Alokasi Langganan & Tagihan Rutin Jago"),
         ("Bibit", bibit_amt, "Alokasi Investasi Reksadana/Saham Bibit"),
         ("BRI 1", bri1_amt, "Alokasi Dana Darurat BRI 1"),
@@ -577,7 +577,7 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
             type="income",
             amount=amt,
             account=acc,
-            category="Uang Saku Ortu",
+            category="Gajian",
             description=f"Gajian ({desc})",
             raw_text=f"paycheck split /gajian: {total} -> {acc} {amt}",
             date=cycle_start
@@ -597,7 +597,7 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
 
     msg = f"""🎉 **GAJIAN MASUK & ALOKASI OTOMATIS TERCATAT!**
 
-💰 **Total Uang Saku:** {format_rp(total)}
+💰 **Total Pemasukan / Gajian:** {format_rp(total)}
 📅 **Siklus {cycle_days} Hari:** {cycle_start.strftime('%d %b')} – {cycle_end.strftime('%d %b %Y')}
 
 📊 **Distribusi Alokasi 5 Rekening:**
@@ -613,7 +613,7 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
   └ *Tabungan Terkunci*
 
 🌐 *Gunakan Checklist Interaktif di Web Dashboard:*
-[Buka AI7 Finance Web Dashboard](https://alifihsan-studio.tailbdd42d.ts.net:8443/){sheet_info}"""
+[Buka AI7 Finance Web Dashboard]({settings.APP_BASE_URL}){sheet_info}"""
 
     send_message(chat_id, msg, bot_token=bot_token)
 
@@ -1074,7 +1074,7 @@ def process_update(update: dict, bot_token: Optional[str] = None, user_override:
 
 📌 **Langkah Menghubungkan Akun:**
 1️⃣ Salin Chat ID di atas: `{chat_id}`
-2️⃣ Buka [AI7 Finance Web Dashboard](https://alifihsan-studio.tailbdd42d.ts.net:8443/)
+2️⃣ Buka [AI7 Finance Web Dashboard]({settings.APP_BASE_URL})
 3️⃣ Buka modal **Profil Pengguna** ➔ Tab **Integrasi Telegram**
 4️⃣ Pilih mode **Shared Bot** dan tempelkan Chat ID kamu
 5️⃣ Klik **Hubungkan Telegram**

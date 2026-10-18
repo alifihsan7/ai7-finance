@@ -495,7 +495,7 @@ export function UserProfileModal({
                       type="number"
                       value={sharedChatId}
                       onChange={(e) => setSharedChatId(e.target.value)}
-                      placeholder="Contoh: 1357550611"
+                      placeholder="Contoh: 987654321"
                       className="w-full bg-[#12151D] border border-[#252B3B] text-slate-100 placeholder-slate-500 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyan-500/50 font-mono"
                       required
                     />

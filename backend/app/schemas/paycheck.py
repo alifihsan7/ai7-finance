@@ -74,5 +74,5 @@ class PaycheckSessionOut(BaseModel):
 class PaycheckStartRequest(BaseModel):
     total_amount: int = 1500000
     date: Optional[dt_date] = None
-    note: Optional[str] = "Uang Saku Ortu 2-Mingguan"
+    note: Optional[str] = "Alokasi Gajian Siklus"
     allocations: Optional[Dict[str, int]] = None  # Custom adjusted amounts: {"Mandiri": 825000, ...}

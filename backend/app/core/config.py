@@ -17,14 +17,17 @@ class Settings(BaseSettings):
     )
     
     # Telegram Bot
-    BOT_TOKEN: str = os.getenv("BOT_TOKEN", "8897030564:AAGxRBWe4WJgSUsdqi-HuwHwwHBSbPPTppg")
-    ALLOWED_USER_ID: int = int(os.getenv("ALLOWED_USER_ID", "1357550611"))
+    BOT_TOKEN: str = os.getenv("BOT_TOKEN", "")
+    ALLOWED_USER_ID: int = int(os.getenv("ALLOWED_USER_ID", "0"))
     
+    # Web App URL
+    APP_BASE_URL: str = os.getenv("APP_BASE_URL", "https://alifihsan-studio.tailbdd42d.ts.net:8443")
+
     # Timezone
     TIMEZONE: str = "Asia/Jakarta"
 
     # Google Sheets Integration
-    GOOGLE_SERVICE_ACCOUNT_FILE: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "/home/alifihsan/ai7-finance/credentials_google.json")
+    GOOGLE_SERVICE_ACCOUNT_FILE: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "credentials_google.json")
     GOOGLE_SHEETS_SPREADSHEET_ID: str = os.getenv("GOOGLE_SHEETS_SPREADSHEET_ID", "")
 
     # AI Media Extraction (OCR & Voice Notes via 9router)

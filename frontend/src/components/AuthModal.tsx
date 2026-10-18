@@ -366,7 +366,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   type="text"
                   value={loginId}
                   onChange={(e) => setLoginId(e.target.value)}
-                  placeholder="alifihsan atau email@domain.com"
+                  placeholder="username atau email@domain.com"
                   className="w-full bg-[#181C26] border border-[#252B3B] text-slate-100 placeholder-slate-500 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-colors"
                   required
                 />

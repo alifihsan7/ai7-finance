@@ -186,7 +186,7 @@ def execute_paycheck_split(
             "account": "Mandiri",
             "amount": mandiri_amt,
             "percentage": round(mandiri_amt / total * 100, 1),
-            "purpose": "Uang Saku Harian (Makan, Jajan, Laundry, Galon)",
+            "purpose": "Pos Belanja Operasional & Kebutuhan Pokok",
             "desc": "Gajian (Alokasi Saku Harian Mandiri)",
         },
         {
@@ -225,7 +225,7 @@ def execute_paycheck_split(
             type="income",
             amount=item["amount"],
             account=item["account"],
-            category="Uang Saku Ortu",
+            category="Gajian",
             description=item["desc"],
             raw_text=f"paycheck-split: total {total} -> {item['account']} {item['amount']}",
             date=cycle_start
