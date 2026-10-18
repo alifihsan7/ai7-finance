@@ -10,7 +10,6 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Sparkles,
-  CheckCircle2,
   ShieldCheck,
   Layers,
   Wallet,
@@ -18,6 +17,7 @@ import {
   BarChart2,
   LayoutDashboard,
   ArrowLeftRight,
+  ArrowRight,
   Clock,
   Calendar,
   Menu,
@@ -39,6 +39,7 @@ import { TransferModal } from "@/components/TransferModal";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
 import { EditSubscriptionModal } from "@/components/EditSubscriptionModal";
+import PaycheckModal from "@/components/PaycheckModal";
 import { AccountItem } from "@/components/AccountGrid";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
@@ -147,7 +148,15 @@ export default function ObsidianDashboard() {
     end: "2026-10-24",
     is_current: true,
   });
-  const [paycheckLoading, setPaycheckLoading] = useState(false);
+  const [activePaycheckSession, setActivePaycheckSession] = useState<{
+    id: number;
+    total_amount: number;
+    date: string;
+    status: string;
+    completed_steps: number;
+    total_steps: number;
+    progress_percentage: number;
+  } | null>(null);
   const [subToDelete, setSubToDelete] = useState<number | null>(null);
   const [txToDelete, setTxToDelete] = useState<Transaction | null>(null);
   const [txToEdit, setTxToEdit] = useState<Transaction | null>(null);
@@ -156,7 +165,6 @@ export default function ObsidianDashboard() {
   const [goalToEdit, setGoalToEdit] = useState<GoalItem | null>(null);
   const [goalToDelete, setGoalToDelete] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [paycheckTotal, setPaycheckTotal] = useState<string>("1500000");
 
   // Form state for new transaction
   const [formType, setFormType] = useState<"expense" | "income">("expense");
@@ -307,12 +315,13 @@ export default function ObsidianDashboard() {
       if (selectedPeriod.start) txParams.append("start_date", selectedPeriod.start);
       if (selectedPeriod.end) txParams.append("end_date", selectedPeriod.end);
 
-      const [txRes, sumRes, subRes, accRes, goalRes] = await Promise.all([
+      const [txRes, sumRes, subRes, accRes, goalRes, sessRes] = await Promise.all([
         fetch(`/api/v1/transactions?${txParams.toString()}`),
         fetch(`/api/v1/analytics/summary?${periodParams.toString()}`),
         fetch("/api/v1/subscriptions"),
         fetch("/api/v1/accounts"),
         fetch("/api/v1/goals"),
+        fetch("/api/v1/paycheck/session/active"),
       ]);
 
       if (txRes.ok) {
@@ -344,6 +353,17 @@ export default function ObsidianDashboard() {
         if (Array.isArray(goalData)) {
           setGoals(goalData);
         }
+      }
+
+      if (sessRes.ok) {
+        const sessData = await sessRes.json();
+        if (sessData && sessData.id && sessData.status === "in_progress") {
+          setActivePaycheckSession(sessData);
+        } else {
+          setActivePaycheckSession(null);
+        }
+      } else {
+        setActivePaycheckSession(null);
       }
     } catch (err) {
       console.error("Fetch error:", err);
@@ -549,29 +569,6 @@ export default function ObsidianDashboard() {
       fetchData();
     } catch (err) {
       console.error("Toggle subscription error:", err);
-    }
-  };
-
-  const handleExecutePaycheck = async () => {
-    const numAmount = parseInt(paycheckTotal.replace(/\D/g, ""), 10) || 1500000;
-    try {
-      setPaycheckLoading(true);
-      const res = await fetch("/api/v1/transactions/paycheck", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          total_amount: numAmount,
-          note: "Gajian 2-Mingguan",
-        }),
-      });
-      if (res.ok) {
-        setIsPaycheckModalOpen(false);
-        await fetchData();
-      }
-    } catch (err) {
-      console.error("Paycheck API Error:", err);
-    } finally {
-      setPaycheckLoading(false);
     }
   };
 
@@ -1041,6 +1038,37 @@ export default function ObsidianDashboard() {
         {/* ============================================================== */}
         {activeNav === "Ringkasan" && (
           <>
+            {/* Active Paycheck Session Banner */}
+            {activePaycheckSession && activePaycheckSession.status === "in_progress" && (
+              <div className="p-4 sm:p-4.5 rounded-2xl bg-gradient-to-r from-mintRise/15 via-obsidian-card to-cyanHub/15 border border-mintRise/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-mintRise/20 border border-mintRise/40 flex items-center justify-center text-mintRise shrink-0 shadow-[0_0_12px_rgba(16,185,129,0.2)]">
+                    <Sparkles className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-sm text-slateText-primary">
+                        Distribusi Gajian Sedang Berjalan
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-mintRise/20 text-mintRise border border-mintRise/40">
+                        {activePaycheckSession.completed_steps} / {activePaycheckSession.total_steps} Selesai ({activePaycheckSession.progress_percentage}%)
+                      </span>
+                    </div>
+                    <p className="text-xs text-slateText-secondary truncate mt-0.5">
+                      Total Rp {activePaycheckSession.total_amount.toLocaleString("id-ID")} • Selesaikan checklist transfer m-banking & gate Flip
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsPaycheckModalOpen(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-mintRise text-[#0B0D11] hover:brightness-110 transition shrink-0 inline-flex items-center justify-center gap-1.5 shadow-md cursor-pointer self-end sm:self-center"
+                >
+                  <span>Lanjutkan Checklist</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5">
               {/* Net Worth */}
               <div className="xl:col-span-7 bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-7 relative overflow-hidden flex flex-col justify-between">
@@ -1733,118 +1761,12 @@ export default function ObsidianDashboard() {
         </form>
       </CustomModal>
 
-      {/* GAJIAN AUTO-SPLIT MODAL */}
-      <CustomModal
+      {/* GAJIAN STEP-BY-STEP CHECKLIST MODAL */}
+      <PaycheckModal
         isOpen={isPaycheckModalOpen}
         onClose={() => setIsPaycheckModalOpen(false)}
-        title="Alokasi Gajian Otomatis (Auto-Split)"
-        subtitle="Siklus 14 hari baru • Distribusi formula langsung ke 4 rekening"
-        icon={<Sparkles className="w-5 h-5" />}
-        accent="mint"
-        maxWidth="lg"
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-              Nominal Transferan Masuk
-            </label>
-            <CurrencyInput
-              value={paycheckTotal}
-              onChange={setPaycheckTotal}
-              placeholder="1500000"
-              accent="mint"
-              quickAmounts={[1000000, 1500000, 2000000, 2500000]}
-            />
-          </div>
-
-          <div className="p-4 rounded-xl bg-obsidian-panel border border-obsidian-border space-y-3.5">
-            <div className="flex justify-between items-center pb-3 border-b border-obsidian-border">
-              <span className="text-xs font-semibold text-slateText-muted uppercase tracking-wider">
-                Total Alokasi Dihitung
-              </span>
-              <span className="font-mono font-extrabold text-xl text-mintRise">
-                Rp {parseInt(paycheckTotal.replace(/\D/g, "") || "0", 10).toLocaleString("id-ID")}
-              </span>
-            </div>
-
-            <div className="space-y-3 text-xs sm:text-sm">
-              {(() => {
-                const total = parseInt(paycheckTotal.replace(/\D/g, "") || "0", 10);
-                const mandiri = Math.round(total * 0.55);
-                const jago = Math.round(total * 0.317);
-                const bri1 = Math.round(total * 0.067);
-                const bri2 = total - mandiri - jago - bri1;
-                return (
-                  <>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-amberGold"></span>
-                        <span className="font-medium text-slateText-primary">Mandiri (55.0%)</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-mono font-bold text-slateText-primary">Rp {mandiri.toLocaleString("id-ID")}</span>
-                        <div className="text-[11px] text-slateText-muted">Makan, Jajan, Laundry, Galon</div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-mintRise"></span>
-                        <span className="font-medium text-slateText-primary">Bank Jago / Bibit (31.7%)</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-mono font-bold text-slateText-primary">Rp {jago.toLocaleString("id-ID")}</span>
-                        <div className="text-[11px] text-slateText-muted">Subs Netflix/Spotify & Bibit</div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-cyanHub"></span>
-                        <span className="font-medium text-slateText-primary">BRI 1 (6.7%)</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-mono font-bold text-slateText-primary">Rp {bri1.toLocaleString("id-ID")}</span>
-                        <div className="text-[11px] text-slateText-muted">Hub & Dana Darurat</div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-purpleLock"></span>
-                        <span className="font-medium text-slateText-primary">BRI 2 (6.6%)</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-mono font-bold text-slateText-primary">Rp {bri2.toLocaleString("id-ID")}</span>
-                        <div className="text-[11px] text-slateText-muted">Tabungan Terkunci</div>
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-
-          <div className="pt-2 flex justify-end gap-3 border-t border-obsidian-border/50">
-            <button
-              type="button"
-              onClick={() => setIsPaycheckModalOpen(false)}
-              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl transition"
-            >
-              Batal
-            </button>
-            <button
-              type="button"
-              onClick={handleExecutePaycheck}
-              disabled={paycheckLoading}
-              className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-mintRise text-[#0B0D11] hover:brightness-110 rounded-xl transition inline-flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{paycheckLoading ? "Menyimpan ke DB..." : "Konfirmasi & Split Sekarang"}</span>
-            </button>
-          </div>
-        </div>
-      </CustomModal>
+        onSuccess={fetchData}
+      />
 
       {/* Transfer Modal */}
       <TransferModal

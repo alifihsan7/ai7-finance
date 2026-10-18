@@ -566,9 +566,9 @@ def handle_gajian(chat_id: int, text: str, db: Session):
 💰 **Total Uang Saku:** {format_rp(total)}
 📅 **Siklus 14 Hari:** {cycle_start.strftime('%d %b')} – {cycle_end.strftime('%d %b %Y')}
 
-📊 **Distribusi Otomatis ke 5 Rekening / Pos:**
+📊 **Distribusi Alokasi 5 Rekening:**
 • **Mandiri (55%):** {format_rp(mandiri_amt)}
-  └ *Makan Rp 450k | Jajan Rp 100k | Laundry Rp 70k | Galon Rp 44k*
+  └ *Makan, Jajan, Laundry, Galon*
 • **Bank Jago (18.3%):** {format_rp(jago_amt)}
   └ *Langganan & Tagihan Rutin*
 • **Bibit (13.3%):** {format_rp(bibit_amt)}
@@ -578,7 +578,20 @@ def handle_gajian(chat_id: int, text: str, db: Session):
 • **BRI 2 (6.7%):** {format_rp(bri2_amt)}
   └ *Tabungan Terkunci*
 
-✅ Kelima rekening telah otomatis dikreditkan di PostgreSQL dan tersinkronisasi ke Dashboard Web!{sheet_info}"""
+🛣️ **Panduan Rute Transfer Bebas Biaya Admin:**
+1️⃣ **BRImo (BRI 1):**
+   • Transfer sesama BRI ke **BRI 2** ({format_rp(bri2_amt)})
+   • Top up ke **Flip**: {format_rp(mandiri_amt + jago_amt + bibit_amt)}
+   • Sisa di **BRI 1**: {format_rp(bri1_amt)}
+2️⃣ **Flip (Gratis Antar-Bank):**
+   • Kirim ke **Mandiri**: {format_rp(mandiri_amt)}
+   • Kirim ke **Bank Jago**: {format_rp(jago_amt + bibit_amt)}
+3️⃣ **Bank Jago / Bibit:**
+   • Top up kantong Jago ke **Bibit**: {format_rp(bibit_amt)}
+   • Sisa di **Bank Jago**: {format_rp(jago_amt)} (untuk autodebet)
+
+🌐 *Gunakan Checklist Interaktif di Web Dashboard:*
+[Buka AI7 Finance Web Dashboard](https://alifihsan-studio.tailbdd42d.ts.net:8443/){sheet_info}"""
 
     send_message(chat_id, msg)
 
