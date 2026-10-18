@@ -79,7 +79,7 @@ export function CustomSelect({
 
       {/* Floating Custom Dropdown Menu */}
       {isOpen && (
-        <div className="absolute left-0 right-0 mt-1.5 z-50 bg-obsidian-card border border-obsidian-borderStrong rounded-xl shadow-2xl overflow-hidden py-1.5 max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute left-0 right-0 mt-1.5 z-[100] bg-obsidian-card border border-obsidian-borderStrong rounded-xl shadow-2xl py-1.5 max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
           {options.map((opt) => {
             const isSelected = opt.value === value;
             return (
