@@ -304,7 +304,26 @@ def get_monthly_summary(
         ).desc()
     ).all()
 
-    accounts = [AccountBalance(account=a.account, balance=int(a.balance or 0)) for a in acc_rows]
+    # Expense per account dalam periode
+    acc_expense_rows = db.query(
+        Transaction.account,
+        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
+    ).filter(
+        Transaction.user_id == current_user.id,
+        Transaction.type == "expense",
+        Transaction.date >= start_date,
+        Transaction.date < query_end_date
+    ).group_by(Transaction.account).all()
+    expense_by_acc = {r.account: int(r.spent) for r in acc_expense_rows}
+
+    accounts = [
+        AccountBalance(
+            account=a.account,
+            balance=int(a.balance or 0),
+            expense=expense_by_acc.get(a.account, 0)
+        )
+        for a in acc_rows
+    ]
     total_balance = sum(a.balance for a in accounts)
 
     # Daily trend dalam periode

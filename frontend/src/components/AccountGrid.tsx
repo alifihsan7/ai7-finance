@@ -14,7 +14,7 @@ export interface AccountItem {
 interface AccountGridProps {
   summary: {
     expense: number;
-    accounts?: { account: string; balance: number }[];
+    accounts?: { account: string; balance: number; expense?: number }[];
     safe_to_spend?: {
       pocket_spent: number;
       pocket_remaining: number;
@@ -42,12 +42,19 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
     return acc;
   }, {});
 
+  // Map expense riil dari summary.accounts
+  const expenseMap = (summary.accounts || []).reduce<Record<string, number>>((acc, item) => {
+    acc[item.account] = item.expense ?? 0;
+    return acc;
+  }, {});
+
   const pocketSpent = summary.safe_to_spend?.pocket_spent ?? 0;
   const cycleDays = summary.safe_to_spend?.cycle_days ?? 14;
   const cycleBadge = `${cycleDays} Hari`;
+  const baselineSalary = cycleDays === 30 ? 3000000 : (cycleDays === 7 ? 750000 : 1500000);
   const pocketBudget = summary.safe_to_spend?.pocket_budget && summary.safe_to_spend.pocket_budget > 0
     ? summary.safe_to_spend.pocket_budget
-    : 825000;
+    : Math.round(baselineSalary * 0.55);
 
   // Akun utama bawaan siklus
   const defaultAccounts = [
@@ -65,8 +72,8 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
       name: "Bank Jago",
       tag: "Subs & Tagihan (18.3%)",
       balance: balanceMap["Bank Jago"] ?? 0,
-      spent: 265000,
-      allocated: Math.round(pocketBudget * (18.3 / 55)),
+      spent: expenseMap["Bank Jago"] ?? 0,
+      allocated: Math.round(baselineSalary * 0.183),
       accentColor: "text-purple-400",
       barColor: "bg-purple-500",
       badge: cycleBadge,
@@ -75,8 +82,8 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
       name: "Bibit",
       tag: "Investasi Portofolio (13.3%)",
       balance: balanceMap["Bibit"] ?? 0,
-      spent: 0,
-      allocated: Math.round(pocketBudget * (13.3 / 55)),
+      spent: expenseMap["Bibit"] ?? 0,
+      allocated: Math.round(baselineSalary * 0.133),
       accentColor: "text-teal-400",
       barColor: "bg-teal-500",
       badge: "Portofolio",
@@ -85,8 +92,8 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
       name: "BRI 1",
       tag: "Hub & Dana Darurat (6.7%)",
       balance: balanceMap["BRI 1"] ?? 0,
-      spent: 775583,
-      allocated: Math.round(pocketBudget * (6.7 / 55)),
+      spent: expenseMap["BRI 1"] ?? 0,
+      allocated: Math.round(baselineSalary * 0.067),
       accentColor: "text-cyanHub",
       barColor: "bg-cyanHub",
       badge: cycleBadge,
@@ -95,8 +102,8 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
       name: "BRI 2",
       tag: "Tabungan Terkunci (6.7%)",
       balance: balanceMap["BRI 2"] ?? 0,
-      spent: 0,
-      allocated: 100000,
+      spent: expenseMap["BRI 2"] ?? 0,
+      allocated: Math.round(baselineSalary * 0.067),
       accentColor: "text-purpleLock",
       barColor: "bg-purpleLock",
       badge: "Terkunci",

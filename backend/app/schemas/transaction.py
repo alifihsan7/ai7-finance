@@ -38,6 +38,7 @@ class CategorySummary(BaseModel):
 class AccountBalance(BaseModel):
     account: str
     balance: int
+    expense: Optional[int] = 0
 
 class DailyTrendItem(BaseModel):
     date: str
