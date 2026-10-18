@@ -220,7 +220,7 @@ def sync_cycle_snapshot(
         if ws.row_count < total_rows_needed:
             ws.add_rows(total_rows_needed - ws.row_count)
 
-    # Siapkan baris data dan catat indeks baris penting untuk styling
+    # Siapkan baris data menggunakan NILAI NUMERIK RIIL (Mencegah Formula Syntax #ERROR!)
     rows = []
     # R1: kosong (index 0)
     rows.append(["", "", "", "", "", "", ""])
@@ -237,11 +237,12 @@ def sync_cycle_snapshot(
     # Header Tabel Seksi 1
     sec1_hdr_idx = len(rows)
     rows.append(["", "Indikator Keuangan", "", "Nilai (IDR)", "", "Keterangan", ""])
-    # Data Seksi 1
-    rows.append(["", "Total Pemasukan Siklus", "", f"Rp {income_total:,.0f}".replace(",", "."), "", "Gajian 14-Harian & Alokasi Pos", ""])
-    rows.append(["", "Plafon Belanja Mandiri", "", f"Rp {pocket_budget:,.0f}".replace(",", "."), "", "Pos Saku Operasional 14 Hari", ""])
-    rows.append(["", "Realisasi Belanja Mandiri", "", f"Rp {pocket_spent:,.0f}".replace(",", "."), "", f"Hari ke-{day_of_cycle} dari 14 hari", ""])
-    rows.append(["", "Sisa Saldo Aman Belanja", "", f"Rp {pocket_remaining:,.0f}".replace(",", "."), "", f"Batas aman: Rp {safe_daily:,.0f}/hari".replace(",", "."), ""])
+    # Data Seksi 1 (Numerik Riil)
+    sec1_data_start = len(rows)
+    rows.append(["", "Total Pemasukan Siklus", "", income_total, "", "Gajian 14-Harian & Alokasi Pos", ""])
+    rows.append(["", "Plafon Belanja Mandiri", "", pocket_budget, "", "Pos Saku Operasional 14 Hari", ""])
+    rows.append(["", "Realisasi Belanja Mandiri", "", pocket_spent, "", f"Hari ke-{day_of_cycle} dari 14 hari", ""])
+    rows.append(["", "Sisa Saldo Aman Belanja", "", pocket_remaining, "", f"Batas aman: Rp {safe_daily:,.0f}/hari".replace(",", "."), ""])
     sec1_end_idx = len(rows) - 1
 
     rows.append(["", "", "", "", "", "", ""])
@@ -258,10 +259,10 @@ def sync_cycle_snapshot(
         rows.append([
             "",
             env["name"],
-            f"Rp {env['limit']:,.0f}".replace(",", "."),
-            f"Rp {env['spent']:,.0f}".replace(",", "."),
-            f"Rp {env['remaining']:,.0f}".replace(",", "."),
-            f"{env['percentage'] * 100:.1f}%",
+            env["limit"],
+            env["spent"],
+            env["remaining"],
+            env["percentage"],
             env["status"]
         ])
     sec2_end_idx = len(rows) - 1
@@ -283,24 +284,24 @@ def sync_cycle_snapshot(
             "",
             f_desc,
             "",
-            f"Rp {acc['balance']:,.0f}".replace(",", "."),
+            acc["balance"],
             ""
         ])
+    sec3_data_end = len(rows) - 1
     sec3_total_idx = len(rows)
-    rows.append(["", "TOTAL KEKAYAAN BERSIH (NET WORTH)", "", "", "", f"Rp {total_balance:,.0f}".replace(",", "."), ""])
+    rows.append(["", "TOTAL KEKAYAAN BERSIH (NET WORTH)", "", "", "", total_balance, ""])
 
     rows.append(["", "", "", "", "", "", ""])
     rows.append(["", "", "", "", "", "", ""])
 
-    # Seksi 4: Buku Kas Transaksi
+    # Seksi 4: Buku Kas Transaksi (Numerik Riil dengan Format Display)
     sec4_title_idx = len(rows)
     rows.append(["", f"4. BUKU KAS TRANSAKSI SIKLUS INI ({len(tx_rows)} CATATAN)", "", "", "", "", ""])
     sec4_hdr_idx = len(rows)
     rows.append(["", "Tanggal", "Keterangan", "Kategori", "Rekening", "Tipe", "Nominal"])
     sec4_data_start = len(rows)
     for tx in tx_rows:
-        t_prefix = "+" if tx.type in ["income", "transfer_in"] else "-"
-        nom_str = f"{t_prefix} Rp {tx.amount:,.0f}".replace(",", ".")
+        num_val = tx.amount if tx.type in ["income", "transfer_in"] else -tx.amount
         rows.append([
             "",
             str(tx.date),
@@ -308,7 +309,7 @@ def sync_cycle_snapshot(
             tx.category or "-",
             tx.account or "-",
             tx.type.upper(),
-            nom_str
+            num_val
         ])
     sec4_end_idx = len(rows) - 1
 
@@ -461,17 +462,55 @@ def sync_cycle_snapshot(
                 "verticalAlignment": "MIDDLE"
             }
         },
-        # 5. Section 3 Total Net Worth Row
+        # 5. Section 1 Number Formatting (Currency Rp #,##0)
+        {
+            "range": f"D{sec1_data_start + 1}:D{sec1_end_idx + 1}",
+            "format": {
+                "numberFormat": {"type": "CURRENCY", "pattern": "\"Rp \"#,##0"},
+                "horizontalAlignment": "RIGHT",
+                "textFormat": {"bold": True}
+            }
+        },
+        # 6. Section 2 Number Formatting (Currency Rp #,##0 & Percent)
+        {
+            "range": f"C{sec2_data_start + 1}:E{sec2_end_idx + 1}",
+            "format": {
+                "numberFormat": {"type": "CURRENCY", "pattern": "\"Rp \"#,##0"},
+                "horizontalAlignment": "RIGHT"
+            }
+        },
+        {
+            "range": f"F{sec2_data_start + 1}:F{sec2_end_idx + 1}",
+            "format": {
+                "numberFormat": {"type": "PERCENT", "pattern": "0.0%"},
+                "horizontalAlignment": "CENTER",
+                "textFormat": {"bold": True}
+            }
+        },
+        {
+            "range": f"G{sec2_data_start + 1}:G{sec2_end_idx + 1}",
+            "format": {"horizontalAlignment": "CENTER", "textFormat": {"bold": True}}
+        },
+        # 7. Section 3 Number Formatting (Balances & Net Worth)
+        {
+            "range": f"F{sec3_data_start + 1}:F{sec3_data_end + 1}",
+            "format": {
+                "numberFormat": {"type": "CURRENCY", "pattern": "\"Rp \"#,##0"},
+                "horizontalAlignment": "RIGHT",
+                "textFormat": {"bold": True}
+            }
+        },
         {
             "range": f"B{sec3_total_idx + 1}:G{sec3_total_idx + 1}",
             "format": {
                 "backgroundColor": {"red": 0.07, "green": 0.08, "blue": 0.11},
                 "textFormat": {"bold": True, "fontSize": 11, "foregroundColor": {"red": 0.96, "green": 0.62, "blue": 0.04}},
                 "horizontalAlignment": "RIGHT",
-                "verticalAlignment": "MIDDLE"
+                "verticalAlignment": "MIDDLE",
+                "numberFormat": {"type": "CURRENCY", "pattern": "\"Rp \"#,##0"}
             }
         },
-        # 6. Alignments
+        # 8. Section 4 Alignments & Numeric Format with Sign Prefix (+ Rp ... / - Rp ...)
         {
             "range": f"B{sec4_data_start + 1}:B{sec4_end_idx + 1}",
             "format": {"horizontalAlignment": "CENTER"}
@@ -482,11 +521,11 @@ def sync_cycle_snapshot(
         },
         {
             "range": f"G{sec4_data_start + 1}:G{sec4_end_idx + 1}",
-            "format": {"horizontalAlignment": "RIGHT", "textFormat": {"bold": True}}
-        },
-        {
-            "range": f"F{sec2_data_start + 1}:G{sec2_end_idx + 1}",
-            "format": {"horizontalAlignment": "CENTER", "textFormat": {"bold": True}}
+            "format": {
+                "numberFormat": {"type": "CURRENCY", "pattern": "\"+\" \"Rp \"#,##0;\"-\" \"Rp \"#,##0"},
+                "horizontalAlignment": "RIGHT",
+                "textFormat": {"bold": True}
+            }
         }
     ]
     ws.batch_format(formats)
