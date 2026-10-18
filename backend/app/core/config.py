@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     AI_ROUTER_KEY: str = os.getenv("AI_ROUTER_KEY", "")
     AI_ROUTER_MODEL: str = os.getenv("AI_ROUTER_MODEL", "ag/gemini-3.8-flash")
 
+    # JWT Authentication
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "REDACTED_JWT_SECRET")
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30  # 30 days
+
     class Config:
         case_sensitive = True
 

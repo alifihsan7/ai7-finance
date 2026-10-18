@@ -1,10 +1,11 @@
-from sqlalchemy import Column, Integer, BigInteger, String, Text, Date, DateTime, func
+from sqlalchemy import Column, Integer, BigInteger, String, Text, Date, DateTime, ForeignKey, func
 from app.db.session import Base
 
 class Transaction(Base):
     __tablename__ = "transactions"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, default=1, index=True)
     type = Column(String(20), nullable=False, index=True)      # 'expense' or 'income'
     amount = Column(BigInteger, nullable=False)
     account = Column(String(50), nullable=False, index=True)   # 'BCA', 'GoPay', 'Cash', etc.

@@ -9,6 +9,8 @@ from app.db.session import get_db
 from app.core.config import settings
 from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckSession
 from app.models.transaction import Transaction
+from app.models.user import User
+from app.api.deps import get_current_user
 
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 from app.schemas.paycheck import (
@@ -23,11 +25,11 @@ from app.schemas.paycheck import (
 
 router = APIRouter()
 
-def get_or_seed_config(db: Session) -> PaycheckConfig:
-    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+def get_or_seed_config(db: Session, user_id: int = 1) -> PaycheckConfig:
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
     if not cfg:
         cfg = PaycheckConfig(
-            id=1,
+            user_id=user_id,
             source_account="BRI 1",
             use_gate=True,
             gate_name="Flip",
@@ -300,8 +302,11 @@ def format_session_out(session: PaycheckSession) -> PaycheckSessionOut:
     )
 
 @router.get("/config")
-def get_paycheck_config_and_buckets(db: Session = Depends(get_db)):
-    cfg = get_or_seed_config(db)
+def get_paycheck_config_and_buckets(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    cfg = get_or_seed_config(db, current_user.id)
     buckets = get_or_seed_buckets(db, cfg.id)
     return {
         "config": PaycheckConfigOut.from_orm(cfg),
@@ -309,8 +314,12 @@ def get_paycheck_config_and_buckets(db: Session = Depends(get_db)):
     }
 
 @router.put("/config", response_model=PaycheckConfigOut)
-def update_paycheck_config(payload: PaycheckConfigUpdate, db: Session = Depends(get_db)):
-    cfg = get_or_seed_config(db)
+def update_paycheck_config(
+    payload: PaycheckConfigUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    cfg = get_or_seed_config(db, current_user.id)
     cfg.source_account = payload.source_account
     cfg.use_gate = payload.use_gate
     cfg.gate_name = payload.gate_name
@@ -322,8 +331,12 @@ def update_paycheck_config(payload: PaycheckConfigUpdate, db: Session = Depends(
     return PaycheckConfigOut.from_orm(cfg)
 
 @router.put("/buckets", response_model=List[PaycheckBucketOut])
-def update_paycheck_buckets(payload: List[PaycheckBucketBase], db: Session = Depends(get_db)):
-    cfg = get_or_seed_config(db)
+def update_paycheck_buckets(
+    payload: List[PaycheckBucketBase],
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    cfg = get_or_seed_config(db, current_user.id)
     # Clear existing and replace
     db.query(PaycheckBucket).filter(PaycheckBucket.config_id == cfg.id).delete()
     new_buckets = []
@@ -344,21 +357,34 @@ def update_paycheck_buckets(payload: List[PaycheckBucketBase], db: Session = Dep
     return [PaycheckBucketOut.from_orm(b) for b in new_buckets]
 
 @router.get("/session/active", response_model=Optional[PaycheckSessionOut])
-def get_active_paycheck_session(db: Session = Depends(get_db)):
-    session = db.query(PaycheckSession).filter(PaycheckSession.status == "in_progress").order_by(PaycheckSession.id.desc()).first()
+def get_active_paycheck_session(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = db.query(PaycheckSession).filter(
+        PaycheckSession.user_id == current_user.id,
+        PaycheckSession.status == "in_progress"
+    ).order_by(PaycheckSession.id.desc()).first()
     if not session:
         return None
     return format_session_out(session)
 
 @router.post("/session/start", response_model=PaycheckSessionOut)
-def start_paycheck_session(payload: PaycheckStartRequest, db: Session = Depends(get_db)):
+def start_paycheck_session(
+    payload: PaycheckStartRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     # Cancel any existing active session to avoid stale dangling sessions
-    active = db.query(PaycheckSession).filter(PaycheckSession.status == "in_progress").all()
+    active = db.query(PaycheckSession).filter(
+        PaycheckSession.user_id == current_user.id,
+        PaycheckSession.status == "in_progress"
+    ).all()
     for s in active:
         s.status = "cancelled"
     db.commit()
 
-    cfg = get_or_seed_config(db)
+    cfg = get_or_seed_config(db, current_user.id)
     buckets = get_or_seed_buckets(db, cfg.id)
     amounts = compute_bucket_amounts(payload.total_amount, buckets, payload.allocations)
     steps = generate_steps(cfg, buckets, amounts)
@@ -370,6 +396,7 @@ def start_paycheck_session(payload: PaycheckStartRequest, db: Session = Depends(
     for s in steps:
         if s.is_auto and s.is_done and s.creates_income:
             tx = Transaction(
+                user_id=current_user.id,
                 type="income",
                 amount=s.amount,
                 account=s.target_account,
@@ -384,6 +411,7 @@ def start_paycheck_session(payload: PaycheckStartRequest, db: Session = Depends(
     steps_dicts = [s.dict() for s in steps]
 
     session = PaycheckSession(
+        user_id=current_user.id,
         total_amount=payload.total_amount,
         date=cycle_date,
         status="in_progress",
@@ -397,8 +425,16 @@ def start_paycheck_session(payload: PaycheckStartRequest, db: Session = Depends(
     return format_session_out(session)
 
 @router.post("/session/{session_id}/step/{step_id}/toggle", response_model=PaycheckSessionOut)
-def toggle_paycheck_step(session_id: int, step_id: str, db: Session = Depends(get_db)):
-    session = db.query(PaycheckSession).filter(PaycheckSession.id == session_id).first()
+def toggle_paycheck_step(
+    session_id: int,
+    step_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = db.query(PaycheckSession).filter(
+        PaycheckSession.id == session_id,
+        PaycheckSession.user_id == current_user.id
+    ).first()
     if not session:
         raise HTTPException(status_code=404, detail="Sesi gajian tidak ditemukan")
 
@@ -420,6 +456,7 @@ def toggle_paycheck_step(session_id: int, step_id: str, db: Session = Depends(ge
         # If creates_income and no tx yet, create income transaction
         if target_step.get("creates_income") and not target_step.get("transaction_id"):
             tx = Transaction(
+                user_id=current_user.id,
                 type="income",
                 amount=target_step["amount"],
                 account=target_step["target_account"],
@@ -434,7 +471,7 @@ def toggle_paycheck_step(session_id: int, step_id: str, db: Session = Depends(ge
         # If untoggled, remove transaction if created
         tx_id = target_step.get("transaction_id")
         if tx_id:
-            tx = db.query(Transaction).filter(Transaction.id == tx_id).first()
+            tx = db.query(Transaction).filter(Transaction.id == tx_id, Transaction.user_id == current_user.id).first()
             if tx:
                 db.delete(tx)
             target_step["transaction_id"] = None
@@ -449,6 +486,7 @@ def toggle_paycheck_step(session_id: int, step_id: str, db: Session = Depends(ge
                 if now_done:
                     if s.get("creates_income") and not s.get("transaction_id"):
                         tx = Transaction(
+                            user_id=current_user.id,
                             type="income",
                             amount=s["amount"],
                             account=s["target_account"],
@@ -462,7 +500,7 @@ def toggle_paycheck_step(session_id: int, step_id: str, db: Session = Depends(ge
                 else:
                     tx_id = s.get("transaction_id")
                     if tx_id:
-                        tx = db.query(Transaction).filter(Transaction.id == tx_id).first()
+                        tx = db.query(Transaction).filter(Transaction.id == tx_id, Transaction.user_id == current_user.id).first()
                         if tx:
                             db.delete(tx)
                         s["transaction_id"] = None
@@ -472,12 +510,13 @@ def toggle_paycheck_step(session_id: int, step_id: str, db: Session = Depends(ge
     all_done = all(s["is_done"] for s in steps_data)
     if all_done:
         session.status = "completed"
-        # Auto sync Google Sheets snapshot in background / safe block
-        try:
-            from app.services.sheets_sync import sync_cycle_snapshot
-            sync_cycle_snapshot(db, cycle_start_date=session.date)
-        except Exception as e:
-            print(f"[Paycheck Sync Warning] Failed to auto sync sheets: {e}")
+        # Auto sync Google Sheets snapshot in background (User #1 only)
+        if current_user.id == 1:
+            try:
+                from app.services.sheets_sync import sync_cycle_snapshot
+                sync_cycle_snapshot(db, cycle_start_date=session.date)
+            except Exception as e:
+                print(f"[Paycheck Sync Warning] Failed to auto sync sheets: {e}")
     else:
         session.status = "in_progress"
 
@@ -488,8 +527,15 @@ def toggle_paycheck_step(session_id: int, step_id: str, db: Session = Depends(ge
     return format_session_out(session)
 
 @router.post("/session/{session_id}/complete_all", response_model=PaycheckSessionOut)
-def complete_all_paycheck_steps(session_id: int, db: Session = Depends(get_db)):
-    session = db.query(PaycheckSession).filter(PaycheckSession.id == session_id).first()
+def complete_all_paycheck_steps(
+    session_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = db.query(PaycheckSession).filter(
+        PaycheckSession.id == session_id,
+        PaycheckSession.user_id == current_user.id
+    ).first()
     if not session:
         raise HTTPException(status_code=404, detail="Sesi gajian tidak ditemukan")
 
@@ -499,6 +545,7 @@ def complete_all_paycheck_steps(session_id: int, db: Session = Depends(get_db)):
             s["is_done"] = True
             if s.get("creates_income") and not s.get("transaction_id"):
                 tx = Transaction(
+                    user_id=current_user.id,
                     type="income",
                     amount=s["amount"],
                     account=s["target_account"],
@@ -515,17 +562,25 @@ def complete_all_paycheck_steps(session_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(session)
 
-    try:
-        from app.services.sheets_sync import sync_cycle_snapshot
-        sync_cycle_snapshot(db, cycle_start_date=session.date)
-    except Exception as e:
-        print(f"[Paycheck Sync Warning] Failed to auto sync sheets: {e}")
+    if current_user.id == 1:
+        try:
+            from app.services.sheets_sync import sync_cycle_snapshot
+            sync_cycle_snapshot(db, cycle_start_date=session.date)
+        except Exception as e:
+            print(f"[Paycheck Sync Warning] Failed to auto sync sheets: {e}")
 
     return format_session_out(session)
 
 @router.post("/session/{session_id}/cancel")
-def cancel_paycheck_session(session_id: int, db: Session = Depends(get_db)):
-    session = db.query(PaycheckSession).filter(PaycheckSession.id == session_id).first()
+def cancel_paycheck_session(
+    session_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = db.query(PaycheckSession).filter(
+        PaycheckSession.id == session_id,
+        PaycheckSession.user_id == current_user.id
+    ).first()
     if not session:
         raise HTTPException(status_code=404, detail="Sesi gajian tidak ditemukan")
 
@@ -534,7 +589,7 @@ def cancel_paycheck_session(session_id: int, db: Session = Depends(get_db)):
     for s in steps_data:
         tx_id = s.get("transaction_id")
         if tx_id:
-            tx = db.query(Transaction).filter(Transaction.id == tx_id).first()
+            tx = db.query(Transaction).filter(Transaction.id == tx_id, Transaction.user_id == current_user.id).first()
             if tx:
                 db.delete(tx)
 

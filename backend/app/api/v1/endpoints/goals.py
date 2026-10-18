@@ -9,6 +9,8 @@ import zoneinfo
 from app.db.session import get_db
 from app.models.goal import Goal
 from app.models.transaction import Transaction
+from app.models.user import User
+from app.api.deps import get_current_user
 from app.schemas.goal import GoalCreate, GoalUpdate, GoalResponse
 
 router = APIRouter()
@@ -22,7 +24,7 @@ ROUTINE_CYCLE_ALLOCATIONS = {
     "Mandiri": 825000,
 }
 
-def get_account_balance(account_name: str, db: Session) -> int:
+def get_account_balance(account_name: str, user_id: int, db: Session) -> int:
     val = db.query(
         func.coalesce(
             func.sum(
@@ -34,12 +36,12 @@ def get_account_balance(account_name: str, db: Session) -> int:
             ),
             0
         )
-    ).filter(Transaction.account.ilike(account_name.strip())).scalar()
+    ).filter(Transaction.user_id == user_id, Transaction.account.ilike(account_name.strip())).scalar()
     return int(val or 0)
 
-def compute_goal_metrics(goal: Goal, db: Session) -> dict:
+def compute_goal_metrics(goal: Goal, user_id: int, db: Session) -> dict:
     if goal.linked_account and goal.linked_account.strip():
-        current_amount = get_account_balance(goal.linked_account, db)
+        current_amount = get_account_balance(goal.linked_account, user_id, db)
     else:
         current_amount = int(goal.manual_current_amount or 0)
 
@@ -87,16 +89,25 @@ def compute_goal_metrics(goal: Goal, db: Session) -> dict:
     }
 
 @router.get("", response_model=List[GoalResponse])
-def get_goals(active_only: bool = Query(True), db: Session = Depends(get_db)):
-    query = db.query(Goal)
+def get_goals(
+    active_only: bool = Query(True),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Goal).filter(Goal.user_id == current_user.id)
     if active_only:
         query = query.filter(Goal.is_active == True)
     goals = query.order_by(Goal.id.asc()).all()
-    return [compute_goal_metrics(g, db) for g in goals]
+    return [compute_goal_metrics(g, current_user.id, db) for g in goals]
 
 @router.post("", response_model=GoalResponse)
-def create_goal(payload: GoalCreate, db: Session = Depends(get_db)):
+def create_goal(
+    payload: GoalCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     goal = Goal(
+        user_id=current_user.id,
         name=payload.name.strip(),
         target_amount=payload.target_amount,
         manual_current_amount=payload.manual_current_amount or 0,
@@ -111,11 +122,16 @@ def create_goal(payload: GoalCreate, db: Session = Depends(get_db)):
     db.add(goal)
     db.commit()
     db.refresh(goal)
-    return compute_goal_metrics(goal, db)
+    return compute_goal_metrics(goal, current_user.id, db)
 
 @router.put("/{goal_id}", response_model=GoalResponse)
-def update_goal(goal_id: int, payload: GoalUpdate, db: Session = Depends(get_db)):
-    goal = db.query(Goal).filter(Goal.id == goal_id).first()
+def update_goal(
+    goal_id: int,
+    payload: GoalUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    goal = db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == current_user.id).first()
     if not goal:
         raise HTTPException(status_code=404, detail="Goal tidak ditemukan")
 
@@ -130,11 +146,15 @@ def update_goal(goal_id: int, payload: GoalUpdate, db: Session = Depends(get_db)
 
     db.commit()
     db.refresh(goal)
-    return compute_goal_metrics(goal, db)
+    return compute_goal_metrics(goal, current_user.id, db)
 
 @router.delete("/{goal_id}")
-def delete_goal(goal_id: int, db: Session = Depends(get_db)):
-    goal = db.query(Goal).filter(Goal.id == goal_id).first()
+def delete_goal(
+    goal_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    goal = db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == current_user.id).first()
     if not goal:
         raise HTTPException(status_code=404, detail="Goal tidak ditemukan")
 

@@ -12,6 +12,8 @@ from sqlalchemy import desc
 from app.db.session import get_db
 from app.models.transaction import Transaction
 from app.models.paycheck import PaycheckConfig
+from app.models.user import User
+from app.api.deps import get_current_user
 from app.schemas.transaction import (
     TransactionCreate,
     TransactionUpdate,
@@ -38,9 +40,10 @@ def get_transactions(
     account: Optional[str] = None,
     type: Optional[str] = None,
     search: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Transaction)
+    query = db.query(Transaction).filter(Transaction.user_id == current_user.id)
 
     if start_date and end_date:
         try:
@@ -79,12 +82,14 @@ def get_transactions(
 @router.post("", response_model=TransactionOut)
 def create_transaction(
     payload: TransactionCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     now_wib = datetime.now(WIB)
     tx_date = payload.date or now_wib.date()
 
     tx = Transaction(
+        user_id=current_user.id,
         type=payload.type,
         amount=payload.amount,
         account=payload.account,
@@ -101,6 +106,7 @@ def create_transaction(
 @router.post("/transfer", response_model=TransferResponse)
 def execute_transfer(
     payload: TransferCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     if payload.amount <= 0:
@@ -113,6 +119,7 @@ def execute_transfer(
     desc = payload.description or f"Transfer {payload.from_account} -> {payload.to_account}"
 
     tx_out = Transaction(
+        user_id=current_user.id,
         type="transfer_out",
         amount=payload.amount,
         account=payload.from_account,
@@ -122,6 +129,7 @@ def execute_transfer(
         date=tx_date
     )
     tx_in = Transaction(
+        user_id=current_user.id,
         type="transfer_in",
         amount=payload.amount,
         account=payload.to_account,
@@ -250,9 +258,10 @@ def execute_paycheck_split(
 def update_transaction(
     tx_id: int,
     payload: TransactionUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    tx = db.query(Transaction).filter(Transaction.id == tx_id).first()
+    tx = db.query(Transaction).filter(Transaction.id == tx_id, Transaction.user_id == current_user.id).first()
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
     
@@ -268,9 +277,10 @@ def update_transaction(
 @router.delete("/{tx_id}")
 def delete_transaction(
     tx_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    tx = db.query(Transaction).filter(Transaction.id == tx_id).first()
+    tx = db.query(Transaction).filter(Transaction.id == tx_id, Transaction.user_id == current_user.id).first()
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
     db.delete(tx)
@@ -280,9 +290,10 @@ def delete_transaction(
 @router.get("/export")
 def export_csv(
     month: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Transaction)
+    query = db.query(Transaction).filter(Transaction.user_id == current_user.id)
     if month:
         yr, mo = map(int, month.split("-"))
         start_date = date(yr, mo, 1)

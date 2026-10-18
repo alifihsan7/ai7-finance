@@ -8,6 +8,8 @@ from sqlalchemy import desc
 
 from app.db.session import get_db
 from app.models.subscription import Subscription
+from app.models.user import User
+from app.api.deps import get_current_user
 from app.schemas.subscription import (
     SubscriptionCreate,
     SubscriptionUpdate,
@@ -65,8 +67,11 @@ def compute_due_info(sub_or_day, now_date: date, billing_type: str = "fixed_day"
     return days_until, str(next_due)
 
 @router.get("", response_model=SubscriptionsSummary)
-def get_subscriptions(db: Session = Depends(get_db)):
-    subs = db.query(Subscription).order_by(Subscription.is_active.desc(), Subscription.id.asc()).all()
+def get_subscriptions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    subs = db.query(Subscription).filter(Subscription.user_id == current_user.id).order_by(Subscription.is_active.desc(), Subscription.id.asc()).all()
     now_date = datetime.now(WIB).date()
 
     items = []
@@ -110,8 +115,13 @@ def get_subscriptions(db: Session = Depends(get_db)):
     )
 
 @router.post("", response_model=SubscriptionResponse, status_code=status.HTTP_201_CREATED)
-def create_subscription(sub_in: SubscriptionCreate, db: Session = Depends(get_db)):
+def create_subscription(
+    sub_in: SubscriptionCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     sub = Subscription(
+        user_id=current_user.id,
         name=sub_in.name.strip(),
         amount=sub_in.amount,
         category=sub_in.category.strip(),
@@ -148,8 +158,13 @@ def create_subscription(sub_in: SubscriptionCreate, db: Session = Depends(get_db
     )
 
 @router.put("/{sub_id}", response_model=SubscriptionResponse)
-def update_subscription(sub_id: int, sub_in: SubscriptionUpdate, db: Session = Depends(get_db)):
-    sub = db.query(Subscription).filter(Subscription.id == sub_id).first()
+def update_subscription(
+    sub_id: int,
+    sub_in: SubscriptionUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    sub = db.query(Subscription).filter(Subscription.id == sub_id, Subscription.user_id == current_user.id).first()
     if not sub:
         raise HTTPException(status_code=404, detail="Langganan tidak ditemukan")
 
@@ -181,8 +196,12 @@ def update_subscription(sub_id: int, sub_in: SubscriptionUpdate, db: Session = D
     )
 
 @router.delete("/{sub_id}")
-def delete_subscription(sub_id: int, db: Session = Depends(get_db)):
-    sub = db.query(Subscription).filter(Subscription.id == sub_id).first()
+def delete_subscription(
+    sub_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    sub = db.query(Subscription).filter(Subscription.id == sub_id, Subscription.user_id == current_user.id).first()
     if not sub:
         raise HTTPException(status_code=404, detail="Langganan tidak ditemukan")
 
