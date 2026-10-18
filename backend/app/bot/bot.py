@@ -94,6 +94,7 @@ Bot ini dirancang khusus terintegrasi dengan PostgreSQL dan formula alokasi 14 h
 • `/gajian [nominal]` - Catat gajian & split otomatis ke 4 rekening
 • `/rekap` - Ringkasan pengeluaran bulan ini
 • `/saldo` - Estimasi saldo per rekening
+• `/subs` - Cek jadwal langganan & tagihan rutin
 • `/transaksi` - 5 transaksi terakhir
 • `/batal` - Hapus/batalkan input terakhir jika salah
 
@@ -192,6 +193,35 @@ def handle_transaksi(chat_id: int, db: Session):
         time_str = t.created_at.astimezone(WIB).strftime("%Y-%m-%d %H:%M") if t.created_at else str(t.date)
         lines.append(f"{icon} **{t.description}** ({t.category})\n   {format_rp(t.amount)} via `{t.account}` • _{time_str}_\n")
 
+    send_message(chat_id, "\n".join(lines))
+
+def handle_subs(chat_id: int, db: Session):
+    from app.models.subscription import Subscription
+    from app.api.v1.endpoints.subscriptions import compute_due_info
+
+    subs = db.query(Subscription).filter(Subscription.is_active == True).order_by(Subscription.billing_day.asc()).all()
+    if not subs:
+        send_message(chat_id, "ℹ️ Belum ada langganan / tagihan rutin yang aktif.")
+        return
+
+    now_date = datetime.now(WIB).date()
+    lines = ["💳 **Daftar Langganan & Tagihan Rutin (Jago):**\n"]
+    total = 0
+
+    for s in subs:
+        total += s.amount
+        days_until, next_date = compute_due_info(s.billing_day, now_date)
+        if days_until == 0:
+            due_str = "🚨 **Jatuh tempo HARI INI!**"
+        elif days_until <= 3:
+            due_str = f"⚠️ Jatuh tempo {days_until} hari lagi ({next_date})"
+        else:
+            due_str = f"🗓️ Tgl {s.billing_day} ({days_until} hari lagi)"
+
+        lines.append(f"• **{s.name}**: {format_rp(s.amount)}/bln\n  └ {due_str} ({s.category})")
+
+    lines.append(f"\n💵 **Total Komitmen Bulanan:** {format_rp(total)}")
+    lines.append("💡 _Saldo pos Jago lo disiapkan otomatis dari 31.7% gajian._")
     send_message(chat_id, "\n".join(lines))
 
 def handle_batal(chat_id: int, db: Session):
@@ -440,6 +470,8 @@ def process_update(update: dict):
             handle_transaksi(chat_id, db)
         elif cmd in ["/batal", "/undo", "/hapus"]:
             handle_batal(chat_id, db)
+        elif cmd in ["/subs", "/langganan", "/tagihan"]:
+            handle_subs(chat_id, db)
         else:
             handle_text_message(chat_id, text, message_id, db)
     finally:
