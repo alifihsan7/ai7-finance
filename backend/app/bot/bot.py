@@ -60,7 +60,33 @@ def get_safe_to_spend_snippet(db: Session) -> str:
 
     return f"🛡️ **Safe-to-Spend:** {format_rp(safe_daily)} / hari ({pace_icon} {pace_label} • Sisa {days_remaining} hari)"
 
-def send_message(chat_id: int, text: str, parse_mode: str = "Markdown", reply_to_message_id: Optional[int] = None):
+MAIN_KEYBOARD = {
+    "keyboard": [
+        [{"text": "📊 Rekap"}, {"text": "💳 Saldo"}],
+        [{"text": "🔔 Tagihan / Subs"}, {"text": "📜 Transaksi"}],
+        [{"text": "💰 Info Gajian"}, {"text": "🌐 Web Dashboard"}],
+    ],
+    "resize_keyboard": True,
+    "is_persistent": True,
+}
+
+def setup_bot_commands():
+    commands = [
+        {"command": "menu", "description": "📱 Buka tombol menu navigasi"},
+        {"command": "rekap", "description": "📊 Rekap pengeluaran & pacing belanja"},
+        {"command": "saldo", "description": "💳 Estimasi saldo 4 rekening"},
+        {"command": "subs", "description": "🔔 Jadwal langganan & tagihan rutin"},
+        {"command": "transaksi", "description": "📜 5 transaksi terakhir"},
+        {"command": "gajian", "description": "💰 Auto-split gajian 14-harian"},
+        {"command": "batal", "description": "↩️ Hapus/batalkan transaksi terakhir"},
+        {"command": "help", "description": "ℹ️ Panduan cara input bot"},
+    ]
+    try:
+        requests.post(f"{API_BASE}/setMyCommands", json={"commands": commands}, timeout=10)
+    except Exception as e:
+        print(f"Error registering bot commands: {e}")
+
+def send_message(chat_id: int, text: str, parse_mode: str = "Markdown", reply_to_message_id: Optional[int] = None, reply_markup: Optional[dict] = None):
     url = f"{API_BASE}/sendMessage"
     payload = {
         "chat_id": chat_id,
@@ -69,12 +95,27 @@ def send_message(chat_id: int, text: str, parse_mode: str = "Markdown", reply_to
     }
     if reply_to_message_id:
         payload["reply_to_message_id"] = reply_to_message_id
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
     try:
         res = requests.post(url, json=payload, timeout=10)
         return res.json()
     except Exception as e:
         print(f"Error sending message: {e}")
         return None
+
+def handle_menu(chat_id: int):
+    msg = "📱 **Menu Navigasi AI7 Finance**\n\nGunakan tombol di bawah untuk akses cepat, atau ketik langsung pengeluaran lo (contoh: `makan siang 25k`)."
+    send_message(chat_id, msg, reply_markup=MAIN_KEYBOARD)
+
+def send_dashboard_link(chat_id: int):
+    url = "https://alifihsan-studio.tailbdd42d.ts.net:8443"
+    inline_kb = {
+        "inline_keyboard": [
+            [{"text": "🚀 Buka Web Dashboard", "url": url}]
+        ]
+    }
+    send_message(chat_id, f"🌐 **Web Dashboard AI7 Finance:**\n`{url}`\n\nAkses aman via Tailscale untuk review bulanan & detail transaksi.", reply_markup=inline_kb)
 
 def handle_start(chat_id: int):
     msg = """👋 **Halo, Alif! Selamat datang di AI7 Finance Bot.**
@@ -97,9 +138,10 @@ Bot ini dirancang khusus terintegrasi dengan PostgreSQL dan formula alokasi 14 h
 • `/subs` - Cek jadwal langganan & tagihan rutin
 • `/transaksi` - 5 transaksi terakhir
 • `/batal` - Hapus/batalkan input terakhir jika salah
+• `/menu` - Tampilkan tombol menu cepat
 
 Tinggal ketik catatan pengeluaran/pemasukan lo kapan saja!"""
-    send_message(chat_id, msg)
+    send_message(chat_id, msg, reply_markup=MAIN_KEYBOARD)
 
 def handle_rekap(chat_id: int, db: Session):
     now = datetime.now(WIB)
@@ -455,10 +497,25 @@ def process_update(update: dict):
     if not text:
         return
 
+    lower_text = text.lower()
     cmd = text.split()[0].lower()
     db = SessionLocal()
     try:
-        if cmd in ["/start", "/help"]:
+        if lower_text in ["📊 rekap", "rekap"]:
+            handle_rekap(chat_id, db)
+        elif lower_text in ["💳 saldo", "saldo"]:
+            handle_saldo(chat_id, db)
+        elif lower_text in ["🔔 tagihan / subs", "tagihan", "subs", "langganan"]:
+            handle_subs(chat_id, db)
+        elif lower_text in ["📜 transaksi", "transaksi", "history"]:
+            handle_transaksi(chat_id, db)
+        elif lower_text in ["💰 info gajian"]:
+            handle_gajian(chat_id, "/gajian", db)
+        elif lower_text in ["🌐 web dashboard", "dashboard", "web"] or cmd in ["/web", "/dashboard"]:
+            send_dashboard_link(chat_id)
+        elif lower_text in ["📱 menu", "menu"] or cmd in ["/menu"]:
+            handle_menu(chat_id)
+        elif cmd in ["/start", "/help"]:
             handle_start(chat_id)
         elif cmd in ["/gajian"]:
             handle_gajian(chat_id, text, db)
@@ -480,6 +537,8 @@ def process_update(update: dict):
 def main():
     print("Connecting to PostgreSQL and creating tables if not exist...")
     Base.metadata.create_all(bind=engine)
+    print("Setting up Telegram bot commands menu...")
+    setup_bot_commands()
     print("AI7 Finance Bot (PostgreSQL) started listening...")
 
     offset = 0
