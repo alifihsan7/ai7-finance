@@ -392,7 +392,7 @@ def get_monthly_summary(
     safe_daily = int(pocket_remaining / days_remaining) if days_remaining > 0 else 0
 
     ideal_daily_rate = pocket_budget / total_days
-    ideal_pace_today = int(ideal_daily_rate * day_of_cycle)
+    ideal_pace_today = int(round(ideal_daily_rate * day_of_cycle / 100) * 100)
 
     if pocket_spent < ideal_pace_today * 0.9:
         pace_status = "ahead"
@@ -420,6 +420,9 @@ def get_monthly_summary(
         day_str = str(day_date)
         day_spent = spent_by_date.get(day_str, 0)
         
+        # Round ideal pace to hundreds to avoid unrounded division artifacts
+        day_ideal = int(round(ideal_daily_rate * d / 100) * 100)
+
         if day_date <= today_wib:
             cumulative += day_spent
             burn_chart.append(CycleBurnDay(
@@ -427,7 +430,7 @@ def get_monthly_summary(
                 date=day_str,
                 spent=day_spent,
                 cumulative_spent=cumulative,
-                ideal_pace=int(ideal_daily_rate * d)
+                ideal_pace=day_ideal
             ))
         else:
             burn_chart.append(CycleBurnDay(
@@ -435,7 +438,7 @@ def get_monthly_summary(
                 date=day_str,
                 spent=0,
                 cumulative_spent=cumulative,
-                ideal_pace=int(ideal_daily_rate * d)
+                ideal_pace=day_ideal
             ))
 
     safe_info = SafeToSpendInfo(
