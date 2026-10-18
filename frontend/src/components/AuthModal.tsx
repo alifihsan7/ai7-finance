@@ -98,6 +98,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           });
           const btn = document.getElementById("google-gsi-render-area");
           if (btn) {
+            btn.innerHTML = "";
             // @ts-expect-error google GIS global
             window.google.accounts.id.renderButton(btn, {
               type: "standard",
@@ -115,17 +116,21 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       }
     };
 
+    const timer = setTimeout(initGsi, 100);
+
     if (typeof window !== "undefined" && !document.getElementById("gsi-client-script")) {
       const script = document.createElement("script");
       script.id = "gsi-client-script";
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
       script.defer = true;
-      script.onload = initGsi;
+      script.onload = () => {
+        setTimeout(initGsi, 100);
+      };
       document.body.appendChild(script);
-    } else {
-      initGsi();
     }
+
+    return () => clearTimeout(timer);
   }, [isOpen, googleConfig.client_id, mode]);
 
   const handleLogin = async (e: React.FormEvent) => {
