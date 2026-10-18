@@ -305,11 +305,28 @@ def export_csv(
 
     rows = query.order_by(desc(Transaction.date), desc(Transaction.id)).all()
 
+    def _sanitize(val):
+        if val is None:
+            return ""
+        s = str(val)
+        if s and s[0] in ("=", "+", "-", "@", "\t"):
+            return f"'{s}"
+        return s
+
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["ID", "Tanggal", "Tipe", "Kategori", "Rekening", "Nominal", "Keterangan", "Waktu"])
     for r in rows:
-        writer.writerow([r.id, r.date, r.type, r.category, r.account, r.amount, r.description, r.created_at])
+        writer.writerow([
+            r.id,
+            r.date,
+            r.type,
+            _sanitize(r.category),
+            _sanitize(r.account),
+            r.amount,
+            _sanitize(r.description),
+            r.created_at
+        ])
 
     output.seek(0)
     return StreamingResponse(
