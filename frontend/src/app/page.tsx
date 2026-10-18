@@ -63,7 +63,7 @@ interface MonthlySummary {
   net: number;
   savings_rate: number;
   total_balance: number;
-  accounts: { account: string; balance: number }[];
+  accounts: { account: string; balance: number; expense?: number }[];
   categories: { category: string; total: number; count: number; percentage: number }[];
   safe_to_spend?: {
     cycle_start: string;
@@ -1272,7 +1272,11 @@ export default function ObsidianDashboard() {
               </div>
             </div>
 
-            <StrataAllocationBar />
+            <StrataAllocationBar
+              cycleType={summary.safe_to_spend?.cycle_type}
+              cycleDays={summary.safe_to_spend?.cycle_days}
+              formatRupiah={formatRupiah}
+            />
             <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} />
 
             {/* Quick Goals & Milestone Preview */}
@@ -1381,7 +1385,11 @@ export default function ObsidianDashboard() {
         {/* ============================================================== */}
         {activeNav === "Alokasi Amplop" && (
           <div className="space-y-8">
-            <StrataAllocationBar />
+            <StrataAllocationBar
+              cycleType={summary.safe_to_spend?.cycle_type}
+              cycleDays={summary.safe_to_spend?.cycle_days}
+              formatRupiah={formatRupiah}
+            />
             <MandiriEnvelopes
               mandiriExpenses={mandiriExpenses}
               formatRupiah={formatRupiah}
