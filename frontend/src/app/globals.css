@@ -74,3 +74,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   background-color: rgba(245, 158, 11, 0.25);
   color: #F8FAFC;
 }
+
+/* Safe area padding utilities for mobile notches & iOS home bar */
+.safe-bottom {
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
