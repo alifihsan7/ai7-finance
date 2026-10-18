@@ -29,6 +29,7 @@ class UserResponse(BaseModel):
     email: Optional[str] = None
     full_name: str
     telegram_chat_id: Optional[int] = None
+    avatar_url: Optional[str] = None
     is_active: bool
     is_onboarded: bool
     created_at: datetime
@@ -40,6 +41,9 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+class GoogleAuthRequest(BaseModel):
+    credential: str
 
 class LinkTelegramRequest(BaseModel):
     telegram_chat_id: int

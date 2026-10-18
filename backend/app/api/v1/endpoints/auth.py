@@ -1,7 +1,10 @@
 from typing import Optional
+import secrets
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 from app.db.session import get_db
 from app.models.user import User
@@ -12,8 +15,10 @@ from app.schemas.user import (
     UserResponse,
     TokenResponse,
     LinkTelegramRequest,
+    GoogleAuthRequest,
 )
 from app.core.security import hash_password, verify_password, create_access_token
+from app.core.config import settings
 from app.api.deps import get_strict_current_user
 
 router = APIRouter()
@@ -125,3 +130,85 @@ def link_telegram_chat(
     db.commit()
     db.refresh(user)
     return UserResponse.from_orm(user)
+
+@router.get("/google/config")
+def get_google_auth_config():
+    return {
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "is_configured": bool(settings.GOOGLE_CLIENT_ID)
+    }
+
+@router.post("/google", response_model=TokenResponse)
+def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
+    if not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google Sign-In belum dikonfigurasi di server (GOOGLE_CLIENT_ID belum diatur di .env)",
+        )
+
+    try:
+        id_info = id_token.verify_oauth2_token(
+            payload.credential,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Token autentikasi Google tidak valid: {str(e)}",
+        )
+
+    google_id = str(id_info.get("sub"))
+    email = id_info.get("email")
+    full_name = id_info.get("name") or "Pengguna Google"
+    avatar = id_info.get("picture")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Akun Google Anda tidak menyediakan alamat email")
+
+    # 1. Cari user berdasarkan google_id
+    user = db.query(User).filter(User.google_id == google_id).first()
+    if not user:
+        # 2. Cari user berdasarkan email (misal: akun Alif Ihsan yang sudah ada)
+        user = db.query(User).filter(User.email == email).first()
+        if user:
+            # Tautkan akun Google ke user eksisting
+            user.google_id = google_id
+            if avatar and not user.avatar_url:
+                user.avatar_url = avatar
+            db.commit()
+            db.refresh(user)
+        else:
+            # 3. Buat user baru
+            base_username = email.split("@")[0].lower()
+            clean_username = "".join(c for c in base_username if c.isalnum() or c in ("_", "-")) or "user"
+            candidate = clean_username
+            counter = 1
+            while db.query(User).filter(User.username == candidate).first():
+                candidate = f"{clean_username}{counter}"
+                counter += 1
+
+            random_pw = hash_password(secrets.token_urlsafe(32))
+            user = User(
+                username=candidate,
+                email=email,
+                full_name=full_name,
+                hashed_password=random_pw,
+                google_id=google_id,
+                avatar_url=avatar,
+                is_active=True,
+                is_onboarded=False, # Baru mendaftar -> picu Onboarding Wizard
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Akun ini telah dinonaktifkan")
+
+    token = create_access_token(subject=user.id)
+    return TokenResponse(
+        access_token=token,
+        token_type="bearer",
+        user=user,
+    )

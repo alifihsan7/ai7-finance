@@ -11,6 +11,8 @@ class User(Base):
     full_name = Column(String(100), nullable=False)
     hashed_password = Column(String(255), nullable=False)
     telegram_chat_id = Column(BigInteger, unique=True, nullable=True, index=True)
+    google_id = Column(String(100), unique=True, nullable=True, index=True)
+    avatar_url = Column(String(255), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     is_onboarded = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
