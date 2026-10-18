@@ -74,7 +74,7 @@ export function StrataAllocationBar({
           const color = ACCOUNT_COLORS[b.account] || { bar: "bg-blue-500", border: "border-blue-500", text: "text-blue-400" };
           const isFirst = idx === 0;
           const isLast = idx === activeBuckets.length - 1;
-          const showText = b.percentage >= 10;
+          const showText = b.percentage >= 4;
 
           return (
             <div
@@ -85,7 +85,11 @@ export function StrataAllocationBar({
               }`}
               title={`${b.account}: ${b.percentage.toFixed(1)}%`}
             >
-              {showText ? `${Math.round(b.percentage)}%` : ""}
+              {showText ? (
+                <span className="text-[10px] leading-none select-none">
+                  {b.percentage < 10 ? b.percentage.toFixed(1) : Math.round(b.percentage)}%
+                </span>
+              ) : null}
             </div>
           );
         })}
