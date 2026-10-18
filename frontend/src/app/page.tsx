@@ -27,6 +27,7 @@ import { TransactionTable, Transaction } from "@/components/TransactionTable";
 import { SubscriptionsView, SubscriptionItem, SubscriptionsData } from "@/components/SubscriptionsView";
 import { TransferModal } from "@/components/TransferModal";
 import { AddAccountModal } from "@/components/AddAccountModal";
+import { EditTransactionModal } from "@/components/EditTransactionModal";
 import { AccountItem } from "@/components/AccountGrid";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
@@ -131,6 +132,8 @@ export default function ObsidianDashboard() {
   });
   const [paycheckLoading, setPaycheckLoading] = useState(false);
   const [subToDelete, setSubToDelete] = useState<number | null>(null);
+  const [txToDelete, setTxToDelete] = useState<Transaction | null>(null);
+  const [txToEdit, setTxToEdit] = useState<Transaction | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [paycheckTotal, setPaycheckTotal] = useState<string>("1500000");
 
@@ -450,6 +453,20 @@ export default function ObsidianDashboard() {
       setSubToDelete(null);
     } catch (err) {
       console.error("Delete subscription error:", err);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleConfirmDeleteTransaction = async () => {
+    if (!txToDelete) return;
+    try {
+      setDeleteLoading(true);
+      await fetch(`/api/v1/transactions/${txToDelete.id}`, { method: "DELETE" });
+      await fetchData();
+      setTxToDelete(null);
+    } catch (err) {
+      console.error("Delete transaction error:", err);
     } finally {
       setDeleteLoading(false);
     }
@@ -781,7 +798,12 @@ export default function ObsidianDashboard() {
                   Buka Buku Transaksi Lengkap ({transactions.length}) →
                 </button>
               </div>
-              <TransactionTable transactions={transactions.slice(0, 5)} formatRupiah={formatRupiah} />
+              <TransactionTable
+                transactions={transactions.slice(0, 5)}
+                formatRupiah={formatRupiah}
+                onEdit={(tx) => setTxToEdit(tx)}
+                onDelete={(tx) => setTxToDelete(tx)}
+              />
             </div>
           </>
         )}
@@ -904,7 +926,12 @@ export default function ObsidianDashboard() {
                 </div>
               </div>
 
-              <TransactionTable transactions={filteredTransactions} formatRupiah={formatRupiah} />
+              <TransactionTable
+                transactions={filteredTransactions}
+                formatRupiah={formatRupiah}
+                onEdit={(tx) => setTxToEdit(tx)}
+                onDelete={(tx) => setTxToDelete(tx)}
+              />
             </div>
           </div>
         )}
@@ -943,7 +970,12 @@ export default function ObsidianDashboard() {
               </div>
             </div>
 
-            <TransactionTable transactions={filteredTransactions} formatRupiah={formatRupiah} />
+            <TransactionTable
+              transactions={filteredTransactions}
+              formatRupiah={formatRupiah}
+              onEdit={(tx) => setTxToEdit(tx)}
+              onDelete={(tx) => setTxToDelete(tx)}
+            />
           </div>
         )}
 
@@ -1367,6 +1399,29 @@ export default function ObsidianDashboard() {
         title="Hapus Langganan?"
         message="Apakah kamu yakin ingin menghapus tagihan rutin ini? Data akan dihapus dari pemantauan bulanan."
         confirmText="Hapus Tagihan"
+        loading={deleteLoading}
+      />
+
+      {/* Edit Transaction Modal */}
+      <EditTransactionModal
+        isOpen={txToEdit !== null}
+        onClose={() => setTxToEdit(null)}
+        transaction={txToEdit}
+        onSuccess={fetchData}
+        accountOptions={availableAccountOptions}
+        categoryOptions={TX_CATEGORY_OPTIONS}
+      />
+
+      {/* Confirm Delete Transaction Modal */}
+      <ConfirmModal
+        isOpen={txToDelete !== null}
+        onClose={() => setTxToDelete(null)}
+        onConfirm={handleConfirmDeleteTransaction}
+        title="Hapus Transaksi?"
+        message={`Apakah kamu yakin ingin menghapus transaksi "${txToDelete?.description}" senilai ${
+          txToDelete ? formatRupiah(txToDelete.amount) : "Rp 0"
+        }? Saldo rekening terkait akan otomatis disesuaikan.`}
+        confirmText="Hapus Transaksi"
         loading={deleteLoading}
       />
     </div>

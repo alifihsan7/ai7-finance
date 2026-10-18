@@ -13,6 +13,7 @@ from app.db.session import get_db
 from app.models.transaction import Transaction
 from app.schemas.transaction import (
     TransactionCreate,
+    TransactionUpdate,
     TransactionOut,
     PaycheckRequest,
     PaycheckResponse,
@@ -241,6 +242,25 @@ def execute_paycheck_split(
         ],
         created_transactions=created_txs
     )
+
+@router.put("/{tx_id}", response_model=TransactionOut)
+def update_transaction(
+    tx_id: int,
+    payload: TransactionUpdate,
+    db: Session = Depends(get_db)
+):
+    tx = db.query(Transaction).filter(Transaction.id == tx_id).first()
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    update_data = payload.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        if value is not None:
+            setattr(tx, field, value)
+            
+    db.commit()
+    db.refresh(tx)
+    return tx
 
 @router.delete("/{tx_id}")
 def delete_transaction(

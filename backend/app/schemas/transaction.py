@@ -13,6 +13,14 @@ class TransactionBase(BaseModel):
 class TransactionCreate(TransactionBase):
     pass
 
+class TransactionUpdate(BaseModel):
+    type: Optional[str] = None
+    amount: Optional[int] = None
+    account: Optional[str] = None
+    category: Optional[str] = None
+    description: Optional[str] = None
+    date: Optional[dt_date] = None
+
 class TransactionOut(TransactionBase):
     id: int
     raw_text: Optional[str] = None
