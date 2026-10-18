@@ -45,12 +45,12 @@ export function MandiriEnvelopes({ mandiriExpenses, formatRupiah }: MandiriEnvel
             Monitoring limit pos belanja harian agar pengeluaran terkontrol sampai gajian berikutnya
           </p>
         </div>
-        <span className="text-xs text-amberGold font-mono font-medium px-2.5 py-1 rounded bg-amberGold/10 border border-amberGold/20">
+        <span className="text-xs text-amberGold font-mono font-medium px-2.5 py-1 rounded bg-amberGold/10 border border-amberGold/20 shrink-0 self-start sm:self-auto">
           Reset Tiap 14 Hari
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         {envelopes.map((env) => {
           const rem = env.limit - env.spent;
           const pct = Math.min(100, Math.round((env.spent / env.limit) * 100));
@@ -59,8 +59,8 @@ export function MandiriEnvelopes({ mandiriExpenses, formatRupiah }: MandiriEnvel
               key={env.title}
               className="bg-obsidian-card border border-obsidian-border rounded-lg p-4 space-y-3"
             >
-              <div className="flex justify-between items-center">
-                <span className="text-slateText-primary font-semibold text-sm">{env.title}</span>
+              <div className="flex justify-between items-center gap-2">
+                <span className="text-slateText-primary font-semibold text-sm truncate">{env.title}</span>
                 <span
                   className={`text-xs font-mono font-medium px-2 py-0.5 rounded border ${
                     pct > 80

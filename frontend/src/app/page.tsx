@@ -531,9 +531,9 @@ export default function ObsidianDashboard() {
   }, [transactions, activeTab, searchQuery]);
 
   return (
-    <div className="h-screen bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans overflow-hidden">
+    <div className="h-screen h-[100dvh] bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans overflow-hidden">
       {/* SIDEBAR NAVIGATION (Matching user screenshot exactly) */}
-      <aside className="w-full md:w-68 lg:w-72 bg-obsidian-panel border-r border-obsidian-border p-5 lg:p-6 md:h-screen flex flex-col justify-between shrink-0 overflow-y-hidden">
+      <aside className="w-full md:w-56 lg:w-64 xl:w-72 bg-obsidian-panel border-r border-obsidian-border p-4 sm:p-5 lg:p-6 md:h-screen flex flex-col justify-between shrink-0 overflow-y-hidden">
         <div>
           {/* Logo & Brand */}
           <div className="flex items-center gap-2.5">
@@ -613,9 +613,9 @@ export default function ObsidianDashboard() {
 
       {/* MAIN VIEWPORT */}
       <main className="flex-1 overflow-y-auto w-full">
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
+        <div className="p-4 sm:p-6 md:p-6 lg:p-8 xl:p-10 max-w-7xl mx-auto w-full space-y-6 sm:space-y-8">
         {/* Dynamic Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-obsidian-border">
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 pb-6 border-b border-obsidian-border">
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slateText-primary">
@@ -642,7 +642,7 @@ export default function ObsidianDashboard() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full xl:w-auto">
             <button
               onClick={fetchData}
               title="Refresh Data"
@@ -730,18 +730,18 @@ export default function ObsidianDashboard() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm pt-3 border-t border-obsidian-border/80">
-                  <span className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium">
-                    <ArrowUpRight className="w-4 h-4" />
-                    {formatRupiah(summary.income)} pemasukan periode ini
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs sm:text-sm pt-3 border-t border-obsidian-border/80">
+                  <span className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium whitespace-nowrap">
+                    <ArrowUpRight className="w-4 h-4 shrink-0" />
+                    {formatRupiah(summary.income)} pemasukan
                   </span>
-                  <span className="text-obsidian-borderStrong">•</span>
-                  <span className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium">
-                    <ArrowDownRight className="w-4 h-4" />
+                  <span className="hidden sm:inline text-obsidian-borderStrong">•</span>
+                  <span className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium whitespace-nowrap">
+                    <ArrowDownRight className="w-4 h-4 shrink-0" />
                     {formatRupiah(summary.expense)} belanja
                   </span>
-                  <span className="text-obsidian-borderStrong">•</span>
-                  <span className="inline-flex items-center gap-1.5 text-slateText-secondary font-mono font-medium">
+                  <span className="hidden sm:inline text-obsidian-borderStrong">•</span>
+                  <span className="inline-flex items-center gap-1.5 text-slateText-secondary font-mono font-medium whitespace-nowrap">
                     Net: {formatRupiah(summary.income - summary.expense)}
                   </span>
                 </div>
