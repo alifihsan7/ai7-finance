@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     GOOGLE_SERVICE_ACCOUNT_FILE: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "/home/alifihsan/ai7-finance/credentials_google.json")
     GOOGLE_SHEETS_SPREADSHEET_ID: str = os.getenv("GOOGLE_SHEETS_SPREADSHEET_ID", "")
 
+    # AI Media Extraction (OCR & Voice Notes via 9router)
+    AI_ROUTER_URL: str = os.getenv("AI_ROUTER_URL", "http://127.0.0.1:20128/v1")
+    AI_ROUTER_KEY: str = os.getenv("AI_ROUTER_KEY", "")
+    AI_ROUTER_MODEL: str = os.getenv("AI_ROUTER_MODEL", "ag/gemini-3.8-flash")
+
     class Config:
         case_sensitive = True
 
