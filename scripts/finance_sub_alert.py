@@ -60,9 +60,11 @@ def main():
         days = item.get("days_until_due")
         date_str = item.get("next_billing_date", "")
 
+        is_exact = item.get("billing_type") == "exact_date"
+        action_verb = "Berakhir" if is_exact else "Jatuh tempo"
         due_label = "⚡ **HARI INI**" if days == 0 else "⏳ **BESOK**"
         lines.append(f"• **{name}** — `Rp {amt:,.0f}`".replace(",", "."))
-        lines.append(f"  Jatuh tempo: {due_label} (`{date_str}`)")
+        lines.append(f"  {action_verb}: {due_label} (`{date_str}`)")
         lines.append(f"  Rekening: **{account}** | Kategori: *{cat}*")
         lines.append("")
 

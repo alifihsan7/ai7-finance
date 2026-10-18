@@ -19,16 +19,28 @@ from app.core.config import settings
 router = APIRouter()
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 
-def compute_due_info(billing_day: int, now_date: date):
-    # Determine next billing date
+def compute_due_info(sub_or_day, now_date: date, billing_type: str = "fixed_day", exact_due_date: Optional[date] = None):
+    if isinstance(sub_or_day, Subscription):
+        b_type = sub_or_day.billing_type or "fixed_day"
+        e_date = sub_or_day.exact_due_date
+        b_day = sub_or_day.billing_day or 1
+    else:
+        b_type = billing_type
+        e_date = exact_due_date
+        b_day = sub_or_day or 1
+
+    if b_type == "exact_date" and e_date:
+        days_until = (e_date - now_date).days
+        return days_until, str(e_date)
+
+    # Determine next billing date for fixed_day
     year = now_date.year
     month = now_date.month
 
     # If billing day is today or earlier this month, next billing date is next month
     try:
-        cur_month_due = date(year, month, billing_day)
+        cur_month_due = date(year, month, b_day)
     except ValueError:
-        # e.g. Feb 30 -> fallback to last day of month
         import calendar
         _, last_day = calendar.monthrange(year, month)
         cur_month_due = date(year, month, last_day)
@@ -36,7 +48,6 @@ def compute_due_info(billing_day: int, now_date: date):
     if cur_month_due >= now_date:
         next_due = cur_month_due
     else:
-        # Next month
         if month == 12:
             next_year = year + 1
             next_month = 1
@@ -44,7 +55,7 @@ def compute_due_info(billing_day: int, now_date: date):
             next_year = year
             next_month = month + 1
         try:
-            next_due = date(next_year, next_month, billing_day)
+            next_due = date(next_year, next_month, b_day)
         except ValueError:
             import calendar
             _, last_day = calendar.monthrange(next_year, next_month)
@@ -55,7 +66,7 @@ def compute_due_info(billing_day: int, now_date: date):
 
 @router.get("", response_model=SubscriptionsSummary)
 def get_subscriptions(db: Session = Depends(get_db)):
-    subs = db.query(Subscription).order_by(Subscription.billing_day.asc()).all()
+    subs = db.query(Subscription).order_by(Subscription.is_active.desc(), Subscription.id.asc()).all()
     now_date = datetime.now(WIB).date()
 
     items = []
@@ -64,11 +75,11 @@ def get_subscriptions(db: Session = Depends(get_db)):
     upcoming_week = 0
 
     for s in subs:
-        days_until, next_date = compute_due_info(s.billing_day, now_date)
+        days_until, next_date = compute_due_info(s, now_date)
         if s.is_active:
             total_monthly += s.amount
             active_cnt += 1
-            if days_until <= 7:
+            if 0 <= days_until <= 7:
                 upcoming_week += 1
 
         items.append(SubscriptionResponse(
@@ -79,12 +90,17 @@ def get_subscriptions(db: Session = Depends(get_db)):
             account=s.account,
             billing_cycle=s.billing_cycle,
             billing_day=s.billing_day,
+            billing_type=s.billing_type or "fixed_day",
+            exact_due_date=s.exact_due_date,
             is_active=s.is_active,
             notes=s.notes,
             created_at=s.created_at,
             days_until_due=days_until,
             next_billing_date=next_date
         ))
+
+    # Sort items: active first, then soonest days_until_due
+    items.sort(key=lambda x: (not x.is_active, x.days_until_due if x.days_until_due is not None else 999))
 
     return SubscriptionsSummary(
         total_monthly_commitment=total_monthly,
@@ -101,7 +117,9 @@ def create_subscription(sub_in: SubscriptionCreate, db: Session = Depends(get_db
         category=sub_in.category.strip(),
         account=sub_in.account.strip(),
         billing_cycle=sub_in.billing_cycle,
-        billing_day=sub_in.billing_day,
+        billing_day=sub_in.billing_day or 1,
+        billing_type=sub_in.billing_type or "fixed_day",
+        exact_due_date=sub_in.exact_due_date,
         is_active=sub_in.is_active,
         notes=sub_in.notes.strip() if sub_in.notes else None
     )
@@ -110,7 +128,7 @@ def create_subscription(sub_in: SubscriptionCreate, db: Session = Depends(get_db
     db.refresh(sub)
 
     now_date = datetime.now(WIB).date()
-    days_until, next_date = compute_due_info(sub.billing_day, now_date)
+    days_until, next_date = compute_due_info(sub, now_date)
 
     return SubscriptionResponse(
         id=sub.id,
@@ -120,6 +138,8 @@ def create_subscription(sub_in: SubscriptionCreate, db: Session = Depends(get_db
         account=sub.account,
         billing_cycle=sub.billing_cycle,
         billing_day=sub.billing_day,
+        billing_type=sub.billing_type or "fixed_day",
+        exact_due_date=sub.exact_due_date,
         is_active=sub.is_active,
         notes=sub.notes,
         created_at=sub.created_at,
@@ -141,7 +161,7 @@ def update_subscription(sub_id: int, sub_in: SubscriptionUpdate, db: Session = D
     db.refresh(sub)
 
     now_date = datetime.now(WIB).date()
-    days_until, next_date = compute_due_info(sub.billing_day, now_date)
+    days_until, next_date = compute_due_info(sub, now_date)
 
     return SubscriptionResponse(
         id=sub.id,
@@ -151,6 +171,8 @@ def update_subscription(sub_id: int, sub_in: SubscriptionUpdate, db: Session = D
         account=sub.account,
         billing_cycle=sub.billing_cycle,
         billing_day=sub.billing_day,
+        billing_type=sub.billing_type or "fixed_day",
+        exact_due_date=sub.exact_due_date,
         is_active=sub.is_active,
         notes=sub.notes,
         created_at=sub.created_at,

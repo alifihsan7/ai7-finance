@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Trash2, Calendar } from "lucide-react";
+import { Plus, Trash2, Calendar, Edit2, Clock } from "lucide-react";
 
 export interface SubscriptionItem {
   id: number;
@@ -9,6 +9,8 @@ export interface SubscriptionItem {
   account: string;
   billing_cycle: string;
   billing_day: number;
+  billing_type?: "fixed_day" | "exact_date";
+  exact_due_date?: string;
   is_active: boolean;
   notes?: string;
   days_until_due?: number;
@@ -28,6 +30,7 @@ interface SubscriptionsViewProps {
   onOpenModal: () => void;
   onToggleActive: (sub: SubscriptionItem) => void;
   onDelete: (id: number) => void;
+  onEdit?: (sub: SubscriptionItem) => void;
 }
 
 export function SubscriptionsView({
@@ -36,6 +39,7 @@ export function SubscriptionsView({
   onOpenModal,
   onToggleActive,
   onDelete,
+  onEdit,
 }: SubscriptionsViewProps) {
   return (
     <div className="space-y-8">
@@ -109,48 +113,81 @@ export function SubscriptionsView({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {subsData.items.map((sub) => {
-            const isUpcoming = (sub.days_until_due ?? 99) <= 3;
+            const isExact = sub.billing_type === "exact_date";
+            const days = sub.days_until_due ?? 99;
+            const isExpired = isExact && days < 0;
+            const isToday = days === 0;
+            const isUpcoming = days <= 3 && days >= 0;
+
             return (
               <div
                 key={sub.id}
                 className={`bg-obsidian-card border rounded-xl p-5 space-y-4 transition-all ${
-                  isUpcoming
+                  isExpired
+                    ? "border-coralFall/50 bg-coralFall/5"
+                    : isUpcoming || isToday
                     ? "border-amberGold/40 bg-amberGold/5"
                     : "border-obsidian-border hover:border-obsidian-borderStrong"
                 }`}
               >
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0 flex-1">
-                    <div className="text-base font-bold text-slateText-primary truncate">
-                      {sub.name}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-base font-bold text-slateText-primary truncate">
+                        {sub.name}
+                      </span>
+                      {isExact && (
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold shrink-0">
+                          Berakhir Spesifik
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs text-slateText-muted font-mono truncate block mt-0.5">{sub.category}</span>
                   </div>
                   <span
                     className={`text-xs font-mono px-2 py-0.5 rounded border shrink-0 whitespace-nowrap ${
-                      sub.is_active
-                        ? isUpcoming
-                          ? "bg-coralFall/10 border-coralFall/30 text-coralFall font-bold"
-                          : "bg-mintRise/10 border-mintRise/30 text-mintRise font-bold"
-                        : "bg-obsidian-panel border-obsidian-border text-slateText-muted"
+                      !sub.is_active
+                        ? "bg-obsidian-panel border-obsidian-border text-slateText-muted"
+                        : isExpired
+                        ? "bg-coralFall/20 border-coralFall/40 text-coralFall font-bold"
+                        : isToday
+                        ? "bg-coralFall/20 border-coralFall/40 text-coralFall font-bold animate-pulse"
+                        : isUpcoming
+                        ? "bg-amberGold/20 border-amberGold/40 text-amberGold font-bold"
+                        : "bg-mintRise/10 border-mintRise/30 text-mintRise font-bold"
                     }`}
                   >
-                    {sub.is_active
-                      ? (sub.days_until_due ?? 0) === 0
-                        ? "🚨 Hari Ini!"
-                        : `${sub.days_until_due} hari lagi`
-                      : "Di-pause"}
+                    {!sub.is_active
+                      ? "Di-pause"
+                      : isExpired
+                      ? `❌ Expired (${Math.abs(days)} hr lalu)`
+                      : isToday
+                      ? "🚨 Hari Ini!"
+                      : `${days} hari lagi`}
                   </span>
                 </div>
 
                 <div>
                   <div className="text-2xl font-bold font-mono text-slateText-primary tracking-tight truncate">
                     {formatRupiah(sub.amount)}
-                    <span className="text-xs font-normal text-slateText-muted font-sans"> / bulan</span>
+                    <span className="text-xs font-normal text-slateText-muted font-sans">
+                      {isExact ? " / periode" : " / bulan"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-slateText-secondary font-mono mt-1 truncate">
-                    <Calendar className="w-3.5 h-3.5 text-amberGold shrink-0" />
-                    <span className="truncate">Setiap tanggal {sub.billing_day} ({sub.next_billing_date})</span>
+                    {isExact ? (
+                      <>
+                        <Clock className="w-3.5 h-3.5 text-amberGold shrink-0" />
+                        <span className="truncate">
+                          Berakhir pada tgl <strong>{sub.exact_due_date || sub.next_billing_date}</strong>
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Calendar className="w-3.5 h-3.5 text-amberGold shrink-0" />
+                        <span className="truncate">Setiap tanggal {sub.billing_day} ({sub.next_billing_date})</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -161,15 +198,24 @@ export function SubscriptionsView({
                 )}
 
                 <div className="flex items-center justify-between pt-2 border-t border-obsidian-border/80 text-xs font-mono">
-                  <button
-                    onClick={() => onToggleActive(sub)}
-                    className="text-slateText-secondary hover:text-slateText-primary"
-                  >
-                    {sub.is_active ? "Pause" : "Aktifkan"}
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => onEdit?.(sub)}
+                      className="text-amberGold/90 hover:text-amberGold font-medium flex items-center gap-1 transition"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Ubah</span>
+                    </button>
+                    <button
+                      onClick={() => onToggleActive(sub)}
+                      className="text-slateText-secondary hover:text-slateText-primary transition"
+                    >
+                      {sub.is_active ? "Pause" : "Aktifkan"}
+                    </button>
+                  </div>
                   <button
                     onClick={() => onDelete(sub.id)}
-                    className="text-coralFall/80 hover:text-coralFall flex items-center gap-1"
+                    className="text-coralFall/80 hover:text-coralFall flex items-center gap-1 transition"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Hapus</span>
