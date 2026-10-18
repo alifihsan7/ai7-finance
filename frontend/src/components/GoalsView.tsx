@@ -9,6 +9,13 @@ import {
   TrendingUp,
   AlertTriangle,
   Sparkles,
+  Laptop,
+  Plane,
+  Car,
+  Home,
+  Coins,
+  GraduationCap,
+  Heart,
   Clock,
   CheckCircle2,
 } from "lucide-react";
@@ -118,9 +125,30 @@ function renderGoalIcon(icon: string, name: string, category: string) {
     return <AlertTriangle className="w-5 h-5 text-amber-400" />;
   }
   if (lower.includes("laptop") || lower.includes("gadget") || icon === "💻") {
+    return <Laptop className="w-5 h-5 text-purple-400" />;
+  }
+  if (icon === "✨") {
     return <Sparkles className="w-5 h-5 text-purple-400" />;
   }
-  if (icon && icon.length <= 4 && !icon.startsWith("http")) {
+  if (icon === "✈️") {
+    return <Plane className="w-5 h-5 text-cyan-400" />;
+  }
+  if (icon === "🚗") {
+    return <Car className="w-5 h-5 text-amber-400" />;
+  }
+  if (icon === "🏠") {
+    return <Home className="w-5 h-5 text-emerald-400" />;
+  }
+  if (icon === "🪙") {
+    return <Coins className="w-5 h-5 text-amberGold" />;
+  }
+  if (icon === "🎓") {
+    return <GraduationCap className="w-5 h-5 text-purple-400" />;
+  }
+  if (icon === "❤️") {
+    return <Heart className="w-5 h-5 text-rose-400" />;
+  }
+  if (icon && icon.length <= 4 && !icon.startsWith("http") && icon !== "🎯") {
     return <span className="text-xl leading-none select-none">{icon}</span>;
   }
   return <Target className="w-5 h-5 text-amberGold" />;
