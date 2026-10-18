@@ -1,10 +1,10 @@
 from typing import Optional, List
 from datetime import date as dt_date, datetime as dt_datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class TransactionBase(BaseModel):
     type: str
-    amount: int
+    amount: int = Field(..., gt=0, description="Nominal transaksi wajib lebih besar dari 0")
     account: str
     category: str
     description: str
@@ -15,7 +15,7 @@ class TransactionCreate(TransactionBase):
 
 class TransactionUpdate(BaseModel):
     type: Optional[str] = None
-    amount: Optional[int] = None
+    amount: Optional[int] = Field(None, gt=0, description="Nominal transaksi wajib lebih besar dari 0")
     account: Optional[str] = None
     category: Optional[str] = None
     description: Optional[str] = None
@@ -108,7 +108,7 @@ class PaycheckResponse(BaseModel):
 class TransferCreate(BaseModel):
     from_account: str
     to_account: str
-    amount: int
+    amount: int = Field(..., gt=0, description="Nominal transfer wajib lebih besar dari 0")
     description: Optional[str] = "Transfer Antar Rekening"
     date: Optional[dt_date] = None
 
