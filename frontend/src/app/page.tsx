@@ -335,9 +335,11 @@ export default function ObsidianDashboard() {
   // Dynamic account options for modals
   const availableAccountOptions = useMemo(() => {
     const list = [...TX_ACCOUNT_OPTIONS];
-    const existing = new Set(list.map((o) => o.value.toLowerCase()));
+    const existing = new Set(["mandiri", "bank jago", "jago", "bibit", "bri 1", "bri 2", "cash"]);
     customAccounts.forEach((ca) => {
-      if (!existing.has(ca.name.toLowerCase())) {
+      const lower = ca.name.toLowerCase().trim();
+      if (!existing.has(lower)) {
+        existing.add(lower);
         list.push({
           value: ca.name,
           label: `${ca.name} (${ca.tag || "Akun Tambahan"})`,
@@ -354,14 +356,17 @@ export default function ObsidianDashboard() {
     const tabs = [
       { id: "all", label: "Semua" },
       { id: "Mandiri", label: "Mandiri" },
-      { id: "Jago", label: "Bank Jago" },
+      { id: "Bank Jago", label: "Bank Jago" },
       { id: "Bibit", label: "Bibit" },
       { id: "BRI 1", label: "BRI 1" },
       { id: "BRI 2", label: "BRI 2" },
     ];
-    const existing = new Set(tabs.map((t) => t.id.toLowerCase()));
+    // Map known aliases so both "jago" and "bank jago" match the same item
+    const existing = new Set(["all", "mandiri", "bank jago", "jago", "bibit", "bri 1", "bri 2", "cash"]);
     customAccounts.forEach((ca) => {
-      if (!existing.has(ca.name.toLowerCase()) && ca.name.toLowerCase() !== "cash") {
+      const lower = ca.name.toLowerCase().trim();
+      if (!existing.has(lower)) {
+        existing.add(lower);
         tabs.push({ id: ca.name, label: ca.name });
       }
     });
@@ -510,7 +515,12 @@ export default function ObsidianDashboard() {
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((tx) => {
-      const matchTab = activeTab === "all" || tx.account.toLowerCase().includes(activeTab.toLowerCase());
+      const txAcc = tx.account.toLowerCase();
+      const tab = activeTab.toLowerCase();
+      const matchTab =
+        activeTab === "all" ||
+        txAcc.includes(tab) ||
+        (tab.includes("jago") && txAcc.includes("jago"));
       const matchSearch =
         !searchQuery ||
         tx.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
