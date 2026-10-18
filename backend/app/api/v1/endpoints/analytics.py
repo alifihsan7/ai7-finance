@@ -8,6 +8,7 @@ from sqlalchemy import func, case, desc
 
 from app.db.session import get_db
 from app.models.transaction import Transaction
+from app.models.paycheck import PaycheckConfig
 from app.schemas.transaction import (
     MonthlySummary,
     CategorySummary,
@@ -26,6 +27,10 @@ def get_available_periods(db: Session = Depends(get_db)):
     now_wib = datetime.now(WIB)
     today_wib = now_wib.date()
 
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    cycle_label_suffix = f"{cycle_days} Hari"
+
     # 1. Ambil semua gajian unik
     paycheck_rows = db.query(Transaction.date).filter(
         Transaction.type == "income",
@@ -36,19 +41,19 @@ def get_available_periods(db: Session = Depends(get_db)):
     # Jika tidak ada gajian sama sekali, buat 1 default cycle
     if not paycheck_rows:
         default_start = today_wib
-        default_end = default_start + timedelta(days=13)
+        default_end = default_start + timedelta(days=cycle_days - 1)
         cycles.append({
             "id": f"cycle_{default_start}",
             "type": "cycle",
             "start": str(default_start),
             "end": str(default_end),
-            "label": f"Siklus 14 Hari ({default_start.strftime('%d %b')} – {default_end.strftime('%d %b %Y')})",
+            "label": f"Siklus {cycle_label_suffix} ({default_start.strftime('%d %b')} – {default_end.strftime('%d %b %Y')})",
             "is_current": True
         })
     else:
         for idx, row in enumerate(paycheck_rows):
             c_start = row.date
-            c_end = c_start + timedelta(days=13)
+            c_end = c_start + timedelta(days=cycle_days - 1)
             is_cur = (c_start <= today_wib <= c_end) or (idx == 0 and today_wib >= c_start)
             status_text = " (Aktif)" if is_cur else ""
             cycles.append({
@@ -166,7 +171,7 @@ def get_monthly_summary(
         end_date = next_month - timedelta(days=1)
         period_label = f"Bulan {start_date.strftime('%B %Y')}"
     else:
-        # Default: Siklus gajian 14 hari
+        # Default: Siklus gajian dinamis (sesuai PaycheckConfig)
         period_type = "cycle"
         if start:
             try:
@@ -175,8 +180,11 @@ def get_monthly_summary(
                 start_date = latest_cycle_start
         else:
             start_date = latest_cycle_start
-        end_date = start_date + timedelta(days=13)
-        period_label = f"Siklus 14 Hari ({start_date.strftime('%d %b')} – {end_date.strftime('%d %b %Y')})"
+
+        cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+        cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+        end_date = start_date + timedelta(days=cycle_days - 1)
+        period_label = f"Siklus {cycle_days} Hari ({start_date.strftime('%d %b')} – {end_date.strftime('%d %b %Y')})"
 
     query_end_date = end_date + timedelta(days=1)
 
@@ -279,17 +287,30 @@ def get_monthly_summary(
         day_of_cycle = (today_wib - cycle_start).days + 1
         days_remaining = max(1, total_days - day_of_cycle + 1)
 
-    pocket_budget = 825000 if period_type == "cycle" else int(825000 / 14 * total_days)
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
+
+    pocket_income_row = db.query(
+        func.coalesce(func.sum(Transaction.amount), 0).label("inc")
+    ).filter(
+        Transaction.account == pocket_account,
+        Transaction.type == "income",
+        Transaction.date >= cycle_start,
+        Transaction.date <= cycle_end
+    ).first()
+    base_pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else 825000
+    pocket_budget = base_pocket_budget if period_type == "cycle" else int(base_pocket_budget / cycle_days * total_days)
     
-    mandiri_spent_row = db.query(
+    pocket_spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
     ).filter(
-        Transaction.account == "Mandiri",
+        Transaction.account == pocket_account,
         Transaction.type == "expense",
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
     ).first()
-    pocket_spent = int(mandiri_spent_row.spent if mandiri_spent_row else 0)
+    pocket_spent = int(pocket_spent_row.spent if pocket_spent_row else 0)
     pocket_remaining = max(0, pocket_budget - pocket_spent)
     safe_daily = int(pocket_remaining / days_remaining) if days_remaining > 0 else 0
 
@@ -303,16 +324,16 @@ def get_monthly_summary(
     else:
         pace_status = "warning"
 
-    daily_mandiri_rows = db.query(
+    daily_spent_rows = db.query(
         Transaction.date,
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
     ).filter(
-        Transaction.account == "Mandiri",
+        Transaction.account == pocket_account,
         Transaction.type == "expense",
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
     ).group_by(Transaction.date).all()
-    spent_by_date = {str(r.date): int(r.spent) for r in daily_mandiri_rows}
+    spent_by_date = {str(r.date): int(r.spent) for r in daily_spent_rows}
 
     burn_chart = []
     cumulative = 0

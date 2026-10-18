@@ -11,6 +11,7 @@ from sqlalchemy import desc
 
 from app.db.session import get_db
 from app.models.transaction import Transaction
+from app.models.paycheck import PaycheckConfig
 from app.schemas.transaction import (
     TransactionCreate,
     TransactionUpdate,
@@ -153,7 +154,9 @@ def execute_paycheck_split(
 ):
     now_wib = datetime.now(WIB)
     cycle_start = payload.date or now_wib.date()
-    cycle_end = cycle_start + timedelta(days=13)
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    cycle_end = cycle_start + timedelta(days=cycle_days - 1)
     total = payload.total_amount
 
     # Standard Excel formula

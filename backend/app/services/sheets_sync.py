@@ -11,6 +11,7 @@ from sqlalchemy import func, case, desc
 from app.core.config import settings
 from app.models.transaction import Transaction
 from app.models.account import Account
+from app.models.paycheck import PaycheckConfig
 
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 
@@ -67,6 +68,9 @@ def sync_cycle_snapshot(
     today_wib = now_wib.date()
 
     # 1. Tentukan tanggal siklus
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+
     if not cycle_start_date:
         paycheck = db.query(Transaction).filter(
             Transaction.type == "income",
@@ -74,7 +78,7 @@ def sync_cycle_snapshot(
         ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
         cycle_start_date = paycheck.date if paycheck else today_wib
 
-    cycle_end_date = cycle_start_date + timedelta(days=13)
+    cycle_end_date = cycle_start_date + timedelta(days=cycle_days - 1)
     query_end_date = cycle_end_date + timedelta(days=1)
     
     sheet_title = f"Siklus {format_date_short_id(cycle_start_date)} - {format_date_id(cycle_end_date)}"

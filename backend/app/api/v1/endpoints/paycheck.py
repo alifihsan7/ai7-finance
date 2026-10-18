@@ -31,6 +31,9 @@ def get_or_seed_config(db: Session) -> PaycheckConfig:
             source_account="BRI 1",
             use_gate=True,
             gate_name="Flip",
+            cycle_type="biweekly",
+            cycle_days=14,
+            pocket_account="Mandiri",
             is_active=True
         )
         db.add(cfg)
@@ -311,6 +314,9 @@ def update_paycheck_config(payload: PaycheckConfigUpdate, db: Session = Depends(
     cfg.source_account = payload.source_account
     cfg.use_gate = payload.use_gate
     cfg.gate_name = payload.gate_name
+    cfg.cycle_type = payload.cycle_type
+    cfg.cycle_days = payload.cycle_days
+    cfg.pocket_account = payload.pocket_account
     db.commit()
     db.refresh(cfg)
     return PaycheckConfigOut.from_orm(cfg)

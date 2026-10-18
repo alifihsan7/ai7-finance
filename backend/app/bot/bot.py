@@ -15,6 +15,7 @@ from app.core.parser import parse_transaction, parse_multi_transactions
 from app.db.session import SessionLocal, Base, engine
 from app.models.transaction import Transaction
 from app.models.account import Account
+from app.models.paycheck import PaycheckConfig
 
 API_BASE = f"https://api.telegram.org/bot{settings.BOT_TOKEN}"
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
@@ -26,31 +27,44 @@ def get_safe_to_spend_snippet(db: Session) -> str:
     now_wib = datetime.now(WIB)
     today_wib = now_wib.date()
 
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
+
     latest_paycheck = db.query(Transaction).filter(
         Transaction.type == "income",
         (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
     ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
 
     cycle_start = latest_paycheck.date if latest_paycheck else today_wib
-    cycle_end = cycle_start + timedelta(days=13)
+    cycle_end = cycle_start + timedelta(days=cycle_days - 1)
     days_passed = (today_wib - cycle_start).days + 1
-    day_of_cycle = min(14, max(1, days_passed))
-    days_remaining = max(1, 14 - day_of_cycle + 1)
+    day_of_cycle = min(cycle_days, max(1, days_passed))
+    days_remaining = max(1, cycle_days - day_of_cycle + 1)
 
-    pocket_budget = 825000
-    mandiri_spent_row = db.query(
+    pocket_income_row = db.query(
+        func.coalesce(func.sum(Transaction.amount), 0).label("inc")
+    ).filter(
+        Transaction.account == pocket_account,
+        Transaction.type == "income",
+        Transaction.date >= cycle_start,
+        Transaction.date <= cycle_end
+    ).first()
+    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else 825000
+
+    spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
     ).filter(
-        Transaction.account == "Mandiri",
+        Transaction.account == pocket_account,
         Transaction.type == "expense",
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
     ).first()
-    pocket_spent = int(mandiri_spent_row.spent if mandiri_spent_row else 0)
+    pocket_spent = int(spent_row.spent if spent_row else 0)
     pocket_remaining = max(0, pocket_budget - pocket_spent)
     safe_daily = int(pocket_remaining / days_remaining)
 
-    ideal_daily_rate = pocket_budget / 14
+    ideal_daily_rate = pocket_budget / cycle_days
     ideal_pace_today = int(ideal_daily_rate * day_of_cycle)
 
     if pocket_spent <= ideal_pace_today:

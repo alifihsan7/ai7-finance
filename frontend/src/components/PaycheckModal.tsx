@@ -21,6 +21,9 @@ interface PaycheckConfig {
   source_account: string;
   use_gate: boolean;
   gate_name: string;
+  cycle_type: string;
+  cycle_days: number;
+  pocket_account: string;
   is_active: boolean;
 }
 
@@ -87,6 +90,9 @@ export default function PaycheckModal({
     source_account: "BRI 1",
     use_gate: true,
     gate_name: "Flip",
+    cycle_type: "biweekly",
+    cycle_days: 14,
+    pocket_account: "Mandiri",
     is_active: true,
   });
   const [buckets, setBuckets] = useState<PaycheckBucket[]>([]);
@@ -184,6 +190,17 @@ export default function PaycheckModal({
   const balanceDifference = useMemo(() => {
     return numTotal - totalAllocated;
   }, [numTotal, totalAllocated]);
+
+  const computeEndDateStr = () => {
+    try {
+      const d = new Date(cycleDate);
+      if (isNaN(d.getTime())) return "";
+      d.setDate(d.getDate() + (config.cycle_days || 14) - 1);
+      return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+    } catch {
+      return "";
+    }
+  };
 
   const handleTotalChange = (val: string) => {
     setTotalAmountStr(val);
@@ -307,6 +324,9 @@ export default function PaycheckModal({
           source_account: customConfig.source_account,
           use_gate: customConfig.use_gate,
           gate_name: customConfig.gate_name,
+          cycle_type: customConfig.cycle_type,
+          cycle_days: customConfig.cycle_days,
+          pocket_account: customConfig.pocket_account,
         }),
       });
       if (!cfgRes.ok) throw new Error("Gagal menyimpan konfigurasi alur");
@@ -413,15 +433,23 @@ export default function PaycheckModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-                Tanggal Siklus Dimulai
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider">
+                  Tanggal Siklus Dimulai
+                </label>
+                <span className="text-[10px] text-mintRise font-medium px-2 py-0.5 rounded bg-mintRise/10 border border-mintRise/20">
+                  {config.cycle_days || 14} Hari
+                </span>
+              </div>
               <input
                 type="date"
                 value={cycleDate}
                 onChange={(e) => setCycleDate(e.target.value)}
                 className="w-full h-11 px-3.5 rounded-xl bg-obsidian-panel border border-obsidian-border text-sm text-slateText-primary focus:outline-none focus:border-mintRise focus:ring-1 focus:ring-mintRise/30 transition [color-scheme:dark]"
               />
+              <span className="text-[11px] text-slateText-muted mt-1.5 block">
+                Berakhir: <strong className="text-slateText-secondary">{computeEndDateStr()}</strong>
+              </span>
             </div>
           </div>
 
@@ -824,6 +852,82 @@ export default function PaycheckModal({
                 placeholder="Flip / OVO / DANA"
               />
             </div>
+          </div>
+
+          {/* Cycle & Budget Settings */}
+          <div className="p-4 rounded-2xl bg-obsidian-panel border border-obsidian-border space-y-3">
+            <span className="text-xs font-semibold text-slateText-muted uppercase tracking-wider block">
+              Pengaturan Siklus Anggaran & Dompet Harian
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                  Tipe Siklus
+                </label>
+                <CustomSelect
+                  value={customConfig.cycle_type || "biweekly"}
+                  onChange={(val) => {
+                    let days = customConfig.cycle_days;
+                    if (val === "biweekly") days = 14;
+                    else if (val === "monthly") days = 30;
+                    else if (val === "weekly") days = 7;
+                    setCustomConfig({
+                      ...customConfig,
+                      cycle_type: val,
+                      cycle_days: days,
+                    });
+                  }}
+                  options={[
+                    { value: "biweekly", label: "2-Mingguan (14 Hari)", color: "bg-mintRise" },
+                    { value: "monthly", label: "Bulanan (30 Hari)", color: "bg-cyanHub" },
+                    { value: "weekly", label: "Mingguan (7 Hari)", color: "bg-amberGold" },
+                    { value: "custom", label: "Kustom (Jumlah Hari)", color: "bg-purple-400" },
+                  ]}
+                  accent="mint"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                  Durasi Siklus (Hari)
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={365}
+                  value={customConfig.cycle_days || 14}
+                  onChange={(e) =>
+                    setCustomConfig({
+                      ...customConfig,
+                      cycle_days: Math.max(1, parseInt(e.target.value, 10) || 1),
+                    })
+                  }
+                  className="w-full h-10 px-3 rounded-xl bg-obsidian-card border border-obsidian-border text-sm text-slateText-primary focus:outline-none focus:border-mintRise transition font-mono"
+                  placeholder="14 / 30 / 7"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                  Rekening Saku Harian
+                </label>
+                <input
+                  type="text"
+                  value={customConfig.pocket_account || "Mandiri"}
+                  onChange={(e) =>
+                    setCustomConfig({
+                      ...customConfig,
+                      pocket_account: e.target.value,
+                    })
+                  }
+                  className="w-full h-10 px-3 rounded-xl bg-obsidian-card border border-obsidian-border text-sm text-slateText-primary focus:outline-none focus:border-mintRise transition"
+                  placeholder="Mandiri / BCA / Saku"
+                />
+              </div>
+            </div>
+            <p className="text-[11px] text-slateText-muted leading-relaxed">
+              Durasi siklus menentukan rentang waktu evaluasi Safe-to-Spend, burn rate, dan tanggal snapshot penutupan siklus. Rekening saku adalah akun yang dievaluasi burn rate belanjanya.
+            </p>
           </div>
 
           {/* Buckets Editor */}
