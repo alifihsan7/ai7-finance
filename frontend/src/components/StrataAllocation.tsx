@@ -45,12 +45,12 @@ export function StrataAllocationBar({
 
   // Determine friendly formula badge
   const formulaLabel = cycleDays === 30 || cycleType === "monthly"
-    ? "Monthly Formula (30 Hari)"
+    ? "Formula Bulanan (30 Hari)"
     : cycleDays === 7 || cycleType === "weekly"
-    ? "Weekly Formula (7 Hari)"
+    ? "Formula Mingguan (7 Hari)"
     : cycleDays === 14 || cycleType === "biweekly"
-    ? "Bi-Weekly Formula (14 Hari)"
-    : `Formula ${cycleDays} Hari`;
+    ? "Formula 2-Mingguan (14 Hari)"
+    : `Formula Anggaran (${cycleDays} Hari)`;
 
   const activeBuckets = buckets && buckets.length > 0 ? buckets : DEFAULT_BUCKETS;
 

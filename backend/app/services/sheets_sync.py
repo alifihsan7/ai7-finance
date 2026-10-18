@@ -11,7 +11,7 @@ from sqlalchemy import func, case, desc
 from app.core.config import settings
 from app.models.transaction import Transaction
 from app.models.account import Account
-from app.models.paycheck import PaycheckConfig
+from app.models.paycheck import PaycheckConfig, PaycheckBucket
 
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 
@@ -61,8 +61,8 @@ def sync_cycle_snapshot(
     envelopes_config: Optional[List[Dict[str, Any]]] = None
 ) -> Dict[str, Any]:
     """
-    Export snapshot 14-harian ke Google Sheets.
-    Secara dinamis menghitung amplop belanja, akun, pacing, dan seluruh transaksi.
+    Export snapshot siklus anggaran ke Google Sheets.
+    Format Model C: Snapshot Dashboard Eksekutif.
     """
     now_wib = datetime.now(WIB)
     today_wib = now_wib.date()
@@ -70,11 +70,12 @@ def sync_cycle_snapshot(
     # 1. Tentukan tanggal siklus
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
 
     if not cycle_start_date:
         paycheck = db.query(Transaction).filter(
             Transaction.type == "income",
-            (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
+            Transaction.category.in_(["Gajian", "Gaji", "Pemasukan", "Uang Saku Ortu", "Income"]) | Transaction.description.ilike("%gajian%") | Transaction.description.ilike("%pemasukan%")
         ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
         cycle_start_date = paycheck.date if paycheck else today_wib
 
@@ -101,7 +102,7 @@ def sync_cycle_snapshot(
             expense_total = int(r.total)
 
     # Mandiri Safe to Spend
-    total_days = 14
+    total_days = cycle_days
     if today_wib < cycle_start_date:
         day_of_cycle = 1
         days_remaining = total_days
@@ -115,13 +116,17 @@ def sync_cycle_snapshot(
     mandiri_spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
     ).filter(
-        Transaction.account == "Mandiri",
+        Transaction.account == pocket_account,
         Transaction.type == "expense",
         Transaction.date >= cycle_start_date,
         Transaction.date <= cycle_end_date
     ).first()
     pocket_spent = int(mandiri_spent_row.spent if mandiri_spent_row else 0)
-    pocket_budget = 825000
+    pocket_budget = int(cfg.total_salary * 0.55) if cfg and cfg.total_salary else 825000
+    if cfg and cfg.id:
+        bucket_match = db.query(PaycheckBucket).filter(PaycheckBucket.config_id == cfg.id, PaycheckBucket.account == pocket_account).first()
+        if bucket_match and bucket_match.percentage > 0 and cfg.total_salary:
+            pocket_budget = int(round(cfg.total_salary * (bucket_match.percentage / 100.0)))
     pocket_remaining = max(0, pocket_budget - pocket_spent)
     safe_daily = int(pocket_remaining / days_remaining) if days_remaining > 0 else 0
 
@@ -229,7 +234,7 @@ def sync_cycle_snapshot(
     # R1: kosong (index 0)
     rows.append(["", "", "", "", "", "", ""])
     # R2: Header Judul (index 1)
-    rows.append(["", "AI7 FINANCE — RAPOR SIKLUS 14-HARI (SNAPSHOT)", "", "", "", "", ""])
+    rows.append(["", f"AI7 FINANCE — RAPOR SIKLUS {cycle_days}-HARI (SNAPSHOT)", "", "", "", "", ""])
     # R3: Sub Header (index 2)
     rows.append(["", f"Periode: {format_date_id(cycle_start_date)} – {format_date_id(cycle_end_date)}  •  Status Pacing: {pace_status}  •  Sinkronisasi: {now_wib.strftime('%d %b %Y %H:%M')} WIB", "", "", "", "", ""])
     # R4: Kosong (index 3)
@@ -243,9 +248,9 @@ def sync_cycle_snapshot(
     rows.append(["", "Indikator Keuangan", "", "Nilai (IDR)", "", "Keterangan", ""])
     # Data Seksi 1 (Numerik Riil)
     sec1_data_start = len(rows)
-    rows.append(["", "Total Pemasukan Siklus", "", income_total, "", "Gajian 14-Harian & Alokasi Pos", ""])
-    rows.append(["", "Plafon Belanja Mandiri", "", pocket_budget, "", "Pos Saku Operasional 14 Hari", ""])
-    rows.append(["", "Realisasi Belanja Mandiri", "", pocket_spent, "", f"Hari ke-{day_of_cycle} dari 14 hari", ""])
+    rows.append(["", "Total Pemasukan Siklus", "", income_total, "", f"Gajian ({cycle_days} Hari) & Alokasi Pos", ""])
+    rows.append(["", f"Plafon Belanja {pocket_account}", "", pocket_budget, "", f"Pos Saku Operasional {cycle_days} Hari", ""])
+    rows.append(["", f"Realisasi Belanja {pocket_account}", "", pocket_spent, "", f"Hari ke-{day_of_cycle} dari {total_days} hari", ""])
     rows.append(["", "Sisa Saldo Aman Belanja", "", pocket_remaining, "", f"Batas aman: Rp {safe_daily:,.0f}/hari".replace(",", "."), ""])
     sec1_end_idx = len(rows) - 1
 

@@ -15,7 +15,7 @@ from app.core.parser import parse_transaction, parse_multi_transactions
 from app.db.session import SessionLocal, Base, engine
 from app.models.transaction import Transaction
 from app.models.account import Account
-from app.models.paycheck import PaycheckConfig
+from app.models.paycheck import PaycheckConfig, PaycheckBucket
 from app.models.user import User
 
 API_BASE = f"https://api.telegram.org/bot{settings.BOT_TOKEN}"
@@ -101,7 +101,7 @@ def setup_bot_commands():
         {"command": "transfer", "description": "🔄 Transfer antar rekening"},
         {"command": "subs", "description": "🔔 Jadwal langganan & tagihan rutin"},
         {"command": "transaksi", "description": "📜 5 transaksi terakhir"},
-        {"command": "gajian", "description": "💰 Auto-split gajian 14-harian"},
+        {"command": "gajian", "description": "💰 Auto-split alokasi gajian sesuai siklus"},
         {"command": "sheets", "description": "📑 Sinkronisasi snapshot ke Google Sheets"},
         {"command": "batal", "description": "↩️ Hapus/batalkan transaksi terakhir"},
         {"command": "help", "description": "ℹ️ Panduan cara input bot"},
@@ -557,19 +557,34 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
     cycle_start = now.date()
     cycle_end = cycle_start + timedelta(days=cycle_days - 1)
 
-    mandiri_amt = int(round(total * 0.55))
-    jago_amt = int(round(total * 0.18333333))
-    bibit_amt = int(round(total * 0.13333333))
-    bri1_amt = int(round(total * 0.06666667))
-    bri2_amt = total - (mandiri_amt + jago_amt + bibit_amt + bri1_amt)
+    buckets = []
+    if cfg:
+        buckets = db.query(PaycheckBucket).filter(PaycheckBucket.config_id == cfg.id).order_by(PaycheckBucket.sort_order).all()
 
-    allocations = [
-        ("Mandiri", mandiri_amt, "Pos Belanja Operasional & Kebutuhan Pokok"),
-        ("Bank Jago", jago_amt, "Alokasi Langganan & Tagihan Rutin Jago"),
-        ("Bibit", bibit_amt, "Alokasi Investasi Reksadana/Saham Bibit"),
-        ("BRI 1", bri1_amt, "Alokasi Dana Darurat BRI 1"),
-        ("BRI 2", bri2_amt, "Alokasi Tabungan Kunci BRI 2"),
-    ]
+    if buckets:
+        allocations = []
+        allocated_so_far = 0
+        for i, b in enumerate(buckets):
+            if i == len(buckets) - 1:
+                amt = total - allocated_so_far
+            else:
+                amt = int(round(total * (b.percentage / 100.0)))
+                allocated_so_far += amt
+            allocations.append((b.account, amt, b.purpose or "Alokasi Pos"))
+    else:
+        mandiri_amt = int(round(total * 0.55))
+        jago_amt = int(round(total * 0.18333333))
+        bibit_amt = int(round(total * 0.13333333))
+        bri1_amt = int(round(total * 0.06666667))
+        bri2_amt = total - (mandiri_amt + jago_amt + bibit_amt + bri1_amt)
+        pocket = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
+        allocations = [
+            (pocket, mandiri_amt, "Pos Belanja Operasional & Kebutuhan Pokok"),
+            ("Bank Jago", jago_amt, "Alokasi Langganan & Tagihan Rutin Jago"),
+            ("Bibit", bibit_amt, "Alokasi Investasi Reksadana/Saham Bibit"),
+            ("BRI 1", bri1_amt, "Alokasi Dana Darurat"),
+            ("BRI 2", bri2_amt, "Alokasi Tabungan Kunci"),
+        ]
 
     for acc, amt, desc in allocations:
         tx = Transaction(
@@ -595,22 +610,19 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
         except Exception as e:
             print(f"Sheets auto-sync error: {e}")
 
+    distrib_lines = []
+    for acc, amt, desc in allocations:
+        pct = round(amt / total * 100, 1) if total > 0 else 0
+        distrib_lines.append(f"• **{acc} ({pct}%):** {format_rp(amt)}\n  └ *{desc}*")
+    distrib_str = "\n".join(distrib_lines)
+
     msg = f"""🎉 **GAJIAN MASUK & ALOKASI OTOMATIS TERCATAT!**
 
 💰 **Total Pemasukan / Gajian:** {format_rp(total)}
 📅 **Siklus {cycle_days} Hari:** {cycle_start.strftime('%d %b')} – {cycle_end.strftime('%d %b %Y')}
 
-📊 **Distribusi Alokasi 5 Rekening:**
-• **Mandiri (55%):** {format_rp(mandiri_amt)}
-  └ *Makan, Jajan, Laundry, Galon*
-• **Bank Jago (18.3%):** {format_rp(jago_amt)}
-  └ *Langganan & Tagihan Rutin*
-• **Bibit (13.3%):** {format_rp(bibit_amt)}
-  └ *Investasi Tabungan Reksadana/Saham*
-• **BRI 1 (6.7%):** {format_rp(bri1_amt)}
-  └ *Hub Gajian & Dana Darurat*
-• **BRI 2 (6.7%):** {format_rp(bri2_amt)}
-  └ *Tabungan Terkunci*
+📊 **Distribusi Alokasi {len(allocations)} Rekening:**
+{distrib_str}
 
 🌐 *Gunakan Checklist Interaktif di Web Dashboard:*
 [Buka AI7 Finance Web Dashboard]({settings.APP_BASE_URL}){sheet_info}"""

@@ -396,7 +396,13 @@ export default function PaycheckModal({
           ? "Checklist Eksekusi Gajian Bertahap"
           : view === "customize"
           ? "Sesuaikan Alur & Routing Gajian"
-          : "Alokasi Gajian 14-Harian"
+          : config.cycle_type === "monthly" || config.cycle_days === 30
+          ? "Alokasi Gajian Bulanan"
+          : config.cycle_type === "weekly" || config.cycle_days === 7
+          ? "Alokasi Gajian Mingguan"
+          : config.cycle_type === "biweekly" || config.cycle_days === 14
+          ? "Alokasi Gajian 2-Mingguan"
+          : `Alokasi Gajian (Siklus ${config.cycle_days || 14} Hari)`
       }
       subtitle={
         view === "checklist"
