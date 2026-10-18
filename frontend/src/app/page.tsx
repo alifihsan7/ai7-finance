@@ -1146,30 +1146,37 @@ export default function ObsidianDashboard() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                   {goals.slice(0, 3).map((g) => {
+                    const theme =
+                      g.color === "cyan"
+                        ? { dot: "bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.5)]", bar: "bg-gradient-to-r from-cyan-500 to-sky-400", text: "text-cyan-400" }
+                        : g.color === "amber"
+                        ? { dot: "bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)]", bar: "bg-gradient-to-r from-amber-500 to-yellow-400", text: "text-amber-400" }
+                        : { dot: "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]", bar: "bg-gradient-to-r from-emerald-500 to-teal-400", text: "text-emerald-400" };
+
                     return (
                       <div
                         key={g.id}
                         onClick={() => setActiveNav("Target Finansial")}
-                        className="bg-obsidian-card border border-obsidian-border/80 hover:border-obsidian-borderStrong rounded-lg p-3.5 space-y-2.5 cursor-pointer transition-colors"
+                        className="bg-[#0E1015] border border-white/[0.07] hover:border-white/[0.18] rounded-xl p-4 space-y-3 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 shadow-sm"
                       >
                         <div className="flex justify-between items-center gap-2">
-                          <span className="text-sm font-semibold text-slateText-primary truncate flex items-center gap-1.5">
-                            <span>{g.icon}</span>
+                          <span className="text-sm font-semibold text-white truncate flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${theme.dot} shrink-0`} />
                             <span className="truncate">{g.name}</span>
                           </span>
-                          <span className="text-xs font-mono font-bold text-amberGold shrink-0">
+                          <span className={`text-xs font-mono font-bold ${theme.text} shrink-0`}>
                             {g.percentage}%
                           </span>
                         </div>
-                        <div className="h-1.5 w-full bg-obsidian-surface rounded-full overflow-hidden border border-obsidian-border/40">
+                        <div className="h-1.5 w-full bg-white/[0.06] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-amberGold rounded-full transition-all duration-500"
+                            className={`h-full ${theme.bar} rounded-full transition-all duration-500`}
                             style={{ width: `${Math.min(100, Math.max(3, g.percentage))}%` }}
                           />
                         </div>
                         <div className="flex justify-between text-[11px] font-mono text-slateText-muted">
                           <span>{formatRupiah(g.current_amount)}</span>
-                          <span>{formatRupiah(g.target_amount)}</span>
+                          <span>Target: {formatRupiah(g.target_amount)}</span>
                         </div>
                       </div>
                     );
