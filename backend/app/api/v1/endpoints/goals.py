@@ -10,6 +10,7 @@ from app.db.session import get_db
 from app.models.goal import Goal
 from app.models.transaction import Transaction
 from app.models.user import User
+from app.models.paycheck import PaycheckConfig
 from app.api.deps import get_current_user
 from app.schemas.goal import GoalCreate, GoalUpdate, GoalResponse
 
@@ -59,10 +60,12 @@ def compute_goal_metrics(goal: Goal, user_id: int, db: Session) -> dict:
         est_months = 0.0
         est_finish_date = today
     else:
+        cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
+        cycle_days = cfg.cycle_days if (cfg and cfg.cycle_days) else 14
         alloc = ROUTINE_CYCLE_ALLOCATIONS.get(goal.linked_account or "", 100000)
         if alloc > 0:
             est_cycles = math.ceil(remaining / alloc)
-            days = est_cycles * 14
+            days = est_cycles * cycle_days
             est_finish_date = today + timedelta(days=days)
             est_months = round(days / 30.417, 1)
 

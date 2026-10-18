@@ -95,19 +95,19 @@ function formatNumber(num: number): string {
 function formatDateIndo(dateStr: string | null): string {
   if (!dateStr) return "";
   try {
-    const parts = dateStr.split("-");
+    const parts = dateStr.trim().split("-");
     if (parts.length === 3) {
-      const year = parts[0];
+      const year = parts[0].trim();
       const monthNames = [
         "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
         "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
       ];
       const month = monthNames[parseInt(parts[1], 10) - 1] || parts[1];
       const day = parseInt(parts[2], 10);
-      return `${day} ${month} ${year}`;
+      return `${day} ${month} ${year}`.trim();
     }
     const d = new Date(dateStr);
-    return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+    return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }).trim();
   } catch {
     return dateStr;
   }
@@ -339,7 +339,7 @@ export function GoalsView({
                       <div
                         className={`text-xs font-mono font-bold px-2.5 py-1 rounded-md border ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}
                       >
-                        {goal.percentage}%
+                        {goal.percentage >= 100 ? "100%" : `${Number(goal.percentage).toFixed(1)}%`}
                       </div>
                     </div>
                     <div className="flex justify-between items-center text-xs font-mono text-slateText-muted">
@@ -356,7 +356,7 @@ export function GoalsView({
                       />
                     </div>
                     <div className="flex justify-between items-center text-xs font-mono text-slateText-muted">
-                      <span>{isCompleted ? "Tercapai 100%" : `${goal.percentage}% terkumpul`}</span>
+                      <span>{isCompleted ? "Tercapai 100%" : `${Number(goal.percentage).toFixed(1)}% terkumpul`}</span>
                       <span>{isCompleted ? "Selesai" : `Sisa ${formatRupiah(goal.remaining_amount)}`}</span>
                     </div>
                   </div>
@@ -375,13 +375,13 @@ export function GoalsView({
                           <span className="text-slateText-primary font-medium truncate">
                             ~{goal.estimated_cycles} siklus lagi{" "}
                             <span className="text-slateText-muted font-normal">
-                              (~{goal.estimated_months} bln)
+                              (~{Number(goal.estimated_months).toFixed(1)} bln)
                             </span>
                           </span>
                         </div>
                         {goal.estimated_finish_date && (
-                          <div className="text-xs font-mono text-slateText-muted shrink-0">
-                            Est: <span className="text-slateText-secondary">{formatDateIndo(goal.estimated_finish_date)}</span>
+                          <div className="text-xs font-mono text-slateText-muted shrink-0 whitespace-nowrap">
+                            <span>Est: </span><span className="text-slateText-secondary">{formatDateIndo(goal.estimated_finish_date)}</span>
                           </div>
                         )}
                       </div>
@@ -399,9 +399,9 @@ export function GoalsView({
                     )}
                   </div>
 
-                  {/* Clean Notes with generous margin */}
+                  {/* Clean Notes with generous margin and anti-orphan typography */}
                   {goal.notes && (
-                    <p className="text-xs text-slateText-muted line-clamp-2 leading-relaxed pt-3 border-t border-obsidian-border/50">
+                    <p className="text-xs text-slateText-muted line-clamp-2 leading-relaxed pt-3 border-t border-obsidian-border/50 text-pretty">
                       {goal.notes}
                     </p>
                   )}
