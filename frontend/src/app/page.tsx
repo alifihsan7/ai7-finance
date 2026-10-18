@@ -710,19 +710,19 @@ export default function ObsidianDashboard() {
         {/* ============================================================== */}
         {activeNav === "Ringkasan" && (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5">
               {/* Net Worth */}
-              <div className="lg:col-span-7 bg-obsidian-card border border-obsidian-border rounded-xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between">
+              <div className="xl:col-span-7 bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-7 relative overflow-hidden flex flex-col justify-between">
                 <div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider">
-                      Total Kekayaan Bersih (Net Worth)
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider truncate">
+                      Total Kekayaan Bersih
                     </span>
-                    <span className="text-xs font-mono font-medium text-amberGold px-2 py-0.5 rounded bg-amberGold/10 border border-amberGold/20">
+                    <span className="text-[11px] sm:text-xs font-mono font-medium text-amberGold px-2.5 py-0.5 rounded-md bg-amberGold/10 border border-amberGold/20 shrink-0 whitespace-nowrap">
                       Seluruh 5 Rekening
                     </span>
                   </div>
-                  <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slateText-primary my-3 font-mono">
+                  <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slateText-primary my-3 font-mono truncate">
                     {formatRupiah(summary.total_balance ?? (summary.income - summary.expense))}{" "}
                     <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
                       IDR
@@ -731,32 +731,32 @@ export default function ObsidianDashboard() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs sm:text-sm pt-3 border-t border-obsidian-border/80">
-                  <span className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium whitespace-nowrap">
+                  <div className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium whitespace-nowrap">
                     <ArrowUpRight className="w-4 h-4 shrink-0" />
-                    {formatRupiah(summary.income)} pemasukan
-                  </span>
-                  <span className="hidden sm:inline text-obsidian-borderStrong">•</span>
-                  <span className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium whitespace-nowrap">
+                    <span>{formatRupiah(summary.income)} pemasukan</span>
+                  </div>
+                  <span className="text-obsidian-borderStrong shrink-0">•</span>
+                  <div className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium whitespace-nowrap">
                     <ArrowDownRight className="w-4 h-4 shrink-0" />
-                    {formatRupiah(summary.expense)} belanja
-                  </span>
-                  <span className="hidden sm:inline text-obsidian-borderStrong">•</span>
-                  <span className="inline-flex items-center gap-1.5 text-slateText-secondary font-mono font-medium whitespace-nowrap">
-                    Net: {formatRupiah(summary.income - summary.expense)}
-                  </span>
+                    <span>{formatRupiah(summary.expense)} belanja</span>
+                  </div>
+                  <span className="text-obsidian-borderStrong shrink-0">•</span>
+                  <div className="inline-flex items-center gap-1.5 text-slateText-secondary font-mono font-medium whitespace-nowrap">
+                    <span>Net: {formatRupiah(summary.income - summary.expense)}</span>
+                  </div>
                 </div>
               </div>
 
               {/* Safe-to-Spend */}
-              <div className="lg:col-span-5 bg-obsidian-panel border border-obsidian-border rounded-xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between">
+              <div className="xl:col-span-5 bg-obsidian-panel border border-obsidian-border rounded-xl p-5 sm:p-7 relative overflow-hidden flex flex-col justify-between">
                 <div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-amberGold" />
-                      Batas Belanja Aman Harian
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider flex items-center gap-1.5 min-w-0">
+                      <ShieldCheck className="w-4 h-4 text-amberGold shrink-0" />
+                      <span className="truncate">Batas Belanja Harian</span>
                     </span>
                     <span
-                      className={`text-xs font-mono font-medium px-2 py-0.5 rounded border ${
+                      className={`text-[11px] sm:text-xs font-mono font-medium px-2.5 py-0.5 rounded-md border shrink-0 whitespace-nowrap ${
                         summary.safe_to_spend?.pace_status === "warning"
                           ? "text-coralFall bg-coralFall/10 border-coralFall/20"
                           : "text-mintRise bg-mintRise/10 border-mintRise/20"
@@ -766,7 +766,7 @@ export default function ObsidianDashboard() {
                     </span>
                   </div>
 
-                  <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-amberGold my-3 font-mono">
+                  <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-amberGold my-3 font-mono truncate">
                     {formatRupiah(summary.safe_to_spend?.safe_daily || 55000)}{" "}
                     <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
                       / hari
@@ -774,20 +774,21 @@ export default function ObsidianDashboard() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5 pt-3 border-t border-obsidian-border/80 text-xs font-mono">
-                  <div className="flex justify-between text-slateText-secondary">
-                    <span>Sisa Kuota Mandiri:</span>
-                    <strong className="text-slateText-primary font-bold">
-                      {formatRupiah(summary.safe_to_spend?.pocket_remaining || 0)} / Rp 825.000
-                    </strong>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-obsidian-border/80">
+                  <div className="bg-obsidian-card/60 border border-obsidian-border/50 rounded-lg p-2.5 min-w-0">
+                    <div className="text-[11px] text-slateText-muted font-medium truncate">Sisa Kuota Mandiri</div>
+                    <div className="text-xs sm:text-sm font-bold font-mono text-slateText-primary mt-0.5 truncate whitespace-nowrap">
+                      {formatRupiah(summary.safe_to_spend?.pocket_remaining || 0)}
+                      <span className="text-slateText-muted font-normal text-[11px]"> / 825k</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-slateText-secondary">
-                    <span>Rentang Waktu:</span>
-                    <span className="text-slateText-primary">
+                  <div className="bg-obsidian-card/60 border border-obsidian-border/50 rounded-lg p-2.5 min-w-0">
+                    <div className="text-[11px] text-slateText-muted font-medium truncate">Rentang Waktu</div>
+                    <div className="text-xs sm:text-sm font-bold font-mono text-slateText-primary mt-0.5 truncate whitespace-nowrap">
                       {summary.safe_to_spend?.days_remaining === 0
                         ? "Periode Berakhir"
-                        : `Hari ke-${summary.safe_to_spend?.day_of_cycle || 1} (${summary.safe_to_spend?.days_remaining || 0} hari tersisa)`}
-                    </span>
+                        : `Hari ke-${summary.safe_to_spend?.day_of_cycle || 1} (sisa ${summary.safe_to_spend?.days_remaining || 0} hr)`}
+                    </div>
                   </div>
                 </div>
               </div>
