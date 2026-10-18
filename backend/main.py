@@ -33,19 +33,16 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 # Serve Frontend static files if present
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static")
 INDEX_PATH = os.path.join(STATIC_DIR, "index.html")
+NEXT_DIR = os.path.join(STATIC_DIR, "_next")
+
+if os.path.exists(NEXT_DIR):
+    app.mount("/_next", StaticFiles(directory=NEXT_DIR), name="next_static")
 
 if os.path.exists(INDEX_PATH):
     @app.get("/", response_class=HTMLResponse)
     def root():
         with open(INDEX_PATH, "r", encoding="utf-8") as f:
-            content = f.read()
-            # Ensure API calls in HTML use /api/v1/
-            content = content.replace("'/api/summary'", f"'{settings.API_V1_STR}/analytics/summary'")
-            content = content.replace("`/api/summary", f"`{settings.API_V1_STR}/analytics/summary")
-            content = content.replace("'/api/transactions'", f"'{settings.API_V1_STR}/transactions'")
-            content = content.replace("`/api/transactions", f"`{settings.API_V1_STR}/transactions")
-            content = content.replace("`/api/export", f"`{settings.API_V1_STR}/transactions/export")
-            return HTMLResponse(content)
+            return HTMLResponse(f.read())
 
 @app.get("/health")
 def health_check():
