@@ -20,6 +20,13 @@ BOT_TOKEN = env_vars.get("BOT_TOKEN")
 CHAT_ID = env_vars.get("ALLOWED_USER_ID", "1357550611")
 API_URL = "http://127.0.0.1:8080/api/v1/analytics/summary"
 
+sys.path.insert(0, "/home/alifihsan/ai7-finance/backend")
+try:
+    from app.core.security import create_access_token
+    AUTH_HEADERS = {"Authorization": f"Bearer {create_access_token(1)}"}
+except Exception:
+    AUTH_HEADERS = {}
+
 try:
     wib = zoneinfo.ZoneInfo("Asia/Jakarta")
     now_wib = datetime.now(wib)
@@ -31,7 +38,7 @@ def fmt_rp(val):
 
 def main():
     try:
-        res = requests.get(API_URL, timeout=10)
+        res = requests.get(API_URL, headers=AUTH_HEADERS, timeout=10)
         res.raise_for_status()
         data = res.json()
     except Exception as e:

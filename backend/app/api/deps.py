@@ -14,10 +14,6 @@ def get_current_user(
     db: Session = Depends(get_db)
 ) -> User:
     if not token:
-        # Fallback to User 1 if single-user legacy request (transitional)
-        user_one = db.query(User).filter(User.id == 1).first()
-        if user_one:
-            return user_one
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token autentikasi tidak ditemukan atau sesi telah berakhir",
@@ -61,10 +57,4 @@ def get_strict_current_user(
     token: Optional[str] = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> User:
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token autentikasi diperlukan",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
     return get_current_user(token=token, db=db)

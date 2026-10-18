@@ -25,6 +25,7 @@ import {
   FileSpreadsheet,
   ExternalLink,
   Target,
+  AlertCircle,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { AccountGrid } from "@/components/AccountGrid";
@@ -50,7 +51,7 @@ import { PeriodSelector, PeriodOption } from "@/components/PeriodSelector";
 import { AuthModal } from "@/components/AuthModal";
 import { OnboardingWizardModal } from "@/components/OnboardingWizardModal";
 import { UserProfileModal } from "@/components/UserProfileModal";
-import { authFetch, getStoredUser, setStoredUser, setAuthToken, UserProfile } from "@/lib/api";
+import { authFetch, getAuthToken, setStoredUser, setAuthToken, UserProfile } from "@/lib/api";
 
 interface MonthlySummary {
   period_type?: string;
@@ -192,119 +193,24 @@ export default function ObsidianDashboard() {
   const [subNotes, setSubNotes] = useState("");
   const [subToEdit, setSubToEdit] = useState<SubscriptionItem | null>(null);
 
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: 1,
-      type: "expense",
-      amount: 45000,
-      account: "Mandiri",
-      category: "Makanan & Minuman",
-      description: "Nasi Padang + Es Teh",
-      date: "2026-10-18",
-    },
-    {
-      id: 2,
-      type: "income",
-      amount: 1500000,
-      account: "BRI 1",
-      category: "Uang Saku Ortu",
-      description: "Transferan Gajian 2-Mingguan",
-      date: "2026-10-18",
-    },
-    {
-      id: 3,
-      type: "expense",
-      amount: 25000,
-      account: "Mandiri",
-      category: "Jajan / Ngopi",
-      description: "Kopi Kenangan Mantan",
-      date: "2026-10-17",
-    },
-  ]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [summary, setSummary] = useState<MonthlySummary>({
-    month: "2026-10",
-    income: 1500000,
-    expense: 265000,
-    net: 1235000,
-    savings_rate: 82.3,
-    total_balance: 4355049,
-    accounts: [
-      { account: "Mandiri", balance: 755000 },
-      { account: "Jago", balance: 475000 },
-      { account: "BRI 1", balance: 100000 },
-      { account: "BRI 2", balance: 100000 },
-    ],
-    categories: [
-      { category: "Makanan & Minuman", total: 45000, count: 1, percentage: 64.3 },
-      { category: "Jajan / Ngopi", total: 25000, count: 1, percentage: 35.7 },
-    ],
-    safe_to_spend: {
-      cycle_start: "2026-10-18",
-      cycle_end: "2026-10-31",
-      day_of_cycle: 1,
-      days_remaining: 14,
-      pocket_budget: 825000,
-      pocket_spent: 70000,
-      pocket_remaining: 755000,
-      safe_daily: 53928,
-      pace_status: "ahead",
-      ideal_pace_today: 58928,
-      burn_chart: Array.from({ length: 14 }).map((_, i) => ({
-        day: i + 1,
-        date: `2026-10-${String(18 + i).padStart(2, "0")}`,
-        spent: i === 0 ? 70000 : 0,
-        cumulative_spent: 70000,
-        ideal_pace: Math.round((825000 / 14) * (i + 1)),
-      })),
-    },
+    month: "",
+    income: 0,
+    expense: 0,
+    net: 0,
+    savings_rate: 0,
+    total_balance: 0,
+    accounts: [],
+    categories: [],
   });
 
   const [subsData, setSubsData] = useState<SubscriptionsData>({
-    total_monthly_commitment: 404990,
-    active_count: 3,
-    upcoming_this_week: 2,
-    items: [
-      {
-        id: 1,
-        name: "ChatGPT Plus",
-        amount: 335000,
-        category: "Produktivitas & AI",
-        account: "Jago",
-        billing_cycle: "monthly",
-        billing_day: 19,
-        is_active: true,
-        days_until_due: 1,
-        next_billing_date: "2026-10-19",
-        notes: "Kartu debit Jago",
-      },
-      {
-        id: 2,
-        name: "Spotify Premium",
-        amount: 54990,
-        category: "Hiburan / Musik",
-        account: "Jago",
-        billing_cycle: "monthly",
-        billing_day: 25,
-        is_active: true,
-        days_until_due: 7,
-        next_billing_date: "2026-10-25",
-        notes: "Autodebet bulanan",
-      },
-      {
-        id: 3,
-        name: "iCloud Storage 50GB",
-        amount: 15000,
-        category: "Cloud Backup",
-        account: "Jago",
-        billing_cycle: "monthly",
-        billing_day: 12,
-        is_active: true,
-        days_until_due: 25,
-        next_billing_date: "2026-11-12",
-        notes: "Apple ID backup",
-      },
-    ],
+    total_monthly_commitment: 0,
+    active_count: 0,
+    upcoming_this_week: 0,
+    items: [],
   });
 
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -315,6 +221,15 @@ export default function ObsidianDashboard() {
   useEffect(() => {
     const initUser = async () => {
       try {
+        const token = getAuthToken();
+        if (!token) {
+          setCurrentUser(null);
+          setStoredUser(null);
+          setIsAuthModalOpen(true);
+          setLoading(false);
+          return;
+        }
+
         const res = await authFetch("/api/v1/auth/me");
         if (res.ok) {
           const u = await res.json();
@@ -324,34 +239,51 @@ export default function ObsidianDashboard() {
             setIsOnboardingModalOpen(true);
           }
         } else {
-          const stored = getStoredUser();
-          if (stored) {
-            setCurrentUser(stored);
-            if (!stored.is_onboarded) {
-              setIsOnboardingModalOpen(true);
-            }
-          } else {
-            // Default fallback to User 1 (Alif Ihsan) for immediate seamless dashboard view
-            setCurrentUser({
-              id: 1,
-              username: "alifihsan",
-              email: "aliffihsann@gmail.com",
-              full_name: "Alif Ihsan",
-              telegram_chat_id: 1357550611,
-              is_active: true,
-              is_onboarded: true,
-            });
-          }
+          // Token tidak valid atau kedaluwarsa
+          setAuthToken(null);
+          setStoredUser(null);
+          setCurrentUser(null);
+          setIsAuthModalOpen(true);
         }
       } catch {
-        const stored = getStoredUser();
-        if (stored) setCurrentUser(stored);
+        setAuthToken(null);
+        setStoredUser(null);
+        setCurrentUser(null);
+        setIsAuthModalOpen(true);
+      } finally {
+        setLoading(false);
       }
     };
     initUser();
   }, []);
 
   const fetchData = async () => {
+    const token = getAuthToken();
+    if (!token) {
+      setTransactions([]);
+      setSummary({
+        month: "",
+        income: 0,
+        expense: 0,
+        net: 0,
+        savings_rate: 0,
+        total_balance: 0,
+        accounts: [],
+        categories: [],
+      });
+      setSubsData({
+        total_monthly_commitment: 0,
+        active_count: 0,
+        upcoming_this_week: 0,
+        items: [],
+      });
+      setCustomAccounts([]);
+      setGoals([]);
+      setActivePaycheckSession(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -434,8 +366,10 @@ export default function ObsidianDashboard() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [selectedPeriod]);
+    if (currentUser) {
+      fetchData();
+    }
+  }, [selectedPeriod, currentUser]);
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -1024,6 +958,33 @@ export default function ObsidianDashboard() {
       {/* MAIN VIEWPORT */}
       <main className="flex-1 overflow-y-auto w-full">
         <div className="p-3.5 sm:p-5 md:p-6 lg:p-8 xl:p-10 pb-24 md:pb-10 max-w-7xl mx-auto w-full space-y-5 sm:space-y-8">
+        
+        {/* Guest Mode Banner */}
+        {!currentUser && (
+          <div className="p-3.5 sm:p-4 rounded-xl bg-[#181C26] border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg shadow-amber-500/5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-100">
+                  Mode Tamu (Belum Masuk)
+                </p>
+                <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                  Silakan masuk atau buat akun baru untuk mengakses pencatatan keuangan pribadi Anda secara aman.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition-colors shrink-0 cursor-pointer shadow-md shadow-amber-500/20"
+            >
+              Masuk / Daftar Sekarang
+            </button>
+          </div>
+        )}
+
         {/* Dynamic Header */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 pb-6 border-b border-obsidian-border">
           <div>
