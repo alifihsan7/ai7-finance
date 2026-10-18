@@ -11,6 +11,7 @@ import app.models.transaction
 import app.models.subscription
 import app.models.account
 import app.models.goal
+import app.models.paycheck
 
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)
