@@ -19,7 +19,7 @@ const TYPE_OPTIONS = [
 ];
 
 const COLOR_OPTIONS = [
-  { value: "amberGold", label: "Amber Gold", color: "bg-amber-500", description: "Aksen emas Obsidian" },
+  { value: "amberGold", label: "Amber Gold", color: "bg-amber-500", description: "Aksen emas elegan" },
   { value: "cyanHub", label: "Cyan", color: "bg-cyan-500", description: "Biru cerah" },
   { value: "teal", label: "Teal / Hijau Mint", color: "bg-teal-500", description: "Hijau sejuk" },
   { value: "purpleLock", label: "Purple", color: "bg-purple-500", description: "Ungu elegan" },

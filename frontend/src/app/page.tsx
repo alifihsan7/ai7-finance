@@ -132,7 +132,7 @@ const SUB_ACCOUNT_OPTIONS = [
   { value: "BRI 1", label: "BRI 1 (Hub)", color: "bg-cyan-500" },
 ];
 
-export default function ObsidianDashboard() {
+export default function FinanceDashboard() {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -613,9 +613,6 @@ export default function ObsidianDashboard() {
               <div className="font-bold text-lg tracking-tight text-slateText-primary leading-none whitespace-nowrap">
                 ai7<span className="text-amberGold">.</span>finance
               </div>
-              <div className="text-xs text-slateText-muted tracking-wider uppercase font-medium mt-1 whitespace-nowrap">
-                Obsidian Slate
-              </div>
             </div>
           </div>
 
@@ -805,9 +802,6 @@ export default function ObsidianDashboard() {
                   <div>
                     <div className="font-bold text-base tracking-tight text-slateText-primary leading-none">
                       ai7<span className="text-amberGold">.</span>finance
-                    </div>
-                    <div className="text-[10px] text-slateText-muted tracking-wider uppercase font-medium mt-1">
-                      Obsidian Slate
                     </div>
                   </div>
                 </div>
