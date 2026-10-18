@@ -18,6 +18,8 @@ import {
   BarChart2,
   LayoutDashboard,
   ArrowLeftRight,
+  Clock,
+  Calendar,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { AccountGrid } from "@/components/AccountGrid";
@@ -28,6 +30,7 @@ import { SubscriptionsView, SubscriptionItem, SubscriptionsData } from "@/compon
 import { TransferModal } from "@/components/TransferModal";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
+import { EditSubscriptionModal } from "@/components/EditSubscriptionModal";
 import { AccountItem } from "@/components/AccountGrid";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
@@ -148,10 +151,13 @@ export default function ObsidianDashboard() {
   // Form state for new subscription
   const [subName, setSubName] = useState("");
   const [subAmount, setSubAmount] = useState("");
-  const [subCategory, setSubCategory] = useState("Produktivitas & AI");
+  const [subCategory, setSubCategory] = useState("Gym & Fitness");
   const [subAccount, setSubAccount] = useState("Jago");
+  const [subBillingType, setSubBillingType] = useState<"fixed_day" | "exact_date">("fixed_day");
   const [subBillingDay, setSubBillingDay] = useState("1");
+  const [subExactDueDate, setSubExactDueDate] = useState("");
   const [subNotes, setSubNotes] = useState("");
+  const [subToEdit, setSubToEdit] = useState<SubscriptionItem | null>(null);
 
   const [transactions, setTransactions] = useState<Transaction[]>([
     {
@@ -419,25 +425,41 @@ export default function ObsidianDashboard() {
     e.preventDefault();
     const numAmount = parseInt(subAmount.replace(/\D/g, ""), 10);
     const day = parseInt(subBillingDay, 10);
-    if (!numAmount || !subName.trim() || !day) return;
+    if (!numAmount || !subName.trim()) return;
+    if (subBillingType === "fixed_day" && !day) return;
+    if (subBillingType === "exact_date" && !subExactDueDate) return;
 
     setIsSubModalOpen(false);
     setSubName("");
     setSubAmount("");
     setSubNotes("");
+    setSubBillingType("fixed_day");
+    setSubExactDueDate("");
 
     try {
+      const payload: Record<string, unknown> = {
+        name: subName.trim(),
+        amount: numAmount,
+        category: subCategory,
+        account: subAccount,
+        billing_type: subBillingType,
+        notes: subNotes.trim() || undefined,
+      };
+
+      if (subBillingType === "exact_date") {
+        payload.exact_due_date = subExactDueDate;
+        const parsed = new Date(subExactDueDate);
+        if (!isNaN(parsed.getDate())) {
+          payload.billing_day = parsed.getDate();
+        }
+      } else {
+        payload.billing_day = day;
+      }
+
       await fetch("/api/v1/subscriptions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: subName.trim(),
-          amount: numAmount,
-          category: subCategory,
-          account: subAccount,
-          billing_day: day,
-          notes: subNotes.trim() || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
       fetchData();
     } catch (err) {
@@ -1000,6 +1022,7 @@ export default function ObsidianDashboard() {
             onOpenModal={() => setIsSubModalOpen(true)}
             onToggleActive={handleToggleSubscription}
             onDelete={handleDeleteSubscription}
+            onEdit={(sub) => setSubToEdit(sub)}
           />
         )}
 
@@ -1189,10 +1212,50 @@ export default function ObsidianDashboard() {
             />
           </div>
 
+          {/* Switch Mode Siklus */}
+          <div>
+            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-2">
+              Metode Perhitungan Jatuh Tempo
+            </label>
+            <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-xl border border-obsidian-border">
+              <button
+                type="button"
+                onClick={() => setSubBillingType("fixed_day")}
+                className={`py-2 px-2 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 ${
+                  subBillingType === "fixed_day"
+                    ? "bg-amberGold text-[#0B0D11] shadow-xs"
+                    : "text-slateText-secondary hover:text-slateText-primary"
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Rutin Tiap Tgl (1-31)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSubBillingType("exact_date");
+                  if (!subExactDueDate) {
+                    const d = new Date();
+                    d.setDate(d.getDate() + 30);
+                    setSubExactDueDate(d.toISOString().split("T")[0]);
+                  }
+                }}
+                className={`py-2 px-2 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 ${
+                  subBillingType === "exact_date"
+                    ? "bg-amberGold text-[#0B0D11] shadow-xs"
+                    : "text-slateText-secondary hover:text-slateText-primary"
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Tgl Berakhir Spesifik (Gym)</span>
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-                Nominal / Bulan
+                Nominal / Periode
               </label>
               <CurrencyInput
                 value={subAmount}
@@ -1200,24 +1263,40 @@ export default function ObsidianDashboard() {
                 placeholder="0"
                 required
                 accent="amber"
-                quickAmounts={[25000, 50000, 100000, 200000]}
+                quickAmounts={[25000, 50000, 100000, 225000]}
               />
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
-                Jatuh Tempo (Tgl 1-31)
-              </label>
-              <input
-                type="number"
-                required
-                min={1}
-                max={31}
-                placeholder="Contoh: 25"
-                value={subBillingDay}
-                onChange={(e) => setSubBillingDay(e.target.value)}
-                className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold transition"
-              />
-            </div>
+
+            {subBillingType === "fixed_day" ? (
+              <div>
+                <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                  Jatuh Tempo (Tgl 1-31)
+                </label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  max={31}
+                  placeholder="Contoh: 25"
+                  value={subBillingDay}
+                  onChange={(e) => setSubBillingDay(e.target.value)}
+                  className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold transition"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                  Tanggal Berakhir Riil
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={subExactDueDate}
+                  onChange={(e) => setSubExactDueDate(e.target.value)}
+                  className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold transition"
+                />
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-20">
@@ -1434,6 +1513,16 @@ export default function ObsidianDashboard() {
         }? Saldo rekening terkait akan otomatis disesuaikan.`}
         confirmText="Hapus Transaksi"
         loading={deleteLoading}
+      />
+
+      {/* Edit Subscription Modal */}
+      <EditSubscriptionModal
+        isOpen={subToEdit !== null}
+        onClose={() => setSubToEdit(null)}
+        subscription={subToEdit}
+        onSuccess={fetchData}
+        accountOptions={SUB_ACCOUNT_OPTIONS}
+        categoryOptions={SUB_CATEGORY_OPTIONS}
       />
     </div>
   );

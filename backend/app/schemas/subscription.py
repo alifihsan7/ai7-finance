@@ -1,5 +1,5 @@
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel, Field
 
 class SubscriptionBase(BaseModel):
@@ -8,7 +8,9 @@ class SubscriptionBase(BaseModel):
     category: str = "Layanan Digital"
     account: str = "Jago"
     billing_cycle: str = "monthly"
-    billing_day: int = Field(ge=1, le=31)
+    billing_day: Optional[int] = Field(1, ge=1, le=31)
+    billing_type: str = "fixed_day"
+    exact_due_date: Optional[date] = None
     is_active: bool = True
     notes: Optional[str] = None
 
@@ -22,6 +24,8 @@ class SubscriptionUpdate(BaseModel):
     account: Optional[str] = None
     billing_cycle: Optional[str] = None
     billing_day: Optional[int] = Field(None, ge=1, le=31)
+    billing_type: Optional[str] = None
+    exact_due_date: Optional[date] = None
     is_active: Optional[bool] = None
     notes: Optional[str] = None
 

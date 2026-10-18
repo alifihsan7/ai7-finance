@@ -245,7 +245,7 @@ def handle_subs(chat_id: int, db: Session):
     from app.models.subscription import Subscription
     from app.api.v1.endpoints.subscriptions import compute_due_info
 
-    subs = db.query(Subscription).filter(Subscription.is_active == True).order_by(Subscription.billing_day.asc()).all()
+    subs = db.query(Subscription).filter(Subscription.is_active == True).all()
     if not subs:
         send_message(chat_id, "ℹ️ Belum ada langganan / tagihan rutin yang aktif.")
         return
@@ -254,15 +254,32 @@ def handle_subs(chat_id: int, db: Session):
     lines = ["💳 **Daftar Langganan & Tagihan Rutin (Jago):**\n"]
     total = 0
 
+    # Sort subs by due date
+    def get_sort_key(s):
+        days, _ = compute_due_info(s, now_date)
+        return days if days is not None else 999
+
+    subs.sort(key=get_sort_key)
+
     for s in subs:
         total += s.amount
-        days_until, next_date = compute_due_info(s.billing_day, now_date)
-        if days_until == 0:
-            due_str = "🚨 **Jatuh tempo HARI INI!**"
-        elif days_until <= 3:
-            due_str = f"⚠️ Jatuh tempo {days_until} hari lagi ({next_date})"
+        days_until, next_date = compute_due_info(s, now_date)
+        if s.billing_type == "exact_date" and s.exact_due_date:
+            if days_until < 0:
+                due_str = f"❌ **Expired ({abs(days_until)} hari lalu)**"
+            elif days_until == 0:
+                due_str = "🚨 **Berakhir HARI INI!**"
+            elif days_until <= 3:
+                due_str = f"⚠️ Berakhir {days_until} hari lagi (`{next_date}`)"
+            else:
+                due_str = f"⏳ Berakhir tgl {next_date} ({days_until} hari lagi)"
         else:
-            due_str = f"🗓️ Tgl {s.billing_day} ({days_until} hari lagi)"
+            if days_until == 0:
+                due_str = "🚨 **Jatuh tempo HARI INI!**"
+            elif days_until <= 3:
+                due_str = f"⚠️ Jatuh tempo {days_until} hari lagi (`{next_date}`)"
+            else:
+                due_str = f"🗓️ Tgl {s.billing_day} ({days_until} hari lagi)"
 
         lines.append(f"• **{s.name}**: {format_rp(s.amount)}/bln\n  └ {due_str} ({s.category})")
 
