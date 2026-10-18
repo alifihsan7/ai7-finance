@@ -53,9 +53,18 @@ if os.path.exists(INDEX_PATH):
         return FileResponse(INDEX_PATH)
 
 if os.path.exists(STATIC_DIR):
+    real_static_dir = os.path.realpath(STATIC_DIR)
+
     @app.get("/{file_name:path}")
     def serve_static(file_name: str):
-        target_path = os.path.join(STATIC_DIR, file_name)
+        target_path = os.path.realpath(os.path.join(STATIC_DIR, file_name))
+        # Prevent directory traversal attacks
+        try:
+            if os.path.commonpath([real_static_dir, target_path]) != real_static_dir:
+                return JSONResponse({"detail": "Forbidden"}, status_code=403)
+        except ValueError:
+            return JSONResponse({"detail": "Forbidden"}, status_code=403)
+
         if os.path.isfile(target_path):
             return FileResponse(target_path)
         if os.path.exists(INDEX_PATH):
