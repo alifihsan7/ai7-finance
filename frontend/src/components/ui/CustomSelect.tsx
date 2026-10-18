@@ -64,7 +64,7 @@ export function CustomSelect({
             : "border-obsidian-border hover:border-obsidian-borderStrong text-slateText-primary"
         }`}
       >
-        <span className="truncate font-medium flex items-center gap-2">
+        <span className="truncate min-w-0 font-medium flex items-center gap-2 pr-1">
           {selectedOption?.color && (
             <span className={`w-2 h-2 rounded-full shrink-0 ${selectedOption.color}`} />
           )}

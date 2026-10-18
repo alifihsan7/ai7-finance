@@ -86,7 +86,7 @@ export function CurrencyInput({
 
       {/* Quick Amount Suggestion Pills */}
       {quickAmounts && quickAmounts.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pt-0.5">
+        <div className={`grid gap-2 pt-1 ${quickAmounts.length === 4 ? "grid-cols-4" : quickAmounts.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
           {quickAmounts.map((amt) => {
             const label =
               amt >= 1000000
@@ -97,7 +97,7 @@ export function CurrencyInput({
                 key={amt}
                 type="button"
                 onClick={() => onChange(amt.toString())}
-                className={`px-2.5 py-1 rounded-md bg-obsidian-panel border text-xs font-mono transition-all ${currentAccent.btn}`}
+                className={`py-1.5 px-2 rounded-lg bg-obsidian-panel border text-xs font-mono font-medium transition-all text-center flex items-center justify-center ${currentAccent.btn}`}
               >
                 +{label}
               </button>
