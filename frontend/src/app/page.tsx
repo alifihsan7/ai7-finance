@@ -22,6 +22,8 @@ import {
   Calendar,
   Menu,
   X,
+  FileSpreadsheet,
+  ExternalLink,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { AccountGrid } from "@/components/AccountGrid";
@@ -779,6 +781,18 @@ export default function ObsidianDashboard() {
                   <Download className="w-4 h-4 shrink-0" />
                   <span>Ekspor CSV Transaksi</span>
                 </a>
+                <a
+                  href="https://docs.google.com/spreadsheets/d/1yq0SQLZ9QVUTeRksKNJtDKTyDGxUKn5fkUVnBxplhn4/edit"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className="font-semibold">Google Sheets Rapor</span>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-emerald-400/70" />
+                </a>
               </div>
             </div>
 
@@ -918,6 +932,16 @@ export default function ObsidianDashboard() {
             >
               <Download className="w-4 h-4 text-slateText-muted shrink-0" />
               <span className="hidden sm:inline whitespace-nowrap">Ekspor CSV</span>
+            </a>
+            <a
+              href="https://docs.google.com/spreadsheets/d/1yq0SQLZ9QVUTeRksKNJtDKTyDGxUKn5fkUVnBxplhn4/edit"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-2 text-xs sm:text-sm font-medium border border-emerald-500/30 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+              title="Buka Google Sheets Rapor"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="hidden sm:inline whitespace-nowrap">Google Sheets</span>
             </a>
             {activeNav === "Langganan & Tagihan" ? (
               <button

@@ -67,7 +67,7 @@ MAIN_KEYBOARD = {
         [{"text": "📊 Rekap"}, {"text": "💳 Saldo"}],
         [{"text": "🔔 Tagihan / Subs"}, {"text": "📜 Transaksi"}],
         [{"text": "💰 Info Gajian"}, {"text": "🔄 Transfer"}],
-        [{"text": "🌐 Web Dashboard"}],
+        [{"text": "🌐 Web Dashboard"}, {"text": "📑 Google Sheets"}],
     ],
     "resize_keyboard": True,
     "is_persistent": True,
@@ -82,6 +82,7 @@ def setup_bot_commands():
         {"command": "subs", "description": "🔔 Jadwal langganan & tagihan rutin"},
         {"command": "transaksi", "description": "📜 5 transaksi terakhir"},
         {"command": "gajian", "description": "💰 Auto-split gajian 14-harian"},
+        {"command": "sheets", "description": "📑 Sinkronisasi snapshot ke Google Sheets"},
         {"command": "batal", "description": "↩️ Hapus/batalkan transaksi terakhir"},
         {"command": "help", "description": "ℹ️ Panduan cara input bot"},
     ]
@@ -490,6 +491,14 @@ def handle_gajian(chat_id: int, text: str, db: Session):
 
     db.commit()
 
+    sheet_info = ""
+    try:
+        from app.services.sheets_sync import sync_cycle_snapshot
+        res = sync_cycle_snapshot(db, cycle_start_date=cycle_start)
+        sheet_info = f"\n\n📑 **Google Sheets:** Tab `{res['sheet_title']}` otomatis dibuat & disinkronkan!"
+    except Exception as e:
+        print(f"Sheets auto-sync error: {e}")
+
     msg = f"""🎉 **GAJIAN MASUK & ALOKASI OTOMATIS TERCATAT!**
 
 💰 **Total Uang Saku:** {format_rp(total)}
@@ -507,9 +516,28 @@ def handle_gajian(chat_id: int, text: str, db: Session):
 • **BRI 2 (6.7%):** {format_rp(bri2_amt)}
   └ *Tabungan Terkunci*
 
-✅ Kelima rekening telah otomatis dikreditkan di PostgreSQL dan tersinkronisasi ke Dashboard Web!"""
+✅ Kelima rekening telah otomatis dikreditkan di PostgreSQL dan tersinkronisasi ke Dashboard Web!{sheet_info}"""
 
     send_message(chat_id, msg)
+
+def handle_sheets(chat_id: int, db: Session):
+    send_message(chat_id, "⏳ _Sedang menyinkronkan data snapshot siklus ke Google Sheets..._")
+    try:
+        from app.services.sheets_sync import sync_cycle_snapshot
+        res = sync_cycle_snapshot(db)
+        msg = f"""📑 **GOOGLE SHEETS DISINKRONKAN!**
+
+• **Tab:** `{res['sheet_title']}`
+• **Periode:** `{res['cycle_range']}`
+• **Total Transaksi:** `{res['transaction_count']} catatan`
+• **Amplop Terpantau:** `{res['envelopes_count']} pos dinamis`
+• **Realisasi Belanja:** {format_rp(res['pocket_spent'])} *(Sisa {format_rp(res['pocket_remaining'])})*
+• **Total Net Worth:** {format_rp(res['total_balance'])}
+
+🔗 [Buka Lembar Google Sheets]({res['spreadsheet_url']})"""
+        send_message(chat_id, msg)
+    except Exception as e:
+        send_message(chat_id, f"❌ Gagal sinkronisasi ke Google Sheets: {str(e)}")
 
 def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
     items = parse_multi_transactions(text)
@@ -667,6 +695,8 @@ def process_update(update: dict):
             handle_transaksi(chat_id, db)
         elif lower_text in ["💰 info gajian"]:
             handle_gajian(chat_id, "/gajian", db)
+        elif lower_text in ["📑 google sheets", "google sheets", "sheets"] or cmd in ["/sheets", "/sheet", "/sync_sheets"]:
+            handle_sheets(chat_id, db)
         elif lower_text in ["🌐 web dashboard", "dashboard", "web"] or cmd in ["/web", "/dashboard"]:
             send_dashboard_link(chat_id)
         elif lower_text in ["📱 menu", "menu"] or cmd in ["/menu"]:
