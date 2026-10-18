@@ -47,6 +47,20 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
     return "grid-cols-6 sm:grid-cols-10 md:grid-cols-15 lg:grid-cols-30";
   };
 
+  const formatTooltipDate = (dateStr: string) => {
+    try {
+      const parts = dateStr.split("-").map(Number);
+      if (parts.length === 3) {
+        const [, m, d] = parts;
+        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+        return `${d} ${months[m - 1] || ""}`;
+      }
+      return dateStr;
+    } catch {
+      return dateStr;
+    }
+  };
+
   return (
     <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -91,21 +105,30 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
                     : "hover:bg-obsidian-hover border border-transparent"
                 }`}
               >
-                <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-20 w-44 p-2.5 bg-obsidian-bg border border-obsidian-borderStrong rounded-lg shadow-xl text-[11px] font-mono space-y-1 transition-opacity">
-                  <div className="font-bold text-slateText-primary border-b border-obsidian-border pb-1">
-                    Hari ke-{b.day} ({b.date})
+                <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-20 w-48 sm:w-52 p-3 bg-obsidian-panel/95 backdrop-blur-md border border-obsidian-borderStrong rounded-xl shadow-2xl text-[11px] font-mono space-y-2 transition-opacity">
+                  <div className="flex items-center justify-between border-b border-obsidian-border pb-1.5">
+                    <span className="font-bold text-slateText-primary">Hari ke-{b.day}</span>
+                    <span className="text-[10px] text-slateText-secondary font-medium">({formatTooltipDate(b.date)})</span>
                   </div>
-                  <div className="flex justify-between text-slateText-secondary">
-                    <span>Hari Ini:</span>
-                    <span className="text-slateText-primary">{formatRupiah(b.spent)}</span>
-                  </div>
-                  <div className="flex justify-between text-slateText-secondary">
-                    <span>Kumulatif:</span>
-                    <span className="text-amberGold font-bold">{formatRupiah(b.cumulative_spent)}</span>
-                  </div>
-                  <div className="flex justify-between text-slateText-secondary">
-                    <span>Target Ideal:</span>
-                    <span className="text-slateText-muted">{formatRupiah(b.ideal_pace)}</span>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slateText-secondary">Hari Ini:</span>
+                      <span className={`font-semibold ${b.spent > idealDailyRate * 1.25 ? "text-coralFall font-bold" : "text-slateText-primary"}`}>
+                        {formatRupiah(b.spent)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slateText-secondary">Kumulatif:</span>
+                      <span className={`font-bold ${b.cumulative_spent > b.ideal_pace ? "text-amberGold" : "text-mintRise"}`}>
+                        {formatRupiah(b.cumulative_spent)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slateText-secondary">Target Ideal:</span>
+                      <span className="text-slateText-secondary font-medium">
+                        {formatRupiah(b.ideal_pace)}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
