@@ -8,6 +8,8 @@ import {
   RefreshCw,
   X,
   CreditCard,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react";
 
 interface Transaction {
@@ -31,7 +33,7 @@ interface MonthlySummary {
   categories: { category: string; total: number; count: number; percentage: number }[];
 }
 
-export default function DeepSeaDashboard() {
+export default function ObsidianDashboard() {
   const [activeTab, setActiveTab] = useState<"all" | "Mandiri" | "Jago" | "BRI 1" | "BRI 2">("all");
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,7 +47,7 @@ export default function DeepSeaDashboard() {
   const [formCategory, setFormCategory] = useState("Makanan & Minuman");
   const [formDesc, setFormDesc] = useState("");
 
-  // Live data
+  // Live / initial seed data
   const [transactions, setTransactions] = useState<Transaction[]>([
     {
       id: 1,
@@ -71,7 +73,7 @@ export default function DeepSeaDashboard() {
       amount: 25000,
       account: "Mandiri",
       category: "Jajan / Ngopi",
-      description: "Kopi Kenangan",
+      description: "Kopi Kenangan Mantan",
       date: "2026-10-17",
     },
   ]);
@@ -118,7 +120,7 @@ export default function DeepSeaDashboard() {
         }));
       }
     } catch {
-      // Backend maybe offline or cross-origin dev; keep initial seed state
+      // Offline fallback
     } finally {
       setLoading(false);
     }
@@ -148,7 +150,6 @@ export default function DeepSeaDashboard() {
     setFormAmount("");
     setFormDesc("");
 
-    // Send to backend
     try {
       await fetch("/api/v1/transactions", {
         method: "POST",
@@ -163,7 +164,7 @@ export default function DeepSeaDashboard() {
       });
       fetchData();
     } catch (err) {
-      console.error("API error:", err);
+      console.error("API Error:", err);
     }
   };
 
@@ -209,20 +210,27 @@ export default function DeepSeaDashboard() {
   }, [transactions]);
 
   return (
-    <div className="min-h-screen bg-abyss text-foam flex flex-col md:flex-row antialiased font-sans">
-      {/* LEFT RAIL NAVIGATION (Wailx Inspired) */}
-      <aside className="w-full md:w-56 bg-trench border-r border-line p-5 md:min-h-screen flex flex-col justify-between shrink-0">
+    <div className="min-h-screen bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans">
+      {/* SIDEBAR NAVIGATION (Clean Obsidian Slate) */}
+      <aside className="w-full md:w-64 bg-obsidian-panel border-r border-obsidian-border p-6 md:min-h-screen flex flex-col justify-between shrink-0">
         <div>
-          {/* Logo */}
-          <div className="font-display font-semibold text-2xl tracking-tight text-foam flex items-center gap-1">
-            ai7<span className="text-sodium text-3xl leading-none">.</span>finance
-          </div>
-          <div className="text-[11px] text-mist tracking-wider uppercase font-medium mt-1">
-            Deep Sea System
+          {/* Brand Logo */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amberGold/15 border border-amberGold/40 flex items-center justify-center text-amberGold font-mono font-bold text-base">
+              A7
+            </div>
+            <div>
+              <div className="font-bold text-lg tracking-tight text-slateText-primary leading-none">
+                ai7<span className="text-amberGold">.</span>finance
+              </div>
+              <div className="text-xs text-slateText-muted tracking-wider uppercase font-medium mt-1">
+                Obsidian Slate
+              </div>
+            </div>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="mt-8 border-l border-line flex flex-col space-y-1">
+          {/* Navigation Items */}
+          <nav className="mt-9 flex flex-col space-y-1.5">
             {[
               { name: "Ringkasan", count: null },
               { name: "Alokasi Amplop", count: "4 pos" },
@@ -235,15 +243,17 @@ export default function DeepSeaDashboard() {
                 <button
                   key={item.name}
                   onClick={() => setActiveNav(item.name)}
-                  className={`flex justify-between items-center px-4 py-2 text-xs md:text-[13px] border-l-2 -ml-[1px] transition-all text-left ${
+                  className={`flex justify-between items-center px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all text-left ${
                     isActive
-                      ? "text-foam border-sodium font-medium bg-shelf/30"
-                      : "text-mist border-transparent hover:text-foam hover:border-line"
+                      ? "text-slateText-primary bg-obsidian-hover border border-obsidian-borderStrong text-amberGold shadow-xs"
+                      : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-card"
                   }`}
                 >
                   <span>{item.name}</span>
                   {item.count && (
-                    <span className="text-[11px] text-sodium font-mono">{item.count}</span>
+                    <span className="text-xs text-amberGold font-mono px-2 py-0.5 rounded-md bg-amberGold/10 border border-amberGold/20">
+                      {item.count}
+                    </span>
                   )}
                 </button>
               );
@@ -252,178 +262,209 @@ export default function DeepSeaDashboard() {
         </div>
 
         {/* User Card & Bot Status */}
-        <div className="mt-8 pt-4 border-t border-line text-xs">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-foam font-medium text-sm">Alif Ihsan</span>
-            <span className="flex items-center gap-1 text-[11px] text-rise">
-              <span className="w-1.5 h-1.5 rounded-full bg-rise animate-pulse"></span>
-              Live
+        <div className="mt-8 pt-5 border-t border-obsidian-border text-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-slateText-primary font-semibold text-sm">Alif Ihsan</span>
+            <span className="inline-flex items-center gap-1.5 text-xs text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-mintRise animate-pulse"></span>
+              Live Synced
             </span>
           </div>
-          <div className="text-mist text-[11px] leading-relaxed">
-            Bot: <span className="text-foam/80 font-mono">@AI7Fin4nc3_bot</span>
-            <br />
-            Mode: <span className="text-sodium">Bi-Weekly Paycheck</span>
+          <div className="text-xs text-slateText-secondary space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-slateText-muted">Telegram Bot</span>
+              <span className="font-mono text-slateText-primary">@AI7Fin4nc3_bot</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slateText-muted">Siklus</span>
+              <span className="text-amberGold font-medium">Bi-Weekly 14 Hari</span>
+            </div>
           </div>
         </div>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 p-5 md:p-8 max-w-7xl mx-auto w-full overflow-y-auto">
+      {/* MAIN VIEWPORT */}
+      <main className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full overflow-y-auto space-y-8">
         {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-line">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-obsidian-border">
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-display text-xl md:text-2xl font-semibold text-foam">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slateText-primary">
                 Ringkasan Portofolio & Alokasi
               </h1>
-              <span className="px-2.5 py-0.5 rounded text-[11px] font-mono bg-shelf border border-line text-mist">
+              <span className="px-3 py-1 rounded-md text-xs font-mono font-medium bg-obsidian-card border border-obsidian-border text-slateText-secondary">
                 11 Okt – 24 Okt (Hari 8/14)
               </span>
             </div>
-            <p className="text-xs text-mist mt-1">
-              Siklus berjalan 2-mingguan dengan pengawasan amplop belanja Mandiri
+            <p className="text-sm text-slateText-secondary mt-1.5">
+              Sistem keuangan 2-mingguan terintegrasi PostgreSQL & Telegram Bot
             </p>
           </div>
 
-          {/* Quick Actions */}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          {/* Top Bar Actions */}
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               onClick={fetchData}
               title="Refresh Data"
-              className="px-3 py-2 text-xs border border-line rounded bg-transparent text-mist hover:text-foam hover:bg-shelf transition flex items-center gap-1.5"
+              className="px-3.5 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition flex items-center gap-2"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-amberGold" : ""}`} />
               <span className="hidden sm:inline">Refresh</span>
             </button>
             <a
               href="/api/v1/transactions/export"
               download
-              className="px-3 py-2 text-xs border border-line rounded bg-transparent text-foam hover:bg-shelf transition flex items-center gap-1.5"
+              className="px-3.5 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition flex items-center gap-2"
             >
-              <Download className="w-3.5 h-3.5 text-mist" />
+              <Download className="w-4 h-4 text-slateText-muted" />
               <span>Ekspor CSV</span>
             </a>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex-1 sm:flex-none px-4 py-2 text-xs font-medium rounded bg-sodium text-[#1a1405] hover:bg-[#f7c767] transition flex items-center justify-center gap-1.5 shadow-sm"
+              className="flex-1 sm:flex-none px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition flex items-center justify-center gap-2 shadow-sm"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Catat Transaksi</span>
             </button>
           </div>
         </div>
 
-        {/* HERO ESTIMATED TOTAL ASSETS (Wailx Inspired) */}
-        <div className="py-6 border-b border-line">
-          <div className="text-xs text-mist font-medium tracking-wide">
-            ESTIMATED TOTAL ASSETS (NET WORTH)
+        {/* HERO METRIC: TOTAL ASSETS / NET WORTH */}
+        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-6 sm:p-8 relative overflow-hidden">
+          <div className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider">
+            Total Kekayaan Bersih (Net Worth)
           </div>
-          <div className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foam my-1.5">
+          <div className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-slateText-primary my-3 font-mono">
             {formatRupiah(summary.income - summary.expense)}{" "}
-            <span className="text-sm sm:text-base font-normal text-mist tracking-normal">
+            <span className="text-base sm:text-lg font-normal text-slateText-muted tracking-normal">
               IDR
             </span>
           </div>
-          <div className="text-xs text-mist flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="text-rise flex items-center font-mono">
-              ▲ {formatRupiah(summary.income)} gajian siklus ini
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm pt-2 border-t border-obsidian-border/80">
+            <span className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium">
+              <ArrowUpRight className="w-4 h-4" />
+              {formatRupiah(summary.income)} gajian siklus ini
             </span>
-            <span className="text-line">•</span>
-            <span className="text-fall flex items-center font-mono">
-              ▼ {formatRupiah(summary.expense)} total pengeluaran
+            <span className="text-obsidian-borderStrong">•</span>
+            <span className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium">
+              <ArrowDownRight className="w-4 h-4" />
+              {formatRupiah(summary.expense)} total belanja
             </span>
-            <span className="text-line">•</span>
-            <span className="text-mist font-mono">
-              Savings rate: <strong className="text-foam">{summary.savings_rate}%</strong>
+            <span className="text-obsidian-borderStrong">•</span>
+            <span className="text-slateText-secondary font-mono">
+              Tingkat Tabungan: <strong className="text-slateText-primary">{summary.savings_rate}%</strong>
             </span>
           </div>
         </div>
 
-        {/* STRATA ALOKASI GAJIAN BAR (Segmented Wailx Style) */}
-        <div className="py-6 border-b border-line">
-          <div className="flex justify-between items-center mb-2.5">
-            <div className="text-xs text-mist font-medium">
-              DISTRIBUSI ALOKASI GAJIAN (Rp 1.500.000 / 2 MINGGU)
+        {/* STRATA ALOKASI GAJIAN (Wailx Inspired Segmented Bar) */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-slateText-primary">
+                Distribusi Alokasi Uang Saku
+              </h2>
+              <p className="text-xs sm:text-sm text-slateText-secondary mt-0.5">
+                Plafon standar Rp 1.500.000 / 14 hari langsung dipecah ke 4 rekening
+              </p>
             </div>
-            <div className="text-[11px] text-sodium font-mono">Formula Excel User</div>
+            <span className="text-xs font-mono font-medium text-amberGold px-2.5 py-1 rounded bg-amberGold/10 border border-amberGold/20">
+              Bi-Weekly Formula
+            </span>
           </div>
 
-          {/* Segmented Bar */}
-          <div className="flex gap-1 h-4 rounded overflow-hidden p-0.5 bg-trench border border-line">
+          {/* High-Contrast Segmented Bar */}
+          <div className="flex gap-1.5 h-6 rounded-lg overflow-hidden p-1 bg-obsidian-panel border border-obsidian-border">
             <div
               style={{ flex: 55 }}
-              className="bg-sodium rounded-l-sm transition-all hover:brightness-110"
+              className="bg-amberGold rounded-l-md transition-all hover:brightness-110 flex items-center justify-center text-xs font-mono font-bold text-obsidian-bg"
               title="Mandiri: 55% (Rp 825.000)"
-            ></div>
+            >
+              55%
+            </div>
             <div
               style={{ flex: 31.7 }}
-              className="bg-rise transition-all hover:brightness-110"
+              className="bg-mintRise transition-all hover:brightness-110 flex items-center justify-center text-xs font-mono font-bold text-obsidian-bg"
               title="Bank Jago: 31.7% (Rp 475.000)"
-            ></div>
+            >
+              31.7%
+            </div>
             <div
               style={{ flex: 6.7 }}
-              className="bg-[#4aa3b8] transition-all hover:brightness-110"
+              className="bg-cyanHub transition-all hover:brightness-110"
               title="BRI 1: 6.7% (Rp 100.000)"
             ></div>
             <div
               style={{ flex: 6.7 }}
-              className="bg-[#a9c4a0] rounded-r-sm transition-all hover:brightness-110"
+              className="bg-purpleLock rounded-r-md transition-all hover:brightness-110"
               title="BRI 2: 6.7% (Rp 100.000)"
             ></div>
           </div>
 
-          {/* Strata Labels */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 pt-1 text-xs">
-            <div className="border-l-2 border-sodium pl-2">
-              <div className="text-foam font-medium">Mandiri (55.0%)</div>
-              <div className="text-mist font-mono text-[11px]">Rp 825.000 • Saku Harian</div>
+          {/* Strata Details */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-1">
+            <div className="border-l-2 border-amberGold pl-3 py-0.5">
+              <div className="text-slateText-primary font-semibold text-sm">Mandiri (55.0%)</div>
+              <div className="text-slateText-secondary font-mono text-xs mt-0.5">
+                Rp 825.000 • Saku Harian
+              </div>
             </div>
-            <div className="border-l-2 border-rise pl-2">
-              <div className="text-foam font-medium">Jago / Bibit (31.7%)</div>
-              <div className="text-mist font-mono text-[11px]">Rp 475.000 • Subs & Invest</div>
+            <div className="border-l-2 border-mintRise pl-3 py-0.5">
+              <div className="text-slateText-primary font-semibold text-sm">Jago / Bibit (31.7%)</div>
+              <div className="text-slateText-secondary font-mono text-xs mt-0.5">
+                Rp 475.000 • Subs & Invest
+              </div>
             </div>
-            <div className="border-l-2 border-[#4aa3b8] pl-2">
-              <div className="text-foam font-medium">BRI 1 (6.7%)</div>
-              <div className="text-mist font-mono text-[11px]">Rp 100.000 • Hub / Darurat</div>
+            <div className="border-l-2 border-cyanHub pl-3 py-0.5">
+              <div className="text-slateText-primary font-semibold text-sm">BRI 1 (6.7%)</div>
+              <div className="text-slateText-secondary font-mono text-xs mt-0.5">
+                Rp 100.000 • Hub & Darurat
+              </div>
             </div>
-            <div className="border-l-2 border-[#a9c4a0] pl-2">
-              <div className="text-foam font-medium">BRI 2 (6.7%)</div>
-              <div className="text-mist font-mono text-[11px]">Rp 100.000 • Tabungan Kunci</div>
+            <div className="border-l-2 border-purpleLock pl-3 py-0.5">
+              <div className="text-slateText-primary font-semibold text-sm">BRI 2 (6.7%)</div>
+              <div className="text-slateText-secondary font-mono text-xs mt-0.5">
+                Rp 100.000 • Tabungan Kunci
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 4 REKENING OVERVIEW CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 py-6 border-b border-line">
+        {/* 4 CORE ACCOUNT CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
               name: "Mandiri",
               tag: "Saku Operasional",
               allocated: 825000,
               spent: summary.expense,
-              accent: "border-sodium/50",
+              accentColor: "text-amberGold",
+              barColor: "bg-amberGold",
             },
             {
               name: "Bank Jago / Bibit",
-              tag: "Subs & Portofolio",
+              tag: "Subs & Investasi",
               allocated: 475000,
               spent: 0,
-              accent: "border-rise/50",
+              accentColor: "text-mintRise",
+              barColor: "bg-mintRise",
             },
             {
               name: "BRI 1",
               tag: "Hub & Dana Darurat",
               allocated: 100000,
               spent: 0,
-              accent: "border-[#4aa3b8]/50",
+              accentColor: "text-cyanHub",
+              barColor: "bg-cyanHub",
             },
             {
               name: "BRI 2",
               tag: "Tabungan Terkunci",
               allocated: 100000,
               spent: 0,
-              accent: "border-[#a9c4a0]/50",
+              accentColor: "text-purpleLock",
+              barColor: "bg-purpleLock",
             },
           ].map((acc) => {
             const remaining = acc.allocated - acc.spent;
@@ -431,39 +472,39 @@ export default function DeepSeaDashboard() {
             return (
               <div
                 key={acc.name}
-                className={`bg-trench border border-line rounded p-4 relative overflow-hidden group hover:border-mist/40 transition`}
+                className="bg-obsidian-card border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl p-5 transition-all shadow-xs"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="text-foam font-medium text-sm flex items-center gap-1.5">
-                      <CreditCard className="w-3.5 h-3.5 text-mist" />
+                    <div className="text-slateText-primary font-bold text-base flex items-center gap-2">
+                      <CreditCard className={`w-4 h-4 ${acc.accentColor}`} />
                       {acc.name}
                     </div>
-                    <div className="text-[11px] text-mist mt-0.5">{acc.tag}</div>
+                    <div className="text-xs text-slateText-muted mt-1">{acc.tag}</div>
                   </div>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-shelf text-mist border border-line">
-                    2 Minggu
+                  <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-obsidian-panel text-slateText-secondary border border-obsidian-border">
+                    14 Hari
                   </span>
                 </div>
 
-                <div className="mt-4">
-                  <div className="text-[11px] text-mist">Sisa Anggaran</div>
-                  <div className="font-display text-lg font-semibold text-foam font-mono">
+                <div className="mt-5">
+                  <div className="text-xs text-slateText-muted">Sisa Anggaran</div>
+                  <div className="text-2xl font-bold font-mono text-slateText-primary mt-0.5">
                     {formatRupiah(remaining)}
                   </div>
                 </div>
 
                 {/* Micro Progress Bar */}
-                <div className="mt-2.5">
-                  <div className="flex justify-between text-[10px] text-mist font-mono mb-1">
+                <div className="mt-4">
+                  <div className="flex justify-between text-xs text-slateText-secondary font-mono mb-1.5">
                     <span>Terpakai {pctUsed}%</span>
-                    <span>Plapon: {formatRupiah(acc.allocated)}</span>
+                    <span>Plafon: {formatRupiah(acc.allocated)}</span>
                   </div>
-                  <div className="h-1 bg-shelf rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-obsidian-panel rounded-full overflow-hidden">
                     <div
                       style={{ width: `${pctUsed}%` }}
                       className={`h-full ${
-                        pctUsed > 85 ? "bg-fall" : pctUsed > 60 ? "bg-sodium" : "bg-rise"
+                        pctUsed > 85 ? "bg-coralFall" : pctUsed > 60 ? "bg-amberGold" : acc.barColor
                       }`}
                     ></div>
                   </div>
@@ -473,33 +514,35 @@ export default function DeepSeaDashboard() {
           })}
         </div>
 
-        {/* MID SECTION: AMPLOP BELANJA MANDIRI BREAKDOWN */}
-        <div className="py-6 border-b border-line">
-          <div className="flex justify-between items-center mb-4">
+        {/* AMPLOP BELANJA MANDIRI BREAKDOWN */}
+        <div className="bg-obsidian-panel border border-obsidian-border rounded-xl p-6 space-y-5">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
-              <h3 className="font-display text-sm font-semibold text-foam uppercase tracking-wide">
-                Amplop Belanja Mandiri (Alokasi Rp 825.000)
-              </h3>
-              <p className="text-xs text-mist mt-0.5">
-                Monitoring limit pos pengeluaran harian agar tidak boncos sebelum gajian berikutnya
+              <h2 className="text-base sm:text-lg font-bold text-slateText-primary">
+                Amplop Belanja Mandiri (Plafon Rp 825.000)
+              </h2>
+              <p className="text-xs sm:text-sm text-slateText-secondary mt-0.5">
+                Monitoring limit pos belanja harian agar pengeluaran terkontrol sampai gajian berikutnya
               </p>
             </div>
-            <span className="text-xs text-sodium font-mono">Reset per 14 hari</span>
+            <span className="text-xs text-amberGold font-mono font-medium px-2.5 py-1 rounded bg-amberGold/10 border border-amberGold/20">
+              Reset Tiap 14 Hari
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               {
-                title: "Makan",
+                title: "Makan Harian",
                 limit: 450000,
                 spent: mandiriExpenses.makan || 45000,
-                note: "Makan harian warung / kost",
+                note: "Warung, kost, resto",
               },
               {
                 title: "Jajan & Kopi",
                 limit: 100000,
                 spent: mandiriExpenses.jajan || 25000,
-                note: "Ngopi, camilan, nongkrong",
+                note: "Ngopi, cemilan santai",
               },
               {
                 title: "Laundry",
@@ -517,32 +560,40 @@ export default function DeepSeaDashboard() {
               const rem = env.limit - env.spent;
               const pct = Math.min(100, Math.round((env.spent / env.limit) * 100));
               return (
-                <div key={env.title} className="bg-trench border border-line rounded p-3.5">
+                <div
+                  key={env.title}
+                  className="bg-obsidian-card border border-obsidian-border rounded-lg p-4 space-y-3"
+                >
                   <div className="flex justify-between items-center">
-                    <span className="text-foam font-medium text-xs">{env.title}</span>
+                    <span className="text-slateText-primary font-semibold text-sm">{env.title}</span>
                     <span
-                      className={`text-[10px] font-mono px-1.5 py-0.2 rounded border ${
+                      className={`text-xs font-mono font-medium px-2 py-0.5 rounded border ${
                         pct > 80
-                          ? "bg-fall/10 border-fall/40 text-fall"
-                          : "bg-shelf border-line text-mist"
+                          ? "bg-coralFall/10 border-coralFall/30 text-coralFall"
+                          : "bg-obsidian-panel border-obsidian-border text-slateText-secondary"
                       }`}
                     >
                       {pct}%
                     </span>
                   </div>
-                  <div className="mt-2 text-base font-display font-semibold text-foam font-mono">
-                    {formatRupiah(rem)}{" "}
-                    <span className="text-[10px] text-mist font-normal">sisa</span>
+
+                  <div>
+                    <div className="text-xl font-bold font-mono text-slateText-primary">
+                      {formatRupiah(rem)}
+                    </div>
+                    <div className="text-xs text-slateText-muted mt-0.5">Sisa saldo pos</div>
                   </div>
-                  <div className="h-1 bg-shelf rounded-full overflow-hidden mt-2">
+
+                  <div className="h-1.5 bg-obsidian-panel rounded-full overflow-hidden">
                     <div
                       style={{ width: `${pct}%` }}
-                      className={`h-full ${pct > 80 ? "bg-fall" : "bg-sodium"}`}
+                      className={`h-full ${pct > 80 ? "bg-coralFall" : "bg-amberGold"}`}
                     ></div>
                   </div>
-                  <div className="flex justify-between items-center text-[10px] text-mist font-mono mt-1.5">
-                    <span>Budget: {formatRupiah(env.limit)}</span>
-                    <span>Terpakai: {formatRupiah(env.spent)}</span>
+
+                  <div className="flex justify-between items-center text-xs text-slateText-muted font-mono pt-1">
+                    <span>Limit: {formatRupiah(env.limit)}</span>
+                    <span>Pakai: {formatRupiah(env.spent)}</span>
                   </div>
                 </div>
               );
@@ -550,11 +601,11 @@ export default function DeepSeaDashboard() {
           </div>
         </div>
 
-        {/* BOTTOM SECTION: TRANSACTIONS TABLE */}
-        <div className="pt-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+        {/* TRANSAKSI TERAKHIR (Data Grid) */}
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1 border-b border-line w-full sm:w-auto pb-1 sm:pb-0 overflow-x-auto">
+            <div className="flex items-center gap-1.5 border-b border-obsidian-border w-full sm:w-auto pb-1.5 overflow-x-auto">
               {(
                 [
                   { id: "all", label: "Semua Akun" },
@@ -567,10 +618,10 @@ export default function DeepSeaDashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`text-xs px-3 py-1.5 border-b-2 font-medium transition-all whitespace-nowrap ${
+                  className={`text-sm px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
                     activeTab === tab.id
-                      ? "text-foam border-sodium"
-                      : "text-mist border-transparent hover:text-foam"
+                      ? "text-slateText-primary bg-obsidian-card border border-obsidian-borderStrong font-semibold shadow-xs"
+                      : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-hover"
                   }`}
                 >
                   {tab.label}
@@ -579,60 +630,63 @@ export default function DeepSeaDashboard() {
             </div>
 
             {/* Search Box */}
-            <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 text-mist absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <div className="relative w-full sm:w-72">
+              <Search className="w-4 h-4 text-slateText-muted absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari transaksi / ket..."
-                className="w-full bg-trench border border-line rounded pl-8 pr-3 py-1.5 text-xs text-foam placeholder-mist focus:outline-none focus:border-sodium transition font-mono"
+                placeholder="Cari transaksi / keterangan..."
+                className="w-full bg-obsidian-card border border-obsidian-border rounded-lg pl-9 pr-3.5 py-2 text-sm text-slateText-primary placeholder-slateText-muted focus:outline-none focus:border-amberGold transition font-mono"
               />
             </div>
           </div>
 
-          {/* Table */}
-          <div className="border border-line rounded overflow-hidden bg-trench">
+          {/* Table Container */}
+          <div className="border border-obsidian-border rounded-xl overflow-hidden bg-obsidian-card shadow-xs">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="border-b border-line bg-shelf/50 text-mist font-medium">
-                    <th className="py-2.5 px-4">Tanggal</th>
-                    <th className="py-2.5 px-4">Keterangan</th>
-                    <th className="py-2.5 px-4">Kategori</th>
-                    <th className="py-2.5 px-4">Akun</th>
-                    <th className="py-2.5 px-4 text-right">Nominal</th>
+                  <tr className="border-b border-obsidian-border bg-obsidian-panel text-slateText-secondary font-medium">
+                    <th className="py-3.5 px-5">Tanggal</th>
+                    <th className="py-3.5 px-5">Keterangan</th>
+                    <th className="py-3.5 px-5">Kategori</th>
+                    <th className="py-3.5 px-5">Akun</th>
+                    <th className="py-3.5 px-5 text-right">Nominal</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-line">
+                <tbody className="divide-y divide-obsidian-border">
                   {filteredTransactions.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-mist">
-                        Tidak ada transaksi yang cocok dengan filter.
+                      <td colSpan={5} className="py-10 text-center text-slateText-muted">
+                        Tidak ada transaksi yang cocok dengan filter pencarian.
                       </td>
                     </tr>
                   ) : (
                     filteredTransactions.map((tx) => {
                       const isIncome = tx.type === "income";
                       return (
-                        <tr key={tx.id} className="hover:bg-shelf/40 transition">
-                          <td className="py-2.5 px-4 text-mist font-mono whitespace-nowrap">
+                        <tr
+                          key={tx.id}
+                          className="hover:bg-obsidian-hover transition"
+                        >
+                          <td className="py-3.5 px-5 text-slateText-secondary font-mono whitespace-nowrap text-xs sm:text-sm">
                             {tx.date}
                           </td>
-                          <td className="py-2.5 px-4 text-foam font-medium">
+                          <td className="py-3.5 px-5 text-slateText-primary font-medium">
                             {tx.description}
                           </td>
-                          <td className="py-2.5 px-4">
-                            <span className="px-2 py-0.5 rounded text-[11px] bg-shelf border border-line text-mist font-mono">
+                          <td className="py-3.5 px-5">
+                            <span className="px-2.5 py-1 rounded-md text-xs bg-obsidian-panel border border-obsidian-border text-slateText-secondary font-mono">
                               {tx.category}
                             </span>
                           </td>
-                          <td className="py-2.5 px-4 text-mist font-mono">
+                          <td className="py-3.5 px-5 text-slateText-secondary font-mono text-xs sm:text-sm">
                             {tx.account}
                           </td>
                           <td
-                            className={`py-2.5 px-4 text-right font-mono font-medium whitespace-nowrap ${
-                              isIncome ? "text-rise" : "text-fall"
+                            className={`py-3.5 px-5 text-right font-mono font-bold whitespace-nowrap text-sm sm:text-base ${
+                              isIncome ? "text-mintRise" : "text-coralFall"
                             }`}
                           >
                             {isIncome ? "+" : "-"} {formatRupiah(tx.amount)}
@@ -650,32 +704,32 @@ export default function DeepSeaDashboard() {
 
       {/* QUICK ADD MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-trench border border-line rounded-lg w-full max-w-md p-5 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-obsidian-card border border-obsidian-borderStrong rounded-xl w-full max-w-md p-6 shadow-2xl relative">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-mist hover:text-foam"
+              className="absolute top-5 right-5 text-slateText-muted hover:text-slateText-primary"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
 
-            <h3 className="font-display font-semibold text-base text-foam mb-1">
+            <h3 className="font-bold text-lg text-slateText-primary mb-1">
               Catat Transaksi Baru
             </h3>
-            <p className="text-xs text-mist mb-4">
-              Transaksi otomatis tersimpan ke PostgreSQL & memotong budget rekening
+            <p className="text-xs text-slateText-secondary mb-5">
+              Tersimpan langsung ke database PostgreSQL & otomatis memotong amplop anggaran
             </p>
 
-            <form onSubmit={handleCreateTransaction} className="space-y-3.5">
+            <form onSubmit={handleCreateTransaction} className="space-y-4">
               {/* Type Switcher */}
-              <div className="grid grid-cols-2 gap-2 bg-shelf p-1 rounded border border-line">
+              <div className="grid grid-cols-2 gap-2 bg-obsidian-panel p-1 rounded-lg border border-obsidian-border">
                 <button
                   type="button"
                   onClick={() => setFormType("expense")}
-                  className={`py-1.5 text-xs font-medium rounded transition ${
+                  className={`py-2 text-xs sm:text-sm font-semibold rounded-md transition ${
                     formType === "expense"
-                      ? "bg-fall text-abyss font-semibold"
-                      : "text-mist hover:text-foam"
+                      ? "bg-coralFall text-[#0B0D11] shadow-xs"
+                      : "text-slateText-secondary hover:text-slateText-primary"
                   }`}
                 >
                   Pengeluaran
@@ -683,10 +737,10 @@ export default function DeepSeaDashboard() {
                 <button
                   type="button"
                   onClick={() => setFormType("income")}
-                  className={`py-1.5 text-xs font-medium rounded transition ${
+                  className={`py-2 text-xs sm:text-sm font-semibold rounded-md transition ${
                     formType === "income"
-                      ? "bg-rise text-abyss font-semibold"
-                      : "text-mist hover:text-foam"
+                      ? "bg-mintRise text-[#0B0D11] shadow-xs"
+                      : "text-slateText-secondary hover:text-slateText-primary"
                   }`}
                 >
                   Pemasukan
@@ -695,38 +749,44 @@ export default function DeepSeaDashboard() {
 
               {/* Amount */}
               <div>
-                <label className="block text-[11px] text-mist mb-1">Nominal (Rp)</label>
+                <label className="block text-xs font-medium text-slateText-secondary mb-1.5">
+                  Nominal (Rp)
+                </label>
                 <input
                   type="number"
                   required
                   placeholder="Contoh: 25000"
                   value={formAmount}
                   onChange={(e) => setFormAmount(e.target.value)}
-                  className="w-full bg-abyss border border-line rounded px-3 py-2 text-sm text-foam font-mono focus:outline-none focus:border-sodium"
+                  className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3.5 py-2.5 text-base text-slateText-primary font-mono focus:outline-none focus:border-amberGold"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-[11px] text-mist mb-1">Keterangan</label>
+                <label className="block text-xs font-medium text-slateText-secondary mb-1.5">
+                  Keterangan
+                </label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Nasi Goreng Spesial"
+                  placeholder="Contoh: Nasi Padang + Es Teh"
                   value={formDesc}
                   onChange={(e) => setFormDesc(e.target.value)}
-                  className="w-full bg-abyss border border-line rounded px-3 py-2 text-xs text-foam focus:outline-none focus:border-sodium"
+                  className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3.5 py-2 text-sm text-slateText-primary focus:outline-none focus:border-amberGold"
                 />
               </div>
 
               {/* Account & Category */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] text-mist mb-1">Akun / Rekening</label>
+                  <label className="block text-xs font-medium text-slateText-secondary mb-1.5">
+                    Akun Rekening
+                  </label>
                   <select
                     value={formAccount}
                     onChange={(e) => setFormAccount(e.target.value)}
-                    className="w-full bg-abyss border border-line rounded px-2.5 py-2 text-xs text-foam focus:outline-none focus:border-sodium"
+                    className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3 py-2 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold"
                   >
                     <option value="Mandiri">Mandiri (Saku)</option>
                     <option value="Jago">Bank Jago</option>
@@ -735,11 +795,13 @@ export default function DeepSeaDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] text-mist mb-1">Kategori</label>
+                  <label className="block text-xs font-medium text-slateText-secondary mb-1.5">
+                    Kategori
+                  </label>
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full bg-abyss border border-line rounded px-2.5 py-2 text-xs text-foam focus:outline-none focus:border-sodium"
+                    className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-3 py-2 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold"
                   >
                     <option value="Makanan & Minuman">Makanan & Minuman</option>
                     <option value="Jajan / Ngopi">Jajan / Ngopi</option>
@@ -752,18 +814,18 @@ export default function DeepSeaDashboard() {
                 </div>
               </div>
 
-              {/* Submit */}
-              <div className="pt-2 flex justify-end gap-2">
+              {/* Modal Buttons */}
+              <div className="pt-3 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-3 py-1.5 text-xs text-mist hover:text-foam border border-line rounded"
+                  className="px-4 py-2 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border rounded-lg"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 text-xs font-semibold bg-sodium text-abyss hover:bg-[#f7c767] rounded transition"
+                  className="px-5 py-2 text-xs sm:text-sm font-bold bg-amberGold text-[#0B0D11] hover:bg-amber-400 rounded-lg transition"
                 >
                   Simpan Transaksi
                 </button>
