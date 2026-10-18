@@ -1,10 +1,11 @@
-from sqlalchemy import Column, Integer, BigInteger, String, DateTime, Date, Boolean, func
+from sqlalchemy import Column, Integer, BigInteger, String, DateTime, Date, Boolean, ForeignKey, func
 from app.db.session import Base
 
 class Goal(Base):
     __tablename__ = "financial_goals"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, default=1, index=True)
     name = Column(String(100), nullable=False)
     target_amount = Column(BigInteger, nullable=False)
     manual_current_amount = Column(BigInteger, nullable=False, default=0)

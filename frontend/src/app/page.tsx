@@ -47,6 +47,10 @@ import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 import { PeriodSelector, PeriodOption } from "@/components/PeriodSelector";
+import { AuthModal } from "@/components/AuthModal";
+import { OnboardingWizardModal } from "@/components/OnboardingWizardModal";
+import { UserProfileModal } from "@/components/UserProfileModal";
+import { authFetch, getStoredUser, setStoredUser, setAuthToken, UserProfile } from "@/lib/api";
 
 interface MonthlySummary {
   period_type?: string;
@@ -300,6 +304,50 @@ export default function ObsidianDashboard() {
     ],
   });
 
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  useEffect(() => {
+    const initUser = async () => {
+      try {
+        const res = await authFetch("/api/v1/auth/me");
+        if (res.ok) {
+          const u = await res.json();
+          setCurrentUser(u);
+          setStoredUser(u);
+          if (!u.is_onboarded) {
+            setIsOnboardingModalOpen(true);
+          }
+        } else {
+          const stored = getStoredUser();
+          if (stored) {
+            setCurrentUser(stored);
+            if (!stored.is_onboarded) {
+              setIsOnboardingModalOpen(true);
+            }
+          } else {
+            // Default fallback to User 1 (Alif Ihsan) for immediate seamless dashboard view
+            setCurrentUser({
+              id: 1,
+              username: "alifihsan",
+              email: "aliffihsann@gmail.com",
+              full_name: "Alif Ihsan",
+              telegram_chat_id: 1357550611,
+              is_active: true,
+              is_onboarded: true,
+            });
+          }
+        }
+      } catch {
+        const stored = getStoredUser();
+        if (stored) setCurrentUser(stored);
+      }
+    };
+    initUser();
+  }, []);
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -316,12 +364,12 @@ export default function ObsidianDashboard() {
       if (selectedPeriod.end) txParams.append("end_date", selectedPeriod.end);
 
       const [txRes, sumRes, subRes, accRes, goalRes, sessRes] = await Promise.all([
-        fetch(`/api/v1/transactions?${txParams.toString()}`),
-        fetch(`/api/v1/analytics/summary?${periodParams.toString()}`),
-        fetch("/api/v1/subscriptions"),
-        fetch("/api/v1/accounts"),
-        fetch("/api/v1/goals"),
-        fetch("/api/v1/paycheck/session/active"),
+        authFetch(`/api/v1/transactions?${txParams.toString()}`),
+        authFetch(`/api/v1/analytics/summary?${periodParams.toString()}`),
+        authFetch("/api/v1/subscriptions"),
+        authFetch("/api/v1/accounts"),
+        authFetch("/api/v1/goals"),
+        authFetch("/api/v1/paycheck/session/active"),
       ]);
 
       if (txRes.ok) {
@@ -449,7 +497,7 @@ export default function ObsidianDashboard() {
     setFormDesc("");
 
     try {
-      await fetch("/api/v1/transactions", {
+      await authFetch("/api/v1/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -502,7 +550,7 @@ export default function ObsidianDashboard() {
         payload.billing_day = day;
       }
 
-      await fetch("/api/v1/subscriptions", {
+      await authFetch("/api/v1/subscriptions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -521,7 +569,7 @@ export default function ObsidianDashboard() {
     if (!subToDelete) return;
     try {
       setDeleteLoading(true);
-      await fetch(`/api/v1/subscriptions/${subToDelete}`, { method: "DELETE" });
+      await authFetch(`/api/v1/subscriptions/${subToDelete}`, { method: "DELETE" });
       await fetchData();
       setSubToDelete(null);
     } catch (err) {
@@ -535,7 +583,7 @@ export default function ObsidianDashboard() {
     if (!txToDelete) return;
     try {
       setDeleteLoading(true);
-      await fetch(`/api/v1/transactions/${txToDelete.id}`, { method: "DELETE" });
+      await authFetch(`/api/v1/transactions/${txToDelete.id}`, { method: "DELETE" });
       await fetchData();
       setTxToDelete(null);
     } catch (err) {
@@ -549,7 +597,7 @@ export default function ObsidianDashboard() {
     if (!goalToDelete) return;
     try {
       setDeleteLoading(true);
-      await fetch(`/api/v1/goals/${goalToDelete}`, { method: "DELETE" });
+      await authFetch(`/api/v1/goals/${goalToDelete}`, { method: "DELETE" });
       await fetchData();
       setGoalToDelete(null);
     } catch (err) {
@@ -561,7 +609,7 @@ export default function ObsidianDashboard() {
 
   const handleToggleSubscription = async (sub: SubscriptionItem) => {
     try {
-      await fetch(`/api/v1/subscriptions/${sub.id}`, {
+      await authFetch(`/api/v1/subscriptions/${sub.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: !sub.is_active }),
@@ -651,23 +699,51 @@ export default function ObsidianDashboard() {
 
         {/* User Profile Footer */}
         <div className="mt-8 pt-5 border-t border-obsidian-border text-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-slateText-primary font-semibold text-sm">Alif Ihsan</span>
-            <span className="inline-flex items-center gap-1.5 text-xs text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-mintRise animate-pulse"></span>
-              Live Synced
-            </span>
-          </div>
-          <div className="text-xs text-slateText-secondary space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-slateText-muted">Telegram Bot</span>
-              <span className="font-mono text-slateText-primary">@AI7Fin4nc3_bot</span>
+          <button
+            type="button"
+            onClick={() => {
+              if (currentUser) {
+                setIsProfileModalOpen(true);
+              } else {
+                setIsAuthModalOpen(true);
+              }
+            }}
+            className="w-full p-2.5 rounded-xl bg-obsidian-card hover:bg-obsidian-hover border border-obsidian-border transition text-left cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0">
+                  {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-slateText-primary font-semibold text-xs truncate group-hover:text-emerald-400 transition-colors">
+                    {currentUser ? currentUser.full_name : "Masuk / Akun"}
+                  </p>
+                  <p className="text-[10px] text-slateText-muted font-mono truncate">
+                    {currentUser ? `@${currentUser.username}` : "Mode Tamu"}
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1 text-[10px] text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20 shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-mintRise animate-pulse"></span>
+                Active
+              </span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slateText-muted">Siklus</span>
-              <span className="text-amberGold font-medium">Bi-Weekly 14 Hari</span>
+            <div className="text-[11px] text-slateText-secondary space-y-1 pt-1 border-t border-obsidian-border/50">
+              <div className="flex items-center justify-between">
+                <span className="text-slateText-muted">Telegram</span>
+                <span className="font-mono text-slateText-primary text-[10px]">
+                  {currentUser?.telegram_chat_id ? `ID: ${currentUser.telegram_chat_id}` : "Belum Taut"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slateText-muted">Siklus</span>
+                <span className="text-amberGold font-medium text-[10px]">
+                  {summary.period_label || "Siklus Anggaran"}
+                </span>
+              </div>
             </div>
-          </div>
+          </button>
         </div>
       </aside>
 
@@ -704,6 +780,19 @@ export default function ObsidianDashboard() {
           >
             <Sparkles className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap">Gajian</span>
+          </button>
+          <button
+            onClick={() => {
+              if (currentUser) {
+                setIsProfileModalOpen(true);
+              } else {
+                setIsAuthModalOpen(true);
+              }
+            }}
+            title={currentUser ? currentUser.full_name : "Masuk / Akun"}
+            className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 active:scale-95"
+          >
+            {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
           </button>
           <button
             onClick={() => setIsMobileDrawerOpen(true)}
@@ -979,6 +1068,24 @@ export default function ObsidianDashboard() {
               <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
               <span className="hidden sm:inline whitespace-nowrap">Google Sheets</span>
             </a>
+            <button
+              onClick={() => {
+                if (currentUser) {
+                  setIsProfileModalOpen(true);
+                } else {
+                  setIsAuthModalOpen(true);
+                }
+              }}
+              title="Profil & Pengaturan Akun"
+              className="px-3 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
+            >
+              <div className="w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px] flex items-center justify-center shrink-0">
+                {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
+              </div>
+              <span className="hidden sm:inline font-semibold">
+                {currentUser ? currentUser.full_name : "Masuk / Akun"}
+              </span>
+            </button>
             {activeNav === "Target Finansial" ? (
               <button
                 onClick={() => setIsAddGoalModalOpen(true)}
@@ -1854,6 +1961,53 @@ export default function ObsidianDashboard() {
         confirmText="Hapus Target"
         loading={deleteLoading}
       />
+
+      {/* Auth Modal (Masuk / Daftar Akun) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={(user, isNewUser) => {
+          setCurrentUser(user);
+          fetchData();
+          if (isNewUser || !user.is_onboarded) {
+            setIsOnboardingModalOpen(true);
+          }
+        }}
+      />
+
+      {/* Onboarding Wizard Modal */}
+      <OnboardingWizardModal
+        isOpen={isOnboardingModalOpen}
+        user={currentUser}
+        onClose={() => setIsOnboardingModalOpen(false)}
+        onComplete={(updatedUser) => {
+          setIsOnboardingModalOpen(false);
+          setCurrentUser(updatedUser);
+          setStoredUser(updatedUser);
+          fetchData();
+        }}
+      />
+
+      {/* User Profile & Account Settings Modal */}
+      {currentUser && (
+        <UserProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          user={currentUser}
+          onUserUpdated={(updated) => {
+            setCurrentUser(updated);
+            fetchData();
+          }}
+          onLogout={() => {
+            setAuthToken(null);
+            setStoredUser(null);
+            setCurrentUser(null);
+            setIsProfileModalOpen(false);
+            setIsAuthModalOpen(true);
+            fetchData();
+          }}
+        />
+      )}
     </div>
   );
 }

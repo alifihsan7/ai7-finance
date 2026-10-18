@@ -1,10 +1,11 @@
-from sqlalchemy import Column, Integer, BigInteger, String, Boolean, DateTime, Date, func
+from sqlalchemy import Column, Integer, BigInteger, String, Boolean, DateTime, Date, ForeignKey, func
 from app.db.session import Base
 
 class Subscription(Base):
     __tablename__ = "subscriptions"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, default=1, index=True)
     name = Column(String(100), nullable=False)
     amount = Column(BigInteger, nullable=False)
     category = Column(String(50), nullable=False, default="Layanan Digital")

@@ -1,10 +1,11 @@
-from sqlalchemy import Column, Integer, BigInteger, Float, String, Boolean, DateTime, Date, Text, func
+from sqlalchemy import Column, Integer, BigInteger, Float, String, Boolean, DateTime, Date, Text, ForeignKey, func
 from app.db.session import Base
 
 class PaycheckConfig(Base):
     __tablename__ = "paycheck_configs"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, default=1, index=True)
     source_account = Column(String(50), nullable=False, default="BRI 1")
     use_gate = Column(Boolean, nullable=False, default=True)
     gate_name = Column(String(50), nullable=False, default="Flip")
@@ -34,6 +35,7 @@ class PaycheckSession(Base):
     __tablename__ = "paycheck_sessions"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, default=1, index=True)
     total_amount = Column(BigInteger, nullable=False)
     date = Column(Date, nullable=False, index=True)
     status = Column(String(30), nullable=False, default="in_progress", index=True) # in_progress, completed, cancelled

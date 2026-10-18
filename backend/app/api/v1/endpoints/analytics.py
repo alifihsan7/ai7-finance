@@ -9,6 +9,8 @@ from sqlalchemy import func, case, desc
 from app.db.session import get_db
 from app.models.transaction import Transaction
 from app.models.paycheck import PaycheckConfig
+from app.models.user import User
+from app.api.deps import get_current_user
 from app.schemas.transaction import (
     MonthlySummary,
     CategorySummary,
@@ -23,16 +25,20 @@ router = APIRouter()
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 
 @router.get("/periods")
-def get_available_periods(db: Session = Depends(get_db)):
+def get_available_periods(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     now_wib = datetime.now(WIB)
     today_wib = now_wib.date()
 
-    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
     cycle_label_suffix = f"{cycle_days} Hari"
 
-    # 1. Ambil semua gajian unik
+    # 1. Ambil semua gajian unik milik user
     paycheck_rows = db.query(Transaction.date).filter(
+        Transaction.user_id == current_user.id,
         Transaction.type == "income",
         (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
     ).order_by(Transaction.date.desc()).distinct().all()
@@ -126,13 +132,15 @@ def get_monthly_summary(
     period_type: Optional[str] = Query("cycle", description="cycle | week | month | custom"),
     start: Optional[str] = Query(None, description="Format YYYY-MM-DD"),
     end: Optional[str] = Query(None, description="Format YYYY-MM-DD"),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     now_wib = datetime.now(WIB)
     today_wib = now_wib.date()
 
-    # Cari daftar seluruh gajian yang ada di database untuk referensi siklus
+    # Cari daftar seluruh gajian milik user yang ada di database untuk referensi siklus
     paychecks = db.query(Transaction).filter(
+        Transaction.user_id == current_user.id,
         Transaction.type == "income",
         (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
     ).order_by(desc(Transaction.date), desc(Transaction.id)).all()
@@ -181,7 +189,7 @@ def get_monthly_summary(
         else:
             start_date = latest_cycle_start
 
-        cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+        cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
         cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
         end_date = start_date + timedelta(days=cycle_days - 1)
         period_label = f"Siklus {cycle_days} Hari ({start_date.strftime('%d %b')} – {end_date.strftime('%d %b %Y')})"
@@ -193,6 +201,7 @@ def get_monthly_summary(
         Transaction.type,
         func.coalesce(func.sum(Transaction.amount), 0).label("total")
     ).filter(
+        Transaction.user_id == current_user.id,
         Transaction.date >= start_date,
         Transaction.date < query_end_date
     ).group_by(Transaction.type).all()
@@ -214,6 +223,7 @@ def get_monthly_summary(
         func.sum(Transaction.amount).label("total"),
         func.count(Transaction.id).label("count")
     ).filter(
+        Transaction.user_id == current_user.id,
         Transaction.date >= start_date,
         Transaction.date < query_end_date,
         Transaction.type == "expense"
@@ -240,7 +250,7 @@ def get_monthly_summary(
                 else_=0
             )
         ).label("balance")
-    ).group_by(Transaction.account).order_by(
+    ).filter(Transaction.user_id == current_user.id).group_by(Transaction.account).order_by(
         func.sum(
             case(
                 (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
@@ -259,6 +269,7 @@ def get_monthly_summary(
         func.sum(case((Transaction.type == "income", Transaction.amount), else_=0)).label("income"),
         func.sum(case((Transaction.type == "expense", Transaction.amount), else_=0)).label("expense")
     ).filter(
+        Transaction.user_id == current_user.id,
         Transaction.date >= start_date,
         Transaction.date < query_end_date
     ).group_by(Transaction.date).order_by(Transaction.date.asc()).all()
@@ -287,13 +298,14 @@ def get_monthly_summary(
         day_of_cycle = (today_wib - cycle_start).days + 1
         days_remaining = max(1, total_days - day_of_cycle + 1)
 
-    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
     pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
 
     pocket_income_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("inc")
     ).filter(
+        Transaction.user_id == current_user.id,
         Transaction.account == pocket_account,
         Transaction.type == "income",
         Transaction.date >= cycle_start,
@@ -305,6 +317,7 @@ def get_monthly_summary(
     pocket_spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
     ).filter(
+        Transaction.user_id == current_user.id,
         Transaction.account == pocket_account,
         Transaction.type == "expense",
         Transaction.date >= cycle_start,
@@ -328,6 +341,7 @@ def get_monthly_summary(
         Transaction.date,
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
     ).filter(
+        Transaction.user_id == current_user.id,
         Transaction.account == pocket_account,
         Transaction.type == "expense",
         Transaction.date >= cycle_start,
@@ -396,8 +410,11 @@ def get_monthly_summary(
 @router.post("/sync-sheets")
 def sync_sheets_endpoint(
     cycle_start: Optional[str] = Query(None, description="Format YYYY-MM-DD"),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.id != 1:
+        raise HTTPException(status_code=403, detail="Google Sheets sync hanya tersedia untuk akun pemilik")
     from app.services.sheets_sync import sync_cycle_snapshot
     start_d = None
     if cycle_start:
