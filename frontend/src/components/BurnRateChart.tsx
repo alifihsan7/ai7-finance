@@ -61,6 +61,26 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
     }
   };
 
+  // Smart horizontal alignment to prevent tooltip from clipping on left/right edges
+  const getTooltipAlignClass = (dayNum: number, totalDays: number) => {
+    // In a 7-col row (mobile or 14-day 2-row layout)
+    const colInRow = (dayNum - 1) % 7;
+    const isFirstCols = colInRow <= 1;
+    const isLastCols = colInRow >= 5;
+
+    // Desktop multi-column check
+    const isDesktopLeft = dayNum <= 2;
+    const isDesktopRight = totalDays > 7 && dayNum >= totalDays - 2;
+
+    if (isFirstCols) {
+      return isDesktopLeft ? "left-0" : "left-0 sm:left-1/2 sm:-translate-x-1/2";
+    }
+    if (isLastCols) {
+      return isDesktopRight ? "right-0" : "right-0 sm:left-1/2 sm:-translate-x-1/2";
+    }
+    return "left-1/2 -translate-x-1/2";
+  };
+
   return (
     <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -88,8 +108,8 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
         </div>
       </div>
 
-      <div className="overflow-x-auto pb-2">
-        <div className={`grid ${getGridColsClass(chartData.length)} gap-1.5 sm:gap-2 pt-4 border-t border-obsidian-border/80 min-w-[340px]`}>
+      <div className="overflow-visible relative pb-2">
+        <div className={`grid ${getGridColsClass(chartData.length)} gap-1.5 sm:gap-2 pt-4 border-t border-obsidian-border/80 w-full`}>
           {chartData.map((b) => {
             const isToday = b.day === dayOfCycle;
             const isPastOrToday = b.day <= dayOfCycle;
@@ -105,7 +125,7 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
                     : "hover:bg-obsidian-hover border border-transparent"
                 }`}
               >
-                <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-20 w-48 sm:w-52 p-3 bg-obsidian-panel/95 backdrop-blur-md border border-obsidian-borderStrong rounded-xl shadow-2xl text-[11px] font-mono space-y-2 transition-opacity">
+                <div className={`opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${getTooltipAlignClass(b.day, chartData.length)} w-48 sm:w-52 p-3 bg-obsidian-panel/95 backdrop-blur-md border border-obsidian-borderStrong rounded-xl shadow-2xl text-[11px] font-mono space-y-2 transition-opacity`}>
                   <div className="flex items-center justify-between border-b border-obsidian-border pb-1.5">
                     <span className="font-bold text-slateText-primary">Hari ke-{b.day}</span>
                     <span className="text-[10px] text-slateText-secondary font-medium">({formatTooltipDate(b.date)})</span>
