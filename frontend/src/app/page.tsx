@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
-  Search,
   Plus,
   Download,
   RefreshCw,
@@ -33,6 +32,7 @@ import { AccountGrid } from "@/components/AccountGrid";
 import { MandiriEnvelopes } from "@/components/MandiriEnvelopes";
 import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionTable, Transaction } from "@/components/TransactionTable";
+import { TransactionLedgerView } from "@/components/TransactionLedgerView";
 import { SubscriptionsView, SubscriptionItem, SubscriptionsData } from "@/components/SubscriptionsView";
 import { GoalsView } from "@/components/GoalsView";
 import { AddGoalModal } from "@/components/AddGoalModal";
@@ -135,7 +135,6 @@ const SUB_ACCOUNT_OPTIONS = [
 export default function ObsidianDashboard() {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
-  const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaycheckModalOpen, setIsPaycheckModalOpen] = useState(false);
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
@@ -594,14 +593,9 @@ export default function ObsidianDashboard() {
         activeTab === "all" ||
         txAcc.includes(tab) ||
         (tab.includes("jago") && txAcc.includes("jago"));
-      const matchSearch =
-        !searchQuery ||
-        tx.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tx.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tx.account.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchTab && matchSearch;
+      return matchTab;
     });
-  }, [transactions, activeTab, searchQuery]);
+  }, [transactions, activeTab]);
 
   return (
     <div className="h-screen h-[100dvh] bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans overflow-hidden">
@@ -1563,46 +1557,26 @@ export default function ObsidianDashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 4: BUKU TRANSAKSI */}
+        {/* VIEW 4: BUKU TRANSAKSI (LEDGER) */}
         {/* ============================================================== */}
         {activeNav === "Buku Transaksi" && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-1.5 border-b border-obsidian-border w-full sm:w-auto pb-1.5 overflow-x-auto">
-                {allAccountTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`text-sm px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap shrink-0 ${
-                      activeTab === tab.id
-                        ? "text-slateText-primary bg-obsidian-card border border-obsidian-borderStrong font-semibold shadow-xs"
-                        : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-hover"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="relative w-full sm:w-72 shrink-0">
-                <Search className="w-4 h-4 text-slateText-muted absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari transaksi / keterangan..."
-                  className="w-full bg-obsidian-card border border-obsidian-border rounded-lg pl-9 pr-3.5 py-2 text-sm text-slateText-primary placeholder-slateText-muted focus:outline-none focus:border-amberGold transition font-mono"
-                />
-              </div>
-            </div>
-
-            <TransactionTable
-              transactions={filteredTransactions}
-              formatRupiah={formatRupiah}
-              onEdit={(tx) => setTxToEdit(tx)}
-              onDelete={(tx) => setTxToDelete(tx)}
-            />
-          </div>
+          <TransactionLedgerView
+            transactions={transactions}
+            accounts={allAccountTabs}
+            currentCycle={
+              summary.start_date && summary.end_date
+                ? {
+                    start_date: summary.start_date,
+                    end_date: summary.end_date,
+                    label: summary.period_label || "",
+                  }
+                : undefined
+            }
+            formatRupiah={formatRupiah}
+            onEdit={(tx) => setTxToEdit(tx)}
+            onDelete={(tx) => setTxToDelete(tx)}
+            onOpenAddModal={() => setIsModalOpen(true)}
+          />
         )}
 
         {/* ============================================================== */}
