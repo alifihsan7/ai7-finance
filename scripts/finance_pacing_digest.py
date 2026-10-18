@@ -49,7 +49,7 @@ def main():
     safe_daily = sts.get("safe_daily", 0)
     pace_status = sts.get("pace_status", "on_track")
 
-    if pace_status == "on_track":
+    if pace_status in ["on_track", "ahead"]:
         status_label = "🟢 **On Track** (Pengeluaran hemat & terkontrol)"
     elif pace_status == "warning":
         status_label = "🟡 **Pacing Warning** (Pengeluaran di atas batas rata-rata)"
