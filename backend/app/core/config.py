@@ -1,4 +1,5 @@
 import os
+import secrets
 from typing import Optional
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
@@ -35,8 +36,8 @@ class Settings(BaseSettings):
     AI_ROUTER_KEY: str = os.getenv("AI_ROUTER_KEY", "")
     AI_ROUTER_MODEL: str = os.getenv("AI_ROUTER_MODEL", "ag/gemini-3.8-flash")
 
-    # JWT Authentication
-    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "ai7_finance_super_secret_jwt_key_2026_obsidian_slate_production")
+    # JWT Authentication - Loaded securely from environment or auto-generated cryptographically
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "") or secrets.token_hex(32)
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30  # 30 days
 
