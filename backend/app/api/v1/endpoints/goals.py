@@ -1,0 +1,143 @@
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import func, case
+from typing import List, Optional
+import math
+from datetime import date, datetime, timedelta
+import zoneinfo
+
+from app.db.session import get_db
+from app.models.goal import Goal
+from app.models.transaction import Transaction
+from app.schemas.goal import GoalCreate, GoalUpdate, GoalResponse
+
+router = APIRouter()
+WIB = zoneinfo.ZoneInfo("Asia/Jakarta")
+
+ROUTINE_CYCLE_ALLOCATIONS = {
+    "BRI 2": 100000,
+    "Bibit": 200000,
+    "BRI 1": 100000,
+    "Bank Jago": 275000,
+    "Mandiri": 825000,
+}
+
+def get_account_balance(account_name: str, db: Session) -> int:
+    val = db.query(
+        func.coalesce(
+            func.sum(
+                case(
+                    (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
+                    (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                    else_=0
+                )
+            ),
+            0
+        )
+    ).filter(Transaction.account.ilike(account_name.strip())).scalar()
+    return int(val or 0)
+
+def compute_goal_metrics(goal: Goal, db: Session) -> dict:
+    if goal.linked_account and goal.linked_account.strip():
+        current_amount = get_account_balance(goal.linked_account, db)
+    else:
+        current_amount = int(goal.manual_current_amount or 0)
+
+    target_amt = int(goal.target_amount) if goal.target_amount > 0 else 1
+    pct = round((current_amount / target_amt * 100), 1)
+    remaining = max(0, target_amt - current_amount)
+
+    today = datetime.now(WIB).date()
+    est_cycles = None
+    est_months = None
+    est_finish_date = None
+
+    if remaining == 0:
+        est_cycles = 0
+        est_months = 0.0
+        est_finish_date = today
+    else:
+        alloc = ROUTINE_CYCLE_ALLOCATIONS.get(goal.linked_account or "", 100000)
+        if alloc > 0:
+            est_cycles = math.ceil(remaining / alloc)
+            days = est_cycles * 14
+            est_finish_date = today + timedelta(days=days)
+            est_months = round(days / 30.417, 1)
+
+    return {
+        "id": goal.id,
+        "name": goal.name,
+        "target_amount": goal.target_amount,
+        "manual_current_amount": goal.manual_current_amount,
+        "linked_account": goal.linked_account,
+        "target_date": goal.target_date,
+        "category": goal.category,
+        "icon": goal.icon,
+        "color": goal.color,
+        "is_active": goal.is_active,
+        "notes": goal.notes,
+        "created_at": goal.created_at,
+        "updated_at": goal.updated_at,
+        "current_amount": current_amount,
+        "percentage": pct,
+        "remaining_amount": remaining,
+        "estimated_cycles": est_cycles,
+        "estimated_months": est_months,
+        "estimated_finish_date": est_finish_date
+    }
+
+@router.get("", response_model=List[GoalResponse])
+def get_goals(active_only: bool = Query(True), db: Session = Depends(get_db)):
+    query = db.query(Goal)
+    if active_only:
+        query = query.filter(Goal.is_active == True)
+    goals = query.order_by(Goal.id.asc()).all()
+    return [compute_goal_metrics(g, db) for g in goals]
+
+@router.post("", response_model=GoalResponse)
+def create_goal(payload: GoalCreate, db: Session = Depends(get_db)):
+    goal = Goal(
+        name=payload.name.strip(),
+        target_amount=payload.target_amount,
+        manual_current_amount=payload.manual_current_amount or 0,
+        linked_account=payload.linked_account.strip() if payload.linked_account else None,
+        target_date=payload.target_date,
+        category=payload.category or "Tabungan",
+        icon=payload.icon or "🎯",
+        color=payload.color or "emerald",
+        is_active=payload.is_active if payload.is_active is not None else True,
+        notes=payload.notes
+    )
+    db.add(goal)
+    db.commit()
+    db.refresh(goal)
+    return compute_goal_metrics(goal, db)
+
+@router.put("/{goal_id}", response_model=GoalResponse)
+def update_goal(goal_id: int, payload: GoalUpdate, db: Session = Depends(get_db)):
+    goal = db.query(Goal).filter(Goal.id == goal_id).first()
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal tidak ditemukan")
+
+    data = payload.dict(exclude_unset=True)
+    for k, v in data.items():
+        if k == "name" and v:
+            setattr(goal, k, v.strip())
+        elif k == "linked_account":
+            setattr(goal, k, v.strip() if v else None)
+        else:
+            setattr(goal, k, v)
+
+    db.commit()
+    db.refresh(goal)
+    return compute_goal_metrics(goal, db)
+
+@router.delete("/{goal_id}")
+def delete_goal(goal_id: int, db: Session = Depends(get_db)):
+    goal = db.query(Goal).filter(Goal.id == goal_id).first()
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal tidak ditemukan")
+
+    db.delete(goal)
+    db.commit()
+    return {"ok": True, "message": f"Goal '{goal.name}' berhasil dihapus"}
