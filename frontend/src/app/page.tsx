@@ -12,6 +12,8 @@ import {
   ArrowDownRight,
   Sparkles,
   CheckCircle2,
+  ShieldCheck,
+  Flame,
 } from "lucide-react";
 
 interface Transaction {
@@ -25,6 +27,28 @@ interface Transaction {
   date: string;
 }
 
+interface CycleBurnDay {
+  day: number;
+  date: string;
+  spent: number;
+  cumulative_spent: number;
+  ideal_pace: number;
+}
+
+interface SafeToSpendInfo {
+  cycle_start: string;
+  cycle_end: string;
+  day_of_cycle: number;
+  days_remaining: number;
+  pocket_budget: number;
+  pocket_spent: number;
+  pocket_remaining: number;
+  safe_daily: number;
+  pace_status: "ahead" | "on_track" | "warning";
+  ideal_pace_today: number;
+  burn_chart: CycleBurnDay[];
+}
+
 interface MonthlySummary {
   month: string;
   income: number;
@@ -33,6 +57,7 @@ interface MonthlySummary {
   savings_rate: number;
   accounts: { account: string; balance: number }[];
   categories: { category: string; total: number; count: number; percentage: number }[];
+  safe_to_spend?: SafeToSpendInfo;
 }
 
 export default function ObsidianDashboard() {
@@ -98,6 +123,25 @@ export default function ObsidianDashboard() {
       { category: "Makanan & Minuman", total: 45000, count: 1, percentage: 64.3 },
       { category: "Jajan / Ngopi", total: 25000, count: 1, percentage: 35.7 },
     ],
+    safe_to_spend: {
+      cycle_start: "2026-10-18",
+      cycle_end: "2026-10-31",
+      day_of_cycle: 1,
+      days_remaining: 14,
+      pocket_budget: 825000,
+      pocket_spent: 70000,
+      pocket_remaining: 755000,
+      safe_daily: 53928,
+      pace_status: "ahead",
+      ideal_pace_today: 58928,
+      burn_chart: Array.from({ length: 14 }).map((_, i) => ({
+        day: i + 1,
+        date: `2026-10-${String(18 + i).padStart(2, "0")}`,
+        spent: i === 0 ? 70000 : 0,
+        cumulative_spent: 70000,
+        ideal_pace: Math.round((825000 / 14) * (i + 1)),
+      })),
+    },
   });
 
   // Fetch real data from backend API
@@ -362,32 +406,83 @@ export default function ObsidianDashboard() {
           </div>
         </div>
 
-        {/* HERO METRIC: TOTAL ASSETS / NET WORTH */}
-        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-6 sm:p-8 relative overflow-hidden">
-          <div className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider">
-            Total Kekayaan Bersih (Net Worth)
-          </div>
-          <div className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-slateText-primary my-3 font-mono">
-            {formatRupiah(summary.income - summary.expense)}{" "}
-            <span className="text-base sm:text-lg font-normal text-slateText-muted tracking-normal">
-              IDR
-            </span>
+        {/* HERO METRICS: DUAL GRID (NET WORTH + SAFE-TO-SPEND) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Card 1: Total Kekayaan Bersih (Net Worth) */}
+          <div className="lg:col-span-7 bg-obsidian-card border border-obsidian-border rounded-xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider">
+                  Total Kekayaan Bersih (Net Worth)
+                </span>
+                <span className="text-xs font-mono font-medium text-mintRise px-2 py-0.5 rounded bg-mintRise/10 border border-mintRise/20">
+                  Tabungan: {summary.savings_rate}%
+                </span>
+              </div>
+              <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slateText-primary my-3 font-mono">
+                {formatRupiah(summary.income - summary.expense)}{" "}
+                <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
+                  IDR
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm pt-3 border-t border-obsidian-border/80">
+              <span className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium">
+                <ArrowUpRight className="w-4 h-4" />
+                {formatRupiah(summary.income)} gajian siklus ini
+              </span>
+              <span className="text-obsidian-borderStrong">•</span>
+              <span className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium">
+                <ArrowDownRight className="w-4 h-4" />
+                {formatRupiah(summary.expense)} belanja
+              </span>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm pt-2 border-t border-obsidian-border/80">
-            <span className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium">
-              <ArrowUpRight className="w-4 h-4" />
-              {formatRupiah(summary.income)} gajian siklus ini
-            </span>
-            <span className="text-obsidian-borderStrong">•</span>
-            <span className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium">
-              <ArrowDownRight className="w-4 h-4" />
-              {formatRupiah(summary.expense)} total belanja
-            </span>
-            <span className="text-obsidian-borderStrong">•</span>
-            <span className="text-slateText-secondary font-mono">
-              Tingkat Tabungan: <strong className="text-slateText-primary">{summary.savings_rate}%</strong>
-            </span>
+          {/* Card 2: Batas Belanja Aman Harian (Safe-to-Spend Daily) */}
+          <div className="lg:col-span-5 bg-obsidian-panel border border-obsidian-border rounded-xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-amberGold" />
+                  Batas Belanja Aman Harian
+                </span>
+                <span
+                  className={`text-xs font-mono font-medium px-2 py-0.5 rounded border ${
+                    summary.safe_to_spend?.pace_status === "warning"
+                      ? "text-coralFall bg-coralFall/10 border-coralFall/20"
+                      : "text-mintRise bg-mintRise/10 border-mintRise/20"
+                  }`}
+                >
+                  {summary.safe_to_spend?.pace_status === "warning"
+                    ? "🔴 Agak Boros"
+                    : "🟢 Pace Aman"}
+                </span>
+              </div>
+
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-amberGold my-3 font-mono">
+                {formatRupiah(summary.safe_to_spend?.safe_daily || 55000)}{" "}
+                <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
+                  / hari
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 pt-3 border-t border-obsidian-border/80 text-xs font-mono">
+              <div className="flex justify-between text-slateText-secondary">
+                <span>Sisa Kuota Mandiri:</span>
+                <strong className="text-slateText-primary font-bold">
+                  {formatRupiah(summary.safe_to_spend?.pocket_remaining || 0)} / Rp 825.000
+                </strong>
+              </div>
+              <div className="flex justify-between text-slateText-secondary">
+                <span>Waktu Siklus:</span>
+                <span className="text-slateText-primary">
+                  Hari ke-{summary.safe_to_spend?.day_of_cycle || 1} dari 14 ({summary.safe_to_spend?.days_remaining || 14} hari tersisa)
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -631,6 +726,139 @@ export default function ObsidianDashboard() {
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        {/* 14-DAY BI-WEEKLY BURN-RATE CHART (Option 3) */}
+        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <Flame className="w-5 h-5 text-amberGold" />
+                <h2 className="text-base sm:text-lg font-bold text-slateText-primary">
+                  Burn-Rate Trajectory (Siklus 14 Hari)
+                </h2>
+              </div>
+              <p className="text-xs sm:text-sm text-slateText-secondary mt-0.5">
+                Monitoring akumulasi belanja Mandiri harian vs batas ideal anggaran Rp 825.000
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 text-xs font-mono">
+              <span className="flex items-center gap-1.5 text-slateText-secondary">
+                <span className="w-2.5 h-2.5 rounded-sm bg-amberGold inline-block"></span>
+                Kumulatif Riil
+              </span>
+              <span className="flex items-center gap-1.5 text-slateText-secondary">
+                <span className="w-2.5 h-0.5 bg-slateText-muted inline-block"></span>
+                Batas Target Ideal
+              </span>
+            </div>
+          </div>
+
+          {/* Chart Grid */}
+          <div className="grid grid-cols-7 sm:grid-cols-14 gap-2 pt-4 border-t border-obsidian-border/80">
+            {(summary.safe_to_spend?.burn_chart || []).map((b) => {
+              const maxBudget = 825000;
+              const isToday = b.day === summary.safe_to_spend?.day_of_cycle;
+              const isPastOrToday = b.day <= (summary.safe_to_spend?.day_of_cycle || 1);
+              const idealHeight = Math.min(100, Math.round((b.ideal_pace / maxBudget) * 100));
+              const actualHeight = Math.min(100, Math.round((b.cumulative_spent / maxBudget) * 100));
+
+              return (
+                <div
+                  key={b.day}
+                  className={`flex flex-col items-center group relative rounded-lg p-1.5 transition-all ${
+                    isToday
+                      ? "bg-amberGold/10 border border-amberGold/30"
+                      : "hover:bg-obsidian-hover border border-transparent"
+                  }`}
+                >
+                  {/* Tooltip on hover */}
+                  <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-20 w-44 p-2.5 bg-obsidian-bg border border-obsidian-borderStrong rounded-lg shadow-xl text-[11px] font-mono space-y-1 transition-opacity">
+                    <div className="font-bold text-slateText-primary border-b border-obsidian-border pb-1">
+                      Hari ke-{b.day} ({b.date})
+                    </div>
+                    <div className="flex justify-between text-slateText-secondary">
+                      <span>Hari Ini:</span>
+                      <span className="text-slateText-primary">{formatRupiah(b.spent)}</span>
+                    </div>
+                    <div className="flex justify-between text-slateText-secondary">
+                      <span>Kumulatif:</span>
+                      <span className="text-amberGold font-bold">
+                        {formatRupiah(b.cumulative_spent)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slateText-secondary">
+                      <span>Target Ideal:</span>
+                      <span className="text-slateText-muted">{formatRupiah(b.ideal_pace)}</span>
+                    </div>
+                  </div>
+
+                  {/* Vertical Bar Track */}
+                  <div className="w-full h-32 bg-obsidian-panel rounded flex items-end relative overflow-hidden">
+                    {/* Ideal pace guideline tick */}
+                    <div
+                      style={{ bottom: `${idealHeight}%` }}
+                      className="absolute left-0 right-0 border-b border-dashed border-slateText-muted/60 z-10"
+                    ></div>
+
+                    {/* Actual cumulative fill */}
+                    {isPastOrToday && (
+                      <div
+                        style={{ height: `${actualHeight}%` }}
+                        className={`w-full transition-all duration-500 rounded-b ${
+                          actualHeight > idealHeight
+                            ? "bg-coralFall/80 group-hover:bg-coralFall"
+                            : "bg-amberGold/80 group-hover:bg-amberGold"
+                        }`}
+                      ></div>
+                    )}
+                  </div>
+
+                  {/* Day Label */}
+                  <div className="mt-2 text-center">
+                    <span
+                      className={`text-[11px] font-mono font-medium block ${
+                        isToday ? "text-amberGold font-bold" : "text-slateText-secondary"
+                      }`}
+                    >
+                      D{b.day}
+                    </span>
+                    <span className="text-[9px] text-slateText-muted block font-mono">
+                      {b.date.slice(8)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Quick Metrics Footer */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-obsidian-border/80 text-xs font-mono text-slateText-secondary">
+            <div className="flex items-center gap-2">
+              <span>Kecepatan Target:</span>
+              <strong className="text-slateText-primary">Rp 58.928 / hari</strong>
+            </div>
+            <div className="flex items-center gap-2">
+              <span>Kumulatif Target Hari Ini:</span>
+              <strong className="text-slateText-primary">
+                {formatRupiah(summary.safe_to_spend?.ideal_pace_today || 0)}
+              </strong>
+            </div>
+            <div className="flex items-center gap-2">
+              <span>Realisasi Saat Ini:</span>
+              <strong
+                className={
+                  (summary.safe_to_spend?.pocket_spent || 0) >
+                  (summary.safe_to_spend?.ideal_pace_today || 0)
+                    ? "text-coralFall font-bold"
+                    : "text-mintRise font-bold"
+                }
+              >
+                {formatRupiah(summary.safe_to_spend?.pocket_spent || 0)}
+              </strong>
+            </div>
           </div>
         </div>
 

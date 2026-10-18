@@ -36,6 +36,26 @@ class DailyTrendItem(BaseModel):
     income: int
     expense: int
 
+class CycleBurnDay(BaseModel):
+    day: int
+    date: str
+    spent: int
+    cumulative_spent: int
+    ideal_pace: int
+
+class SafeToSpendInfo(BaseModel):
+    cycle_start: dt_date
+    cycle_end: dt_date
+    day_of_cycle: int
+    days_remaining: int
+    pocket_budget: int
+    pocket_spent: int
+    pocket_remaining: int
+    safe_daily: int
+    pace_status: str
+    ideal_pace_today: int
+    burn_chart: List[CycleBurnDay]
+
 class MonthlySummary(BaseModel):
     month: str
     year: int
@@ -48,6 +68,7 @@ class MonthlySummary(BaseModel):
     accounts: List[AccountBalance]
     total_balance: int
     daily_trend: List[DailyTrendItem]
+    safe_to_spend: Optional[SafeToSpendInfo] = None
 
 class PaycheckRequest(BaseModel):
     total_amount: int = 1500000

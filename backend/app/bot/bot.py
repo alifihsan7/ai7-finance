@@ -20,6 +20,46 @@ WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 def format_rp(amount: int) -> str:
     return f"Rp {amount:,}".replace(",", ".")
 
+def get_safe_to_spend_snippet(db: Session) -> str:
+    now_wib = datetime.now(WIB)
+    today_wib = now_wib.date()
+
+    latest_paycheck = db.query(Transaction).filter(
+        Transaction.type == "income",
+        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
+    ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
+
+    cycle_start = latest_paycheck.date if latest_paycheck else today_wib
+    cycle_end = cycle_start + timedelta(days=13)
+    days_passed = (today_wib - cycle_start).days + 1
+    day_of_cycle = min(14, max(1, days_passed))
+    days_remaining = max(1, 14 - day_of_cycle + 1)
+
+    pocket_budget = 825000
+    mandiri_spent_row = db.query(
+        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
+    ).filter(
+        Transaction.account == "Mandiri",
+        Transaction.type == "expense",
+        Transaction.date >= cycle_start,
+        Transaction.date <= cycle_end
+    ).first()
+    pocket_spent = int(mandiri_spent_row.spent if mandiri_spent_row else 0)
+    pocket_remaining = max(0, pocket_budget - pocket_spent)
+    safe_daily = int(pocket_remaining / days_remaining)
+
+    ideal_daily_rate = pocket_budget / 14
+    ideal_pace_today = int(ideal_daily_rate * day_of_cycle)
+
+    if pocket_spent <= ideal_pace_today:
+        pace_icon = "🟢"
+        pace_label = "Pace Aman"
+    else:
+        pace_icon = "🔴"
+        pace_label = "Agak Boros"
+
+    return f"🛡️ **Safe-to-Spend:** {format_rp(safe_daily)} / hari ({pace_icon} {pace_label} • Sisa {days_remaining} hari)"
+
 def send_message(chat_id: int, text: str, parse_mode: str = "Markdown", reply_to_message_id: Optional[int] = None):
     url = f"{API_BASE}/sendMessage"
     payload = {
@@ -112,6 +152,7 @@ def handle_rekap(chat_id: int, db: Session):
         for cat in cat_rows:
             lines.append(f"• **{cat.category}**: {format_rp(int(cat.total))} ({cat.count}x)")
 
+    lines.append(f"\n{get_safe_to_spend_snippet(db)}")
     send_message(chat_id, "\n".join(lines))
 
 def handle_saldo(chat_id: int, db: Session):
@@ -136,6 +177,7 @@ def handle_saldo(chat_id: int, db: Session):
         lines.append(f"• **{b.account}**: {format_rp(bal)}")
 
     lines.append(f"\n💵 **Total Keseluruhan:** {format_rp(total)}")
+    lines.append(f"\n{get_safe_to_spend_snippet(db)}")
     send_message(chat_id, "\n".join(lines))
 
 def handle_transaksi(chat_id: int, db: Session):
@@ -302,6 +344,9 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
             status_icon = "⚠️" if pct > 85 else "📊"
             reply += f"\n\n{status_icon} **Status Amplop Mandiri (Bulan Ini):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
 
+        if tx.type == "expense":
+            reply += f"\n\n{get_safe_to_spend_snippet(db)}"
+
         send_message(chat_id, reply, reply_to_message_id=message_id)
         return
 
@@ -356,6 +401,8 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
 
     if mandiri_status_lines:
         lines.append("\n📊 **Status Amplop Mandiri (Bulan Ini):**\n" + "\n".join(mandiri_status_lines))
+
+    lines.append(f"\n{get_safe_to_spend_snippet(db)}")
 
     send_message(chat_id, "\n".join(lines), reply_to_message_id=message_id)
 
