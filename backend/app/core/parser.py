@@ -23,15 +23,18 @@ INCOME_KEYWORDS = [
 
 # Order matters: more specific envelopes first!
 CATEGORY_RULES = [
+    ("Makanan & Minuman", [
+        "nasgor", "nasi goreng", "miegor", "mie goreng", "mie", "bakmi", "kwetiau", 
+        "bihun", "bubur", "pecel", "lele", "soto", "nasi", "ayam", "bebek", "sate", 
+        "bakso", "rawon", "gudeg", "warteg", "padang", "geprek", "rendang", "resto", 
+        "makan", "minum", "lunch", "dinner", "sarapan", "breakfast", "kantin", "warung",
+        "burger", "pizza", "mcd", "kfc"
+    ]),
     ("Jajan / Ngopi", [
         "kopi", "coffee", "cafe", "kafe", "starbucks", "kenangan", "janji jiwa", 
-        "tomoro", "fore", "boba", "chatime", "es teh", "esteh", "mixue", "snack", 
-        "cemilan", "roti", "ice cream", "eskrim", "croissant", "jajan", "gorengan"
-    ]),
-    ("Makanan & Minuman", [
-        "makan", "minum", "nasi", "ayam", "mie", "bakso", "sate", "warteg", "padang", 
-        "geprek", "resto", "pecel", "bebek", "soto", "burger", "pizza", "mcd", "kfc", 
-        "lunch", "dinner", "sarapan", "breakfast", "kantin", "warung"
+        "tomoro", "fore", "boba", "chatime", "es teh", "esteh", "teh", "mixue", "snack", 
+        "cemilan", "roti", "ice cream", "eskrim", "croissant", "jajan", "gorengan",
+        "martabak", "cilok", "cireng", "siomay", "batagor", "tahu bulat"
     ]),
     ("Laundry", [
         "laundry", "cuci baju", "cuci pakaian", "londri", "setrika", "dry clean"
@@ -104,6 +107,44 @@ def parse_amount(text: str):
             continue
             
     return None, None
+
+def split_raw_into_items(text: str) -> list[str]:
+    clean = text.strip()
+    if not clean:
+        return []
+
+    # Priority 1: Multi-line message
+    lines = [line.strip() for line in clean.splitlines() if line.strip()]
+    if len(lines) > 1:
+        return lines
+
+    # Priority 2: Comma or semicolon separated
+    if "," in clean or ";" in clean:
+        parts = [p.strip() for p in re.split(r'[,;]+', clean) if p.strip()]
+        if len(parts) > 1:
+            return parts
+
+    # Priority 3: Multiple amounts in single line (e.g. 'nasgor 20k kopi 28k')
+    amt_pattern = r'\b(?:rp\.?\s*)?(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta|m|mio)\b|\b(?:rp\.?\s*)(\d+(?:[.,]\d+)?)\b'
+    matches = list(re.finditer(amt_pattern, clean, flags=re.IGNORECASE))
+    
+    if len(matches) <= 1:
+        return [clean]
+
+    segments = []
+    last_end = 0
+    for i, m in enumerate(matches):
+        seg = clean[last_end:m.end()].strip()
+        seg = re.sub(r'^(?:dan|\+|&)\s*', '', seg, flags=re.IGNORECASE)
+        segments.append(seg)
+        last_end = m.end()
+
+    if last_end < len(clean):
+        trailing = clean[last_end:].strip()
+        if trailing and segments:
+            segments[-1] += " " + trailing
+
+    return segments
 
 def parse_transaction(text: str):
     raw = text.strip()
@@ -180,3 +221,12 @@ def parse_transaction(text: str):
         "description": desc_clean,
         "raw_text": raw
     }
+
+def parse_multi_transactions(text: str) -> list[dict]:
+    items = split_raw_into_items(text)
+    results = []
+    for item in items:
+        parsed = parse_transaction(item)
+        if parsed.get("success"):
+            results.append(parsed)
+    return results

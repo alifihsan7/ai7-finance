@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, func, case
 
 from app.core.config import settings
-from app.core.parser import parse_transaction
+from app.core.parser import parse_transaction, parse_multi_transactions
 from app.db.session import SessionLocal, Base, engine
 from app.models.transaction import Transaction
 
@@ -242,38 +242,18 @@ def handle_gajian(chat_id: int, text: str, db: Session):
     send_message(chat_id, msg)
 
 def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
-    parsed = parse_transaction(text)
-    if not parsed["success"]:
-        send_message(chat_id, f"❌ {parsed['error']}", reply_to_message_id=message_id)
+    items = parse_multi_transactions(text)
+    if not items:
+        # Fall back to single parser to report specific error
+        fallback = parse_transaction(text)
+        err_msg = fallback.get("error", "Format tidak terdeteksi.")
+        send_message(chat_id, f"❌ {err_msg}", reply_to_message_id=message_id)
         return
 
     now_wib = datetime.now(WIB)
-    tx = Transaction(
-        type=parsed["type"],
-        amount=parsed["amount"],
-        account=parsed["account"],
-        category=parsed["category"],
-        description=parsed["description"],
-        raw_text=parsed.get("raw_text", ""),
-        date=now_wib.date()
-    )
-    db.add(tx)
-    db.commit()
-    db.refresh(tx)
-
-    type_label = "Pemasukan" if tx.type == "income" else "Pengeluaran"
-    icon = "💰" if tx.type == "income" else "💸"
     time_str = now_wib.strftime("%Y-%m-%d %H:%M:%S")
+    start_date = date(now_wib.year, now_wib.month, 1)
 
-    reply = f"""✅ **Tercatat!**
-
-{icon} **{type_label}:** {format_rp(tx.amount)}
-📂 **Kategori:** {tx.category}
-💳 **Rekening:** {tx.account}
-📝 **Keterangan:** {tx.description}
-🕒 _{time_str} WIB_"""
-
-    # Real-time envelope budget feedback for Mandiri operational expenses
     MANDIRI_ENVELOPES = {
         "Makanan & Minuman": 450000,
         "Jajan / Ngopi": 100000,
@@ -281,22 +261,103 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
         "Galon & Air": 44000,
     }
 
-    if tx.type == "expense" and tx.account == "Mandiri" and tx.category in MANDIRI_ENVELOPES:
-        limit = MANDIRI_ENVELOPES[tx.category]
-        start_date = date(now_wib.year, now_wib.month, 1)
-        spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
-            Transaction.account == "Mandiri",
-            Transaction.type == "expense",
-            Transaction.category == tx.category,
-            Transaction.date >= start_date
-        ).scalar()
-        spent_int = int(spent or 0)
-        rem = limit - spent_int
-        pct = round(spent_int / limit * 100, 1)
-        status_icon = "⚠️" if pct > 85 else "📊"
-        reply += f"\n\n{status_icon} **Status Amplop Mandiri (Bulan Ini):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
+    # If single transaction
+    if len(items) == 1:
+        parsed = items[0]
+        tx = Transaction(
+            type=parsed["type"],
+            amount=parsed["amount"],
+            account=parsed["account"],
+            category=parsed["category"],
+            description=parsed["description"],
+            raw_text=parsed.get("raw_text", ""),
+            date=now_wib.date()
+        )
+        db.add(tx)
+        db.commit()
+        db.refresh(tx)
 
-    send_message(chat_id, reply, reply_to_message_id=message_id)
+        type_label = "Pemasukan" if tx.type == "income" else "Pengeluaran"
+        icon = "💰" if tx.type == "income" else "💸"
+
+        reply = f"""✅ **Tercatat!**
+
+{icon} **{type_label}:** {format_rp(tx.amount)}
+📂 **Kategori:** {tx.category}
+💳 **Rekening:** {tx.account}
+📝 **Keterangan:** {tx.description}
+🕒 _{time_str} WIB_"""
+
+        if tx.type == "expense" and tx.account == "Mandiri" and tx.category in MANDIRI_ENVELOPES:
+            limit = MANDIRI_ENVELOPES[tx.category]
+            spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+                Transaction.account == "Mandiri",
+                Transaction.type == "expense",
+                Transaction.category == tx.category,
+                Transaction.date >= start_date
+            ).scalar()
+            spent_int = int(spent or 0)
+            rem = limit - spent_int
+            pct = round(spent_int / limit * 100, 1)
+            status_icon = "⚠️" if pct > 85 else "📊"
+            reply += f"\n\n{status_icon} **Status Amplop Mandiri (Bulan Ini):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
+
+        send_message(chat_id, reply, reply_to_message_id=message_id)
+        return
+
+    # If multiple transactions in one message
+    created_txs = []
+    total_amount = 0
+    categories_touched = set()
+
+    for parsed in items:
+        tx = Transaction(
+            type=parsed["type"],
+            amount=parsed["amount"],
+            account=parsed["account"],
+            category=parsed["category"],
+            description=parsed["description"],
+            raw_text=parsed.get("raw_text", ""),
+            date=now_wib.date()
+        )
+        db.add(tx)
+        created_txs.append(tx)
+        total_amount += tx.amount
+        if tx.account == "Mandiri" and tx.type == "expense":
+            categories_touched.add(tx.category)
+
+    db.commit()
+    for tx in created_txs:
+        db.refresh(tx)
+
+    lines = [f"✅ **{len(created_txs)} Transaksi Berhasil Dicatat!**\n"]
+    for idx, tx in enumerate(created_txs, 1):
+        icon = "💰" if tx.type == "income" else "💸"
+        lines.append(f"{idx}. {icon} **{format_rp(tx.amount)}** • {tx.description}\n   📂 `{tx.category}` • 💳 `{tx.account}`")
+
+    lines.append(f"\n💵 **Total:** {format_rp(total_amount)}")
+    lines.append(f"🕒 _{time_str} WIB_")
+
+    # Add envelope updates for all affected Mandiri categories
+    mandiri_status_lines = []
+    for cat in categories_touched:
+        if cat in MANDIRI_ENVELOPES:
+            limit = MANDIRI_ENVELOPES[cat]
+            spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+                Transaction.account == "Mandiri",
+                Transaction.type == "expense",
+                Transaction.category == cat,
+                Transaction.date >= start_date
+            ).scalar()
+            spent_int = int(spent or 0)
+            rem = limit - spent_int
+            pct = round(spent_int / limit * 100, 1)
+            mandiri_status_lines.append(f"• **{cat}:** {format_rp(spent_int)} / {format_rp(limit)} ({pct}%) ➔ Sisa: {format_rp(rem)}")
+
+    if mandiri_status_lines:
+        lines.append("\n📊 **Status Amplop Mandiri (Bulan Ini):**\n" + "\n".join(mandiri_status_lines))
+
+    send_message(chat_id, "\n".join(lines), reply_to_message_id=message_id)
 
 def process_update(update: dict):
     message = update.get("message")
