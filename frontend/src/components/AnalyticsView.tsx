@@ -351,12 +351,17 @@ export function AnalyticsView({ summary, formatRupiah }: AnalyticsViewProps) {
         ) : (
           <div className="space-y-4">
             {/* Visual Bars Container */}
-            <div className="flex items-end gap-1.5 sm:gap-2 h-36 pt-6 px-1 border-b border-obsidian-border">
-              {summary.daily_trend.map((d) => {
+            <div className="flex items-end gap-1.5 sm:gap-2 h-36 pt-6 px-1 border-b border-obsidian-border overflow-visible relative">
+              {summary.daily_trend.map((d, idx) => {
                 const maxVal = Math.max(...summary.daily_trend.map((t) => t.expense), idealDailyAvg, 1);
                 const heightPct = Math.min(100, Math.max(8, Math.round((d.expense / maxVal) * 100)));
                 const isOver = d.expense > idealDailyAvg * 1.25;
                 const isZero = d.expense === 0;
+
+                // Smart tooltip alignment to prevent edge clipping
+                const isLeftEdge = idx <= 1;
+                const isRightEdge = idx >= summary.daily_trend.length - 2;
+                const alignClass = isLeftEdge ? "left-0" : isRightEdge ? "right-0" : "left-1/2 -translate-x-1/2";
 
                 return (
                   <div
@@ -364,7 +369,7 @@ export function AnalyticsView({ summary, formatRupiah }: AnalyticsViewProps) {
                     className="flex-1 flex flex-col items-center group relative h-full justify-end"
                   >
                     {/* Tooltip on hover */}
-                    <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-20 w-44 p-2.5 bg-obsidian-panel/95 backdrop-blur-md border border-obsidian-borderStrong rounded-xl shadow-xl text-[11px] font-mono space-y-1 transition-opacity">
+                    <div className={`opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${alignClass} w-44 p-2.5 bg-obsidian-panel/95 backdrop-blur-md border border-obsidian-borderStrong rounded-xl shadow-xl text-[11px] font-mono space-y-1 transition-opacity`}>
                       <div className="font-bold text-slateText-primary border-b border-obsidian-border pb-1">
                         {formatDateIndo(d.date)}
                       </div>
