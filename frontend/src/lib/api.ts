@@ -4,6 +4,9 @@ export interface UserProfile {
   email: string | null;
   full_name: string;
   telegram_chat_id: number | null;
+  telegram_bot_username?: string | null;
+  telegram_mode?: "shared" | "custom" | null;
+  avatar_url?: string | null;
   is_active: boolean;
   is_onboarded: boolean;
   created_at?: string;

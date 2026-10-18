@@ -16,6 +16,7 @@ from app.db.session import SessionLocal, Base, engine
 from app.models.transaction import Transaction
 from app.models.account import Account
 from app.models.paycheck import PaycheckConfig
+from app.models.user import User
 
 API_BASE = f"https://api.telegram.org/bot{settings.BOT_TOKEN}"
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
@@ -23,20 +24,21 @@ WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 def format_rp(amount: int) -> str:
     return f"Rp {amount:,}".replace(",", ".")
 
-def get_safe_to_spend_snippet(db: Session) -> str:
+def get_safe_to_spend_snippet(db: Session, user_id: int = 1) -> str:
     now_wib = datetime.now(WIB)
     today_wib = now_wib.date()
 
-    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
     pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
 
     latest_paycheck = db.query(Transaction).filter(
+        Transaction.user_id == user_id,
         Transaction.type == "income",
         (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
     ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
 
-    cycle_start = latest_paycheck.date if latest_paycheck else today_wib
+    cycle_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else (latest_paycheck.date if latest_paycheck else today_wib)
     cycle_end = cycle_start + timedelta(days=cycle_days - 1)
     days_passed = (today_wib - cycle_start).days + 1
     day_of_cycle = min(cycle_days, max(1, days_passed))
@@ -45,16 +47,18 @@ def get_safe_to_spend_snippet(db: Session) -> str:
     pocket_income_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("inc")
     ).filter(
+        Transaction.user_id == user_id,
         Transaction.account == pocket_account,
         Transaction.type == "income",
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
     ).first()
-    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else 825000
+    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (cfg.total_salary if cfg else 825000)
 
     spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
     ).filter(
+        Transaction.user_id == user_id,
         Transaction.account == pocket_account,
         Transaction.type == "expense",
         Transaction.date >= cycle_start,
@@ -107,8 +111,9 @@ def setup_bot_commands():
     except Exception as e:
         print(f"Error registering bot commands: {e}")
 
-def send_message(chat_id: int, text: str, parse_mode: str = "Markdown", reply_to_message_id: Optional[int] = None, reply_markup: Optional[dict] = None):
-    url = f"{API_BASE}/sendMessage"
+def send_message(chat_id: int, text: str, parse_mode: str = "Markdown", reply_to_message_id: Optional[int] = None, reply_markup: Optional[dict] = None, bot_token: Optional[str] = None):
+    token = bot_token or settings.BOT_TOKEN
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = {
         "chat_id": chat_id,
         "text": text,
@@ -125,44 +130,46 @@ def send_message(chat_id: int, text: str, parse_mode: str = "Markdown", reply_to
         print(f"Error sending message: {e}")
         return None
 
-def handle_menu(chat_id: int):
+def handle_menu(chat_id: int, bot_token: Optional[str] = None):
     msg = "📱 **Menu Navigasi AI7 Finance**\n\nGunakan tombol di bawah untuk akses cepat, atau ketik langsung pengeluaran lo (contoh: `makan siang 25k`)."
-    send_message(chat_id, msg, reply_markup=MAIN_KEYBOARD)
+    send_message(chat_id, msg, reply_markup=MAIN_KEYBOARD, bot_token=bot_token)
 
-def send_dashboard_link(chat_id: int):
+def send_dashboard_link(chat_id: int, bot_token: Optional[str] = None):
     url = "https://alifihsan-studio.tailbdd42d.ts.net:8443"
     inline_kb = {
         "inline_keyboard": [
             [{"text": "🚀 Buka Web Dashboard", "url": url}]
         ]
     }
-    send_message(chat_id, f"🌐 **Web Dashboard AI7 Finance:**\n`{url}`\n\nAkses aman via Tailscale untuk review bulanan & detail transaksi.", reply_markup=inline_kb)
+    send_message(chat_id, f"🌐 **Web Dashboard AI7 Finance:**\n`{url}`\n\nAkses aman via Tailscale untuk review bulanan & detail transaksi.", reply_markup=inline_kb, bot_token=bot_token)
 
-def handle_start(chat_id: int):
-    msg = """👋 **Halo, Alif! Selamat datang di AI7 Finance Bot.**
+def handle_start(chat_id: int, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_name = user.full_name if user else "Kawan"
+    msg = f"""👋 **Halo, {user_name}! Selamat datang di AI7 Finance Bot.**
 
-Bot ini dirancang khusus terintegrasi dengan PostgreSQL dan formula alokasi 14 harian lo.
+Bot ini terintegrasi langsung dengan Web Dashboard AI7 Finance lo.
 
 💡 **Cara Input Praktis:**
 • ✍️ **Ketik Teks Bebas:** `nasi padang 25k`, `kopi tuku 22k`, `laundry 35rb`, `isi galon 8k`
-• 📸 **Kirim Foto Struk / QRIS:** Cukup kirim foto struk belanja atau screenshot QRIS kasir / Livin Mandiri
-• 🎙️ **Kirim Voice Note:** Cukup rekam suara lo (misal: *"beli makan siang 28 ribu pakai mandiri"*)
+• 📸 **Kirim Foto Struk / QRIS:** Cukup kirim foto struk belanja kasir atau screenshot QRIS
+• 🎙️ **Kirim Voice Note:** Rekam suara lo (misal: *"beli makan siang 28 ribu pakai mandiri"*)
 • 🔄 **Transfer Rekening:** `tf 100k mandiri ke bri 1 tabungan`
 
 📌 **Perintah Tersedia:**
-• `/gajian [nominal]` - Catat gajian & split otomatis ke 5 rekening
-• `/sheets` - Sinkronisasi & buka snapshot siklus 14 hari di Google Sheets
+• `/saldo` - Estimasi saldo per rekening & total net worth
 • `/rekap` - Ringkasan pengeluaran bulan ini
-• `/saldo` - Estimasi saldo per rekening
-• `/subs` - Cek jadwal langganan & tagihan rutin
 • `/transaksi` - 5 transaksi terakhir
-• `/batal` - Hapus/batalkan input terakhir jika salah
+• `/batal` - Hapus/batalkan transaksi terakhir jika salah
+• `/subs` - Cek jadwal langganan & tagihan rutin
+• `/goals` - Pantau target finansial & milestone
+• `/gajian [nominal]` - Catat gajian & split alokasi rekening
 • `/menu` - Tampilkan tombol menu cepat
 
 Tinggal ketik catatan pengeluaran/pemasukan lo kapan saja!"""
-    send_message(chat_id, msg, reply_markup=MAIN_KEYBOARD)
+    send_message(chat_id, msg, reply_markup=MAIN_KEYBOARD, bot_token=bot_token)
 
-def handle_rekap(chat_id: int, db: Session):
+def handle_rekap(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
     now = datetime.now(WIB)
     month_names = [
         "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -176,6 +183,7 @@ def handle_rekap(chat_id: int, db: Session):
         Transaction.type,
         func.coalesce(func.sum(Transaction.amount), 0).label("total")
     ).filter(
+        Transaction.user_id == user_id,
         Transaction.date >= start_date,
         Transaction.date < end_date
     ).group_by(Transaction.type).all()
@@ -195,6 +203,7 @@ def handle_rekap(chat_id: int, db: Session):
         func.sum(Transaction.amount).label("total"),
         func.count(Transaction.id).label("count")
     ).filter(
+        Transaction.user_id == user_id,
         Transaction.date >= start_date,
         Transaction.date < end_date,
         Transaction.type == "expense"
@@ -214,21 +223,24 @@ def handle_rekap(chat_id: int, db: Session):
         for cat in cat_rows:
             lines.append(f"• **{cat.category}**: {format_rp(int(cat.total))} ({cat.count}x)")
 
-    lines.append(f"\n{get_safe_to_spend_snippet(db)}")
-    send_message(chat_id, "\n".join(lines))
+    lines.append(f"\n{get_safe_to_spend_snippet(db, user_id=user_id)}")
+    send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
-def handle_saldo(chat_id: int, db: Session):
+def handle_saldo(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
     rows = db.query(
         Transaction.account,
         func.sum(
-            case((Transaction.type == "income", Transaction.amount), else_=-Transaction.amount)
+            case((Transaction.type.in_(["income", "transfer_in"]), Transaction.amount), else_=-Transaction.amount)
         ).label("balance")
+    ).filter(
+        Transaction.user_id == user_id
     ).group_by(Transaction.account).order_by(func.sum(
-        case((Transaction.type == "income", Transaction.amount), else_=-Transaction.amount)
+        case((Transaction.type.in_(["income", "transfer_in"]), Transaction.amount), else_=-Transaction.amount)
     ).desc()).all()
 
     if not rows:
-        send_message(chat_id, "ℹ️ Belum ada data transaksi untuk menghitung saldo.")
+        send_message(chat_id, "ℹ️ Belum ada data transaksi untuk menghitung saldo.", bot_token=bot_token)
         return
 
     lines = ["💳 **Estimasi Saldo per Rekening:**\n"]
@@ -239,13 +251,14 @@ def handle_saldo(chat_id: int, db: Session):
         lines.append(f"• **{b.account}**: {format_rp(bal)}")
 
     lines.append(f"\n💵 **Total Keseluruhan:** {format_rp(total)}")
-    lines.append(f"\n{get_safe_to_spend_snippet(db)}")
-    send_message(chat_id, "\n".join(lines))
+    lines.append(f"\n{get_safe_to_spend_snippet(db, user_id=user_id)}")
+    send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
-def handle_transaksi(chat_id: int, db: Session):
-    recent = db.query(Transaction).order_by(desc(Transaction.id)).limit(5).all()
+def handle_transaksi(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
+    recent = db.query(Transaction).filter(Transaction.user_id == user_id).order_by(desc(Transaction.id)).limit(5).all()
     if not recent:
-        send_message(chat_id, "ℹ️ Belum ada riwayat transaksi.")
+        send_message(chat_id, "ℹ️ Belum ada riwayat transaksi.", bot_token=bot_token)
         return
 
     lines = ["🕒 **5 Transaksi Terakhir:**\n"]
@@ -254,19 +267,20 @@ def handle_transaksi(chat_id: int, db: Session):
         time_str = t.created_at.astimezone(WIB).strftime("%Y-%m-%d %H:%M") if t.created_at else str(t.date)
         lines.append(f"{icon} **{t.description}** ({t.category})\n   {format_rp(t.amount)} via `{t.account}` • _{time_str}_\n")
 
-    send_message(chat_id, "\n".join(lines))
+    send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
-def handle_subs(chat_id: int, db: Session):
+def handle_subs(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
     from app.models.subscription import Subscription
     from app.api.v1.endpoints.subscriptions import compute_due_info
 
-    subs = db.query(Subscription).filter(Subscription.is_active == True).all()
+    subs = db.query(Subscription).filter(Subscription.user_id == user_id, Subscription.is_active == True).all()
     if not subs:
-        send_message(chat_id, "ℹ️ Belum ada langganan / tagihan rutin yang aktif.")
+        send_message(chat_id, "ℹ️ Belum ada langganan / tagihan rutin yang aktif.", bot_token=bot_token)
         return
 
     now_date = datetime.now(WIB).date()
-    lines = ["💳 **Daftar Langganan & Tagihan Rutin (Jago):**\n"]
+    lines = ["💳 **Daftar Langganan & Tagihan Rutin:**\n"]
     total = 0
 
     # Sort subs by due date
@@ -299,16 +313,16 @@ def handle_subs(chat_id: int, db: Session):
         lines.append(f"• **{s.name}**: {format_rp(s.amount)}/bln\n  └ {due_str} ({s.category})")
 
     lines.append(f"\n💵 **Total Komitmen Bulanan:** {format_rp(total)}")
-    lines.append("💡 _Saldo pos Jago lo disiapkan otomatis dari 31.7% gajian._")
-    send_message(chat_id, "\n".join(lines))
+    send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
-def handle_goals(chat_id: int, db: Session):
+def handle_goals(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
     from app.models.goal import Goal
     from app.api.v1.endpoints.goals import compute_goal_metrics
 
-    goals = db.query(Goal).filter(Goal.is_active == True).order_by(Goal.id.asc()).all()
+    goals = db.query(Goal).filter(Goal.user_id == user_id, Goal.is_active == True).order_by(Goal.id.asc()).all()
     if not goals:
-        send_message(chat_id, "🎯 **Belum ada Target Finansial**\n\nBuat target baru via Web Dashboard atau hubungi AI7.")
+        send_message(chat_id, "🎯 **Belum ada Target Finansial**\n\nBuat target baru via Web Dashboard.", bot_token=bot_token)
         return
 
     lines = ["🎯 **PROGRESS TARGET & GOALS FINANSIAL**\n"]
@@ -340,19 +354,21 @@ def handle_goals(chat_id: int, db: Session):
     lines.append("💡 _Saldo terupdate otomatis dari mutasi rekening atau dapat disesuaikan di Web Dashboard._")
     send_message(chat_id, "\n".join(lines))
 
-def send_chat_action(chat_id: int, action: str = "typing"):
+def send_chat_action(chat_id: int, action: str = "typing", bot_token: Optional[str] = None):
+    token = bot_token or settings.BOT_TOKEN
     try:
-        requests.post(f"{API_BASE}/sendChatAction", json={"chat_id": chat_id, "action": action}, timeout=5)
+        requests.post(f"https://api.telegram.org/bot{token}/sendChatAction", json={"chat_id": chat_id, "action": action}, timeout=5)
     except Exception:
         pass
 
-def download_telegram_file(file_id: str):
+def download_telegram_file(file_id: str, bot_token: Optional[str] = None):
+    token = bot_token or settings.BOT_TOKEN
     try:
-        url = f"{API_BASE}/getFile?file_id={file_id}"
+        url = f"https://api.telegram.org/bot{token}/getFile?file_id={file_id}"
         resp = requests.get(url, timeout=15)
         if resp.status_code == 200 and resp.json().get("ok"):
             file_path = resp.json()["result"]["file_path"]
-            dl_url = f"https://api.telegram.org/file/bot{settings.BOT_TOKEN}/{file_path}"
+            dl_url = f"https://api.telegram.org/file/bot{token}/{file_path}"
             dl_resp = requests.get(dl_url, timeout=30)
             if dl_resp.status_code == 200:
                 return dl_resp.content, file_path
@@ -360,7 +376,7 @@ def download_telegram_file(file_id: str):
         print(f"Error downloading Telegram file {file_id}: {e}")
     return None, None
 
-def get_acc_balance(acc_name: str, db: Session) -> int:
+def get_acc_balance(acc_name: str, db: Session, user_id: int = 1) -> int:
     row = db.query(
         func.coalesce(
             func.sum(
@@ -371,10 +387,10 @@ def get_acc_balance(acc_name: str, db: Session) -> int:
                 )
             ), 0
         )
-    ).filter(Transaction.account == acc_name).scalar()
+    ).filter(Transaction.user_id == user_id, Transaction.account == acc_name).scalar()
     return int(row or 0)
 
-def normalize_account(raw: str, db: Optional[Session] = None):
+def normalize_account(raw: str, db: Optional[Session] = None, user_id: int = 1):
     if not raw:
         return None
     r = raw.strip().lower()
@@ -391,12 +407,13 @@ def normalize_account(raw: str, db: Optional[Session] = None):
     elif "cash" in r or "tunai" in r:
         return "Cash"
     if db:
-        for acc in db.query(Account).all():
+        for acc in db.query(Account).filter(Account.user_id == user_id).all():
             if acc.name.lower() in r or r in acc.name.lower():
                 return acc.name
     return raw.strip().title()
 
-def handle_transfer(chat_id: int, text: str, db: Session):
+def handle_transfer(chat_id: int, text: str, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
     clean = text.strip()
     if clean.lower() in ["/transfer", "transfer", "tf", "🔄 transfer"]:
         guide = """🔄 **Panduan Transfer Antar Rekening**
@@ -415,33 +432,33 @@ atau singkat:
 `Mandiri`, `Jago`, `BRI 1`, `BRI 2`, `Cash`
 
 ℹ️ _Transfer antar rekening hanya memindahkan saldo & tidak memotong batas pengeluaran (Safe-to-Spend)._"""
-        send_message(chat_id, guide)
+        send_message(chat_id, guide, bot_token=bot_token)
         return
 
     pattern = re.compile(r"^(?:/transfer|transfer|tf)\s+([\d\.\,kKrbRB]+)\s+(?:dari\s+)?([a-zA-Z0-9\s]+?)\s+ke\s+([a-zA-Z0-9\s]+?)(?:\s*[:\-]\s*(.*)|\s+(.*))?$", re.IGNORECASE)
     match = pattern.match(clean)
     if not match:
-        send_message(chat_id, "⚠️ Format transfer tidak dikenali.\n\nContoh:\n`tf 100k mandiri ke bri 1`\natau ketik `/transfer` untuk panduan lengkap.")
+        send_message(chat_id, "⚠️ Format transfer tidak dikenali.\n\nContoh:\n`tf 100k mandiri ke bri 1`\natau ketik `/transfer` untuk panduan lengkap.", bot_token=bot_token)
         return
 
     amt_str, from_raw, to_raw, desc1, desc2 = match.groups()
     from app.core.parser import parse_amount
     amt, _ = parse_amount(amt_str)
     if not amt or amt <= 0:
-        send_message(chat_id, "⚠️ Nominal transfer tidak valid.")
+        send_message(chat_id, "⚠️ Nominal transfer tidak valid.", bot_token=bot_token)
         return
 
-    from_acc = normalize_account(from_raw)
-    to_acc = normalize_account(to_raw)
+    from_acc = normalize_account(from_raw, db, user_id=user_id)
+    to_acc = normalize_account(to_raw, db, user_id=user_id)
 
     if not from_acc:
-        send_message(chat_id, f"⚠️ Rekening asal `{from_raw}` tidak dikenali.\nPilihan: Mandiri, Jago, BRI 1, BRI 2, Cash.")
+        send_message(chat_id, f"⚠️ Rekening asal `{from_raw}` tidak dikenali.\nPilihan: Mandiri, Jago, BRI 1, BRI 2, Cash.", bot_token=bot_token)
         return
     if not to_acc:
-        send_message(chat_id, f"⚠️ Rekening tujuan `{to_raw}` tidak dikenali.\nPilihan: Mandiri, Jago, BRI 1, BRI 2, Cash.")
+        send_message(chat_id, f"⚠️ Rekening tujuan `{to_raw}` tidak dikenali.\nPilihan: Mandiri, Jago, BRI 1, BRI 2, Cash.", bot_token=bot_token)
         return
     if from_acc == to_acc:
-        send_message(chat_id, "⚠️ Rekening asal dan rekening tujuan tidak boleh sama.")
+        send_message(chat_id, "⚠️ Rekening asal dan rekening tujuan tidak boleh sama.", bot_token=bot_token)
         return
 
     desc = (desc1 or desc2 or "Transfer Antar Rekening").strip()
@@ -449,6 +466,7 @@ atau singkat:
     tx_date = now_wib.date()
 
     tx_out = Transaction(
+        user_id=user_id,
         type="transfer_out",
         amount=int(amt),
         account=from_acc,
@@ -458,6 +476,7 @@ atau singkat:
         date=tx_date
     )
     tx_in = Transaction(
+        user_id=user_id,
         type="transfer_in",
         amount=int(amt),
         account=to_acc,
@@ -471,8 +490,8 @@ atau singkat:
     db.add(tx_in)
     db.commit()
 
-    bal_from = get_acc_balance(from_acc, db)
-    bal_to = get_acc_balance(to_acc, db)
+    bal_from = get_acc_balance(from_acc, db, user_id=user_id)
+    bal_to = get_acc_balance(to_acc, db, user_id=user_id)
 
     res_msg = f"""🔄 **Transfer Antar Rekening Berhasil!**
 
@@ -482,12 +501,13 @@ atau singkat:
 📝 **Keterangan:** {desc}
 
 ℹ️ _Saldo berhasil dipindahkan. Transaksi ini tidak memotong kuota Safe-to-Spend._"""
-    send_message(chat_id, res_msg)
+    send_message(chat_id, res_msg, bot_token=bot_token)
 
-def handle_batal(chat_id: int, db: Session):
-    last = db.query(Transaction).order_by(desc(Transaction.id)).first()
+def handle_batal(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
+    last = db.query(Transaction).filter(Transaction.user_id == user_id).order_by(desc(Transaction.id)).first()
     if not last:
-        send_message(chat_id, "⚠️ Tidak ada transaksi yang bisa dibatalkan.")
+        send_message(chat_id, "⚠️ Tidak ada transaksi yang bisa dibatalkan.", bot_token=bot_token)
         return
 
     deleted_info = {
@@ -499,6 +519,7 @@ def handle_batal(chat_id: int, db: Session):
 
     if last.type == "transfer_in":
         prev = db.query(Transaction).filter(
+            Transaction.user_id == user_id,
             Transaction.id == last.id - 1,
             Transaction.type == "transfer_out",
             Transaction.amount == last.amount
@@ -517,11 +538,15 @@ def handle_batal(chat_id: int, db: Session):
 • **Kategori:** {deleted_info['category']}
 
 Catatan tersebut sudah dihapus dari database PostgreSQL."""
-    send_message(chat_id, msg)
+    send_message(chat_id, msg, bot_token=bot_token)
 
-def handle_gajian(chat_id: int, text: str, db: Session):
+def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    total = cfg.total_salary if cfg and cfg.total_salary > 0 else 1500000
+
     parts = text.split()
-    total = 1500000
     if len(parts) > 1:
         from app.core.parser import parse_amount
         parsed_amt, _ = parse_amount(parts[1])
@@ -530,20 +555,13 @@ def handle_gajian(chat_id: int, text: str, db: Session):
 
     now = datetime.now(WIB)
     cycle_start = now.date()
-    cycle_end = cycle_start + timedelta(days=13)
+    cycle_end = cycle_start + timedelta(days=cycle_days - 1)
 
-    if total == 1500000:
-        mandiri_amt = 825000
-        jago_amt = 275000
-        bibit_amt = 200000
-        bri1_amt = 100000
-        bri2_amt = 100000
-    else:
-        mandiri_amt = int(round(total * 0.55))
-        jago_amt = int(round(total * 0.18333333))
-        bibit_amt = int(round(total * 0.13333333))
-        bri1_amt = int(round(total * 0.06666667))
-        bri2_amt = total - (mandiri_amt + jago_amt + bibit_amt + bri1_amt)
+    mandiri_amt = int(round(total * 0.55))
+    jago_amt = int(round(total * 0.18333333))
+    bibit_amt = int(round(total * 0.13333333))
+    bri1_amt = int(round(total * 0.06666667))
+    bri2_amt = total - (mandiri_amt + jago_amt + bibit_amt + bri1_amt)
 
     allocations = [
         ("Mandiri", mandiri_amt, "Uang Saku Harian Mandiri (Makan, Jajan, Laundry, Galon)"),
@@ -555,6 +573,7 @@ def handle_gajian(chat_id: int, text: str, db: Session):
 
     for acc, amt, desc in allocations:
         tx = Transaction(
+            user_id=user_id,
             type="income",
             amount=amt,
             account=acc,
@@ -568,17 +587,18 @@ def handle_gajian(chat_id: int, text: str, db: Session):
     db.commit()
 
     sheet_info = ""
-    try:
-        from app.services.sheets_sync import sync_cycle_snapshot
-        res = sync_cycle_snapshot(db, cycle_start_date=cycle_start)
-        sheet_info = f"\n\n📑 **Google Sheets:** Tab `{res['sheet_title']}` otomatis dibuat & disinkronkan!"
-    except Exception as e:
-        print(f"Sheets auto-sync error: {e}")
+    if user_id == 1:
+        try:
+            from app.services.sheets_sync import sync_cycle_snapshot
+            res = sync_cycle_snapshot(db, cycle_start_date=cycle_start)
+            sheet_info = f"\n\n📑 **Google Sheets:** Tab `{res['sheet_title']}` otomatis dibuat & disinkronkan!"
+        except Exception as e:
+            print(f"Sheets auto-sync error: {e}")
 
     msg = f"""🎉 **GAJIAN MASUK & ALOKASI OTOMATIS TERCATAT!**
 
 💰 **Total Uang Saku:** {format_rp(total)}
-📅 **Siklus 14 Hari:** {cycle_start.strftime('%d %b')} – {cycle_end.strftime('%d %b %Y')}
+📅 **Siklus {cycle_days} Hari:** {cycle_start.strftime('%d %b')} – {cycle_end.strftime('%d %b %Y')}
 
 📊 **Distribusi Alokasi 5 Rekening:**
 • **Mandiri (55%):** {format_rp(mandiri_amt)}
@@ -592,25 +612,18 @@ def handle_gajian(chat_id: int, text: str, db: Session):
 • **BRI 2 (6.7%):** {format_rp(bri2_amt)}
   └ *Tabungan Terkunci*
 
-🛣️ **Panduan Rute Transfer Bebas Biaya Admin:**
-1️⃣ **BRImo (BRI 1):**
-   • Transfer sesama BRI ke **BRI 2** ({format_rp(bri2_amt)})
-   • Top up ke **Flip**: {format_rp(mandiri_amt + jago_amt + bibit_amt)}
-   • Sisa di **BRI 1**: {format_rp(bri1_amt)}
-2️⃣ **Flip (Gratis Antar-Bank):**
-   • Kirim ke **Mandiri**: {format_rp(mandiri_amt)}
-   • Kirim ke **Bank Jago**: {format_rp(jago_amt + bibit_amt)}
-3️⃣ **Bank Jago / Bibit:**
-   • Top up kantong Jago ke **Bibit**: {format_rp(bibit_amt)}
-   • Sisa di **Bank Jago**: {format_rp(jago_amt)} (untuk autodebet)
-
 🌐 *Gunakan Checklist Interaktif di Web Dashboard:*
 [Buka AI7 Finance Web Dashboard](https://alifihsan-studio.tailbdd42d.ts.net:8443/){sheet_info}"""
 
-    send_message(chat_id, msg)
+    send_message(chat_id, msg, bot_token=bot_token)
 
-def handle_sheets(chat_id: int, db: Session):
-    send_message(chat_id, "⏳ _Sedang menyinkronkan data snapshot siklus ke Google Sheets..._")
+def handle_sheets(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
+    if user_id != 1:
+        send_message(chat_id, "ℹ️ Integrasi Google Sheets dikonfigurasi khusus untuk akun admin utama.", bot_token=bot_token)
+        return
+
+    send_message(chat_id, "⏳ _Sedang menyinkronkan data snapshot siklus ke Google Sheets..._", bot_token=bot_token)
     try:
         from app.services.sheets_sync import sync_cycle_snapshot
         res = sync_cycle_snapshot(db)
@@ -624,17 +637,18 @@ def handle_sheets(chat_id: int, db: Session):
 • **Total Net Worth:** {format_rp(res['total_balance'])}
 
 🔗 [Buka Lembar Google Sheets]({res['spreadsheet_url']})"""
-        send_message(chat_id, msg)
+        send_message(chat_id, msg, bot_token=bot_token)
     except Exception as e:
-        send_message(chat_id, f"❌ Gagal sinkronisasi ke Google Sheets: {str(e)}")
+        send_message(chat_id, f"❌ Gagal sinkronisasi ke Google Sheets: {str(e)}", bot_token=bot_token)
 
-def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
+def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
     items = parse_multi_transactions(text)
     if not items:
         # Fall back to single parser to report specific error
         fallback = parse_transaction(text)
         err_msg = fallback.get("error", "Format tidak terdeteksi.")
-        send_message(chat_id, f"❌ {err_msg}", reply_to_message_id=message_id)
+        send_message(chat_id, f"❌ {err_msg}", reply_to_message_id=message_id, bot_token=bot_token)
         return
 
     now_wib = datetime.now(WIB)
@@ -652,6 +666,7 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
     if len(items) == 1:
         parsed = items[0]
         tx = Transaction(
+            user_id=user_id,
             type=parsed["type"],
             amount=parsed["amount"],
             account=parsed["account"],
@@ -678,6 +693,7 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
         if tx.type == "expense" and tx.account == "Mandiri" and tx.category in MANDIRI_ENVELOPES:
             limit = MANDIRI_ENVELOPES[tx.category]
             spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+                Transaction.user_id == user_id,
                 Transaction.account == "Mandiri",
                 Transaction.type == "expense",
                 Transaction.category == tx.category,
@@ -690,9 +706,9 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
             reply += f"\n\n{status_icon} **Status Amplop Mandiri (Bulan Ini):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
 
         if tx.type == "expense":
-            reply += f"\n\n{get_safe_to_spend_snippet(db)}"
+            reply += f"\n\n{get_safe_to_spend_snippet(db, user_id=user_id)}"
 
-        send_message(chat_id, reply, reply_to_message_id=message_id)
+        send_message(chat_id, reply, reply_to_message_id=message_id, bot_token=bot_token)
         return
 
     # If multiple transactions in one message
@@ -702,6 +718,7 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
 
     for parsed in items:
         tx = Transaction(
+            user_id=user_id,
             type=parsed["type"],
             amount=parsed["amount"],
             account=parsed["account"],
@@ -734,6 +751,7 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
         if cat in MANDIRI_ENVELOPES:
             limit = MANDIRI_ENVELOPES[cat]
             spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+                Transaction.user_id == user_id,
                 Transaction.account == "Mandiri",
                 Transaction.type == "expense",
                 Transaction.category == cat,
@@ -747,11 +765,12 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session):
     if mandiri_status_lines:
         lines.append("\n📊 **Status Amplop Mandiri (Bulan Ini):**\n" + "\n".join(mandiri_status_lines))
 
-    lines.append(f"\n{get_safe_to_spend_snippet(db)}")
+    lines.append(f"\n{get_safe_to_spend_snippet(db, user_id=user_id)}")
 
-    send_message(chat_id, "\n".join(lines), reply_to_message_id=message_id)
+    send_message(chat_id, "\n".join(lines), reply_to_message_id=message_id, bot_token=bot_token)
 
-def handle_media_message(chat_id: int, message: dict, message_id: int, db: Session):
+def handle_media_message(chat_id: int, message: dict, message_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
     photo = message.get("photo")
     doc = message.get("document")
     voice = message.get("voice")
@@ -777,7 +796,7 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
             mime_type = mime or "image/jpeg"
             action_type = "upload_photo"
         else:
-            send_message(chat_id, "⚠️ Dokumen ini bukan format gambar struk/QRIS yang didukung (.jpg, .png, .webp).", reply_to_message_id=message_id)
+            send_message(chat_id, "⚠️ Dokumen ini bukan format gambar struk/QRIS yang didukung (.jpg, .png, .webp).", reply_to_message_id=message_id, bot_token=bot_token)
             return
     elif voice:
         file_id = voice["file_id"]
@@ -792,10 +811,10 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
     else:
         return
 
-    send_chat_action(chat_id, action_type)
-    file_bytes, file_path = download_telegram_file(file_id)
+    send_chat_action(chat_id, action_type, bot_token=bot_token)
+    file_bytes, file_path = download_telegram_file(file_id, bot_token=bot_token)
     if not file_bytes:
-        send_message(chat_id, "❌ Gagal mengunduh media dari Telegram. Silakan coba kirim ulang.", reply_to_message_id=message_id)
+        send_message(chat_id, "❌ Gagal mengunduh media dari Telegram. Silakan coba kirim ulang.", reply_to_message_id=message_id, bot_token=bot_token)
         return
 
     if media_type == "image" and file_path:
@@ -804,7 +823,7 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
         elif file_path.lower().endswith(".webp"):
             mime_type = "image/webp"
 
-    db_accounts = [a.name for a in db.query(Account).all()]
+    db_accounts = [a.name for a in db.query(Account).filter(Account.user_id == user_id).all()]
     all_accounts = list(set(["Mandiri", "Bank Jago", "Bibit", "BRI 1", "BRI 2"] + db_accounts))
 
     from app.services.ai_extractor import extract_from_media
@@ -818,7 +837,7 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
 
     if not extraction.get("success"):
         err = extraction.get("error", "Gagal memproses media.")
-        send_message(chat_id, f"❌ {err}", reply_to_message_id=message_id)
+        send_message(chat_id, f"❌ {err}", reply_to_message_id=message_id, bot_token=bot_token)
         return
 
     if not extraction.get("detected") or not extraction.get("transactions"):
@@ -827,7 +846,8 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
         send_message(
             chat_id,
             f"⚠️ **Tidak Terdeteksi Transaksi pada {kind_name}**\n\n_{reason}_\n\n💡 _Tips: Pastikan foto struk/QRIS terang dan terbaca jelas, atau sebutkan nominal dan pengeluaran secara spesifik pada voice note._",
-            reply_to_message_id=message_id
+            reply_to_message_id=message_id,
+            bot_token=bot_token
         )
         return
 
@@ -858,12 +878,13 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
         tx_type = item.get("type", "expense")
 
         if tx_type == "transfer":
-            from_acc = normalize_account(item.get("from_account", "Mandiri"), db) or "Mandiri"
-            to_acc = normalize_account(item.get("to_account", "Bibit"), db) or "Bibit"
+            from_acc = normalize_account(item.get("from_account", "Mandiri"), db, user_id=user_id) or "Mandiri"
+            to_acc = normalize_account(item.get("to_account", "Bibit"), db, user_id=user_id) or "Bibit"
             amt = int(item.get("amount", 0))
             desc = item.get("description", "Transfer Media")
 
             tx_out = Transaction(
+                user_id=user_id,
                 type="transfer_out",
                 amount=amt,
                 account=from_acc,
@@ -873,6 +894,7 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
                 date=now_wib.date()
             )
             tx_in = Transaction(
+                user_id=user_id,
                 type="transfer_in",
                 amount=amt,
                 account=to_acc,
@@ -885,8 +907,8 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
             db.add(tx_in)
             db.commit()
 
-            bal_from = get_acc_balance(from_acc, db)
-            bal_to = get_acc_balance(to_acc, db)
+            bal_from = get_acc_balance(from_acc, db, user_id=user_id)
+            bal_to = get_acc_balance(to_acc, db, user_id=user_id)
 
             reply = f"""{media_header}
 {quote_line}
@@ -899,15 +921,16 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
 🕒 _{time_str} WIB_
 
 ℹ️ _Saldo berhasil dipindahkan. Transaksi ini tidak memotong kuota Safe-to-Spend._"""
-            send_message(chat_id, reply, reply_to_message_id=message_id)
+            send_message(chat_id, reply, reply_to_message_id=message_id, bot_token=bot_token)
             return
 
         amt = int(item.get("amount", 0))
-        acc = normalize_account(item.get("account", "Mandiri"), db) or "Mandiri"
+        acc = normalize_account(item.get("account", "Mandiri"), db, user_id=user_id) or "Mandiri"
         cat = item.get("category", "Lain-lain")
         desc = item.get("description", "Pengeluaran Media")
 
         tx = Transaction(
+            user_id=user_id,
             type=tx_type,
             amount=amt,
             account=acc,
@@ -934,6 +957,7 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
         if tx.type == "expense" and tx.account == "Mandiri" and tx.category in MANDIRI_ENVELOPES:
             limit = MANDIRI_ENVELOPES[tx.category]
             spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+                Transaction.user_id == user_id,
                 Transaction.account == "Mandiri",
                 Transaction.type == "expense",
                 Transaction.category == tx.category,
@@ -946,9 +970,9 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
             reply += f"\n\n{status_icon} **Status Amplop Mandiri (Bulan Ini):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
 
         if tx.type == "expense":
-            reply += f"\n\n{get_safe_to_spend_snippet(db)}"
+            reply += f"\n\n{get_safe_to_spend_snippet(db, user_id=user_id)}"
 
-        send_message(chat_id, reply, reply_to_message_id=message_id)
+        send_message(chat_id, reply, reply_to_message_id=message_id, bot_token=bot_token)
         return
 
     # Multiple transactions
@@ -959,11 +983,12 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
     for item in tx_list:
         tx_type = item.get("type", "expense")
         amt = int(item.get("amount", 0))
-        acc = normalize_account(item.get("account", "Mandiri"), db) or "Mandiri"
+        acc = normalize_account(item.get("account", "Mandiri"), db, user_id=user_id) or "Mandiri"
         cat = item.get("category", "Lain-lain")
         desc = item.get("description", "Pengeluaran Media")
 
         tx = Transaction(
+            user_id=user_id,
             type=tx_type,
             amount=amt,
             account=acc,
@@ -999,6 +1024,7 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
         if cat in MANDIRI_ENVELOPES:
             limit = MANDIRI_ENVELOPES[cat]
             spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+                Transaction.user_id == user_id,
                 Transaction.account == "Mandiri",
                 Transaction.type == "expense",
                 Transaction.category == cat,
@@ -1012,32 +1038,55 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
     if mandiri_status_lines:
         lines.append("\n📊 **Status Amplop Mandiri (Bulan Ini):**\n" + "\n".join(mandiri_status_lines))
 
-    lines.append(f"\n{get_safe_to_spend_snippet(db)}")
+    lines.append(f"\n{get_safe_to_spend_snippet(db, user_id=user_id)}")
 
-    send_message(chat_id, "\n".join([line for line in lines if line]), reply_to_message_id=message_id)
+    send_message(chat_id, "\n".join([line for line in lines if line]), reply_to_message_id=message_id, bot_token=bot_token)
 
-def process_update(update: dict):
+def process_update(update: dict, bot_token: Optional[str] = None, user_override: Optional[User] = None):
     message = update.get("message")
     if not message:
         return
 
-    user = message.get("from", {})
-    user_id = user.get("id")
+    tg_user = message.get("from", {})
     chat_id = message.get("chat", {}).get("id")
     text = (message.get("text") or "").strip()
     message_id = message.get("message_id")
 
-    if user_id != settings.ALLOWED_USER_ID:
-        print(f"Blocked unauthorized user: {user_id} ({user.get('username')})")
-        send_message(chat_id, "⛔ Akses ditolak. Bot ini bersifat privat.")
+    if not chat_id:
         return
-
-    has_media = bool(message.get("photo") or message.get("voice") or message.get("audio") or message.get("document"))
 
     db = SessionLocal()
     try:
+        user = user_override
+        if not user:
+            # Look up user by telegram_chat_id
+            user = db.query(User).filter(User.telegram_chat_id == str(chat_id)).first()
+            if not user and chat_id == settings.ALLOWED_USER_ID:
+                user = db.query(User).filter(User.id == 1).first()
+
+        # If user is not recognized and this is Shared Bot
+        if not user:
+            lower_text = text.lower()
+            unlinked_msg = f"""👋 **Selamat Datang di AI7 Finance Bot!**
+
+🆔 **Chat ID Telegram Kamu:**
+`{chat_id}`
+
+📌 **Langkah Menghubungkan Akun:**
+1️⃣ Salin Chat ID di atas: `{chat_id}`
+2️⃣ Buka [AI7 Finance Web Dashboard](https://alifihsan-studio.tailbdd42d.ts.net:8443/)
+3️⃣ Buka modal **Profil Pengguna** ➔ Tab **Integrasi Telegram**
+4️⃣ Pilih mode **Shared Bot** dan tempelkan Chat ID kamu
+5️⃣ Klik **Hubungkan Telegram**
+
+Setelah terhubung, kamu bisa langsung mencatat pengeluaran, struk kasir, QRIS, dan voice note di sini! 🚀"""
+            send_message(chat_id, unlinked_msg, bot_token=bot_token)
+            return
+
+        has_media = bool(message.get("photo") or message.get("voice") or message.get("audio") or message.get("document"))
+
         if has_media:
-            handle_media_message(chat_id, message, message_id, db)
+            handle_media_message(chat_id, message, message_id, db, user=user, bot_token=bot_token)
             return
 
         if not text:
@@ -1046,43 +1095,43 @@ def process_update(update: dict):
         lower_text = text.lower()
         cmd = text.split()[0].lower()
         if lower_text in ["📊 rekap", "rekap"]:
-            handle_rekap(chat_id, db)
+            handle_rekap(chat_id, db, user=user, bot_token=bot_token)
         elif lower_text in ["💳 saldo", "saldo"]:
-            handle_saldo(chat_id, db)
+            handle_saldo(chat_id, db, user=user, bot_token=bot_token)
         elif lower_text in ["🎯 target & goals", "🎯 target", "target", "goals", "milestone"] or cmd in ["/goals", "/target", "/milestone"]:
-            handle_goals(chat_id, db)
+            handle_goals(chat_id, db, user=user, bot_token=bot_token)
         elif lower_text in ["🔔 tagihan / subs", "tagihan", "subs"]:
-            handle_subs(chat_id, db)
+            handle_subs(chat_id, db, user=user, bot_token=bot_token)
         elif lower_text in ["📜 transaksi", "transaksi", "history"]:
-            handle_transaksi(chat_id, db)
+            handle_transaksi(chat_id, db, user=user, bot_token=bot_token)
         elif lower_text in ["💰 info gajian"]:
-            handle_gajian(chat_id, "/gajian", db)
+            handle_gajian(chat_id, "/gajian", db, user=user, bot_token=bot_token)
         elif lower_text in ["📑 google sheets", "google sheets", "sheets"] or cmd in ["/sheets", "/sheet", "/sync_sheets"]:
-            handle_sheets(chat_id, db)
+            handle_sheets(chat_id, db, user=user, bot_token=bot_token)
         elif lower_text in ["🌐 web dashboard", "dashboard", "web"] or cmd in ["/web", "/dashboard"]:
-            send_dashboard_link(chat_id)
+            send_dashboard_link(chat_id, bot_token=bot_token)
         elif lower_text in ["📱 menu", "menu"] or cmd in ["/menu"]:
-            handle_menu(chat_id)
+            handle_menu(chat_id, bot_token=bot_token)
         elif lower_text in ["🔄 transfer", "transfer", "tf"] or cmd in ["/transfer", "/tf"] or lower_text.startswith("transfer ") or lower_text.startswith("tf "):
-            handle_transfer(chat_id, text, db)
+            handle_transfer(chat_id, text, db, user=user, bot_token=bot_token)
         elif cmd in ["/start", "/help"]:
-            handle_start(chat_id)
+            handle_start(chat_id, user=user, bot_token=bot_token)
         elif cmd in ["/gajian"]:
-            handle_gajian(chat_id, text, db)
+            handle_gajian(chat_id, text, db, user=user, bot_token=bot_token)
         elif cmd in ["/transfer", "🔄 transfer"]:
-            handle_transfer(chat_id, text, db)
+            handle_transfer(chat_id, text, db, user=user, bot_token=bot_token)
         elif cmd in ["/rekap", "/bulan"]:
-            handle_rekap(chat_id, db)
+            handle_rekap(chat_id, db, user=user, bot_token=bot_token)
         elif cmd in ["/saldo"]:
-            handle_saldo(chat_id, db)
+            handle_saldo(chat_id, db, user=user, bot_token=bot_token)
         elif cmd in ["/transaksi", "/history"]:
-            handle_transaksi(chat_id, db)
+            handle_transaksi(chat_id, db, user=user, bot_token=bot_token)
         elif cmd in ["/batal", "/undo", "/hapus"]:
-            handle_batal(chat_id, db)
+            handle_batal(chat_id, db, user=user, bot_token=bot_token)
         elif cmd in ["/subs", "/langganan", "/tagihan"]:
-            handle_subs(chat_id, db)
+            handle_subs(chat_id, db, user=user, bot_token=bot_token)
         else:
-            handle_text_message(chat_id, text, message_id, db)
+            handle_text_message(chat_id, text, message_id, db, user=user, bot_token=bot_token)
     finally:
         db.close()
 

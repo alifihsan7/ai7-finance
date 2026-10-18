@@ -29,6 +29,8 @@ class UserResponse(BaseModel):
     email: Optional[str] = None
     full_name: str
     telegram_chat_id: Optional[int] = None
+    telegram_bot_username: Optional[str] = None
+    telegram_mode: Optional[str] = "shared"
     avatar_url: Optional[str] = None
     is_active: bool
     is_onboarded: bool
@@ -47,6 +49,10 @@ class GoogleAuthRequest(BaseModel):
 
 class LinkTelegramRequest(BaseModel):
     telegram_chat_id: int
+
+class LinkTelegramCustomRequest(BaseModel):
+    bot_token: str
+    telegram_chat_id: Optional[int] = None
 
 class OnboardingAccountItem(BaseModel):
     name: str
