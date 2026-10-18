@@ -48,6 +48,7 @@ import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 import { PeriodSelector, PeriodOption } from "@/components/PeriodSelector";
+import { AnalyticsView } from "@/components/AnalyticsView";
 import { AuthModal } from "@/components/AuthModal";
 import { OnboardingWizardModal } from "@/components/OnboardingWizardModal";
 import { UserProfileModal } from "@/components/UserProfileModal";
@@ -66,6 +67,7 @@ interface MonthlySummary {
   total_balance: number;
   accounts: { account: string; balance: number; expense?: number }[];
   categories: { category: string; total: number; count: number; percentage: number }[];
+  daily_trend?: { date: string; income: number; expense: number }[];
   safe_to_spend?: {
     cycle_start: string;
     cycle_end: string;
@@ -1605,35 +1607,25 @@ export default function ObsidianDashboard() {
         {/* VIEW 6: ANALISIS & TREN */}
         {/* ============================================================== */}
         {activeNav === "Analisis & Tren" && (
-          <div className="space-y-8">
-            <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
-
-            <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-6 space-y-5">
-              <h3 className="font-bold text-base sm:text-lg text-slateText-primary">
-                Distribusi Kategori Pengeluaran Bulan Ini
-              </h3>
-              <div className="space-y-3.5">
-                {summary.categories.map((c) => (
-                  <div key={c.category} className="space-y-1.5">
-                    <div className="flex justify-between items-center gap-2 text-xs sm:text-sm">
-                      <span className="font-medium text-slateText-primary truncate">
-                        {c.category} ({c.count} transaksi)
-                      </span>
-                      <span className="font-mono font-bold text-amberGold shrink-0 whitespace-nowrap">
-                        {formatRupiah(c.total)} ({c.percentage}%)
-                      </span>
-                    </div>
-                    <div className="h-2 bg-obsidian-panel rounded-full overflow-hidden border border-obsidian-border">
-                      <div
-                        style={{ width: `${c.percentage}%` }}
-                        className="h-full bg-amberGold transition-all duration-500"
-                      ></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <AnalyticsView
+            summary={{
+              ...summary,
+              period_type: summary.period_type || "cycle",
+              period_label: summary.period_label || "",
+              start_date: summary.start_date || "",
+              end_date: summary.end_date || "",
+              month_num: 10,
+              year: 2026,
+              daily_trend: summary.daily_trend || [],
+              accounts: (summary.accounts || []).map((a) => ({
+                name: a.account,
+                type: "regular",
+                balance: a.balance,
+                expense: a.expense,
+              })),
+            }}
+            formatRupiah={formatRupiah}
+          />
         )}
         </div>
       </main>
