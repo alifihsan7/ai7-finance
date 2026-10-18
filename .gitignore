@@ -13,6 +13,14 @@ venv/
 .venv/
 env/
 
+# Node & Next.js
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
 # Editor & OS files
 .vscode/
 .idea/
