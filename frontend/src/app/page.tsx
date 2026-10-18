@@ -369,33 +369,33 @@ export default function ObsidianDashboard() {
   return (
     <div className="min-h-screen bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans">
       {/* SIDEBAR NAVIGATION (Matching user screenshot exactly) */}
-      <aside className="w-full md:w-64 bg-obsidian-panel border-r border-obsidian-border p-6 md:min-h-screen flex flex-col justify-between shrink-0">
+      <aside className="w-full md:w-68 lg:w-72 bg-obsidian-panel border-r border-obsidian-border p-5 lg:p-6 md:min-h-screen flex flex-col justify-between shrink-0">
         <div>
           {/* Logo & Brand */}
           <div className="flex items-center gap-2.5">
             <img
               src="/ai7-icon-rounded.svg"
               alt="AI7 Finance"
-              className="w-9 h-9 rounded-lg border border-obsidian-border shadow-xs"
+              className="w-9 h-9 rounded-lg border border-obsidian-border shadow-xs shrink-0"
             />
             <div>
-              <div className="font-bold text-lg tracking-tight text-slateText-primary leading-none">
+              <div className="font-bold text-lg tracking-tight text-slateText-primary leading-none whitespace-nowrap">
                 ai7<span className="text-amberGold">.</span>finance
               </div>
-              <div className="text-xs text-slateText-muted tracking-wider uppercase font-medium mt-1">
+              <div className="text-xs text-slateText-muted tracking-wider uppercase font-medium mt-1 whitespace-nowrap">
                 Obsidian Slate
               </div>
             </div>
           </div>
 
           {/* Navigation Items (Direct Match to Screenshot) */}
-          <nav className="mt-9 flex flex-col space-y-1.5">
+          <nav className="mt-8 flex flex-col space-y-1">
             {[
               { name: "Ringkasan", icon: LayoutDashboard, count: null },
-              { name: "Alokasi Amplop", icon: Layers, count: "4 pos" },
-              { name: "Rekening & Akun", icon: Wallet, count: "4 akun" },
+              { name: "Alokasi Amplop", icon: Layers, count: "4" },
+              { name: "Rekening & Akun", icon: Wallet, count: "4" },
               { name: "Buku Transaksi", icon: CreditCard, count: transactions.length },
-              { name: "Langganan & Tagihan", icon: Bell, count: `${subsData.items.length} subs` },
+              { name: "Langganan & Tagihan", icon: Bell, count: subsData.items.length },
               { name: "Analisis & Tren", icon: BarChart2, count: null },
             ].map((item) => {
               const isActive = activeNav === item.name;
@@ -404,18 +404,18 @@ export default function ObsidianDashboard() {
                 <button
                   key={item.name}
                   onClick={() => setActiveNav(item.name)}
-                  className={`flex justify-between items-center px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all text-left ${
+                  className={`flex justify-between items-center w-full px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all text-left whitespace-nowrap select-none ${
                     isActive
                       ? "text-slateText-primary bg-obsidian-hover border border-obsidian-borderStrong text-amberGold shadow-xs font-semibold"
                       : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-card"
                   }`}
                 >
-                  <span className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? "text-amberGold" : "text-slateText-muted"}`} />
-                    <span>{item.name}</span>
+                  <span className="flex items-center gap-2.5 min-w-0">
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-slateText-muted"}`} />
+                    <span className="truncate whitespace-nowrap">{item.name}</span>
                   </span>
                   {item.count !== null && (
-                    <span className="text-xs text-amberGold font-mono px-2 py-0.5 rounded-md bg-amberGold/10 border border-amberGold/20">
+                    <span className="text-xs text-amberGold font-mono px-2 py-0.5 rounded-md bg-amberGold/10 border border-amberGold/20 whitespace-nowrap shrink-0 ml-2">
                       {item.count}
                     </span>
                   )}
@@ -476,46 +476,46 @@ export default function ObsidianDashboard() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
             <button
               onClick={fetchData}
               title="Refresh Data"
-              className="px-3.5 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition flex items-center gap-2"
+              className="px-3 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-amberGold" : ""}`} />
-              <span className="hidden sm:inline">Refresh</span>
+              <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-amberGold" : ""}`} />
+              <span className="hidden sm:inline whitespace-nowrap">Refresh</span>
             </button>
             <a
               href="/api/v1/transactions/export"
               download
-              className="px-3.5 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition flex items-center gap-2"
+              className="px-3 py-2 text-xs sm:text-sm font-medium border border-obsidian-border rounded-lg bg-obsidian-card text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             >
-              <Download className="w-4 h-4 text-slateText-muted" />
-              <span className="hidden sm:inline">Ekspor CSV</span>
+              <Download className="w-4 h-4 text-slateText-muted shrink-0" />
+              <span className="hidden sm:inline whitespace-nowrap">Ekspor CSV</span>
             </a>
             {activeNav === "Langganan & Tagihan" ? (
               <button
                 onClick={() => setIsSubModalOpen(true)}
-                className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition flex items-center justify-center gap-2 shadow-sm"
+                className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap"
               >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>Tambah Tagihan</span>
+                <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                <span className="whitespace-nowrap">Tambah Tagihan</span>
               </button>
             ) : (
               <>
                 <button
                   onClick={() => setIsPaycheckModalOpen(true)}
-                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition flex items-center justify-center gap-2 shadow-xs"
+                  className="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap"
                 >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Gajian Masuk</span>
+                  <Sparkles className="w-4 h-4 shrink-0 text-mintRise" />
+                  <span className="whitespace-nowrap font-semibold">Gajian Masuk</span>
                 </button>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="flex-1 sm:flex-none px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition flex items-center justify-center gap-2 shadow-sm"
+                  className="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap"
                 >
-                  <Plus className="w-4 h-4 stroke-[2.5]" />
-                  <span>Catat Transaksi</span>
+                  <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                  <span className="whitespace-nowrap">Catat Transaksi</span>
                 </button>
               </>
             )}
