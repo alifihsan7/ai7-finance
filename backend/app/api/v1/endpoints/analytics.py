@@ -50,7 +50,7 @@ def get_available_periods(
     paycheck_rows = db.query(Transaction.date).filter(
         Transaction.user_id == current_user.id,
         Transaction.type == "income",
-        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
+        Transaction.category.in_(["Gajian", "Gaji", "Pemasukan", "Uang Saku Ortu", "Income"]) | Transaction.description.ilike("%gajian%") | Transaction.description.ilike("%pemasukan%")
     ).order_by(Transaction.date.desc()).distinct().all()
 
     cycles = []
@@ -152,7 +152,7 @@ def get_monthly_summary(
     paychecks = db.query(Transaction).filter(
         Transaction.user_id == current_user.id,
         Transaction.type == "income",
-        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
+        Transaction.category.in_(["Gajian", "Gaji", "Pemasukan", "Uang Saku Ortu", "Income"]) | Transaction.description.ilike("%gajian%") | Transaction.description.ilike("%pemasukan%")
     ).order_by(desc(Transaction.date), desc(Transaction.id)).all()
 
     # Default cycle anchor
