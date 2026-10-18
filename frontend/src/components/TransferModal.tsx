@@ -8,6 +8,7 @@ interface TransferModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  accountOptions?: { value: string; label: string; color?: string; description?: string }[];
 }
 
 const ACCOUNT_OPTIONS = [
@@ -19,7 +20,8 @@ const ACCOUNT_OPTIONS = [
   { value: "Cash", label: "Cash (Uang Tunai Dompet)", color: "bg-amber-500", description: "Uang tunai fisik" },
 ];
 
-export function TransferModal({ isOpen, onClose, onSuccess }: TransferModalProps) {
+export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: TransferModalProps) {
+  const options = accountOptions && accountOptions.length > 0 ? accountOptions : ACCOUNT_OPTIONS;
   const [fromAccount, setFromAccount] = useState("Mandiri");
   const [toAccount, setToAccount] = useState("Bank Jago");
   const [amount, setAmount] = useState<string>("");
@@ -97,7 +99,7 @@ export function TransferModal({ isOpen, onClose, onSuccess }: TransferModalProps
             <CustomSelect
               value={fromAccount}
               onChange={setFromAccount}
-              options={ACCOUNT_OPTIONS}
+              options={options}
             />
           </div>
 
@@ -108,7 +110,7 @@ export function TransferModal({ isOpen, onClose, onSuccess }: TransferModalProps
             <CustomSelect
               value={toAccount}
               onChange={setToAccount}
-              options={ACCOUNT_OPTIONS}
+              options={options}
             />
           </div>
         </div>

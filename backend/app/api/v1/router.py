@@ -1,7 +1,8 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import transactions, analytics, subscriptions
+from app.api.v1.endpoints import transactions, analytics, subscriptions, accounts
 
 api_router = APIRouter()
 api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
 api_router.include_router(subscriptions.router, prefix="/subscriptions", tags=["subscriptions"])
+api_router.include_router(accounts.router, prefix="/accounts", tags=["accounts"])

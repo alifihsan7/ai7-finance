@@ -15,22 +15,22 @@ export function MandiriEnvelopes({ mandiriExpenses, formatRupiah }: MandiriEnvel
     {
       title: "Makan Harian",
       limit: 450000,
-      spent: mandiriExpenses.makan || 45000,
+      spent: mandiriExpenses.makan,
     },
     {
       title: "Jajan & Kopi",
       limit: 100000,
-      spent: mandiriExpenses.jajan || 25000,
+      spent: mandiriExpenses.jajan,
     },
     {
       title: "Laundry",
       limit: 70000,
-      spent: mandiriExpenses.laundry || 0,
+      spent: mandiriExpenses.laundry,
     },
     {
       title: "Galon & Air",
       limit: 44000,
-      spent: mandiriExpenses.galon || 0,
+      spent: mandiriExpenses.galon,
     },
   ];
 
