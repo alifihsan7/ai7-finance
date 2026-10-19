@@ -1,6 +1,7 @@
 from typing import Optional
 from datetime import datetime, date, timedelta
 import zoneinfo
+import calendar
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -24,6 +25,31 @@ from app.core.config import settings
 router = APIRouter()
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 
+def get_monthly_date_bounds(ref_date: date, payday: int) -> tuple[date, date]:
+    """
+    Returns (cycle_start, cycle_end) for a recurring payday (1-31).
+    Clamps day to max days of month if necessary.
+    """
+    if ref_date.day >= payday:
+        start_year, start_month = ref_date.year, ref_date.month
+    else:
+        if ref_date.month == 1:
+            start_year, start_month = ref_date.year - 1, 12
+        else:
+            start_year, start_month = ref_date.year, ref_date.month - 1
+            
+    _, max_days_start = calendar.monthrange(start_year, start_month)
+    start_date = date(start_year, start_month, min(payday, max_days_start))
+    
+    if start_month == 12:
+        next_year, next_month = start_year + 1, 1
+    else:
+        next_year, next_month = start_year, start_month + 1
+        
+    _, max_days_next = calendar.monthrange(next_year, next_month)
+    end_date = date(next_year, next_month, min(payday, max_days_next)) - timedelta(days=1)
+    return start_date, end_date
+
 @router.get("/periods")
 def get_available_periods(
     current_user: User = Depends(get_current_user),
@@ -36,9 +62,12 @@ def get_available_periods(
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
     cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "biweekly"
     anchor_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else None
+    paycheck_day = cfg.paycheck_day if cfg and cfg.paycheck_day else (anchor_start.day if anchor_start else 25)
 
-    if cycle_days == 30 or cycle_type == "monthly":
-        label_prefix = "Siklus Bulanan"
+    if cycle_type == "monthly_date":
+        label_prefix = f"Siklus Bulanan (Tgl {paycheck_day})"
+    elif cycle_days == 30 or cycle_type == "monthly":
+        label_prefix = "Siklus Bulanan (30 Hari)"
     elif cycle_days == 14 or cycle_type == "biweekly":
         label_prefix = "Siklus 2-Mingguan"
     elif cycle_days == 7 or cycle_type == "weekly":
@@ -56,8 +85,11 @@ def get_available_periods(
     cycles = []
     # Jika tidak ada riwayat gajian, gunakan anchor onboarding atau hari ini
     if not paycheck_rows:
-        default_start = anchor_start or today_wib
-        default_end = default_start + timedelta(days=cycle_days - 1)
+        if cycle_type == "monthly_date":
+            default_start, default_end = get_monthly_date_bounds(today_wib, paycheck_day)
+        else:
+            default_start = anchor_start or today_wib
+            default_end = default_start + timedelta(days=cycle_days - 1)
         cycles.append({
             "id": f"cycle_{default_start}",
             "type": "cycle",
@@ -68,8 +100,11 @@ def get_available_periods(
         })
     else:
         for idx, row in enumerate(paycheck_rows):
-            c_start = row.date
-            c_end = c_start + timedelta(days=cycle_days - 1)
+            if cycle_type == "monthly_date":
+                c_start, c_end = get_monthly_date_bounds(row.date, paycheck_day)
+            else:
+                c_start = row.date
+                c_end = c_start + timedelta(days=cycle_days - 1)
             is_cur = (c_start <= today_wib <= c_end) or (idx == 0 and today_wib >= c_start)
             status_text = " (Aktif)" if is_cur else ""
             cycles.append({
@@ -203,8 +238,12 @@ def get_monthly_summary(
         cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
         cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "biweekly"
         anchor_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else None
+        paycheck_day = cfg.paycheck_day if cfg and cfg.paycheck_day else (anchor_start.day if anchor_start else 25)
 
-        if paychecks:
+        if cycle_type == "monthly_date":
+            cur_start, cur_end = get_monthly_date_bounds(today_wib, paycheck_day)
+            latest_cycle_start = cur_start
+        elif paychecks:
             latest_cycle_start = paychecks[0].date
         elif anchor_start:
             latest_cycle_start = anchor_start
@@ -223,12 +262,21 @@ def get_monthly_summary(
             try:
                 end_date = datetime.strptime(end, "%Y-%m-%d").date()
             except Exception:
-                end_date = start_date + timedelta(days=cycle_days - 1)
+                if cycle_type == "monthly_date":
+                    _, end_date = get_monthly_date_bounds(start_date, paycheck_day)
+                else:
+                    end_date = start_date + timedelta(days=cycle_days - 1)
         else:
-            end_date = start_date + timedelta(days=cycle_days - 1)
+            if cycle_type == "monthly_date":
+                _, end_date = get_monthly_date_bounds(start_date, paycheck_day)
+            else:
+                end_date = start_date + timedelta(days=cycle_days - 1)
 
-        if cycle_days == 30 or cycle_type == "monthly":
-            label_prefix = "Siklus Bulanan"
+        if cycle_type == "monthly_date":
+            cycle_days = (end_date - start_date).days + 1
+            label_prefix = f"Siklus Bulanan (Tgl {paycheck_day})"
+        elif cycle_days == 30 or cycle_type == "monthly":
+            label_prefix = "Siklus Bulanan (30 Hari)"
         elif cycle_days == 14 or cycle_type == "biweekly":
             label_prefix = "Siklus 2-Mingguan"
         elif cycle_days == 7 or cycle_type == "weekly":

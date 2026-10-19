@@ -75,6 +75,7 @@ class OnboardingRequest(BaseModel):
     initial_accounts: List[OnboardingAccountItem]
     cycle_type: str = "biweekly"
     cycle_days: int = 14
+    paycheck_day: Optional[int] = 25
     cycle_start_date: Optional[date] = None
     source_account: str = "BCA"
     use_gate: bool = True

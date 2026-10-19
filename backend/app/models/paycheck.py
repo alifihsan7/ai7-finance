@@ -12,6 +12,7 @@ class PaycheckConfig(Base):
     gate_name = Column(String(50), nullable=False, default="Flip")
     cycle_type = Column(String(30), nullable=False, default="biweekly")
     cycle_days = Column(Integer, nullable=False, default=14)
+    paycheck_day = Column(Integer, nullable=True, default=25)
     cycle_start_date = Column(Date, nullable=True)
     pocket_account = Column(String(50), nullable=False, default="Mandiri")
     is_active = Column(Boolean, nullable=False, default=True)
