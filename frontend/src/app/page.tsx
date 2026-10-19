@@ -1026,10 +1026,10 @@ export default function FinanceDashboard() {
         )}
 
         {/* Refined Obsidian Slate Top Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-6 border-b border-obsidian-border">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slateText-primary whitespace-nowrap">
+        <div className="flex flex-col 2xl:flex-row justify-between items-start 2xl:items-center gap-4 pb-5 sm:pb-6 border-b border-obsidian-border">
+          <div className="min-w-0 w-full 2xl:w-auto">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slateText-primary">
                 {activeNav === "Ringkasan" && "Ringkasan Portofolio & Alokasi"}
                 {activeNav === "Target Finansial" && "Target Finansial & Milestone Tabungan"}
                 {activeNav === "Alokasi Amplop" && "Alokasi Amplop & Plafon Belanja"}
@@ -1038,11 +1038,13 @@ export default function FinanceDashboard() {
                 {activeNav === "Langganan & Tagihan" && "Pelacak Langganan & Tagihan Rutin"}
                 {activeNav === "Analisis & Tren" && "Analisis Tren & Burn-Rate Pengeluaran"}
               </h1>
-              <PeriodSelector
-                key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
-                currentPeriod={selectedPeriod}
-                onSelectPeriod={(p) => setSelectedPeriod(p)}
-              />
+              <div className="shrink-0">
+                <PeriodSelector
+                  key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
+                  currentPeriod={selectedPeriod}
+                  onSelectPeriod={(p) => setSelectedPeriod(p)}
+                />
+              </div>
             </div>
             <p className="text-xs sm:text-sm text-slateText-secondary mt-1.5 line-clamp-1">
               {activeNav === "Ringkasan" && "Ikhtisar saldo real-time, laju belanja harian, dan alokasi anggaran"}
@@ -1056,7 +1058,7 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Action Toolbar */}
-          <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto justify-end shrink-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full 2xl:w-auto justify-start sm:justify-end">
             {/* Refresh Button (Icon-Only Compact) */}
             <button
               onClick={fetchData}
