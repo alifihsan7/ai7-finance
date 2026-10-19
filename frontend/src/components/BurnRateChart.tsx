@@ -36,8 +36,8 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
   const pocketAccount = summary.safe_to_spend?.pocket_account || "Saku Belanja";
   const maxBudget = summary.safe_to_spend?.pocket_budget && summary.safe_to_spend.pocket_budget > 0
     ? summary.safe_to_spend.pocket_budget
-    : 825000;
-  const idealDailyRate = Math.round(maxBudget / (cycleDays || 14));
+    : (summary.safe_to_spend?.pocket_spent && summary.safe_to_spend.pocket_spent > 0 ? summary.safe_to_spend.pocket_spent : 0);
+  const idealDailyRate = maxBudget > 0 ? Math.round(maxBudget / (cycleDays || 14)) : 0;
 
   // Dynamic grid class based on number of days
   const getGridColsClass = (count: number) => {

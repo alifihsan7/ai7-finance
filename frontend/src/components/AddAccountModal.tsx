@@ -3,6 +3,7 @@ import { PlusCircle, Wallet } from "lucide-react";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { authFetch } from "@/lib/api";
 
 interface AddAccountModalProps {
   isOpen: boolean;
@@ -50,7 +51,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
 
     setLoading(true);
     try {
-      const res = await fetch("/api/v1/accounts", {
+      const res = await authFetch("/api/v1/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

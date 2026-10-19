@@ -29,11 +29,25 @@ const ACCOUNT_COLORS: Record<string, { bar: string; border: string; text: string
   "BRI 2": { bar: "bg-coralFall", border: "border-coralFall", text: "text-coralFall" },
 };
 
+const COLOR_PALETTE = [
+  { bar: "bg-amberGold", border: "border-amberGold", text: "text-amberGold" },
+  { bar: "bg-purple-500", border: "border-purple-500", text: "text-purple-400" },
+  { bar: "bg-teal-500", border: "border-teal-500", text: "text-teal-400" },
+  { bar: "bg-cyanHub", border: "border-cyanHub", text: "text-cyanHub" },
+  { bar: "bg-blue-500", border: "border-blue-500", text: "text-blue-400" },
+  { bar: "bg-emerald-500", border: "border-emerald-500", text: "text-emerald-400" },
+  { bar: "bg-coralFall", border: "border-coralFall", text: "text-coralFall" },
+];
+
+function getBucketColor(account: string, idx: number) {
+  if (ACCOUNT_COLORS[account]) return ACCOUNT_COLORS[account];
+  return COLOR_PALETTE[idx % COLOR_PALETTE.length];
+}
+
 const DEFAULT_BUCKETS: BucketAllocationItem[] = [
-  { account: "Kebutuhan Pokok", percentage: 50.0, purpose: "Belanja & Operasional" },
-  { account: "Tagihan & Rutin", percentage: 20.0, purpose: "Subs & Utilitas" },
-  { account: "Tabungan & Investasi", percentage: 20.0, purpose: "Pertumbuhan Aset" },
-  { account: "Dana Darurat", percentage: 10.0, purpose: "Cadangan Likuid" },
+  { account: "Rekening Utama", percentage: 50.0, purpose: "Belanja & Operasional" },
+  { account: "Tabungan", percentage: 30.0, purpose: "Simpanan & Cadangan" },
+  { account: "Investasi", percentage: 20.0, purpose: "Pertumbuhan Aset" },
 ];
 
 export function StrataAllocationBar({
@@ -71,14 +85,12 @@ export function StrataAllocationBar({
     );
   }
 
-  // Determine standard baseline salary based on cycle duration if not explicitly passed
-  const effectiveSalary = totalSalary && totalSalary > 0
-    ? totalSalary
-    : (cycleDays === 30 || cycleType === "monthly" ? 3000000 : 1500000);
+  // Determine standard baseline salary based on cycle duration if explicitly passed
+  const effectiveSalary = totalSalary && totalSalary > 0 ? totalSalary : 0;
 
   // Determine friendly formula badge
-  const formulaLabel = cycleDays === 30 || cycleType === "monthly"
-    ? "Formula Bulanan (30 Hari)"
+  const formulaLabel = cycleDays === 30 || cycleType === "monthly" || cycleType === "monthly_date"
+    ? `Formula Bulanan (${cycleDays} Hari)`
     : cycleDays === 7 || cycleType === "weekly"
     ? "Formula Mingguan (7 Hari)"
     : cycleDays === 14 || cycleType === "biweekly"
@@ -93,7 +105,9 @@ export function StrataAllocationBar({
         <div>
           <h2 className="text-base sm:text-lg font-bold text-slateText-primary">Distribusi Alokasi Anggaran</h2>
           <p className="text-xs sm:text-sm text-slateText-secondary mt-0.5">
-            Plafon standar {formatRupiah(effectiveSalary)} / {cycleDays} hari langsung dipecah ke {activeBuckets.length} pos rekening & portofolio
+            {effectiveSalary > 0
+              ? `Alokasi anggaran ${formatRupiah(effectiveSalary)} / ${cycleDays} hari dipecah ke ${activeBuckets.length} pos rekening`
+              : `Proporsi alokasi dipecah ke ${activeBuckets.length} pos rekening sesuai rasio alur gajian`}
           </p>
         </div>
         <span className="text-xs font-mono font-semibold text-amberGold px-3 py-1 rounded-lg bg-amberGold/15 border border-amberGold/30 shrink-0 self-start sm:self-center">
@@ -104,7 +118,7 @@ export function StrataAllocationBar({
       {/* Horizontal Stacked Bar */}
       <div className="flex gap-1.5 h-6 rounded-lg overflow-hidden p-1 bg-obsidian-panel border border-obsidian-border shadow-inner">
         {activeBuckets.map((b, idx) => {
-          const color = ACCOUNT_COLORS[b.account] || { bar: "bg-blue-500", border: "border-blue-500", text: "text-blue-400" };
+          const color = getBucketColor(b.account, idx);
           const isFirst = idx === 0;
           const isLast = idx === activeBuckets.length - 1;
           const showText = b.percentage >= 4;
@@ -128,8 +142,8 @@ export function StrataAllocationBar({
 
       {/* Account Cards Breakdown */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 pt-1">
-        {activeBuckets.map((b) => {
-          const color = ACCOUNT_COLORS[b.account] || { bar: "bg-blue-500", border: "border-blue-500", text: "text-blue-400" };
+        {activeBuckets.map((b, idx) => {
+          const color = getBucketColor(b.account, idx);
           const allocatedAmt = Math.round((b.percentage / 100) * effectiveSalary);
           const shortPurpose = b.purpose
             ? b.purpose.split("(")[0].trim()
@@ -144,7 +158,9 @@ export function StrataAllocationBar({
                 {b.account} ({b.percentage.toFixed(1)}%)
               </div>
               <div className="text-slateText-secondary font-mono text-[11px] sm:text-xs mt-0.5 truncate">
-                {formatRupiah(allocatedAmt)} • {shortPurpose}
+                {effectiveSalary > 0
+                  ? `${formatRupiah(allocatedAmt)} • ${shortPurpose}`
+                  : `${b.percentage.toFixed(1)}% • ${shortPurpose}`}
               </div>
             </div>
           );

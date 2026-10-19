@@ -23,31 +23,30 @@ export function MandiriEnvelopes({
   pocketBudget,
   loading,
 }: MandiriEnvelopesProps) {
-  const totalPlafond = pocketBudget && pocketBudget > 0 ? pocketBudget : 825000;
-  const scale = totalPlafond / 825000;
+  const totalPlafond = pocketBudget && pocketBudget > 0 ? pocketBudget : 0;
 
-  // Round envelope limits to nearest thousand IDR to avoid awkward fractions (e.g. Rp 455.455 -> Rp 455.000)
+  // Round envelope limits to nearest thousand IDR to avoid awkward fractions
   const roundToThousand = (val: number) => Math.round(val / 1000) * 1000;
 
   const envelopes = [
     {
       title: "Makan Harian",
-      limit: roundToThousand(450000 * scale),
+      limit: totalPlafond > 0 ? roundToThousand(totalPlafond * 0.55) : 0,
       spent: mandiriExpenses.makan,
     },
     {
       title: "Jajan & Kopi",
-      limit: roundToThousand(100000 * scale),
+      limit: totalPlafond > 0 ? roundToThousand(totalPlafond * 0.15) : 0,
       spent: mandiriExpenses.jajan,
     },
     {
       title: "Laundry",
-      limit: roundToThousand(70000 * scale),
+      limit: totalPlafond > 0 ? roundToThousand(totalPlafond * 0.15) : 0,
       spent: mandiriExpenses.laundry,
     },
     {
       title: "Galon & Air",
-      limit: roundToThousand(44000 * scale),
+      limit: totalPlafond > 0 ? roundToThousand(totalPlafond * 0.15) : 0,
       spent: mandiriExpenses.galon,
     },
   ];
@@ -93,7 +92,7 @@ export function MandiriEnvelopes({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-slateText-primary">
-            Amplop Belanja {pocketAccount} (Plafon {formatRupiah(totalPlafond)})
+            Amplop Belanja {pocketAccount} {totalPlafond > 0 ? `(Plafon ${formatRupiah(totalPlafond)})` : "(Monitoring Saku Harian)"}
           </h2>
           <p className="text-xs sm:text-sm text-slateText-secondary mt-0.5">
             Monitoring limit pos belanja harian agar pengeluaran terkontrol sampai siklus berikutnya
@@ -106,8 +105,8 @@ export function MandiriEnvelopes({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         {envelopes.map((env) => {
-          const rem = env.limit - env.spent;
-          const pct = Math.min(100, Math.round((env.spent / env.limit) * 100));
+          const rem = env.limit > 0 ? env.limit - env.spent : 0;
+          const pct = env.limit > 0 ? Math.min(100, Math.round((env.spent / env.limit) * 100)) : 0;
 
           return (
             <div
