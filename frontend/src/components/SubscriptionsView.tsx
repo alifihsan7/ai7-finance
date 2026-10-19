@@ -1,5 +1,6 @@
 import React from "react";
 import { Plus, Trash2, Calendar, Edit2, Clock } from "lucide-react";
+import { Skeleton } from "./ui/Skeleton";
 
 export interface SubscriptionItem {
   id: number;
@@ -31,6 +32,7 @@ interface SubscriptionsViewProps {
   onToggleActive: (sub: SubscriptionItem) => void;
   onDelete: (id: number) => void;
   onEdit?: (sub: SubscriptionItem) => void;
+  loading?: boolean;
 }
 
 export function SubscriptionsView({
@@ -40,6 +42,7 @@ export function SubscriptionsView({
   onToggleActive,
   onDelete,
   onEdit,
+  loading,
 }: SubscriptionsViewProps) {
   return (
     <div className="space-y-8">
@@ -49,11 +52,15 @@ export function SubscriptionsView({
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Total Komitmen Bulanan
           </div>
-          <div className="text-2xl font-bold font-mono text-amberGold tracking-tight truncate">
-            {formatRupiah(subsData.total_monthly_commitment)}
-          </div>
+          {loading ? (
+            <Skeleton className="h-8 w-36 rounded-md" />
+          ) : (
+            <div className="text-2xl font-bold font-mono text-amberGold tracking-tight truncate">
+              {formatRupiah(subsData.total_monthly_commitment)}
+            </div>
+          )}
           <div className="text-xs text-slateText-secondary font-mono">
-            Disediakan dari alokasi Bank Jago (31.7%)
+            Alokasi pos tagihan & autodebet
           </div>
         </div>
 
@@ -61,9 +68,13 @@ export function SubscriptionsView({
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Langganan Aktif
           </div>
-          <div className="text-2xl font-bold font-mono text-mintRise tracking-tight truncate">
-            {subsData.active_count} Layanan
-          </div>
+          {loading ? (
+            <Skeleton className="h-8 w-24 rounded-md" />
+          ) : (
+            <div className="text-2xl font-bold font-mono text-mintRise tracking-tight truncate">
+              {subsData.active_count} Layanan
+            </div>
+          )}
           <div className="text-xs text-slateText-secondary font-mono">
             Autodebet aktif bulanan
           </div>
@@ -73,11 +84,15 @@ export function SubscriptionsView({
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Jatuh Tempo Pekan Ini
           </div>
-          <div className="text-2xl font-bold font-mono text-coralFall tracking-tight truncate">
-            {subsData.upcoming_this_week} Tagihan
-          </div>
+          {loading ? (
+            <Skeleton className="h-8 w-24 rounded-md" />
+          ) : (
+            <div className="text-2xl font-bold font-mono text-coralFall tracking-tight truncate">
+              {subsData.upcoming_this_week} Tagihan
+            </div>
+          )}
           <div className="text-xs text-slateText-secondary font-mono">
-            Siapkan saldo di Bank Jago
+            Siapkan saldo sebelum autodebet
           </div>
         </div>
 
@@ -111,7 +126,30 @@ export function SubscriptionsView({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-4 shadow-sm"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1.5">
+                    <Skeleton className="w-28 h-5 rounded-md" />
+                    <Skeleton className="w-16 h-3 rounded-md" />
+                  </div>
+                  <Skeleton className="w-12 h-5 rounded-md" />
+                </div>
+                <Skeleton className="w-36 h-6 rounded-md" />
+                <div className="pt-2 border-t border-obsidian-border/50 flex justify-between">
+                  <Skeleton className="w-24 h-4 rounded-md" />
+                  <Skeleton className="w-16 h-4 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {subsData.items.map((sub) => {
             const isExact = sub.billing_type === "exact_date";
             const days = sub.days_until_due ?? 99;
@@ -225,6 +263,7 @@ export function SubscriptionsView({
             );
           })}
         </div>
+        )}
       </div>
     </div>
   );

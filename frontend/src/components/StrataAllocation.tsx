@@ -1,4 +1,5 @@
 import React from "react";
+import { Skeleton } from "./ui/Skeleton";
 
 export interface BucketAllocationItem {
   account: string;
@@ -12,6 +13,7 @@ interface StrataAllocationBarProps {
   totalSalary?: number;
   buckets?: BucketAllocationItem[];
   formatRupiah?: (val: number) => string;
+  loading?: boolean;
 }
 
 const ACCOUNT_COLORS: Record<string, { bar: string; border: string; text: string }> = {
@@ -40,7 +42,35 @@ export function StrataAllocationBar({
   totalSalary,
   buckets = DEFAULT_BUCKETS,
   formatRupiah = (n: number) => `Rp ${n.toLocaleString("id-ID")}`,
+  loading,
 }: StrataAllocationBarProps) {
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <Skeleton className="w-48 h-5 rounded-md" />
+            <Skeleton className="w-72 h-3.5 rounded-md mt-1.5" />
+          </div>
+          <Skeleton className="w-36 h-6 rounded-lg" />
+        </div>
+        <Skeleton className="w-full h-6 rounded-lg" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-1">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="p-3 rounded-xl bg-obsidian-card border border-obsidian-border space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Skeleton className="w-2 h-2 rounded-full" />
+                <Skeleton className="w-16 h-3 rounded-md" />
+              </div>
+              <Skeleton className="w-20 h-4 rounded-md" />
+              <Skeleton className="w-12 h-3 rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   // Determine standard baseline salary based on cycle duration if not explicitly passed
   const effectiveSalary = totalSalary && totalSalary > 0
     ? totalSalary

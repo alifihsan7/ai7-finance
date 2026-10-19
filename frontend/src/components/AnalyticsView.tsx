@@ -20,6 +20,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { BurnRateChart } from "./BurnRateChart";
+import { Skeleton } from "./ui/Skeleton";
 
 interface CategorySummary {
   category: string;
@@ -85,9 +86,10 @@ export interface AnalyticsSummary {
 interface AnalyticsViewProps {
   summary: AnalyticsSummary;
   formatRupiah: (val: number) => string;
+  loading?: boolean;
 }
 
-export function AnalyticsView({ summary, formatRupiah }: AnalyticsViewProps) {
+export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewProps) {
   const [categoryFilter, setCategoryFilter] = useState<"all" | "major" | "minor">("all");
 
   const safe = summary.safe_to_spend;
@@ -214,18 +216,22 @@ export function AnalyticsView({ summary, formatRupiah }: AnalyticsViewProps) {
         {/* Card 1: Total Pemasukan */}
         <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-3 relative overflow-hidden group hover:border-obsidian-borderStrong transition-colors shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slateText-secondary font-medium">Total Pemasukan</span>
+            <span className="text-xs text-slateText-secondary font-medium">Total Pemasukan Siklus</span>
             <div className="w-8 h-8 rounded-lg bg-mintRise/10 border border-mintRise/20 flex items-center justify-center text-mintRise">
               <ArrowDownRight className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-bold font-mono text-slateText-primary tracking-tight">
-              {formatRupiah(summary.income)}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-mintRise font-mono">
+            {loading ? (
+              <Skeleton className="h-7 w-32 rounded-md" />
+            ) : (
+              <div className="text-xl sm:text-2xl font-bold font-mono text-slateText-primary tracking-tight">
+                {formatRupiah(summary.income)}
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-slateText-secondary font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-mintRise"></span>
-              Alokasi masuk terdata
+              <span>100% basis alokasi</span>
             </div>
           </div>
           <div className="pt-2 border-t border-obsidian-border/50 flex items-center justify-between text-[11px] text-slateText-muted">
@@ -243,9 +249,13 @@ export function AnalyticsView({ summary, formatRupiah }: AnalyticsViewProps) {
             </div>
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-bold font-mono text-slateText-primary tracking-tight">
-              {formatRupiah(summary.expense)}
-            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-32 rounded-md" />
+            ) : (
+              <div className="text-xl sm:text-2xl font-bold font-mono text-slateText-primary tracking-tight">
+                {formatRupiah(summary.expense)}
+              </div>
+            )}
             <div className="flex items-center gap-1.5 mt-1 text-xs text-slateText-secondary font-mono">
               <span>Rasio belanja:</span>
               <strong className="text-slateText-primary">
@@ -272,11 +282,15 @@ export function AnalyticsView({ summary, formatRupiah }: AnalyticsViewProps) {
             </div>
           </div>
           <div>
-            <div className={`text-xl sm:text-2xl font-bold font-mono tracking-tight ${
-              summary.net >= 0 ? "text-mintRise" : "text-coralFall"
-            }`}>
-              {summary.net < 0 ? `-${formatRupiah(Math.abs(summary.net))}` : formatRupiah(summary.net)}
-            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-32 rounded-md" />
+            ) : (
+              <div className={`text-xl sm:text-2xl font-bold font-mono tracking-tight ${
+                summary.net >= 0 ? "text-mintRise" : "text-coralFall"
+              }`}>
+                {summary.net < 0 ? `-${formatRupiah(Math.abs(summary.net))}` : formatRupiah(summary.net)}
+              </div>
+            )}
             <div className="flex items-center gap-1.5 mt-1 text-xs text-slateText-secondary font-mono">
               <span>Status arus kas:</span>
               <strong className={summary.net >= 0 ? "text-mintRise" : "text-coralFall"}>
@@ -299,9 +313,13 @@ export function AnalyticsView({ summary, formatRupiah }: AnalyticsViewProps) {
             </div>
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-bold font-mono text-amberGold tracking-tight">
-              {summary.savings_rate.toFixed(1)}%
-            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-24 rounded-md" />
+            ) : (
+              <div className="text-xl sm:text-2xl font-bold font-mono text-amberGold tracking-tight">
+                {summary.savings_rate.toFixed(1)}%
+              </div>
+            )}
             <div className="flex items-center gap-1.5 mt-1 text-xs text-slateText-secondary font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-amberGold"></span>
               {summary.savings_rate >= 20 ? "Target tercapai (≥20%)" : "Di bawah target (target 20%)"}

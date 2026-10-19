@@ -14,6 +14,7 @@ import {
   Receipt,
 } from "lucide-react";
 import { CustomSelect, SelectOption } from "./ui/CustomSelect";
+import { Skeleton } from "./ui/Skeleton";
 import { TransactionTable, Transaction } from "./TransactionTable";
 
 interface AccountTab {
@@ -33,6 +34,7 @@ interface TransactionLedgerViewProps {
   onEdit: (tx: Transaction) => void;
   onDelete: (tx: Transaction) => void;
   onOpenAddModal: () => void;
+  loading?: boolean;
 }
 
 export function TransactionLedgerView({
@@ -43,6 +45,7 @@ export function TransactionLedgerView({
   onEdit,
   onDelete,
   onOpenAddModal,
+  loading,
 }: TransactionLedgerViewProps) {
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -280,10 +283,14 @@ export function TransactionLedgerView({
             <Receipt className="w-4 h-4 text-amberGold shrink-0" />
           </div>
           <div className="mt-2.5">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-slateText-primary tracking-tight">
-              {stats.count}{" "}
-              <span className="text-xs font-normal text-slateText-muted">item</span>
-            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-20 rounded-md" />
+            ) : (
+              <div className="text-xl sm:text-2xl font-bold font-mono text-slateText-primary tracking-tight">
+                {stats.count}{" "}
+                <span className="text-xs font-normal text-slateText-muted">item</span>
+              </div>
+            )}
             <p className="text-[11px] text-slateText-secondary mt-0.5 truncate">
               {activeFiltersCount > 0 ? "Berdasarkan filter aktif" : "Seluruh catatan kas"}
             </p>
@@ -299,9 +306,13 @@ export function TransactionLedgerView({
             </div>
           </div>
           <div className="mt-2.5">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-mintRise tracking-tight truncate">
-              +{formatRupiah(stats.income)}
-            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-28 rounded-md" />
+            ) : (
+              <div className="text-xl sm:text-2xl font-bold font-mono text-mintRise tracking-tight truncate">
+                +{formatRupiah(stats.income)}
+              </div>
+            )}
             <p className="text-[11px] text-slateText-secondary mt-0.5 truncate">
               Kas masuk & transfer terima
             </p>
@@ -317,9 +328,13 @@ export function TransactionLedgerView({
             </div>
           </div>
           <div className="mt-2.5">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-coralFall tracking-tight truncate">
-              -{formatRupiah(stats.expense)}
-            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-28 rounded-md" />
+            ) : (
+              <div className="text-xl sm:text-2xl font-bold font-mono text-coralFall tracking-tight truncate">
+                -{formatRupiah(stats.expense)}
+              </div>
+            )}
             <p className="text-[11px] text-slateText-secondary mt-0.5 truncate">
               Belanja & transfer keluar
             </p>
@@ -335,14 +350,18 @@ export function TransactionLedgerView({
             </div>
           </div>
           <div className="mt-2.5">
-            <div
-              className={`text-xl sm:text-2xl font-bold font-mono tracking-tight truncate ${
-                stats.net >= 0 ? "text-mintRise" : "text-coralFall"
-              }`}
-            >
-              {stats.net >= 0 ? "+" : "-"}
-              {formatRupiah(Math.abs(stats.net))}
-            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-28 rounded-md" />
+            ) : (
+              <div
+                className={`text-xl sm:text-2xl font-bold font-mono tracking-tight truncate ${
+                  stats.net >= 0 ? "text-mintRise" : "text-coralFall"
+                }`}
+              >
+                {stats.net >= 0 ? "+" : "-"}
+                {formatRupiah(Math.abs(stats.net))}
+              </div>
+            )}
             <p className="text-[11px] text-slateText-secondary mt-0.5 truncate">
               {stats.net >= 0 ? "Surplus kas terfilter" : "Defisit kas terfilter"}
             </p>
@@ -542,6 +561,7 @@ export function TransactionLedgerView({
           formatRupiah={formatRupiah}
           onEdit={onEdit}
           onDelete={onDelete}
+          loading={loading}
         />
 
         {/* 4. PAGINATION FOOTER */}
