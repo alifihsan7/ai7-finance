@@ -206,3 +206,27 @@ All routes live under `/api/v1` and return standard JSON payloads.
   - **Zero Unstyled Form Elements:** Raw `<select>` and default text inputs are prohibited. All dropdown selections utilize React Portal modals (`CustomSelect`).
   - **Currency Masking:** All monetary inputs utilize `CurrencyInput` with real-time Rupiah thousands separation (`Rp 1.000.000`).
 - **Static Export Optimization:** Built via `next build` into `frontend/out`, then served directly through FastAPI static file mounts for single-port deployment (`8080`).
+
+---
+
+## 8. Network Topology & Cloudflare Zero Trust Tunnel
+
+To maintain zero attack surface without opening VM inbound firewall ports:
+
+```text
+[ Internet Client / Browser / TMA ]
+                 |
+                 v (HTTPS 443 with Edge SSL Termination & DDoS Protection)
+    [ Cloudflare Global Edge ]
+                 |
+                 v (Encrypted QUIC / HTTP2 Tunnel over Outbound Ports)
+        [ cloudflared daemon ] (ai7-finance-studio host)
+                 |
+                 v (Internal Loopback HTTP)
+   [ FastAPI Backend / Next.js SPA ] (localhost:8080)
+```
+
+1. **Zero Open Ports:** All public inbound traffic is handled by Cloudflare Edge proxies. No open ports (80/443/8080) are required on the host VM's Network Security Group (NSG).
+2. **Internal Service Isolation:** Sensitive local daemon ports (such as internal AI gateway `9router` on port 20128) are strictly bound to localhost and never mapped to public hostname routes.
+3. **Public Hostname Mapping:** The public route `ai7finance.alifihsan.my.id` directs strictly to `http://localhost:8080`.
+4. **Google OAuth 2.0 Origin Synchronization:** Production URLs are explicitly whitelisted as Authorized JavaScript Origins and Redirect URIs in the Google Cloud Console to ensure RFC-compliant credential handling.

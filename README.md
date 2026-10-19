@@ -1,6 +1,8 @@
 # ai7.finance 💸
 
 > **Production-ready, multi-tenant personal finance ecosystem** engineered for friction-free daily expense capture via Telegram and deep analytical budgeting via a modern dark-themed web dashboard.
+>
+> 🌐 **Live Production:** [ai7finance.alifihsan.my.id](https://ai7finance.alifihsan.my.id)
 
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?logo=next.js&logoColor=white)](https://nextjs.org)
@@ -209,6 +211,29 @@ Enable and start services:
 sudo systemctl daemon-reload
 sudo systemctl enable --now ai7-finance-web.service ai7-finance.service
 ```
+
+### 3. Public Exposure via Cloudflare Tunnel (Zero Open Inbound Ports)
+
+To serve the web dashboard and Telegram Mini App securely over HTTPS without exposing VM inbound ports:
+
+1. Install `cloudflared`:
+   ```bash
+   curl -L --output /tmp/cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+   sudo dpkg -i /tmp/cloudflared.deb && rm /tmp/cloudflared.deb
+   ```
+2. Create a tunnel in **Cloudflare Zero Trust** (`Networks -> Tunnels`) and install the systemd connector:
+   ```bash
+   sudo cloudflared service install <CLOUDFLARE_TUNNEL_TOKEN>
+   ```
+3. Add a Published Application route in Cloudflare:
+   - **Hostname:** `ai7finance.yourdomain.com` (e.g. `ai7finance.alifihsan.my.id`)
+   - **Service:** `HTTP` -> `localhost:8080`
+
+### 4. Google OAuth 2.0 Origin Registration
+
+If Google Sign-In is enabled, register the public domain in **Google Cloud Console**:
+- **Authorized JavaScript origins:** `https://ai7finance.alifihsan.my.id`
+- **Authorized redirect URIs:** `https://ai7finance.alifihsan.my.id`
 
 ---
 

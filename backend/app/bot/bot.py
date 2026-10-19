@@ -182,7 +182,7 @@ def send_dashboard_link(chat_id: int, bot_token: Optional[str] = None):
                 [{"text": "🚀 Buka Web Dashboard", "url": url}]
             ]
         }
-        msg = f"🌐 **Web Dashboard AI7 Finance:**\n`{url}`\n\nAkses aman via Tailscale untuk review bulanan & detail transaksi."
+        msg = f"🌐 **Web Dashboard AI7 Finance:**\n`{url}`\n\nAkses aman via Cloudflare Tunnel untuk review bulanan & detail transaksi."
     send_message(chat_id, msg, reply_markup=inline_kb, bot_token=bot_token)
 
 def handle_start(chat_id: int, user: Optional[User] = None, bot_token: Optional[str] = None):
