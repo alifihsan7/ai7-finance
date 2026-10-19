@@ -31,6 +31,7 @@
 ## 📚 Dokumentasi & Buku Panduan
 
 - 🏛️ **[Spesifikasi Arsitektur Sistem (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)** — Penjelasan mendalam mengenai isolasi multi-tenant, ERD database PostgreSQL, formula matematika *Safe-to-Spend* dan burn-rate trajectory, spesifikasi engine parser regex, verifikasi kriptografis Telegram Mini App, serta katalog REST API lengkap.
+- 🚀 **[Panduan Deployment & Cloudflare Tunnel (docs/DEPLOYMENT.md)](docs/DEPLOYMENT.md)** — Panduan operasi server Linux 24/7 dengan systemd, arsitektur Cloudflare Zero Trust Tunnel (zero open inbound ports), dan konfigurasi Google OAuth 2.0.
 - 📕 **[Buku Panduan Pengguna PDF (docs/Panduan_Pengguna_AI7_Finance.pdf)](docs/Panduan_Pengguna_AI7_Finance.pdf)** — E-book panduan praktis 8 halaman (format A4) siap cetak/baca untuk pengguna baru: panduan onboarding dashboard, integrasi Telegram Mini App, menghubungkan Telegram bot (Shared/BYOB), tabel sintaks input cepat, dan FAQ troubleshooting.
 
 ---
@@ -166,74 +167,16 @@ The bot parses natural language strings instantly with zero LLM token costs:
 
 ---
 
-## 🛠️ Production Deployment (Linux Systemd)
+## 🛠️ Production Deployment
 
-For 24/7 background operation on Ubuntu/Debian servers:
+Untuk panduan deployment lengkap langkah-demi-langkah, arsitektur *zero open inbound ports* menggunakan Cloudflare Zero Trust Tunnel, dan konfigurasi Google OAuth 2.0, silakan pelajari dokumen terpisah:
 
-### 1. Web Service (`/etc/systemd/system/ai7-finance-web.service`)
-```ini
-[Unit]
-Description=AI7 Finance Web Dashboard
-After=network.target postgresql.service
+👉 **[Panduan Deployment & Cloudflare Tunnel (docs/DEPLOYMENT.md)](docs/DEPLOYMENT.md)**
 
-[Service]
-Type=simple
-User=your_user
-WorkingDirectory=/path/to/ai7-finance
-ExecStart=/path/to/ai7-finance/run_web.sh
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-```
-
-### 2. Bot Service (`/etc/systemd/system/ai7-finance.service`)
-```ini
-[Unit]
-Description=AI7 Finance Telegram Companion Bot
-After=network.target postgresql.service
-
-[Service]
-Type=simple
-User=your_user
-WorkingDirectory=/path/to/ai7-finance
-ExecStart=/path/to/ai7-finance/run_bot.sh
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start services:
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now ai7-finance-web.service ai7-finance.service
-```
-
-### 3. Public Exposure via Cloudflare Tunnel (Zero Open Inbound Ports)
-
-To serve the web dashboard and Telegram Mini App securely over HTTPS without exposing VM inbound ports:
-
-1. Install `cloudflared`:
-   ```bash
-   curl -L --output /tmp/cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-   sudo dpkg -i /tmp/cloudflared.deb && rm /tmp/cloudflared.deb
-   ```
-2. Create a tunnel in **Cloudflare Zero Trust** (`Networks -> Tunnels`) and install the systemd connector:
-   ```bash
-   sudo cloudflared service install <CLOUDFLARE_TUNNEL_TOKEN>
-   ```
-3. Add a Published Application route in Cloudflare:
-   - **Hostname:** `ai7finance.yourdomain.com` (e.g. `ai7finance.alifihsan.my.id`)
-   - **Service:** `HTTP` -> `localhost:8080`
-
-### 4. Google OAuth 2.0 Origin Registration
-
-If Google Sign-In is enabled, register the public domain in **Google Cloud Console**:
-- **Authorized JavaScript origins:** `https://ai7finance.alifihsan.my.id`
-- **Authorized redirect URIs:** `https://ai7finance.alifihsan.my.id`
+Ringkasan cepat operasi 24/7 di server Linux:
+1. **Layanan Background:** Dikelola melalui unit systemd `ai7-finance-web.service` (port 8080) dan `ai7-finance.service` (bot polling).
+2. **Eksposur Publik Aman:** Menggunakan `cloudflared` connector tanpa perlu membuka port VM pada Network Security Group (NSG).
+3. **Autentikasi Google:** Mendaftarkan domain publik di Google Cloud Console (*Authorized JavaScript origins*).
 
 ---
 
