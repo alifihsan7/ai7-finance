@@ -11,7 +11,8 @@ from sqlalchemy import desc
 
 from app.db.session import get_db
 from app.models.transaction import Transaction
-from app.models.paycheck import PaycheckConfig
+from app.models.paycheck import PaycheckConfig, PaycheckBucket
+from app.models.account import Account
 from app.models.user import User
 from app.api.deps import get_current_user
 from app.schemas.transaction import (
@@ -158,70 +159,56 @@ def execute_transfer(
 @router.post("/paycheck", response_model=PaycheckResponse)
 def execute_paycheck_split(
     payload: PaycheckRequest,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     now_wib = datetime.now(WIB)
     cycle_start = payload.date or now_wib.date()
-    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
-    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 30
     cycle_end = cycle_start + timedelta(days=cycle_days - 1)
     total = payload.total_amount
 
-    # Standard Excel formula
-    if total == 1500000:
-        mandiri_amt = 825000
-        jago_amt = 275000
-        bibit_amt = 200000
-        bri1_amt = 100000
-        bri2_amt = 100000
-    else:
-        mandiri_amt = int(round(total * 0.55))
-        jago_amt = int(round(total * 0.18333333))
-        bibit_amt = int(round(total * 0.13333333))
-        bri1_amt = int(round(total * 0.06666667))
-        bri2_amt = total - (mandiri_amt + jago_amt + bibit_amt + bri1_amt)
+    buckets = db.query(PaycheckBucket).filter(PaycheckBucket.config_id == cfg.id).order_by(PaycheckBucket.sort_order.asc()).all() if cfg else []
+    if not buckets:
+        user_accs = db.query(Account).filter(Account.user_id == current_user.id).all()
+        if user_accs:
+            n = len(user_accs)
+            even_pct = round(100.0 / n, 1)
+            buckets = [
+                PaycheckBucket(
+                    account=acc.name,
+                    percentage=even_pct if i < n - 1 else round(100.0 - even_pct * (n - 1), 1),
+                    purpose="Operasional" if acc.type == "operasional" else "Alokasi Pos"
+                )
+                for i, acc in enumerate(user_accs)
+            ]
+        else:
+            buckets = [
+                PaycheckBucket(account="Rekening Utama", percentage=100.0, purpose="Kebutuhan Pokok")
+            ]
 
-    allocations_plan = [
-        {
-            "account": "Mandiri",
-            "amount": mandiri_amt,
-            "percentage": round(mandiri_amt / total * 100, 1),
-            "purpose": "Pos Belanja Operasional & Kebutuhan Pokok",
-            "desc": "Gajian (Alokasi Saku Harian Mandiri)",
-        },
-        {
-            "account": "Bank Jago",
-            "amount": jago_amt,
-            "percentage": round(jago_amt / total * 100, 1),
-            "purpose": "Langganan & Tagihan Rutin",
-            "desc": "Gajian (Alokasi Subs Jago)",
-        },
-        {
-            "account": "Bibit",
-            "amount": bibit_amt,
-            "percentage": round(bibit_amt / total * 100, 1),
-            "purpose": "Investasi Reksadana/Saham",
-            "desc": "Gajian (Alokasi Investasi Bibit)",
-        },
-        {
-            "account": "BRI 1",
-            "amount": bri1_amt,
-            "percentage": round(bri1_amt / total * 100, 1),
-            "purpose": "Hub Gajian & Dana Darurat",
-            "desc": "Gajian (Alokasi Dana Darurat BRI 1)",
-        },
-        {
-            "account": "BRI 2",
-            "amount": bri2_amt,
-            "percentage": round(bri2_amt / total * 100, 1),
-            "purpose": "Tabungan Terkunci",
-            "desc": "Gajian (Alokasi Tabungan Kunci BRI 2)",
-        },
-    ]
+    allocations_plan = []
+    allocated_sum = 0
+    for idx, b in enumerate(buckets):
+        if idx == len(buckets) - 1:
+            amt = max(0, total - allocated_sum)
+        else:
+            amt = int(round(total * (b.percentage / 100.0)))
+            allocated_sum += amt
+        pct = round(amt / total * 100, 1) if total > 0 else 0.0
+        allocations_plan.append({
+            "account": b.account,
+            "amount": amt,
+            "percentage": pct,
+            "purpose": b.purpose,
+            "desc": f"Gajian (Alokasi {b.account})",
+        })
 
     created_txs = []
     for item in allocations_plan:
         tx = Transaction(
+            user_id=current_user.id,
             type="income",
             amount=item["amount"],
             account=item["account"],
