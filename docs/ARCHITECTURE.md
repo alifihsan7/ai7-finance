@@ -9,35 +9,36 @@
 AI7 Finance employs a decoupled, modular architecture designed for high availability, low latency, and strict user data isolation.
 
 ```text
-                               +----------------------------------------+
-                               |            Telegram Clients            |
-                               |  - Natural Language Strings            |
-                               |  - Voice Notes (OGG/Opus)              |
-                               |  - Paper Receipts & QRIS Photos        |
-                               +-------------------+--------------------+
-                                                   |
-                                                   v
-                                     +---------------------------+
-                                     |    Telegram Bot Engine    |
-                                     |  - Shared Bot (@AI7Fin4nc3_bot)
-                                     |  - BYOB (Bring Your Own Bot)
-                                     +-------------+-------------+
-                                                   |
-                                                   v
-+-----------------------+            +---------------------------+            +-----------------------+
-|   Next.js 14 Client   | <--------> |    FastAPI REST Engine    | <--------> |   PostgreSQL 14+ DB   |
-| - React 18, Tailwind  |   HTTPS    | - JWT Auth & Bearer Guard |    SQL     | - Multi-tenant schema |
-| - Slate Dark Theme    |   REST     | - Pacing & Burn-Rate Math |  Pool: 20  | - ACID transactions   |
-| - CustomSelect/Inputs |            | - Regex Parser Engine     |            | - Strict Foreign Keys |
-+-----------------------+            +-------------+-------------+            +-----------------------+
-                                                   |
-                                                   v
-                                     +---------------------------+
-                                     |  Automated Cron Services  |
-                                     | - Daily 08:00 Server Digest
-                                     | - Daily 09:00 Sub Alert   |
-                                     | - Daily 21:00 Pacing Eval |
-                                     +---------------------------+
+                               +-------------------------------------------------------------+
+                               |                       Telegram Clients                      |
+                               |  - Natural Language Strings                                 |
+                               |  - Voice Notes (OGG/Opus) & Receipt Photos                  |
+                               |  - Telegram Mini App (TWA In-App Web View)                  |
+                               +------------------------------+------------------------------+
+                                                              |
+                                                              v
+                                                +---------------------------+
+                                                |    Telegram Bot Engine    |
+                                                |  - Shared Bot (@AI7Fin4nc3_bot)
+                                                |  - BYOB (Bring Your Own Bot)
+                                                |  - Persistent Menu Button |
+                                                +-------------+-------------+
+                                                              |
+                                                              v
++-----------------------+                       +---------------------------+                       +-----------------------+
+|   Next.js 14 Client   | <-------------------> |    FastAPI REST Engine    | <-------------------> |   PostgreSQL 14+ DB   |
+| - React 18, Tailwind  |         HTTPS         | - JWT Auth & Bearer Guard |          SQL          | - Multi-tenant schema |
+| - Telegram WebApp SDK |     REST + initData   | - TMA HMAC-SHA256 Auth    |        Pool: 20       | - ACID transactions   |
+| - Slate Dark Theme    |                       | - Pacing & Burn-Rate Math |                       | - Strict Foreign Keys |
++-----------------------+                       +-------------+-------------+                       +-----------------------+
+                                                              |
+                                                              v
+                                                +---------------------------+
+                                                |  Automated Cron Services  |
+                                                | - Daily 08:00 Server Digest
+                                                | - Daily 09:00 Sub Alert   |
+                                                | - Daily 21:00 Pacing Eval |
+                                                +---------------------------+
 ```
 
 ---
@@ -46,7 +47,7 @@ AI7 Finance employs a decoupled, modular architecture designed for high availabi
 
 ### 2.1 Identity & Authorization
 - **Tenant Isolation:** Every primary database table (`transactions`, `accounts`, `paycheck_configs`, `paycheck_buckets`, `goals`, `subscriptions`, `cycle_history`) includes a foreign key constraint referencing `users.id`.
-- **JWT Authentication:** Stateless HS256 tokens carry the user claims (`sub=user_id`, `email`, `exp`). Tokens expire in 7 days by default (`ACCESS_TOKEN_EXPIRE_MINUTES=10080`).
+- **JWT Authentication:** Stateless HS256 tokens carry the user claims (`sub=user_id`, `email`, `exp`). Tokens expire in 30 days (`ACCESS_TOKEN_EXPIRE_MINUTES=43200`).
 - **Strict Dependency Injection:** In FastAPI, endpoints enforce user context via `get_strict_current_user` dependency:
   ```python
   def get_strict_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
@@ -62,6 +63,22 @@ AI7 Finance employs a decoupled, modular architecture designed for high availabi
 2. **BYOB (Bring Your Own Bot) Mode (`telegram_mode = "custom"`):**
    - Users can provide their own bot token from `@BotFather` in their dashboard profile.
    - The platform registers an exclusive webhook endpoint (`/api/v1/auth/telegram/webhook/{secret}`) dedicated exclusively to that user.
+
+### 2.3 Telegram Mini App (TMA) Architecture & Cryptographic Verification
+AI7 Finance provides a native in-app dashboard experience directly inside Telegram via Telegram WebApp (TMA):
+1. **Persistent Access:**
+   - Configured via Telegram Bot API `setChatMenuButton` as a fixed `web_app` button labeled `"📊 Dashboard"` positioned alongside the chat input bar.
+2. **Cryptographic Zero-Click SSO:**
+   - The frontend passes `window.Telegram.WebApp.initData` to `/api/v1/auth/telegram-webapp`.
+   - The backend validates authenticity without passwords via HMAC-SHA256:
+     $$\text{secret\_key} = \text{HMAC-SHA256}(\text{key} = \text{"WebAppData"}, \text{data} = \text{BOT\_TOKEN})$$
+     $$\text{data\_check\_string} = \text{join}(\text{sort}(\{ k = v \mid k \neq \text{"hash"} \}), \text{"\\n"})$$
+     $$\text{computed\_hash} = \text{HMAC-SHA256}(\text{key} = \text{secret\_key}, \text{data} = \text{data\_check\_string})$$
+   - Matches `computed_hash == received_hash` and asserts `auth_date` is not older than 7 days to eliminate replay attacks.
+   - Once verified, the user is authenticated instantly and issued a JWT token.
+3. **Viewport & Native Slate Theme Synchronization:**
+   - Calls `tg.ready()` and `tg.expand()` on load for maximum vertical view.
+   - Sets `setHeaderColor("#0B0D11")` and `setBackgroundColor("#0B0D11")` so the native Telegram chrome seamlessly matches the dashboard theme.
 
 ---
 
@@ -166,6 +183,7 @@ All routes live under `/api/v1` and return standard JSON payloads.
 | `POST` | `/api/v1/auth/register` | Register new user account | No |
 | `POST` | `/api/v1/auth/login` | Obtain JWT bearer token | No |
 | `POST` | `/api/v1/auth/google` | Google OAuth 2.0 credential sign-in | No |
+| `POST` | `/api/v1/auth/telegram-webapp` | Zero-click cryptographic HMAC auth from Telegram Mini App | No |
 | `GET` | `/api/v1/auth/me` | Fetch active user profile & preferences | Yes |
 | `POST` | `/api/v1/auth/telegram/link` | Bind Telegram Chat ID to active tenant | Yes |
 | `POST` | `/api/v1/auth/telegram/custom-bot` | Register BYOB token and webhook | Yes |
