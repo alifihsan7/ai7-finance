@@ -76,7 +76,16 @@ export function MandiriEnvelopes({
             >
               <div className="space-y-3">
                 <div className="flex justify-between items-center gap-2">
-                  <span className="text-slateText-primary font-semibold text-sm truncate">{env.title}</span>
+                  <div className="relative group/env min-w-0 flex-1">
+                    <span className="text-slateText-primary font-semibold text-sm truncate block cursor-default">
+                      {env.title}
+                    </span>
+                    {/* Tooltip Hover Amplop */}
+                    <div className="pointer-events-none absolute left-0 top-full mt-1 z-40 hidden group-hover/env:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12151D]/95 backdrop-blur-md border border-obsidian-borderStrong text-slateText-primary text-xs shadow-2xl shadow-black/80 w-max max-w-[260px] animate-in fade-in zoom-in-95 duration-150">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amberGold shrink-0" />
+                      <span className="font-semibold text-slate-100">{env.title}</span>
+                    </div>
+                  </div>
                   <span
                     className={`text-xs font-mono font-semibold px-2 py-0.5 rounded-md border shrink-0 ${
                       pct >= 90
