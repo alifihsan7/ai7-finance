@@ -202,6 +202,7 @@ def create_guide_pdf(output_path: str):
         [Paragraph("<b>Tanggal Publikasi:</b>", style_table_cell), Paragraph("Oktober 2026", style_table_cell)],
         [Paragraph("<b>Penyusun:</b>", style_table_cell), Paragraph("Alif Ihsan & Tim Kontributor AI7 Finance", style_table_cell)],
         [Paragraph("<b>Repositori Resmi:</b>", style_table_cell), Paragraph("https://github.com/alifihsan7/ai7-finance", style_table_cell)],
+        [Paragraph("<b>Web Resmi:</b>", style_table_cell), Paragraph("https://ai7finance.alifihsan.my.id", style_table_cell)],
     ]
     t_meta = Table(meta_content, colWidths=[4.5*cm, 12.5*cm])
     t_meta.setStyle(TableStyle([
@@ -276,7 +277,7 @@ def create_guide_pdf(output_path: str):
     story.append(HRFlowable(width="100%", thickness=0.5, color=COLOR_BORDER, spaceBefore=0, spaceAfter=12))
 
     story.append(Paragraph("2.1 Akses Pertama Kali ke Web Dashboard", style_h2))
-    story.append(Paragraph("Buka URL web dashboard Anda (secara default di <code>http://localhost:8080</code> atau via domain Tailscale/Reverse Proxy Anda). Pada pojok kiri bawah sidebar, klik tombol <b>Masuk / Akun</b> untuk membuka modal autentikasi.", style_body))
+    story.append(Paragraph("Buka URL web dashboard Anda di <code>https://ai7finance.alifihsan.my.id</code> (atau <code>http://localhost:8080</code> untuk instalasi lokal). Pada pojok kiri bawah sidebar, klik tombol <b>Masuk / Akun</b> untuk membuka modal autentikasi.", style_body))
     story.append(Paragraph("• <b>Registrasi Akun Baru:</b> Buat akun menggunakan email dan password yang aman, atau gunakan tombol <b>Sign in with Google</b> jika Google OAuth telah diaktifkan.", style_bullet))
     story.append(Paragraph("• <b>Isolasi Data Penuh:</b> Setiap akun yang terdaftar memiliki database terisolasi. Pengguna lain di server yang sama tidak dapat melihat rekening atau riwayat transaksi Anda.", style_bullet))
 
