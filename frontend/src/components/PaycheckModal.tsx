@@ -638,7 +638,7 @@ export default function PaycheckModal({
                 <div>
                   <h4 className="font-bold text-sm text-mintRise">Alokasi Gajian Selesai!</h4>
                   <p className="text-xs text-slateText-secondary mt-0.5">
-                    Seluruh transfer berhasil dicatat ke saldo rekening dan disinkronkan ke Google Sheets.
+                    Seluruh transfer alokasi berhasil dicatat ke saldo rekening.
                   </p>
                 </div>
               </div>
