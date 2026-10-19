@@ -1,4 +1,5 @@
 import React from "react";
+import { Skeleton } from "./ui/Skeleton";
 
 interface MandiriEnvelopesProps {
   mandiriExpenses: {
@@ -11,6 +12,7 @@ interface MandiriEnvelopesProps {
   cycleDays?: number;
   pocketAccount?: string;
   pocketBudget?: number;
+  loading?: boolean;
 }
 
 export function MandiriEnvelopes({
@@ -19,6 +21,7 @@ export function MandiriEnvelopes({
   cycleDays = 14,
   pocketAccount = "Saku Belanja",
   pocketBudget,
+  loading,
 }: MandiriEnvelopesProps) {
   const totalPlafond = pocketBudget && pocketBudget > 0 ? pocketBudget : 825000;
   const scale = totalPlafond / 825000;
@@ -49,6 +52,42 @@ export function MandiriEnvelopes({
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="bg-obsidian-panel border border-obsidian-border rounded-xl p-5 sm:p-6 space-y-5">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <Skeleton className="w-56 h-5 rounded-md" />
+            <Skeleton className="w-80 h-3.5 rounded-md mt-1.5" />
+          </div>
+          <Skeleton className="w-28 h-6 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-obsidian-card border border-obsidian-border rounded-xl p-4 sm:p-4.5 space-y-4"
+            >
+              <div className="flex justify-between items-center gap-2">
+                <Skeleton className="w-24 h-4 rounded-md" />
+                <Skeleton className="w-10 h-4 rounded-md" />
+              </div>
+              <div>
+                <Skeleton className="w-28 h-6 rounded-md" />
+                <Skeleton className="w-16 h-3 rounded-md mt-1.5" />
+              </div>
+              <Skeleton className="w-full h-1.5 rounded-full" />
+              <div className="flex justify-between items-center pt-2 border-t border-obsidian-border/40">
+                <Skeleton className="w-16 h-3 rounded-md" />
+                <Skeleton className="w-16 h-3 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-obsidian-panel border border-obsidian-border rounded-xl p-5 sm:p-6 space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -69,6 +108,7 @@ export function MandiriEnvelopes({
         {envelopes.map((env) => {
           const rem = env.limit - env.spent;
           const pct = Math.min(100, Math.round((env.spent / env.limit) * 100));
+
           return (
             <div
               key={env.title}

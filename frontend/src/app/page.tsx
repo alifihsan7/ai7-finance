@@ -47,6 +47,7 @@ import { CustomModal } from "@/components/ui/CustomModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 import { PeriodSelector, PeriodOption } from "@/components/PeriodSelector";
 import { AnalyticsView } from "@/components/AnalyticsView";
@@ -149,7 +150,7 @@ export default function FinanceDashboard() {
     const customs = customAccounts.map((a) => a.name);
     return Array.from(new Set([...defaults, ...customs]));
   }, [customAccounts]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Period filter state
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption>({
@@ -1282,30 +1283,44 @@ export default function FinanceDashboard() {
                       Total Kekayaan Bersih
                     </span>
                     <span className="text-[11px] sm:text-xs font-mono font-medium text-amberGold px-2.5 py-0.5 rounded-md bg-amberGold/10 border border-amberGold/20 shrink-0 whitespace-nowrap">
-                      Seluruh 5 Rekening
+                      Seluruh {availableAccountNames.length} Rekening
                     </span>
                   </div>
-                  <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slateText-primary my-3 font-mono truncate">
-                    {formatRupiah(summary.total_balance ?? (summary.income - summary.expense))}{" "}
-                    <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
-                      IDR
-                    </span>
-                  </div>
+                  {loading ? (
+                    <div className="my-3">
+                      <Skeleton className="h-10 sm:h-12 w-64 rounded-xl" />
+                    </div>
+                  ) : (
+                    <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slateText-primary my-3 font-mono truncate">
+                      {formatRupiah(summary.total_balance ?? (summary.income - summary.expense))}{" "}
+                      <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
+                        IDR
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs pt-3 border-t border-obsidian-border/80">
-                  <div className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium whitespace-nowrap min-w-0">
-                    <ArrowUpRight className="w-4 h-4 shrink-0" />
-                    <span className="truncate">{formatRupiah(summary.income)} in</span>
+                {loading ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-3 border-t border-obsidian-border/80">
+                    <Skeleton className="h-4 w-28 rounded-md" />
+                    <Skeleton className="h-4 w-28 rounded-md" />
+                    <Skeleton className="h-4 w-28 rounded-md" />
                   </div>
-                  <div className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium whitespace-nowrap min-w-0">
-                    <ArrowDownRight className="w-4 h-4 shrink-0" />
-                    <span className="truncate">{formatRupiah(summary.expense)} out</span>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs pt-3 border-t border-obsidian-border/80">
+                    <div className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium whitespace-nowrap min-w-0">
+                      <ArrowUpRight className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{formatRupiah(summary.income)} in</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium whitespace-nowrap min-w-0">
+                      <ArrowDownRight className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{formatRupiah(summary.expense)} out</span>
+                    </div>
+                    <div className="col-span-2 sm:col-span-1 inline-flex items-center gap-1.5 text-slateText-secondary font-mono font-medium whitespace-nowrap min-w-0">
+                      <span className="truncate">Net: {formatRupiah(summary.income - summary.expense)}</span>
+                    </div>
                   </div>
-                  <div className="col-span-2 sm:col-span-1 inline-flex items-center gap-1.5 text-slateText-secondary font-mono font-medium whitespace-nowrap min-w-0">
-                    <span className="truncate">Net: {formatRupiah(summary.income - summary.expense)}</span>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Safe-to-Spend */}
@@ -1316,26 +1331,42 @@ export default function FinanceDashboard() {
                       <ShieldCheck className="w-4 h-4 text-amberGold shrink-0" />
                       <span className="truncate">Batas Belanja Harian</span>
                     </span>
-                    <span
-                      className={`text-[11px] sm:text-xs font-mono font-medium px-2.5 py-0.5 rounded-md border shrink-0 whitespace-nowrap ${
-                        summary.safe_to_spend?.pace_status === "warning"
-                          ? "text-coralFall bg-coralFall/10 border-coralFall/20"
-                          : "text-mintRise bg-mintRise/10 border-mintRise/20"
-                      }`}
-                    >
-                      {summary.safe_to_spend?.pace_status === "warning" ? "🔴 Agak Boros" : "🟢 Pace Aman"}
-                    </span>
+                    {loading ? (
+                      <Skeleton className="w-20 h-5 rounded-md" />
+                    ) : (
+                      <span
+                        className={`text-[11px] sm:text-xs font-mono font-medium px-2.5 py-0.5 rounded-md border shrink-0 whitespace-nowrap ${
+                          summary.safe_to_spend?.pace_status === "warning"
+                            ? "text-coralFall bg-coralFall/10 border-coralFall/20"
+                            : "text-mintRise bg-mintRise/10 border-mintRise/20"
+                        }`}
+                      >
+                        {summary.safe_to_spend?.pace_status === "warning" ? "🔴 Agak Boros" : "🟢 Pace Aman"}
+                      </span>
+                    )}
                   </div>
 
-                  <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-amberGold my-3 font-mono truncate">
-                    {formatRupiah(summary.safe_to_spend?.safe_daily || 55000)}{" "}
-                    <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
-                      / hari
-                    </span>
-                  </div>
+                  {loading ? (
+                    <div className="my-3">
+                      <Skeleton className="h-9 sm:h-10 w-48 rounded-xl" />
+                    </div>
+                  ) : (
+                    <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-amberGold my-3 font-mono truncate">
+                      {formatRupiah(summary.safe_to_spend?.safe_daily || 55000)}{" "}
+                      <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
+                        / hari
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-obsidian-border/80">
+                {loading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-obsidian-border/80">
+                    <Skeleton className="h-12 w-full rounded-lg" />
+                    <Skeleton className="h-12 w-full rounded-lg" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-obsidian-border/80">
                   <div className="bg-obsidian-card/60 border border-obsidian-border/50 rounded-lg p-2.5 min-w-0">
                     <div className="flex items-center justify-between text-[11px] text-slateText-muted font-medium gap-1">
                       <span className="truncate">Sisa Kuota {summary.safe_to_spend?.pocket_account || "Belanja"}</span>
@@ -1362,6 +1393,7 @@ export default function FinanceDashboard() {
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             </div>
 
@@ -1369,11 +1401,34 @@ export default function FinanceDashboard() {
               cycleType={summary.safe_to_spend?.cycle_type}
               cycleDays={summary.safe_to_spend?.cycle_days}
               formatRupiah={formatRupiah}
+              loading={loading}
             />
-            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} />
+            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} />
 
             {/* Quick Goals & Milestone Preview */}
-            {goals.length > 0 && (
+            {loading ? (
+              <div className="bg-obsidian-panel border border-obsidian-border rounded-xl p-5 space-y-4">
+                <div className="flex justify-between items-center gap-2">
+                  <Skeleton className="w-48 h-5 rounded-md" />
+                  <Skeleton className="w-28 h-4 rounded-md" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-obsidian-card border border-obsidian-border rounded-xl p-4 space-y-3">
+                      <div className="flex justify-between items-center gap-2">
+                        <Skeleton className="w-24 h-4 rounded-md" />
+                        <Skeleton className="w-10 h-4 rounded-md" />
+                      </div>
+                      <Skeleton className="w-full h-1.5 rounded-full" />
+                      <div className="flex justify-between">
+                        <Skeleton className="w-16 h-3 rounded-md" />
+                        <Skeleton className="w-16 h-3 rounded-md" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : goals.length > 0 ? (
               <div className="bg-obsidian-panel border border-obsidian-border rounded-xl p-5 space-y-4">
                 <div className="flex justify-between items-center gap-2">
                   <div className="flex items-center gap-2 min-w-0">
@@ -1429,7 +1484,7 @@ export default function FinanceDashboard() {
                   })}
                 </div>
               </div>
-            )}
+            ) : null}
 
             <MandiriEnvelopes
               mandiriExpenses={mandiriExpenses}
@@ -1437,6 +1492,7 @@ export default function FinanceDashboard() {
               cycleDays={summary.safe_to_spend?.cycle_days || 14}
               pocketAccount={summary.safe_to_spend?.pocket_account || "Mandiri"}
               pocketBudget={summary.safe_to_spend?.pocket_budget}
+              loading={loading}
             />
             <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
 
@@ -1455,6 +1511,7 @@ export default function FinanceDashboard() {
                 formatRupiah={formatRupiah}
                 onEdit={(tx) => setTxToEdit(tx)}
                 onDelete={(tx) => setTxToDelete(tx)}
+                loading={loading}
               />
             </div>
           </>
@@ -1470,6 +1527,7 @@ export default function FinanceDashboard() {
             onOpenAddModal={() => setIsAddGoalModalOpen(true)}
             onEdit={(goal) => setGoalToEdit(goal)}
             onDelete={(id) => setGoalToDelete(id)}
+            loading={loading}
           />
         )}
 
@@ -1482,6 +1540,7 @@ export default function FinanceDashboard() {
               cycleType={summary.safe_to_spend?.cycle_type}
               cycleDays={summary.safe_to_spend?.cycle_days}
               formatRupiah={formatRupiah}
+              loading={loading}
             />
             <MandiriEnvelopes
               mandiriExpenses={mandiriExpenses}
@@ -1489,6 +1548,7 @@ export default function FinanceDashboard() {
               cycleDays={summary.safe_to_spend?.cycle_days || 14}
               pocketAccount={summary.safe_to_spend?.pocket_account || "Mandiri"}
               pocketBudget={summary.safe_to_spend?.pocket_budget}
+              loading={loading}
             />
 
             {/* Pos Jago & Pos BRI */}
@@ -1518,9 +1578,13 @@ export default function FinanceDashboard() {
                       Autodebet
                     </span>
                   </div>
-                  <div className="text-xl font-bold font-mono text-slateText-primary">
-                    {formatRupiah(subsData.total_monthly_commitment)} / bln
-                  </div>
+                  {loading ? (
+                    <Skeleton className="h-7 w-36 rounded-md" />
+                  ) : (
+                    <div className="text-xl font-bold font-mono text-slateText-primary">
+                      {formatRupiah(subsData.total_monthly_commitment)} / bln
+                    </div>
+                  )}
                   <div className="text-xs text-slateText-muted">
                     {subsData.active_count} langganan aktif ({subsData.upcoming_this_week} jatuh tempo pekan ini)
                   </div>
@@ -1533,9 +1597,13 @@ export default function FinanceDashboard() {
                       Pertumbuhan Aset
                     </span>
                   </div>
-                  <div className="text-xl font-bold font-mono text-slateText-primary">
-                    {formatRupiah(investasiLabels ? totalInvestasiReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.2) : 0))}
-                  </div>
+                  {loading ? (
+                    <Skeleton className="h-7 w-36 rounded-md" />
+                  ) : (
+                    <div className="text-xl font-bold font-mono text-slateText-primary">
+                      {formatRupiah(investasiLabels ? totalInvestasiReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.2) : 0))}
+                    </div>
+                  )}
                   <div className="text-xs text-slateText-muted">
                     {investasiLabels ? `${investasiLabels} • Saldo riil investasi` : "Estimasi 20% pertumbuhan modal dan investasi"}
                   </div>
@@ -1546,18 +1614,26 @@ export default function FinanceDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
                 <div className="text-cyanHub font-bold text-sm">Pos Dana Darurat (Cadangan Likuid)</div>
-                <div className="text-2xl font-bold font-mono text-slateText-primary">
-                  {formatRupiah(daruratLabels ? totalDaruratReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0))}
-                </div>
+                {loading ? (
+                  <Skeleton className="h-8 w-40 rounded-md" />
+                ) : (
+                  <div className="text-2xl font-bold font-mono text-slateText-primary">
+                    {formatRupiah(daruratLabels ? totalDaruratReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0))}
+                  </div>
+                )}
                 <p className="text-xs text-slateText-muted">
                   {daruratLabels ? `${daruratLabels} • Cadangan likuid darurat` : "Disimpan sebagai cadangan likuid jika ada kebutuhan tak terduga."}
                 </p>
               </div>
               <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
                 <div className="text-purpleLock font-bold text-sm">Pos Tabungan Terkunci (Tujuan Finansial)</div>
-                <div className="text-2xl font-bold font-mono text-slateText-primary">
-                  {formatRupiah(tabunganLabels ? totalTabunganReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0))}
-                </div>
+                {loading ? (
+                  <Skeleton className="h-8 w-40 rounded-md" />
+                ) : (
+                  <div className="text-2xl font-bold font-mono text-slateText-primary">
+                    {formatRupiah(tabunganLabels ? totalTabunganReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0))}
+                  </div>
+                )}
                 <p className="text-xs text-slateText-muted">
                   {tabunganLabels ? `${tabunganLabels} • Tabungan terpisah terkunci` : "Tidak boleh disentuh untuk operasional belanja harian."}
                 </p>
@@ -1571,7 +1647,7 @@ export default function FinanceDashboard() {
         {/* ============================================================== */}
         {activeNav === "Rekening & Akun" && (
           <div className="space-y-8">
-            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} />
+            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} />
 
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -1614,6 +1690,7 @@ export default function FinanceDashboard() {
                 formatRupiah={formatRupiah}
                 onEdit={(tx) => setTxToEdit(tx)}
                 onDelete={(tx) => setTxToDelete(tx)}
+                loading={loading}
               />
             </div>
           </div>
@@ -1639,6 +1716,7 @@ export default function FinanceDashboard() {
             onEdit={(tx) => setTxToEdit(tx)}
             onDelete={(tx) => setTxToDelete(tx)}
             onOpenAddModal={() => setIsModalOpen(true)}
+            loading={loading}
           />
         )}
 
@@ -1653,6 +1731,7 @@ export default function FinanceDashboard() {
             onToggleActive={handleToggleSubscription}
             onDelete={handleDeleteSubscription}
             onEdit={(sub) => setSubToEdit(sub)}
+            loading={loading}
           />
         )}
 
@@ -1678,6 +1757,7 @@ export default function FinanceDashboard() {
               })),
             }}
             formatRupiah={formatRupiah}
+            loading={loading}
           />
         )}
         </div>

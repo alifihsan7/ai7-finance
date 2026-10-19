@@ -20,6 +20,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { GoalItem } from "./EditGoalModal";
+import { Skeleton } from "./ui/Skeleton";
 
 interface GoalsViewProps {
   goals: GoalItem[];
@@ -27,6 +28,7 @@ interface GoalsViewProps {
   onOpenAddModal: () => void;
   onEdit: (goal: GoalItem) => void;
   onDelete: (id: number) => void;
+  loading?: boolean;
 }
 
 const COLOR_THEMES: Record<
@@ -160,6 +162,7 @@ export function GoalsView({
   onOpenAddModal,
   onEdit,
   onDelete,
+  loading,
 }: GoalsViewProps) {
   const totalTarget = goals.reduce((acc, g) => acc + g.target_amount, 0);
   const totalCurrent = goals.reduce((acc, g) => acc + g.current_amount, 0);
@@ -173,9 +176,13 @@ export function GoalsView({
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Total Target Finansial
           </div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight truncate">
-            {formatRupiah(totalTarget)}
-          </div>
+          {loading ? (
+            <Skeleton className="h-8 w-36 rounded-md" />
+          ) : (
+            <div className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight truncate">
+              {formatRupiah(totalTarget)}
+            </div>
+          )}
           <div className="text-xs text-slateText-secondary font-mono">
             Akumulasi seluruh milestone
           </div>
@@ -185,9 +192,13 @@ export function GoalsView({
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Total Terkumpul
           </div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-400 tracking-tight truncate">
-            {formatRupiah(totalCurrent)}
-          </div>
+          {loading ? (
+            <Skeleton className="h-8 w-36 rounded-md" />
+          ) : (
+            <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-400 tracking-tight truncate">
+              {formatRupiah(totalCurrent)}
+            </div>
+          )}
           <div className="text-xs text-slateText-secondary font-mono">
             Progres all-time tersinkronisasi
           </div>
@@ -197,9 +208,13 @@ export function GoalsView({
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Rata-rata Capaian
           </div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-cyan-400 tracking-tight truncate">
-            {overallPercentage}%
-          </div>
+          {loading ? (
+            <Skeleton className="h-8 w-24 rounded-md" />
+          ) : (
+            <div className="text-2xl sm:text-3xl font-bold font-mono text-cyan-400 tracking-tight truncate">
+              {overallPercentage}%
+            </div>
+          )}
           <div className="text-xs text-slateText-secondary font-mono truncate">
             Sisa {formatRupiah(Math.max(0, totalTarget - totalCurrent))}
           </div>
@@ -209,10 +224,14 @@ export function GoalsView({
           <div className="text-xs font-semibold text-slateText-muted uppercase tracking-wider truncate">
             Status Sasaran
           </div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight truncate">
-            {goals.filter((g) => g.remaining_amount === 0).length} / {goals.length}{" "}
-            <span className="text-xs font-normal text-slateText-muted font-sans">Tercapai</span>
-          </div>
+          {loading ? (
+            <Skeleton className="h-8 w-28 rounded-md" />
+          ) : (
+            <div className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight truncate">
+              {goals.filter((g) => g.remaining_amount === 0).length} / {goals.length}{" "}
+              <span className="text-xs font-normal text-slateText-muted font-sans">Tercapai</span>
+            </div>
+          )}
           <div className="text-xs text-slateText-secondary font-mono">
             {goals.filter((g) => g.remaining_amount > 0).length} target masih berjalan
           </div>
@@ -227,7 +246,7 @@ export function GoalsView({
             Milestone Tracker Tabungan & Investasi
           </h2>
           <p className="text-xs sm:text-sm text-slateText-secondary mt-1">
-            Pantau akumulasi target dana dingin BRI 2, portofolio Bibit, dan alokasi tabungan masa depan
+            Pantau akumulasi target dana dingin, portofolio aset, dan alokasi tabungan masa depan
           </p>
         </div>
 
@@ -241,7 +260,38 @@ export function GoalsView({
       </div>
 
       {/* Milestone Cards Grid */}
-      {goals.length === 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-7 lg:gap-8">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="bg-obsidian-card border border-obsidian-border rounded-2xl p-6 sm:p-7 space-y-6 shadow-xl"
+            >
+              <div className="flex items-start justify-between gap-3.5">
+                <div className="flex items-center gap-3.5">
+                  <Skeleton className="w-12 h-12 rounded-xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="w-32 h-5 rounded-md" />
+                    <Skeleton className="w-20 h-3 rounded-md" />
+                  </div>
+                </div>
+                <Skeleton className="w-16 h-6 rounded-md" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Skeleton className="w-24 h-4 rounded-md" />
+                  <Skeleton className="w-28 h-4 rounded-md" />
+                </div>
+                <Skeleton className="w-full h-3 rounded-full" />
+              </div>
+              <div className="pt-2 border-t border-obsidian-border/50 flex justify-between">
+                <Skeleton className="w-20 h-4 rounded-md" />
+                <Skeleton className="w-24 h-4 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : goals.length === 0 ? (
         <div className="bg-obsidian-panel border border-obsidian-border rounded-2xl p-12 text-center space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-amberGold/10 border border-amberGold/20 flex items-center justify-center mx-auto text-amberGold">
             <Target className="w-7 h-7" />

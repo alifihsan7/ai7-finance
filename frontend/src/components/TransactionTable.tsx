@@ -1,5 +1,6 @@
 import React from "react";
 import { Edit2, Trash2 } from "lucide-react";
+import { Skeleton } from "./ui/Skeleton";
 
 export interface Transaction {
   id: number;
@@ -17,6 +18,7 @@ interface TransactionTableProps {
   formatRupiah: (val: number) => string;
   onEdit?: (tx: Transaction) => void;
   onDelete?: (tx: Transaction) => void;
+  loading?: boolean;
 }
 
 export function TransactionTable({
@@ -24,6 +26,7 @@ export function TransactionTable({
   formatRupiah,
   onEdit,
   onDelete,
+  loading,
 }: TransactionTableProps) {
   const showActions = Boolean(onEdit || onDelete);
 
@@ -42,7 +45,32 @@ export function TransactionTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-obsidian-border">
-            {transactions.length === 0 ? (
+            {loading ? (
+              [1, 2, 3, 4, 5].map((i) => (
+                <tr key={i} className="animate-pulse">
+                  <td className="py-3.5 px-4 sm:px-5">
+                    <Skeleton className="w-20 h-4 rounded" />
+                  </td>
+                  <td className="py-3.5 px-4 sm:px-5">
+                    <Skeleton className="w-48 h-4 rounded" />
+                  </td>
+                  <td className="py-3.5 px-4 sm:px-5">
+                    <Skeleton className="w-24 h-4 rounded" />
+                  </td>
+                  <td className="py-3.5 px-4 sm:px-5">
+                    <Skeleton className="w-20 h-4 rounded" />
+                  </td>
+                  <td className="py-3.5 px-4 sm:px-5 text-right">
+                    <Skeleton className="w-24 h-4 rounded ml-auto" />
+                  </td>
+                  {showActions && (
+                    <td className="py-3.5 px-4 sm:px-5 text-center">
+                      <Skeleton className="w-14 h-4 rounded mx-auto" />
+                    </td>
+                  )}
+                </tr>
+              ))
+            ) : transactions.length === 0 ? (
               <tr>
                 <td colSpan={showActions ? 6 : 5} className="py-10 text-center text-slateText-muted">
                   Tidak ada transaksi yang cocok dengan filter pencarian.

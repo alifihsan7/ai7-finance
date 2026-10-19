@@ -1,5 +1,6 @@
 import React from "react";
 import { CreditCard } from "lucide-react";
+import { Skeleton } from "./ui/Skeleton";
 
 export interface AccountItem {
   id?: number;
@@ -25,6 +26,7 @@ interface AccountGridProps {
   };
   customAccounts?: AccountItem[];
   formatRupiah: (val: number) => string;
+  loading?: boolean;
 }
 
 const COLOR_MAP: Record<string, { text: string; bg: string; border: string }> = {
@@ -36,7 +38,7 @@ const COLOR_MAP: Record<string, { text: string; bg: string; border: string }> = 
   coralFall: { text: "text-coralFall", bg: "bg-coralFall", border: "border-coralFall/20" },
 };
 
-export function AccountGrid({ summary, customAccounts = [], formatRupiah }: AccountGridProps) {
+export function AccountGrid({ summary, customAccounts = [], formatRupiah, loading }: AccountGridProps) {
   // Map balance riil dari summary.accounts
   const balanceMap = (summary.accounts || []).reduce<Record<string, number>>((acc, item) => {
     acc[item.account] = item.balance;
@@ -121,6 +123,37 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
         };
       })
     : genericDefaultAccounts;
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div
+            key={i}
+            className="bg-obsidian-card border border-obsidian-border rounded-xl p-4 sm:p-5 flex flex-col justify-between space-y-4"
+          >
+            <div>
+              <div className="flex justify-between items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="w-4 h-4 rounded-md" />
+                  <Skeleton className="w-20 h-4 rounded-md" />
+                </div>
+                <Skeleton className="w-12 h-4 rounded-md" />
+              </div>
+              <Skeleton className="w-32 h-3 rounded-md mt-2.5" />
+              <div className="mt-4">
+                <Skeleton className="w-28 h-6 rounded-md" />
+                <Skeleton className="w-20 h-3 rounded-md mt-1.5" />
+              </div>
+            </div>
+            <div className="pt-3 border-t border-obsidian-border/50">
+              <Skeleton className="w-full h-1.5 rounded-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
