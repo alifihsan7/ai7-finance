@@ -25,6 +25,13 @@
 
 ---
 
+## 📚 Dokumentasi & Buku Panduan
+
+- 🏛️ **[Spesifikasi Arsitektur Sistem (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)** — Penjelasan mendalam mengenai isolasi multi-tenant, ERD database PostgreSQL, formula matematika *Safe-to-Spend* dan burn-rate trajectory, spesifikasi engine parser regex, serta katalog REST API lengkap.
+- 📕 **[Buku Panduan Pengguna PDF (docs/Panduan_Pengguna_AI7_Finance.pdf)](docs/Panduan_Pengguna_AI7_Finance.pdf)** — E-book panduan praktis 8 halaman (format A4) siap cetak/baca untuk pengguna baru: panduan onboarding dashboard, menghubungkan Telegram bot (Shared/BYOB), tabel sintaks input cepat, dan FAQ troubleshooting.
+
+---
+
 ## 🏗️ System Architecture
 
 ```text
