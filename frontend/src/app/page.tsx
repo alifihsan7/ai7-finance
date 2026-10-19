@@ -446,6 +446,33 @@ export default function FinanceDashboard() {
     return expenses;
   }, [transactions, pocketAccountName]);
 
+  // Real account balances mapped by type
+  const { totalInvestasiReal, investasiLabels, totalDaruratReal, daruratLabels, totalTabunganReal, tabunganLabels } = useMemo(() => {
+    const balanceMap: Record<string, number> = {};
+    (summary.accounts || []).forEach((acc) => {
+      balanceMap[acc.account.toLowerCase()] = acc.balance;
+    });
+
+    const getBalance = (ca: AccountItem) => {
+      const key = ca.name.toLowerCase();
+      if (key in balanceMap) return balanceMap[key];
+      return ca.current_balance ?? ca.initial_balance ?? 0;
+    };
+
+    const inv = customAccounts.filter((a) => (a.type || "").toLowerCase() === "investasi");
+    const dar = customAccounts.filter((a) => (a.type || "").toLowerCase() === "darurat");
+    const tab = customAccounts.filter((a) => (a.type || "").toLowerCase() === "tabungan");
+
+    return {
+      totalInvestasiReal: inv.reduce((sum, a) => sum + getBalance(a), 0),
+      investasiLabels: inv.map((a) => a.name).join(", "),
+      totalDaruratReal: dar.reduce((sum, a) => sum + getBalance(a), 0),
+      daruratLabels: dar.map((a) => a.name).join(", "),
+      totalTabunganReal: tab.reduce((sum, a) => sum + getBalance(a), 0),
+      tabunganLabels: tab.map((a) => a.name).join(", "),
+    };
+  }, [summary.accounts, customAccounts]);
+
   const handleCreateTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
     const numAmount = parseInt(formAmount.replace(/\D/g, ""), 10);
@@ -1469,10 +1496,10 @@ export default function FinanceDashboard() {
                     </span>
                   </div>
                   <div className="text-xl font-bold font-mono text-slateText-primary">
-                    {formatRupiah(summary.total_balance > 0 ? Math.round(summary.total_balance * 0.2) : 0)}
+                    {formatRupiah(investasiLabels ? totalInvestasiReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.2) : 0))}
                   </div>
                   <div className="text-xs text-slateText-muted">
-                    Estimasi 20% pertumbuhan modal dan investasi
+                    {investasiLabels ? `${investasiLabels} • Saldo riil investasi` : "Estimasi 20% pertumbuhan modal dan investasi"}
                   </div>
                 </div>
               </div>
@@ -1482,16 +1509,20 @@ export default function FinanceDashboard() {
               <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
                 <div className="text-cyanHub font-bold text-sm">Pos Dana Darurat (Cadangan Likuid)</div>
                 <div className="text-2xl font-bold font-mono text-slateText-primary">
-                  {formatRupiah(summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0)}
+                  {formatRupiah(daruratLabels ? totalDaruratReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0))}
                 </div>
-                <p className="text-xs text-slateText-muted">Disimpan sebagai cadangan likuid jika ada kebutuhan tak terduga.</p>
+                <p className="text-xs text-slateText-muted">
+                  {daruratLabels ? `${daruratLabels} • Cadangan likuid darurat` : "Disimpan sebagai cadangan likuid jika ada kebutuhan tak terduga."}
+                </p>
               </div>
               <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
                 <div className="text-purpleLock font-bold text-sm">Pos Tabungan Terkunci (Tujuan Finansial)</div>
                 <div className="text-2xl font-bold font-mono text-slateText-primary">
-                  {formatRupiah(summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0)}
+                  {formatRupiah(tabunganLabels ? totalTabunganReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0))}
                 </div>
-                <p className="text-xs text-slateText-muted">Tidak boleh disentuh untuk operasional belanja harian.</p>
+                <p className="text-xs text-slateText-muted">
+                  {tabunganLabels ? `${tabunganLabels} • Tabungan terpisah terkunci` : "Tidak boleh disentuh untuk operasional belanja harian."}
+                </p>
               </div>
             </div>
           </div>
