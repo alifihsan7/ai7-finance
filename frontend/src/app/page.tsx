@@ -9,7 +9,8 @@ import {
   CreditCard,
   ArrowUpRight,
   ArrowDownRight,
-  Sparkles,
+  ArrowDownLeft,
+  CheckCircle2,
   ShieldCheck,
   Layers,
   Wallet,
@@ -253,6 +254,23 @@ export default function FinanceDashboard() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isExportMenuOpen]);
+
+  // Mobile drawer keyboard accessibility & scroll lock
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isMobileDrawerOpen) {
+        setIsMobileDrawerOpen(false);
+      }
+    };
+    if (isMobileDrawerOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMobileDrawerOpen]);
 
   useEffect(() => {
     const initUser = async () => {
@@ -737,7 +755,7 @@ export default function FinanceDashboard() {
                 <button
                   key={item.name}
                   onClick={() => setActiveNav(item.name)}
-                  className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none ${
+                  className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none ${
                     isActive
                       ? "text-white bg-white/[0.08] border border-white/[0.1] shadow-xs font-semibold"
                       : "text-zinc-400 hover:text-white hover:bg-white/[0.04] font-medium"
@@ -778,10 +796,17 @@ export default function FinanceDashboard() {
                   </p>
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1 text-[10px] text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20 shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-mintRise animate-pulse"></span>
-                Active
-              </span>
+              {currentUser ? (
+                <span className="inline-flex items-center gap-1.5 text-[10px] text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-mintRise"></span>
+                  Aktif
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                  Tamu
+                </span>
+              )}
             </div>
             <div className="text-[11px] text-slateText-secondary space-y-1.5 pt-1.5 border-t border-obsidian-border/50">
               <div className="flex items-center justify-between gap-2">
@@ -855,9 +880,9 @@ export default function FinanceDashboard() {
           <button
             onClick={() => setIsPaycheckModalOpen(true)}
             title="Gajian Masuk"
-            className="px-3 py-1.5 bg-mintRise/15 text-mintRise border border-mintRise/30 font-semibold text-[11px] rounded-full transition shadow-xs active:scale-95 flex items-center gap-1"
+            className="px-3 py-1.5 bg-mintRise/15 text-mintRise border border-mintRise/30 font-semibold text-[11px] rounded-xl transition shadow-xs active:scale-95 flex items-center gap-1"
           >
-            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            <ArrowDownLeft className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap">Gajian</span>
           </button>
           <button
@@ -937,7 +962,7 @@ export default function FinanceDashboard() {
                         setActiveNav(item.name);
                         setIsMobileDrawerOpen(false);
                       }}
-                      className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none ${
+                      className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none ${
                         isActive
                           ? "text-white bg-white/[0.08] border border-white/[0.1] shadow-xs font-semibold"
                           : "text-zinc-400 hover:text-white hover:bg-white/[0.04] font-medium"
@@ -960,7 +985,7 @@ export default function FinanceDashboard() {
                     setIsMobileDrawerOpen(false);
                     setIsTransferModalOpen(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold rounded-full bg-cyanHub/15 text-cyanHub border border-cyanHub/30 hover:bg-cyanHub/25 transition"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold rounded-2xl bg-cyanHub/15 text-cyanHub border border-cyanHub/30 hover:bg-cyanHub/25 transition"
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0" />
                   <span>Transfer Antar Rekening</span>
@@ -968,7 +993,7 @@ export default function FinanceDashboard() {
                 <a
                   href="/api/v1/transactions/export"
                   download
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium rounded-full bg-obsidian-card border border-white/[0.08] text-zinc-300 hover:text-white transition"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium rounded-2xl bg-obsidian-card border border-white/[0.08] text-zinc-300 hover:text-white transition"
                 >
                   <Download className="w-4 h-4 shrink-0" />
                   <span>Ekspor CSV Transaksi</span>
@@ -994,10 +1019,17 @@ export default function FinanceDashboard() {
             <div className="pt-4 border-t border-obsidian-border text-xs mt-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-slateText-primary font-semibold">{currentUser?.full_name || "Pengguna AI7"}</span>
-                <span className="inline-flex items-center gap-1 text-[11px] text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-mintRise animate-pulse"></span>
-                  Live Synced
-                </span>
+                {currentUser ? (
+                  <span className="inline-flex items-center gap-1.5 text-[11px] text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-mintRise"></span>
+                    Aktif
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                    Tamu
+                  </span>
+                )}
               </div>
               <div className="text-slateText-muted space-y-1.5 text-[11px]">
                 <div className="flex items-center justify-between gap-2">
@@ -1069,7 +1101,7 @@ export default function FinanceDashboard() {
         {/* Center Floating Plus Action */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="-mt-5 w-12 h-12 rounded-full bg-amberGold text-slate-950 shadow-lg shadow-yellow-500/30 flex items-center justify-center font-bold active:scale-90 transition border-2 border-obsidian-panel shrink-0"
+          className="-mt-5 w-12 h-12 rounded-full bg-amberGold text-slate-950 shadow-lg shadow-black/25 flex items-center justify-center font-bold active:scale-90 transition border-2 border-obsidian-panel shrink-0"
           title="Catat Transaksi Baru"
         >
           <Plus className="w-6 h-6 stroke-[3]" />
@@ -1183,7 +1215,7 @@ export default function FinanceDashboard() {
               <button
                 type="button"
                 onClick={() => setIsExportMenuOpen((prev) => !prev)}
-                className="px-4 py-2 text-xs sm:text-sm font-semibold border border-white/[0.08] rounded-full bg-obsidian-card text-zinc-300 hover:text-white hover:bg-obsidian-hover hover:border-white/[0.16] transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-xs active:scale-95"
+                className="px-4 py-2 text-xs sm:text-sm font-semibold border border-white/[0.08] rounded-2xl bg-obsidian-card text-zinc-300 hover:text-white hover:bg-obsidian-hover hover:border-white/[0.16] transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-xs active:scale-95"
               >
                 <Download className="w-4 h-4 text-zinc-400 shrink-0" />
                 <span className="font-semibold text-white hidden sm:inline">Ekspor</span>
@@ -1231,7 +1263,7 @@ export default function FinanceDashboard() {
             {activeNav === "Target Finansial" ? (
               <button
                 onClick={() => setIsAddGoalModalOpen(true)}
-                className="px-5 py-2 text-xs sm:text-sm font-bold rounded-full bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-md shadow-yellow-500/20 shrink-0 whitespace-nowrap active:scale-95"
+                className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
               >
                 <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                 <span className="whitespace-nowrap">Tambah Target</span>
@@ -1239,7 +1271,7 @@ export default function FinanceDashboard() {
             ) : activeNav === "Langganan & Tagihan" ? (
               <button
                 onClick={() => setIsSubModalOpen(true)}
-                className="px-5 py-2 text-xs sm:text-sm font-bold rounded-full bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-md shadow-yellow-500/20 shrink-0 whitespace-nowrap active:scale-95"
+                className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
               >
                 <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                 <span className="whitespace-nowrap">Tambah Tagihan</span>
@@ -1248,14 +1280,14 @@ export default function FinanceDashboard() {
               <>
                 <button
                   onClick={() => setIsTransferModalOpen(true)}
-                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-full bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-2xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0 text-cyanHub" />
                   <span className="whitespace-nowrap font-semibold">Transfer Antar Akun</span>
                 </button>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-full bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-md shadow-yellow-500/20 shrink-0 whitespace-nowrap active:scale-95"
+                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Catat Transaksi</span>
@@ -1265,14 +1297,14 @@ export default function FinanceDashboard() {
               <>
                 <button
                   onClick={() => setIsPaycheckModalOpen(true)}
-                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-full bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-2xl bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
                 >
-                  <Sparkles className="w-4 h-4 shrink-0 text-mintRise" />
+                  <ArrowDownLeft className="w-4 h-4 shrink-0 text-mintRise" />
                   <span className="whitespace-nowrap font-semibold">Gajian Masuk</span>
                 </button>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-full bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-md shadow-yellow-500/20 shrink-0 whitespace-nowrap active:scale-95"
+                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Catat Transaksi</span>
@@ -1291,8 +1323,8 @@ export default function FinanceDashboard() {
             {activePaycheckSession && activePaycheckSession.status === "in_progress" && (
               <div className="p-4 sm:p-4.5 rounded-2xl bg-gradient-to-r from-mintRise/15 via-obsidian-card to-cyanHub/15 border border-mintRise/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-mintRise/20 border border-mintRise/40 flex items-center justify-center text-mintRise shrink-0 shadow-[0_0_12px_rgba(16,185,129,0.2)]">
-                    <Sparkles className="w-5 h-5 animate-pulse" />
+                  <div className="w-10 h-10 rounded-xl bg-mintRise/20 border border-mintRise/40 flex items-center justify-center text-mintRise shrink-0">
+                    <CheckCircle2 className="w-5 h-5 text-mintRise" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -1368,7 +1400,7 @@ export default function FinanceDashboard() {
               </div>
 
               {/* Safe-to-Spend (Opsi A: Standout Inverted Canary Yellow Card) */}
-              <div className="xl:col-span-5 bg-[#FACC15] border border-yellow-400 rounded-3xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between shadow-xl shadow-yellow-500/10 text-slate-950">
+              <div className="xl:col-span-5 bg-[#FACC15] border border-yellow-400 rounded-3xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between shadow-xl text-slate-950">
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[11px] font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5 min-w-0">
@@ -1487,9 +1519,10 @@ export default function FinanceDashboard() {
                   </div>
                   <button
                     onClick={() => setActiveNav("Target Finansial")}
-                    className="text-xs text-amberGold hover:underline font-semibold shrink-0 whitespace-nowrap"
+                    className="text-xs text-amberGold hover:underline font-semibold shrink-0 whitespace-nowrap inline-flex items-center gap-1 group"
                   >
-                    Buka Seluruh Target ({goals.length}) →
+                    <span>Buka Seluruh Target ({goals.length})</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                   </button>
                 </div>
 
@@ -1497,10 +1530,10 @@ export default function FinanceDashboard() {
                   {goals.slice(0, 3).map((g) => {
                     const theme =
                       g.color === "cyan"
-                        ? { dot: "bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.5)]", bar: "bg-gradient-to-r from-cyan-500 to-sky-400", text: "text-cyan-400" }
+                        ? { dot: "bg-cyan-400", bar: "bg-gradient-to-r from-cyan-500 to-sky-400", text: "text-cyan-400" }
                         : g.color === "amber"
-                        ? { dot: "bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)]", bar: "bg-gradient-to-r from-amber-500 to-yellow-400", text: "text-amber-400" }
-                        : { dot: "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]", bar: "bg-gradient-to-r from-emerald-500 to-teal-400", text: "text-emerald-400" };
+                        ? { dot: "bg-amber-400", bar: "bg-gradient-to-r from-amber-500 to-yellow-400", text: "text-amber-400" }
+                        : { dot: "bg-emerald-400", bar: "bg-gradient-to-r from-emerald-500 to-teal-400", text: "text-emerald-400" };
 
                     return (
                       <div
@@ -1549,9 +1582,10 @@ export default function FinanceDashboard() {
                 <h2 className="text-base sm:text-lg font-bold text-slateText-primary truncate">Transaksi Terakhir</h2>
                 <button
                   onClick={() => setActiveNav("Buku Transaksi")}
-                  className="text-xs text-amberGold hover:underline font-medium shrink-0 whitespace-nowrap"
+                  className="text-xs text-amberGold hover:underline font-medium shrink-0 whitespace-nowrap inline-flex items-center gap-1 group"
                 >
-                  Buka Buku Transaksi Lengkap ({transactions.length}) →
+                  <span>Buka Buku Transaksi Lengkap ({transactions.length})</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
               <TransactionTable
@@ -1614,9 +1648,10 @@ export default function FinanceDashboard() {
                 </div>
                 <button
                   onClick={() => setActiveNav("Langganan & Tagihan")}
-                  className="text-xs text-amberGold hover:underline font-mono shrink-0 whitespace-nowrap"
+                  className="text-xs text-amberGold hover:underline font-medium shrink-0 whitespace-nowrap inline-flex items-center gap-1 group"
                 >
-                  Atur Tagihan ({subsData.items.length}) →
+                  <span>Atur Tagihan ({subsData.items.length})</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
 

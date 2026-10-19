@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  Sparkles,
   ArrowRight,
   ArrowLeft,
   CheckCircle2,
@@ -292,7 +291,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
       onClose={onClose || (() => {})}
       title="Setup Awal Finansial Anda"
       subtitle={`Selamat datang ${user?.full_name || ""}! Mari konfigurasi fondasi keuangan Anda`}
-      icon={<Sparkles className="w-4 h-4 text-amber-400" />}
+      icon={<Layers className="w-4 h-4 text-amber-400" />}
       accent="amber"
       maxWidth="lg"
     >
@@ -747,7 +746,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                 </span>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4" />
+                  <CheckCircle2 className="w-4 h-4" />
                   Selesaikan & Buka Dashboard!
                 </>
               )}
