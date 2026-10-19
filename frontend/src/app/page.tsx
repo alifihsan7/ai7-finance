@@ -929,7 +929,7 @@ export default function FinanceDashboard() {
                   <Download className="w-4 h-4 shrink-0" />
                   <span>Ekspor CSV Transaksi</span>
                 </a>
-                {googleSheetUrl && (
+                {currentUser?.id === 1 && googleSheetUrl && (
                   <a
                     href={googleSheetUrl}
                     target="_blank"
@@ -1161,7 +1161,7 @@ export default function FinanceDashboard() {
                     </div>
                   </a>
 
-                  {googleSheetUrl && (
+                  {currentUser?.id === 1 && googleSheetUrl && (
                     <a
                       href={googleSheetUrl}
                       target="_blank"
