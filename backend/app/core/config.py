@@ -2,8 +2,13 @@ import os
 import secrets
 from typing import Optional
 from pydantic_settings import BaseSettings
+from pathlib import Path
 from dotenv import load_dotenv
 
+backend_dir = Path(__file__).resolve().parent.parent.parent
+root_dir = backend_dir.parent
+load_dotenv(root_dir / ".env")
+load_dotenv(backend_dir / ".env", override=True)
 load_dotenv()
 
 class Settings(BaseSettings):
