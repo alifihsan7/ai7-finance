@@ -127,11 +127,12 @@ def link_telegram_chat(
     db: Session = Depends(get_db)
 ):
     # Check if chat ID already linked to another user
-    existing = db.query(User).filter(User.telegram_chat_id == str(payload.telegram_chat_id), User.id != user.id).first()
+    tg_id = int(payload.telegram_chat_id)
+    existing = db.query(User).filter(User.telegram_chat_id == tg_id, User.id != user.id).first()
     if existing:
         raise HTTPException(status_code=400, detail="Telegram Chat ID ini sudah ditautkan ke akun lain")
     
-    user.telegram_chat_id = str(payload.telegram_chat_id)
+    user.telegram_chat_id = tg_id
     user.telegram_mode = "shared"
     db.commit()
     db.refresh(user)
@@ -227,7 +228,7 @@ def link_telegram_custom_bot(
     user.telegram_webhook_secret = secret
     user.telegram_mode = "custom"
     if payload.telegram_chat_id:
-        user.telegram_chat_id = str(payload.telegram_chat_id)
+        user.telegram_chat_id = int(payload.telegram_chat_id)
 
     db.commit()
     db.refresh(user)
