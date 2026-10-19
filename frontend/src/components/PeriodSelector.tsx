@@ -94,10 +94,10 @@ export function PeriodSelector({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-obsidian-card border border-obsidian-border hover:border-amberGold/50 text-slateText-primary hover:bg-obsidian-hover transition inline-flex items-center gap-2 shadow-xs group"
+        className="px-4 py-2 rounded-full text-xs font-mono font-semibold bg-obsidian-card border border-white/[0.08] hover:border-amberGold/50 text-white hover:bg-obsidian-hover transition inline-flex items-center gap-2 shadow-xs group"
       >
-        <Calendar className="w-4 h-4 text-amberGold shrink-0 group-hover:scale-105 transition-transform" />
-        <span className="font-mono text-xs font-semibold max-w-[200px] sm:max-w-none truncate">
+        <Calendar className="w-3.5 h-3.5 text-amberGold shrink-0 group-hover:scale-105 transition-transform" />
+        <span className="max-w-[200px] sm:max-w-none truncate">
           {currentPeriod.label || "Pilih Periode"}
         </span>
         <ChevronDown
@@ -109,16 +109,16 @@ export function PeriodSelector({
 
       {/* Floating Modal Popover */}
       {isOpen && (
-        <div className="absolute right-0 sm:left-0 mt-2 z-[90] w-80 sm:w-96 bg-obsidian-card border border-obsidian-borderStrong rounded-2xl shadow-2xl overflow-hidden p-3 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 sm:left-0 mt-2 z-[90] w-80 sm:w-96 bg-obsidian-card border border-white/[0.12] rounded-3xl shadow-2xl overflow-hidden p-3.5 animate-in fade-in zoom-in-95 duration-150">
           {/* Header Type Tabs */}
-          <div className="grid grid-cols-4 gap-1 p-1 bg-obsidian-panel rounded-xl border border-obsidian-border mb-3">
+          <div className="grid grid-cols-4 gap-1 p-1 bg-obsidian-panel rounded-full border border-white/[0.08] mb-3">
             <button
               type="button"
               onClick={() => setActiveTab("cycle")}
-              className={`py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1 ${
+              className={`py-1.5 text-xs font-semibold rounded-full transition-all flex items-center justify-center gap-1 ${
                 activeTab === "cycle"
-                  ? "bg-amberGold text-[#0B0D11] shadow-xs"
-                  : "text-slateText-secondary hover:text-slateText-primary"
+                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  : "text-slateText-secondary hover:text-white"
               }`}
             >
               <Clock className="w-3.5 h-3.5" />
@@ -127,10 +127,10 @@ export function PeriodSelector({
             <button
               type="button"
               onClick={() => setActiveTab("week")}
-              className={`py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1 ${
+              className={`py-1.5 text-xs font-semibold rounded-full transition-all flex items-center justify-center gap-1 ${
                 activeTab === "week"
-                  ? "bg-amberGold text-[#0B0D11] shadow-xs"
-                  : "text-slateText-secondary hover:text-slateText-primary"
+                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  : "text-slateText-secondary hover:text-white"
               }`}
             >
               <CalendarDays className="w-3.5 h-3.5" />
@@ -139,10 +139,10 @@ export function PeriodSelector({
             <button
               type="button"
               onClick={() => setActiveTab("month")}
-              className={`py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1 ${
+              className={`py-1.5 text-xs font-semibold rounded-full transition-all flex items-center justify-center gap-1 ${
                 activeTab === "month"
-                  ? "bg-amberGold text-[#0B0D11] shadow-xs"
-                  : "text-slateText-secondary hover:text-slateText-primary"
+                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  : "text-slateText-secondary hover:text-white"
               }`}
             >
               <Calendar className="w-3.5 h-3.5" />
@@ -151,10 +151,10 @@ export function PeriodSelector({
             <button
               type="button"
               onClick={() => setActiveTab("custom")}
-              className={`py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1 ${
+              className={`py-1.5 text-xs font-semibold rounded-full transition-all flex items-center justify-center gap-1 ${
                 activeTab === "custom"
-                  ? "bg-amberGold text-[#0B0D11] shadow-xs"
-                  : "text-slateText-secondary hover:text-slateText-primary"
+                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  : "text-slateText-secondary hover:text-white"
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -184,7 +184,7 @@ export function PeriodSelector({
                           onSelectPeriod(opt);
                           setIsOpen(false);
                         }}
-                        className={`w-full px-3 py-2 rounded-xl text-left text-xs transition flex items-center justify-between gap-2 ${
+                        className={`w-full px-3 py-2 rounded-2xl text-left text-xs transition flex items-center justify-between gap-2 ${
                           isSelected
                             ? "bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold"
                             : "hover:bg-obsidian-hover border border-transparent text-slateText-primary"
@@ -219,7 +219,7 @@ export function PeriodSelector({
                         onSelectPeriod(opt);
                         setIsOpen(false);
                       }}
-                      className={`w-full px-3 py-2 rounded-xl text-left text-xs transition flex items-center justify-between gap-2 ${
+                      className={`w-full px-3 py-2 rounded-2xl text-left text-xs transition flex items-center justify-between gap-2 ${
                         isSelected
                           ? "bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold"
                           : "hover:bg-obsidian-hover border border-transparent text-slateText-primary"
@@ -241,10 +241,10 @@ export function PeriodSelector({
             {activeTab === "month" && (
               <>
                 <div className="text-[11px] font-semibold uppercase tracking-wider text-slateText-muted px-2 py-1">
-                  Bulan Kalender
+                  Kalender Bulanan
                 </div>
                 {periodGroups.months.map((opt) => {
-                  const isSelected = currentPeriod.id === opt.id || currentPeriod.month === opt.month;
+                  const isSelected = currentPeriod.id === opt.id;
                   return (
                     <button
                       key={opt.id}
@@ -253,7 +253,7 @@ export function PeriodSelector({
                         onSelectPeriod(opt);
                         setIsOpen(false);
                       }}
-                      className={`w-full px-3 py-2 rounded-xl text-left text-xs transition flex items-center justify-between gap-2 ${
+                      className={`w-full px-3 py-2 rounded-2xl text-left text-xs transition flex items-center justify-between gap-2 ${
                         isSelected
                           ? "bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold"
                           : "hover:bg-obsidian-hover border border-transparent text-slateText-primary"
@@ -285,7 +285,7 @@ export function PeriodSelector({
                       required
                       value={customStart}
                       onChange={(e) => setCustomStart(e.target.value)}
-                      className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-amberGold"
+                      className="w-full bg-obsidian-panel border border-white/[0.08] rounded-xl px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-amberGold"
                     />
                   </div>
                   <div>
@@ -295,13 +295,13 @@ export function PeriodSelector({
                       required
                       value={customEnd}
                       onChange={(e) => setCustomEnd(e.target.value)}
-                      className="w-full bg-obsidian-panel border border-obsidian-border rounded-lg px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-amberGold"
+                      className="w-full bg-obsidian-panel border border-white/[0.08] rounded-xl px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-amberGold"
                     />
                   </div>
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2 bg-amberGold text-[#0B0D11] font-bold text-xs rounded-lg hover:bg-amber-400 transition"
+                  className="w-full py-2 bg-amberGold text-slate-950 font-bold text-xs rounded-full hover:bg-amber-400 transition"
                 >
                   Terapkan Rentang
                 </button>

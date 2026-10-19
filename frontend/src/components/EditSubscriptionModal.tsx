@@ -6,6 +6,7 @@ import { CustomModal } from "./ui/CustomModal";
 import { CurrencyInput } from "./ui/CurrencyInput";
 import { CustomSelect, SelectOption } from "./ui/CustomSelect";
 import { SubscriptionItem } from "./SubscriptionsView";
+import { authFetch } from "@/lib/api";
 
 interface EditSubscriptionModalProps {
   isOpen: boolean;
@@ -95,7 +96,7 @@ export function EditSubscriptionModal({
         payload.exact_due_date = null;
       }
 
-      const res = await fetch(`/api/v1/subscriptions/${subscription.id}`, {
+      const res = await authFetch(`/api/v1/subscriptions/${subscription.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -128,13 +129,13 @@ export function EditSubscriptionModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-left">
         {error && (
-          <div className="p-3 bg-coralFall/10 border border-coralFall/30 rounded-lg text-coralFall text-xs font-mono">
+          <div className="p-3 bg-coralFall/10 border border-coralFall/30 rounded-2xl text-coralFall text-xs font-mono">
             {error}
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
             Nama Layanan
           </label>
           <input
@@ -142,23 +143,23 @@ export function EditSubscriptionModal({
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
         {/* Pilihan Mode Siklus */}
         <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-2">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
             Metode Perhitungan Jatuh Tempo
           </label>
-          <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-xl border border-obsidian-border">
+          <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-2xl border border-white/[0.08]">
             <button
               type="button"
               onClick={() => setBillingType("fixed_day")}
-              className={`py-2 px-2 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 ${
+              className={`py-2 px-2 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 billingType === "fixed_day"
-                  ? "bg-amberGold text-[#0B0D11] shadow-xs"
-                  : "text-slateText-secondary hover:text-slateText-primary"
+                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  : "text-zinc-400 hover:text-white"
               }`}
             >
               <Clock className="w-3.5 h-3.5 shrink-0" />
@@ -174,10 +175,10 @@ export function EditSubscriptionModal({
                   setExactDueDate(d.toISOString().split("T")[0]);
                 }
               }}
-              className={`py-2 px-2 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 ${
+              className={`py-2 px-2 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 billingType === "exact_date"
-                  ? "bg-amberGold text-[#0B0D11] shadow-xs"
-                  : "text-slateText-secondary hover:text-slateText-primary"
+                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  : "text-zinc-400 hover:text-white"
               }`}
             >
               <Calendar className="w-3.5 h-3.5 shrink-0" />
@@ -188,7 +189,7 @@ export function EditSubscriptionModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Nominal / Periode
             </label>
             <CurrencyInput
@@ -203,7 +204,7 @@ export function EditSubscriptionModal({
 
           {billingType === "fixed_day" ? (
             <div>
-              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
                 Jatuh Tempo (Tgl 1-31)
               </label>
               <input
@@ -213,20 +214,20 @@ export function EditSubscriptionModal({
                 max={31}
                 value={billingDay}
                 onChange={(e) => setBillingDay(e.target.value)}
-                className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold transition"
+                className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
               />
             </div>
           ) : (
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                   Tanggal Berakhir Riil
                 </label>
                 <div className="flex gap-1">
                   <button
                     type="button"
                     onClick={() => handleAddDays(30)}
-                    className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amberGold/15 text-amberGold hover:bg-amberGold/25 transition inline-flex items-center gap-1"
+                    className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amberGold/15 text-amberGold hover:bg-amberGold/25 transition inline-flex items-center gap-1 cursor-pointer"
                   >
                     <Sparkles className="w-2.5 h-2.5" />
                     +30 Hari
@@ -238,7 +239,7 @@ export function EditSubscriptionModal({
                 required
                 value={exactDueDate}
                 onChange={(e) => setExactDueDate(e.target.value)}
-                className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold transition"
+                className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
               />
             </div>
           )}
@@ -246,7 +247,7 @@ export function EditSubscriptionModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-20">
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Kategori
             </label>
             <CustomSelect
@@ -256,7 +257,7 @@ export function EditSubscriptionModal({
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Akun Pembayaran
             </label>
             <CustomSelect
@@ -268,7 +269,7 @@ export function EditSubscriptionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
             Catatan Tambahan (Opsional)
           </label>
           <input
@@ -276,22 +277,22 @@ export function EditSubscriptionModal({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Contoh: Membership Gym bulanan, paket data 50GB"
-            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
-        <div className="pt-3 flex gap-3 border-t border-obsidian-border/60">
+        <div className="pt-3 flex gap-3 border-t border-white/[0.08]">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-2.5 bg-obsidian-panel hover:bg-obsidian-hover border border-obsidian-border text-slateText-secondary hover:text-slateText-primary rounded-xl text-xs sm:text-sm font-semibold transition"
+            className="flex-1 py-2.5 bg-obsidian-panel hover:bg-white/[0.06] border border-white/[0.08] text-zinc-400 hover:text-white rounded-2xl text-xs sm:text-sm font-semibold transition cursor-pointer"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 py-2.5 bg-amberGold hover:bg-amber-400 text-[#0B0D11] font-bold rounded-xl text-xs sm:text-sm transition disabled:opacity-50 shadow-md cursor-pointer"
+            className="flex-1 py-2.5 bg-amberGold hover:bg-amber-300 text-slate-950 font-bold rounded-2xl text-xs sm:text-sm transition disabled:opacity-50 shadow-sm cursor-pointer"
           >
             {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>

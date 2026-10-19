@@ -263,8 +263,8 @@ export default function FinanceDashboard() {
           try {
             tg.ready();
             tg.expand();
-            if (typeof tg.setHeaderColor === "function") tg.setHeaderColor("#0B0D11");
-            if (typeof tg.setBackgroundColor === "function") tg.setBackgroundColor("#0B0D11");
+            if (typeof tg.setHeaderColor === "function") tg.setHeaderColor("#090A0D");
+            if (typeof tg.setBackgroundColor === "function") tg.setBackgroundColor("#090A0D");
           } catch (e) {
             console.warn("Telegram WebApp init warning:", e);
           }
@@ -737,13 +737,13 @@ export default function FinanceDashboard() {
                 <button
                   key={item.name}
                   onClick={() => setActiveNav(item.name)}
-                  className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-sm transition-all text-left whitespace-nowrap select-none ${
+                  className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none ${
                     isActive
-                      ? "text-amberGold bg-obsidian-hover border border-obsidian-borderStrong shadow-xs font-semibold"
-                      : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-card font-medium"
+                      ? "text-white bg-white/[0.08] border border-white/[0.1] shadow-xs font-semibold"
+                      : "text-zinc-400 hover:text-white hover:bg-white/[0.04] font-medium"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-slateText-muted"}`} />
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-zinc-500"}`} />
                   <span className="truncate whitespace-nowrap">{item.name}</span>
                 </button>
               );
@@ -752,7 +752,7 @@ export default function FinanceDashboard() {
         </div>
 
         {/* User Profile Footer */}
-        <div className="mt-8 pt-5 border-t border-obsidian-border text-sm">
+        <div className="mt-8 pt-5 border-t border-white/[0.08] text-sm">
           <button
             type="button"
             onClick={() => {
@@ -762,18 +762,18 @@ export default function FinanceDashboard() {
                 setIsAuthModalOpen(true);
               }
             }}
-            className="w-full p-2.5 rounded-xl bg-obsidian-card hover:bg-obsidian-hover border border-obsidian-border transition text-left cursor-pointer group"
+            className="w-full p-3 rounded-2xl bg-obsidian-card hover:bg-obsidian-hover border border-white/[0.08] transition text-left cursor-pointer group shadow-sm"
           >
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0">
                   {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-slateText-primary font-semibold text-xs truncate group-hover:text-emerald-400 transition-colors">
+                  <p className="text-white font-semibold text-xs truncate group-hover:text-amberGold transition-colors">
                     {currentUser ? currentUser.full_name : "Masuk / Akun"}
                   </p>
-                  <p className="text-[10px] text-slateText-muted font-mono truncate">
+                  <p className="text-[10px] text-zinc-500 font-mono truncate">
                     {currentUser ? `@${currentUser.username}` : "Mode Tamu"}
                   </p>
                 </div>
@@ -827,15 +827,15 @@ export default function FinanceDashboard() {
       </aside>
 
       {/* MOBILE STICKY TOP APP BAR */}
-      <header className="md:hidden sticky top-0 z-30 w-full bg-obsidian-panel/95 backdrop-blur-md border-b border-obsidian-border px-3.5 py-2.5 flex items-center justify-between shrink-0">
+      <header className="md:hidden sticky top-0 z-30 w-full bg-obsidian-panel/95 backdrop-blur-md border-b border-white/[0.08] px-3.5 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <img
             src="/ai7-icon-rounded.svg"
             alt="AI7 Finance"
-            className="w-7 h-7 rounded-lg border border-obsidian-border shadow-xs shrink-0"
+            className="w-7 h-7 rounded-xl border border-white/[0.08] shadow-xs shrink-0"
           />
           <div className="min-w-0">
-            <div className="font-bold text-sm tracking-tight text-slateText-primary leading-none truncate">
+            <div className="font-bold text-sm tracking-tight text-white leading-none truncate">
               ai7<span className="text-amberGold">.</span>finance
             </div>
             <div className="text-[10px] font-mono text-amberGold tracking-wider font-semibold mt-0.5 truncate">
@@ -848,14 +848,14 @@ export default function FinanceDashboard() {
           <button
             onClick={fetchData}
             title="Refresh Data"
-            className="p-1.5 text-slateText-secondary hover:text-slateText-primary bg-obsidian-card border border-obsidian-border rounded-lg transition active:scale-95"
+            className="p-2 text-zinc-400 hover:text-white bg-obsidian-card border border-white/[0.08] rounded-full transition active:scale-95"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-amberGold" : ""}`} />
           </button>
           <button
             onClick={() => setIsPaycheckModalOpen(true)}
             title="Gajian Masuk"
-            className="px-2 py-1.5 bg-mintRise/15 text-mintRise border border-mintRise/30 font-semibold text-[11px] rounded-lg transition shadow-xs active:scale-95 flex items-center gap-1"
+            className="px-3 py-1.5 bg-mintRise/15 text-mintRise border border-mintRise/30 font-semibold text-[11px] rounded-full transition shadow-xs active:scale-95 flex items-center gap-1"
           >
             <Sparkles className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap">Gajian</span>
@@ -869,14 +869,14 @@ export default function FinanceDashboard() {
               }
             }}
             title={currentUser ? currentUser.full_name : "Masuk / Akun"}
-            className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 active:scale-95"
+            className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 active:scale-95"
           >
             {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
           </button>
           <button
             onClick={() => setIsMobileDrawerOpen(true)}
             title="Buka Menu"
-            className="p-1.5 text-slateText-secondary hover:text-slateText-primary bg-obsidian-card border border-obsidian-border rounded-lg transition active:scale-95"
+            className="p-2 text-zinc-400 hover:text-white bg-obsidian-card border border-white/[0.08] rounded-full transition active:scale-95"
           >
             <Menu className="w-4 h-4" />
           </button>
@@ -893,25 +893,25 @@ export default function FinanceDashboard() {
           />
 
           {/* Drawer Content */}
-          <div className="relative w-[280px] max-w-[85vw] bg-obsidian-panel border-r border-obsidian-border p-5 flex flex-col justify-between h-full z-10 overflow-y-auto">
+          <div className="relative w-[280px] max-w-[85vw] bg-obsidian-panel border-r border-white/[0.08] p-5 flex flex-col justify-between h-full z-10 overflow-y-auto">
             <div>
               {/* Header with Close */}
-              <div className="flex items-center justify-between pb-4 border-b border-obsidian-border">
+              <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
                 <div className="flex items-center gap-2.5">
                   <img
                     src="/ai7-icon-rounded.svg"
                     alt="AI7 Finance"
-                    className="w-8 h-8 rounded-lg border border-obsidian-border shadow-xs shrink-0"
+                    className="w-8 h-8 rounded-xl border border-white/[0.08] shadow-xs shrink-0"
                   />
                   <div>
-                    <div className="font-bold text-base tracking-tight text-slateText-primary leading-none">
+                    <div className="font-bold text-base tracking-tight text-white leading-none">
                       ai7<span className="text-amberGold">.</span>finance
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsMobileDrawerOpen(false)}
-                  className="p-1.5 rounded-lg text-slateText-muted hover:text-slateText-primary hover:bg-obsidian-card transition"
+                  className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-obsidian-card transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -937,13 +937,13 @@ export default function FinanceDashboard() {
                         setActiveNav(item.name);
                         setIsMobileDrawerOpen(false);
                       }}
-                      className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-sm transition-all text-left whitespace-nowrap select-none ${
+                      className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none ${
                         isActive
-                          ? "text-amberGold bg-obsidian-hover border border-obsidian-borderStrong shadow-xs font-semibold"
-                          : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-card font-medium"
+                          ? "text-white bg-white/[0.08] border border-white/[0.1] shadow-xs font-semibold"
+                          : "text-zinc-400 hover:text-white hover:bg-white/[0.04] font-medium"
                       }`}
                     >
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-slateText-muted"}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-zinc-500"}`} />
                       <span className="truncate whitespace-nowrap">{item.name}</span>
                     </button>
                   );
@@ -951,8 +951,8 @@ export default function FinanceDashboard() {
               </nav>
 
               {/* Quick Actions inside Drawer */}
-              <div className="mt-6 pt-4 border-t border-obsidian-border space-y-2">
-                <span className="text-[11px] font-semibold text-slateText-muted uppercase tracking-wider block mb-1">
+              <div className="mt-6 pt-4 border-t border-white/[0.08] space-y-2">
+                <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
                   Aksi Cepat
                 </span>
                 <button
@@ -960,7 +960,7 @@ export default function FinanceDashboard() {
                     setIsMobileDrawerOpen(false);
                     setIsTransferModalOpen(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg bg-cyanHub/15 text-cyanHub border border-cyanHub/30 hover:bg-cyanHub/25 transition"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold rounded-full bg-cyanHub/15 text-cyanHub border border-cyanHub/30 hover:bg-cyanHub/25 transition"
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0" />
                   <span>Transfer Antar Rekening</span>
@@ -968,7 +968,7 @@ export default function FinanceDashboard() {
                 <a
                   href="/api/v1/transactions/export"
                   download
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg bg-obsidian-card border border-obsidian-border text-slateText-secondary hover:text-slateText-primary transition"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium rounded-full bg-obsidian-card border border-white/[0.08] text-zinc-300 hover:text-white transition"
                 >
                   <Download className="w-4 h-4 shrink-0" />
                   <span>Ekspor CSV Transaksi</span>
@@ -1041,13 +1041,13 @@ export default function FinanceDashboard() {
       )}
 
       {/* MOBILE BOTTOM NAVIGATION BAR */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-obsidian-panel/95 backdrop-blur-md border-t border-obsidian-border px-3 py-1 flex items-center justify-around safe-bottom shadow-2xl">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-obsidian-panel/95 backdrop-blur-md border-t border-white/[0.08] px-3 py-1 flex items-center justify-around safe-bottom shadow-2xl">
         <button
           onClick={() => setActiveNav("Ringkasan")}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-[56px] ${
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition min-w-[56px] ${
             activeNav === "Ringkasan"
               ? "text-amberGold font-semibold"
-              : "text-slateText-secondary hover:text-slateText-primary"
+              : "text-zinc-400 hover:text-white"
           }`}
         >
           <LayoutDashboard className="w-5 h-5 shrink-0" />
@@ -1056,10 +1056,10 @@ export default function FinanceDashboard() {
 
         <button
           onClick={() => setActiveNav("Alokasi Amplop")}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-[56px] ${
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition min-w-[56px] ${
             activeNav === "Alokasi Amplop"
               ? "text-amberGold font-semibold"
-              : "text-slateText-secondary hover:text-slateText-primary"
+              : "text-zinc-400 hover:text-white"
           }`}
         >
           <Layers className="w-5 h-5 shrink-0" />
@@ -1069,7 +1069,7 @@ export default function FinanceDashboard() {
         {/* Center Floating Plus Action */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="-mt-5 w-12 h-12 rounded-full bg-amberGold text-[#0B0D11] shadow-lg shadow-amberGold/30 flex items-center justify-center font-bold active:scale-90 transition border-2 border-obsidian-panel shrink-0"
+          className="-mt-5 w-12 h-12 rounded-full bg-amberGold text-slate-950 shadow-lg shadow-yellow-500/30 flex items-center justify-center font-bold active:scale-90 transition border-2 border-obsidian-panel shrink-0"
           title="Catat Transaksi Baru"
         >
           <Plus className="w-6 h-6 stroke-[3]" />
@@ -1077,10 +1077,10 @@ export default function FinanceDashboard() {
 
         <button
           onClick={() => setActiveNav("Buku Transaksi")}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-[56px] ${
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition min-w-[56px] ${
             activeNav === "Buku Transaksi"
               ? "text-amberGold font-semibold"
-              : "text-slateText-secondary hover:text-slateText-primary"
+              : "text-zinc-400 hover:text-white"
           }`}
         >
           <CreditCard className="w-5 h-5 shrink-0" />
@@ -1089,10 +1089,10 @@ export default function FinanceDashboard() {
 
         <button
           onClick={() => setIsMobileDrawerOpen(true)}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition min-w-[56px] ${
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition min-w-[56px] ${
             ["Rekening & Akun", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav)
               ? "text-amberGold font-semibold"
-              : "text-slateText-secondary hover:text-slateText-primary"
+              : "text-zinc-400 hover:text-white"
           }`}
         >
           <div className="relative">
@@ -1111,16 +1111,16 @@ export default function FinanceDashboard() {
         
         {/* Guest Mode Banner */}
         {!currentUser && (
-          <div className="p-3.5 sm:p-4 rounded-xl bg-[#181C26] border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg shadow-amber-500/5">
+          <div className="p-4 sm:p-5 rounded-3xl bg-obsidian-card border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-amberGold/15 border border-amberGold/30 flex items-center justify-center text-amberGold shrink-0">
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-100">
+                <p className="text-xs font-semibold text-white">
                   Mode Tamu (Belum Masuk)
                 </p>
-                <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                <p className="text-[11px] text-zinc-400 mt-0.5 leading-relaxed">
                   Silakan masuk atau buat akun baru untuk mengakses pencatatan keuangan pribadi Anda secara aman.
                 </p>
               </div>
@@ -1128,7 +1128,7 @@ export default function FinanceDashboard() {
             <button
               type="button"
               onClick={() => setIsAuthModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition-colors shrink-0 cursor-pointer shadow-md shadow-amber-500/20"
+              className="px-4 py-2 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 font-bold text-xs transition shrink-0 cursor-pointer shadow-sm"
             >
               Masuk / Daftar Sekarang
             </button>
@@ -1173,7 +1173,7 @@ export default function FinanceDashboard() {
             <button
               onClick={fetchData}
               title="Refresh Data Transaksi & Saldo"
-              className="p-2.5 text-slateText-secondary hover:text-slateText-primary bg-obsidian-card hover:bg-obsidian-hover border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl transition inline-flex items-center justify-center shrink-0 shadow-xs active:scale-95 cursor-pointer"
+              className="p-2.5 text-zinc-400 hover:text-white bg-obsidian-card hover:bg-obsidian-hover border border-white/[0.08] hover:border-white/[0.16] rounded-full transition inline-flex items-center justify-center shrink-0 shadow-xs active:scale-95 cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-amberGold" : ""}`} />
             </button>
@@ -1183,25 +1183,25 @@ export default function FinanceDashboard() {
               <button
                 type="button"
                 onClick={() => setIsExportMenuOpen((prev) => !prev)}
-                className="px-3.5 py-2.5 text-xs sm:text-sm font-medium border border-obsidian-border rounded-xl bg-obsidian-card text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-hover hover:border-obsidian-borderStrong transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-xs active:scale-95"
+                className="px-4 py-2 text-xs sm:text-sm font-semibold border border-white/[0.08] rounded-full bg-obsidian-card text-zinc-300 hover:text-white hover:bg-obsidian-hover hover:border-white/[0.16] transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-xs active:scale-95"
               >
-                <Download className="w-4 h-4 text-slateText-muted shrink-0" />
-                <span className="font-semibold text-slateText-primary hidden sm:inline">Ekspor</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-slateText-muted shrink-0 transition-transform duration-200 ${isExportMenuOpen ? "rotate-180" : ""}`} />
+                <Download className="w-4 h-4 text-zinc-400 shrink-0" />
+                <span className="font-semibold text-white hidden sm:inline">Ekspor</span>
+                <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-200 ${isExportMenuOpen ? "rotate-180 text-amberGold" : ""}`} />
               </button>
 
               {isExportMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 p-1.5 bg-obsidian-panel/95 backdrop-blur-md border border-obsidian-borderStrong rounded-xl shadow-2xl z-50 text-xs font-mono space-y-1 animate-fadeIn">
+                <div className="absolute right-0 mt-2 w-56 p-2 bg-obsidian-panel/95 backdrop-blur-md border border-white/[0.12] rounded-2xl shadow-2xl z-50 text-xs font-mono space-y-1 animate-fadeIn">
                   <a
                     href="/api/v1/transactions/export"
                     download
                     onClick={() => setIsExportMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slateText-primary hover:bg-obsidian-hover hover:text-amberGold transition"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-white hover:bg-obsidian-hover hover:text-amberGold transition"
                   >
-                    <Download className="w-4 h-4 text-slateText-muted shrink-0" />
+                    <Download className="w-4 h-4 text-zinc-400 shrink-0" />
                     <div className="text-left font-sans">
-                      <div className="font-semibold text-xs text-slateText-primary">Unduh CSV Transaksi</div>
-                      <div className="text-[10px] text-slateText-muted">Seluruh histori ledger</div>
+                      <div className="font-semibold text-xs text-white">Unduh CSV Transaksi</div>
+                      <div className="text-[10px] text-zinc-400">Seluruh histori ledger</div>
                     </div>
                   </a>
 
@@ -1211,7 +1211,7 @@ export default function FinanceDashboard() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => setIsExportMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-emerald-400 hover:bg-emerald-500/10 transition border-t border-obsidian-border/50"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-emerald-400 hover:bg-emerald-500/10 transition border-t border-white/[0.08]"
                     >
                       <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
                       <div className="text-left font-sans min-w-0">
@@ -1219,7 +1219,7 @@ export default function FinanceDashboard() {
                           Google Sheets Rapor
                           <ExternalLink className="w-3 h-3 opacity-70" />
                         </div>
-                        <div className="text-[10px] text-slateText-muted">Spreadsheet sinkronisasi</div>
+                        <div className="text-[10px] text-zinc-400">Spreadsheet sinkronisasi</div>
                       </div>
                     </a>
                   )}
@@ -1231,7 +1231,7 @@ export default function FinanceDashboard() {
             {activeNav === "Target Finansial" ? (
               <button
                 onClick={() => setIsAddGoalModalOpen(true)}
-                className="px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                className="px-5 py-2 text-xs sm:text-sm font-bold rounded-full bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-md shadow-yellow-500/20 shrink-0 whitespace-nowrap active:scale-95"
               >
                 <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                 <span className="whitespace-nowrap">Tambah Target</span>
@@ -1239,7 +1239,7 @@ export default function FinanceDashboard() {
             ) : activeNav === "Langganan & Tagihan" ? (
               <button
                 onClick={() => setIsSubModalOpen(true)}
-                className="px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                className="px-5 py-2 text-xs sm:text-sm font-bold rounded-full bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-md shadow-yellow-500/20 shrink-0 whitespace-nowrap active:scale-95"
               >
                 <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                 <span className="whitespace-nowrap">Tambah Tagihan</span>
@@ -1248,14 +1248,14 @@ export default function FinanceDashboard() {
               <>
                 <button
                   onClick={() => setIsTransferModalOpen(true)}
-                  className="px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-full bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0 text-cyanHub" />
                   <span className="whitespace-nowrap font-semibold">Transfer Antar Akun</span>
                 </button>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-full bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-md shadow-yellow-500/20 shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Catat Transaksi</span>
@@ -1265,14 +1265,14 @@ export default function FinanceDashboard() {
               <>
                 <button
                   onClick={() => setIsPaycheckModalOpen(true)}
-                  className="px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-full bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <Sparkles className="w-4 h-4 shrink-0 text-mintRise" />
                   <span className="whitespace-nowrap font-semibold">Gajian Masuk</span>
                 </button>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-amberGold text-[#0B0D11] hover:bg-amber-400 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-full bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-md shadow-yellow-500/20 shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Catat Transaksi</span>
@@ -1310,7 +1310,7 @@ export default function FinanceDashboard() {
                 </div>
                 <button
                   onClick={() => setIsPaycheckModalOpen(true)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-mintRise text-[#0B0D11] hover:brightness-110 transition shrink-0 inline-flex items-center justify-center gap-1.5 shadow-md cursor-pointer self-end sm:self-center"
+                  className="px-4 py-2 rounded-2xl text-xs font-bold bg-mintRise text-slate-950 hover:brightness-110 transition shrink-0 inline-flex items-center justify-center gap-1.5 shadow-sm cursor-pointer self-end sm:self-center"
                 >
                   <span>Lanjutkan Checklist</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -1318,15 +1318,15 @@ export default function FinanceDashboard() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
               {/* Net Worth */}
-              <div className="xl:col-span-7 bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-7 relative overflow-hidden flex flex-col justify-between">
+              <div className="xl:col-span-7 bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-3xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between shadow-xl transition-all">
                 <div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider truncate">
+                    <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider truncate">
                       Total Kekayaan Bersih
                     </span>
-                    <span className="text-[11px] sm:text-xs font-mono font-medium text-amberGold px-2.5 py-0.5 rounded-md bg-amberGold/10 border border-amberGold/20 shrink-0 whitespace-nowrap">
+                    <span className="text-xs font-mono font-semibold text-zinc-300 px-3 py-1 rounded-full bg-white/[0.05] border border-white/[0.1] shrink-0 whitespace-nowrap">
                       Seluruh {availableAccountNames.length} Rekening
                     </span>
                   </div>
@@ -1335,9 +1335,9 @@ export default function FinanceDashboard() {
                       <Skeleton className="h-10 sm:h-12 w-64 rounded-xl" />
                     </div>
                   ) : (
-                    <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slateText-primary my-3 font-mono truncate">
+                    <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white my-3 font-mono truncate">
                       {formatRupiah(summary.total_balance ?? (summary.income - summary.expense))}{" "}
-                      <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
+                      <span className="text-sm sm:text-base font-normal text-zinc-400 tracking-normal ml-1">
                         IDR
                       </span>
                     </div>
@@ -1345,44 +1345,44 @@ export default function FinanceDashboard() {
                 </div>
 
                 {loading ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-3 border-t border-obsidian-border/80">
-                    <Skeleton className="h-4 w-28 rounded-md" />
-                    <Skeleton className="h-4 w-28 rounded-md" />
-                    <Skeleton className="h-4 w-28 rounded-md" />
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-4 border-t border-white/[0.08]">
+                    <Skeleton className="h-7 w-28 rounded-full" />
+                    <Skeleton className="h-7 w-28 rounded-full" />
+                    <Skeleton className="h-7 w-28 rounded-full" />
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs pt-3 border-t border-obsidian-border/80">
-                    <div className="inline-flex items-center gap-1.5 text-mintRise font-mono font-medium whitespace-nowrap min-w-0">
-                      <ArrowUpRight className="w-4 h-4 shrink-0" />
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs pt-4 border-t border-white/[0.08]">
+                    <div className="inline-flex items-center gap-1.5 text-mintRise font-mono font-semibold whitespace-nowrap min-w-0 bg-mintRise/10 border border-mintRise/20 px-3 py-1.5 rounded-full">
+                      <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
                       <span className="truncate">{formatRupiah(summary.income)} in</span>
                     </div>
-                    <div className="inline-flex items-center gap-1.5 text-coralFall font-mono font-medium whitespace-nowrap min-w-0">
-                      <ArrowDownRight className="w-4 h-4 shrink-0" />
+                    <div className="inline-flex items-center gap-1.5 text-coralFall font-mono font-semibold whitespace-nowrap min-w-0 bg-coralFall/10 border border-coralFall/20 px-3 py-1.5 rounded-full">
+                      <ArrowDownRight className="w-3.5 h-3.5 shrink-0" />
                       <span className="truncate">{formatRupiah(summary.expense)} out</span>
                     </div>
-                    <div className="col-span-2 sm:col-span-1 inline-flex items-center gap-1.5 text-slateText-secondary font-mono font-medium whitespace-nowrap min-w-0">
+                    <div className="col-span-2 sm:col-span-1 inline-flex items-center gap-1.5 text-zinc-300 font-mono font-semibold whitespace-nowrap min-w-0 bg-white/[0.05] border border-white/[0.08] px-3 py-1.5 rounded-full">
                       <span className="truncate">Net: {formatRupiah(summary.income - summary.expense)}</span>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Safe-to-Spend */}
-              <div className="xl:col-span-5 bg-obsidian-panel border border-obsidian-border rounded-xl p-5 sm:p-7 relative overflow-hidden flex flex-col justify-between">
+              {/* Safe-to-Spend (Opsi A: Standout Inverted Canary Yellow Card) */}
+              <div className="xl:col-span-5 bg-[#FACC15] border border-yellow-400 rounded-3xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between shadow-xl shadow-yellow-500/10 text-slate-950">
                 <div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs sm:text-sm font-semibold text-slateText-muted uppercase tracking-wider flex items-center gap-1.5 min-w-0">
-                      <ShieldCheck className="w-4 h-4 text-amberGold shrink-0" />
+                    <span className="text-[11px] font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5 min-w-0">
+                      <ShieldCheck className="w-4 h-4 text-slate-950 stroke-[2.5] shrink-0" />
                       <span className="truncate">Batas Belanja Harian</span>
                     </span>
                     {loading ? (
-                      <Skeleton className="w-20 h-5 rounded-md" />
+                      <Skeleton className="w-20 h-6 rounded-full bg-black/20" />
                     ) : (
                       <span
-                        className={`text-[11px] sm:text-xs font-mono font-medium px-2.5 py-0.5 rounded-md border shrink-0 whitespace-nowrap ${
+                        className={`text-xs font-mono font-bold px-3 py-1 rounded-full border shrink-0 whitespace-nowrap shadow-xs ${
                           summary.safe_to_spend?.pace_status === "warning"
-                            ? "text-coralFall bg-coralFall/10 border-coralFall/20"
-                            : "text-mintRise bg-mintRise/10 border-mintRise/20"
+                            ? "bg-black text-amber-300 border-black"
+                            : "bg-black text-emerald-400 border-black"
                         }`}
                       >
                         {summary.safe_to_spend?.pace_status === "warning" ? "🔴 Agak Boros" : "🟢 Pace Aman"}
@@ -1392,12 +1392,12 @@ export default function FinanceDashboard() {
 
                   {loading ? (
                     <div className="my-3">
-                      <Skeleton className="h-9 sm:h-10 w-48 rounded-xl" />
+                      <Skeleton className="h-9 sm:h-10 w-48 rounded-xl bg-black/20" />
                     </div>
                   ) : (
-                    <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-amberGold my-3 font-mono truncate">
+                    <div className="text-3xl sm:text-4xl font-black tracking-tight text-slate-950 my-3 font-mono truncate">
                       {formatRupiah(summary.safe_to_spend?.safe_daily || 55000)}{" "}
-                      <span className="text-sm sm:text-base font-normal text-slateText-muted tracking-normal">
+                      <span className="text-sm sm:text-base font-bold text-slate-900/70 tracking-normal ml-1">
                         / hari
                       </span>
                     </div>
@@ -1405,40 +1405,40 @@ export default function FinanceDashboard() {
                 </div>
 
                 {loading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-obsidian-border/80">
-                    <Skeleton className="h-12 w-full rounded-lg" />
-                    <Skeleton className="h-12 w-full rounded-lg" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-black/15">
+                    <Skeleton className="h-12 w-full rounded-2xl bg-black/20" />
+                    <Skeleton className="h-12 w-full rounded-2xl bg-black/20" />
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-obsidian-border/80">
-                  <div className="bg-obsidian-card/60 border border-obsidian-border/50 rounded-lg p-2.5 min-w-0">
-                    <div className="flex items-center justify-between text-[11px] text-slateText-muted font-medium gap-1">
-                      <span className="truncate">Sisa Kuota {summary.safe_to_spend?.pocket_account || "Belanja"}</span>
-                      {summary.safe_to_spend?.pocket_budget ? (
-                        <span className="text-amberGold font-mono text-[10px] shrink-0 font-semibold">
-                          {Math.max(0, Math.round(((summary.safe_to_spend.pocket_remaining || 0) / summary.safe_to_spend.pocket_budget) * 100))}%
-                        </span>
-                      ) : null}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-black/15">
+                    <div className="bg-black/10 border border-black/15 rounded-2xl p-3 min-w-0">
+                      <div className="flex items-center justify-between text-[11px] text-slate-900/80 font-bold gap-1 uppercase tracking-wider">
+                        <span className="truncate">Sisa Kuota {summary.safe_to_spend?.pocket_account || "Belanja"}</span>
+                        {summary.safe_to_spend?.pocket_budget ? (
+                          <span className="font-mono text-xs font-black px-1.5 py-0.5 rounded-md bg-black/15 text-slate-950 shrink-0">
+                            {Math.max(0, Math.round(((summary.safe_to_spend.pocket_remaining || 0) / summary.safe_to_spend.pocket_budget) * 100))}%
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="text-sm sm:text-base font-black font-mono text-slate-950 mt-1 truncate whitespace-nowrap">
+                        {formatRupiah(summary.safe_to_spend?.pocket_remaining || 0)}
+                        {summary.safe_to_spend?.pocket_budget ? (
+                          <span className="text-slate-900/70 font-semibold text-xs font-mono">
+                            {" "}
+                            / {Math.round(summary.safe_to_spend.pocket_budget / 1000)}k
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
-                    <div className="text-xs sm:text-sm font-bold font-mono text-slateText-primary mt-0.5 truncate whitespace-nowrap">
-                      {formatRupiah(summary.safe_to_spend?.pocket_remaining || 0)}
-                      {summary.safe_to_spend?.pocket_budget ? (
-                        <span className="text-slateText-muted font-normal text-[11px]">
-                          {" "}
-                          / {Math.round(summary.safe_to_spend.pocket_budget / 1000)}k
-                        </span>
-                      ) : null}
+                    <div className="bg-black/10 border border-black/15 rounded-2xl p-3 min-w-0">
+                      <div className="text-[11px] text-slate-900/80 font-bold truncate uppercase tracking-wider">Rentang Waktu</div>
+                      <div className="text-sm sm:text-base font-black font-mono text-slate-950 mt-1 truncate whitespace-nowrap">
+                        {summary.safe_to_spend?.days_remaining === 0
+                          ? "Periode Berakhir"
+                          : `Hari ke-${summary.safe_to_spend?.day_of_cycle || 1} (sisa ${summary.safe_to_spend?.days_remaining || 0} hr)`}
+                      </div>
                     </div>
                   </div>
-                  <div className="bg-obsidian-card/60 border border-obsidian-border/50 rounded-lg p-2.5 min-w-0">
-                    <div className="text-[11px] text-slateText-muted font-medium truncate">Rentang Waktu</div>
-                    <div className="text-xs sm:text-sm font-bold font-mono text-slateText-primary mt-0.5 truncate whitespace-nowrap">
-                      {summary.safe_to_spend?.days_remaining === 0
-                        ? "Periode Berakhir"
-                        : `Hari ke-${summary.safe_to_spend?.day_of_cycle || 1} (sisa ${summary.safe_to_spend?.days_remaining || 0} hr)`}
-                    </div>
-                  </div>
-                </div>
                 )}
               </div>
             </div>
@@ -1455,39 +1455,39 @@ export default function FinanceDashboard() {
 
             {/* Quick Goals & Milestone Preview */}
             {loading ? (
-              <div className="bg-obsidian-panel border border-obsidian-border rounded-xl p-5 space-y-4">
+              <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-4 shadow-sm">
                 <div className="flex justify-between items-center gap-2">
-                  <Skeleton className="w-48 h-5 rounded-md" />
-                  <Skeleton className="w-28 h-4 rounded-md" />
+                  <Skeleton className="w-48 h-5 rounded-full" />
+                  <Skeleton className="w-28 h-4 rounded-full" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="bg-obsidian-card border border-obsidian-border rounded-xl p-4 space-y-3">
+                    <div key={i} className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 space-y-3">
                       <div className="flex justify-between items-center gap-2">
-                        <Skeleton className="w-24 h-4 rounded-md" />
-                        <Skeleton className="w-10 h-4 rounded-md" />
+                        <Skeleton className="w-24 h-4 rounded-full" />
+                        <Skeleton className="w-10 h-4 rounded-full" />
                       </div>
                       <Skeleton className="w-full h-1.5 rounded-full" />
                       <div className="flex justify-between">
-                        <Skeleton className="w-16 h-3 rounded-md" />
-                        <Skeleton className="w-16 h-3 rounded-md" />
+                        <Skeleton className="w-16 h-3 rounded-full" />
+                        <Skeleton className="w-16 h-3 rounded-full" />
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             ) : goals.length > 0 ? (
-              <div className="bg-obsidian-panel border border-obsidian-border rounded-xl p-5 space-y-4">
+              <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-4 shadow-sm">
                 <div className="flex justify-between items-center gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <Target className="w-5 h-5 text-amberGold shrink-0" />
-                    <h2 className="text-base font-bold text-slateText-primary truncate">
+                    <h2 className="text-base font-bold text-white truncate">
                       Target & Milestone Tabungan
                     </h2>
                   </div>
                   <button
                     onClick={() => setActiveNav("Target Finansial")}
-                    className="text-xs text-amberGold hover:underline font-medium shrink-0 whitespace-nowrap"
+                    className="text-xs text-amberGold hover:underline font-semibold shrink-0 whitespace-nowrap"
                   >
                     Buka Seluruh Target ({goals.length}) →
                   </button>
@@ -1506,7 +1506,7 @@ export default function FinanceDashboard() {
                       <div
                         key={g.id}
                         onClick={() => setActiveNav("Target Finansial")}
-                        className="bg-obsidian-card border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl p-4 space-y-3 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 shadow-sm"
+                        className="bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-2xl p-4 space-y-3 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 shadow-sm"
                       >
                         <div className="flex justify-between items-center gap-2">
                           <span className="text-sm font-semibold text-white truncate flex items-center gap-2">
@@ -1523,7 +1523,7 @@ export default function FinanceDashboard() {
                             style={{ width: `${Math.min(100, Math.max(3, g.percentage))}%` }}
                           />
                         </div>
-                        <div className="flex justify-between text-[11px] font-mono text-slateText-muted">
+                        <div className="flex justify-between text-[11px] font-mono text-zinc-400">
                           <span>{formatRupiah(g.current_amount)}</span>
                           <span>Target: {formatRupiah(g.target_amount)}</span>
                         </div>
@@ -1702,17 +1702,17 @@ export default function FinanceDashboard() {
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-bold text-base text-slateText-primary whitespace-nowrap">Histori Transaksi per Rekening</h3>
+                  <h3 className="font-bold text-base text-white whitespace-nowrap">Histori Transaksi per Rekening</h3>
                   <button
                     onClick={() => setIsTransferModalOpen(true)}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-cyanHub/10 border border-cyanHub/30 text-cyanHub hover:bg-cyanHub/20 transition inline-flex items-center gap-1.5 font-mono shrink-0 whitespace-nowrap"
+                    className="text-xs px-3 py-1.5 rounded-full bg-cyanHub/10 border border-cyanHub/25 text-cyanHub hover:bg-cyanHub/20 transition inline-flex items-center gap-1.5 font-mono shrink-0 whitespace-nowrap cursor-pointer"
                   >
                     <ArrowLeftRight className="w-3.5 h-3.5" />
                     <span>Pindah Saldo</span>
                   </button>
                   <button
                     onClick={() => setIsAddAccountModalOpen(true)}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-amberGold/10 border border-amberGold/30 text-amberGold hover:bg-amberGold/20 transition inline-flex items-center gap-1.5 font-mono font-semibold shrink-0 whitespace-nowrap"
+                    className="text-xs px-3 py-1.5 rounded-full bg-amberGold/10 border border-amberGold/25 text-amberGold hover:bg-amberGold/20 transition inline-flex items-center gap-1.5 font-mono font-semibold shrink-0 whitespace-nowrap cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Tambah Akun</span>
@@ -1723,10 +1723,10 @@ export default function FinanceDashboard() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`text-xs px-3 py-1.5 rounded-lg font-mono transition shrink-0 whitespace-nowrap ${
+                      className={`text-xs px-3.5 py-1.5 rounded-full font-mono transition shrink-0 whitespace-nowrap cursor-pointer ${
                         activeTab === tab.id
-                          ? "bg-amberGold text-[#0B0D11] font-bold"
-                          : "bg-obsidian-card border border-obsidian-border text-slateText-secondary hover:text-slateText-primary"
+                          ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                          : "bg-obsidian-card border border-white/[0.08] text-zinc-400 hover:text-white"
                       }`}
                     >
                       {tab.label}
@@ -1824,14 +1824,14 @@ export default function FinanceDashboard() {
         maxWidth="md"
       >
         <form onSubmit={handleCreateTransaction} className="space-y-4">
-          <div className="grid grid-cols-2 gap-2 bg-obsidian-panel p-1 rounded-xl border border-obsidian-border">
+          <div className="grid grid-cols-2 gap-2 bg-obsidian-panel p-1 rounded-2xl border border-white/[0.08]">
             <button
               type="button"
               onClick={() => setFormType("expense")}
-              className={`py-2 text-xs sm:text-sm font-semibold rounded-lg transition ${
+              className={`py-2 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer ${
                 formType === "expense"
-                  ? "bg-coralFall text-[#0B0D11] shadow-xs"
-                  : "text-slateText-secondary hover:text-slateText-primary"
+                  ? "bg-coralFall text-slate-950 font-bold shadow-xs"
+                  : "text-zinc-400 hover:text-white"
               }`}
             >
               Pengeluaran
@@ -1839,10 +1839,10 @@ export default function FinanceDashboard() {
             <button
               type="button"
               onClick={() => setFormType("income")}
-              className={`py-2 text-xs sm:text-sm font-semibold rounded-lg transition ${
+              className={`py-2 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer ${
                 formType === "income"
-                  ? "bg-mintRise text-[#0B0D11] shadow-xs"
-                  : "text-slateText-secondary hover:text-slateText-primary"
+                  ? "bg-mintRise text-slate-950 font-bold shadow-xs"
+                  : "text-zinc-400 hover:text-white"
               }`}
             >
               Pemasukan
@@ -1850,7 +1850,7 @@ export default function FinanceDashboard() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Nominal Transaksi
             </label>
             <CurrencyInput
@@ -1868,7 +1868,7 @@ export default function FinanceDashboard() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Keterangan
             </label>
             <input
@@ -1877,13 +1877,13 @@ export default function FinanceDashboard() {
               placeholder="Contoh: Nasi Padang + Es Teh"
               value={formDesc}
               onChange={(e) => setFormDesc(e.target.value)}
-              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-20">
             <div>
-              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
                 Akun Rekening
               </label>
               <CustomSelect
@@ -1893,7 +1893,7 @@ export default function FinanceDashboard() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
                 Kategori
               </label>
               <CustomSelect
@@ -1905,7 +1905,7 @@ export default function FinanceDashboard() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Tanggal Transaksi
             </label>
             <input
@@ -1913,21 +1913,21 @@ export default function FinanceDashboard() {
               required
               value={formDate}
               onChange={(e) => setFormDate(e.target.value)}
-              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold transition"
+              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
             />
           </div>
 
-          <div className="pt-3 flex justify-end gap-3 border-t border-obsidian-border/50 mt-5">
+          <div className="pt-3 flex justify-end gap-3 border-t border-white/[0.08] mt-5">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl transition"
+              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
-              className={`px-5 py-2.5 text-xs sm:text-sm font-bold text-[#0B0D11] hover:brightness-110 rounded-xl transition inline-flex items-center gap-2 shadow-md cursor-pointer ${
+              className={`px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer ${
                 formType === "expense" ? "bg-coralFall" : "bg-mintRise"
               }`}
             >
@@ -1949,7 +1949,7 @@ export default function FinanceDashboard() {
       >
         <form onSubmit={handleCreateSubscription} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Nama Layanan
             </label>
             <input
@@ -1958,23 +1958,23 @@ export default function FinanceDashboard() {
               placeholder="Contoh: Netflix, Spotify, Gym, ChatGPT"
               value={subName}
               onChange={(e) => setSubName(e.target.value)}
-              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
             />
           </div>
 
           {/* Switch Mode Siklus */}
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
               Metode Perhitungan Jatuh Tempo
             </label>
-            <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-xl border border-obsidian-border">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-2xl border border-white/[0.08]">
               <button
                 type="button"
                 onClick={() => setSubBillingType("fixed_day")}
-                className={`py-2 px-2 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-2 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
                   subBillingType === "fixed_day"
-                    ? "bg-amberGold text-[#0B0D11] shadow-xs"
-                    : "text-slateText-secondary hover:text-slateText-primary"
+                    ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
                 <Clock className="w-3.5 h-3.5 shrink-0" />
@@ -1990,10 +1990,10 @@ export default function FinanceDashboard() {
                     setSubExactDueDate(d.toISOString().split("T")[0]);
                   }
                 }}
-                className={`py-2 px-2 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-2 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
                   subBillingType === "exact_date"
-                    ? "bg-amberGold text-[#0B0D11] shadow-xs"
-                    : "text-slateText-secondary hover:text-slateText-primary"
+                    ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5 shrink-0" />
@@ -2004,7 +2004,7 @@ export default function FinanceDashboard() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
                 Nominal / Periode
               </label>
               <CurrencyInput
@@ -2019,7 +2019,7 @@ export default function FinanceDashboard() {
 
             {subBillingType === "fixed_day" ? (
               <div>
-                <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
                   Jatuh Tempo (Tgl 1-31)
                 </label>
                 <input
@@ -2030,12 +2030,12 @@ export default function FinanceDashboard() {
                   placeholder="Contoh: 25"
                   value={subBillingDay}
                   onChange={(e) => setSubBillingDay(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
                 />
               </div>
             ) : (
               <div>
-                <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
                   Tanggal Berakhir Riil
                 </label>
                 <input
@@ -2043,7 +2043,7 @@ export default function FinanceDashboard() {
                   required
                   value={subExactDueDate}
                   onChange={(e) => setSubExactDueDate(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary font-mono focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
                 />
               </div>
             )}
@@ -2051,7 +2051,7 @@ export default function FinanceDashboard() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-20">
             <div>
-              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
                 Kategori
               </label>
               <CustomSelect
@@ -2061,7 +2061,7 @@ export default function FinanceDashboard() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
                 Akun Autodebet
               </label>
               <CustomSelect
@@ -2073,7 +2073,7 @@ export default function FinanceDashboard() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Catatan Tambahan (Opsional)
             </label>
             <input
@@ -2081,21 +2081,21 @@ export default function FinanceDashboard() {
               placeholder="Contoh: Share family plan / Kartu debit Jago"
               value={subNotes}
               onChange={(e) => setSubNotes(e.target.value)}
-              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-500"
             />
           </div>
 
-          <div className="pt-3 flex justify-end gap-3 border-t border-obsidian-border/50 mt-5">
+          <div className="pt-3 flex justify-end gap-3 border-t border-white/[0.08] mt-5">
             <button
               type="button"
               onClick={() => setIsSubModalOpen(false)}
-              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl transition"
+              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-amberGold text-[#0B0D11] hover:brightness-110 rounded-xl transition inline-flex items-center gap-2 shadow-md cursor-pointer"
+              className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-amberGold text-slate-950 hover:bg-amber-300 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer"
             >
               Simpan Tagihan
             </button>

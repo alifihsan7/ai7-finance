@@ -148,16 +148,16 @@ export function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={handleToggle}
-        className={`w-full bg-obsidian-panel border rounded-xl px-3.5 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between gap-2 transition-all select-none ${
+        className={`w-full bg-obsidian-panel border rounded-2xl px-3.5 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between gap-2 transition-all select-none ${
           disabled
-            ? "opacity-50 cursor-not-allowed border-obsidian-border"
+            ? "opacity-50 cursor-not-allowed border-white/[0.06]"
             : isOpen
             ? accent === "mint"
               ? "border-mintRise ring-1 ring-mintRise/30 text-slateText-primary"
               : accent === "cyan"
               ? "border-cyanHub ring-1 ring-cyanHub/30 text-slateText-primary"
               : "border-amberGold ring-1 ring-amberGold/30 text-slateText-primary"
-            : "border-obsidian-border hover:border-obsidian-borderStrong text-slateText-primary"
+            : "border-white/[0.08] hover:border-white/[0.18] text-slateText-primary"
         }`}
       >
         <span className="min-w-0 flex-1 font-medium flex items-center gap-2 pr-1 overflow-hidden">
@@ -196,7 +196,7 @@ export function CustomSelect({
               maxHeight: coords.maxHeight,
               zIndex: 99999,
             }}
-            className="bg-obsidian-card border border-obsidian-borderStrong rounded-xl shadow-2xl py-1.5 overflow-y-auto scrollbar-thin animate-in fade-in zoom-in-95 duration-150"
+            className="bg-obsidian-card border border-white/[0.12] rounded-2xl shadow-2xl py-1.5 overflow-y-auto scrollbar-thin animate-in fade-in zoom-in-95 duration-150"
           >
             {options.map((opt) => {
               const isSelected = opt.value === value;

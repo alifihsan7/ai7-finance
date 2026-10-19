@@ -35,16 +35,16 @@ export function ConfirmModal({
       maxWidth="sm"
     >
       <div className="space-y-5">
-        <p className="text-xs sm:text-sm text-slateText-secondary leading-relaxed">
+        <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
           {message}
         </p>
 
-        <div className="flex justify-end gap-3 pt-2 border-t border-obsidian-border/50">
+        <div className="flex justify-end gap-3 pt-3 border-t border-white/[0.08]">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2.5 text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl transition"
+            className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
           >
             {cancelText}
           </button>
@@ -52,10 +52,10 @@ export function ConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className={`px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition inline-flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50 ${
+            className={`px-5 py-2.5 text-xs sm:text-sm font-bold rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 ${
               danger
-                ? "bg-coralFall text-[#0B0D11] hover:brightness-110"
-                : "bg-amberGold text-[#0B0D11] hover:brightness-110"
+                ? "bg-coralFall text-slate-950 hover:brightness-110"
+                : "bg-amberGold text-slate-950 hover:bg-amber-300"
             }`}
           >
             {loading ? "Memproses..." : confirmText}

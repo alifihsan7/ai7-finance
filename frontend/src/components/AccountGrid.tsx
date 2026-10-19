@@ -166,27 +166,27 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4">
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className="bg-obsidian-card border border-obsidian-border rounded-xl p-4 sm:p-5 flex flex-col justify-between space-y-4"
+            className="bg-obsidian-card border border-white/[0.08] rounded-2xl sm:rounded-3xl p-5 flex flex-col justify-between space-y-4 shadow-sm"
           >
             <div>
               <div className="flex justify-between items-center gap-2">
                 <div className="flex items-center gap-2">
-                  <Skeleton className="w-4 h-4 rounded-md" />
-                  <Skeleton className="w-20 h-4 rounded-md" />
+                  <Skeleton className="w-4 h-4 rounded-full" />
+                  <Skeleton className="w-20 h-4 rounded-full" />
                 </div>
-                <Skeleton className="w-12 h-4 rounded-md" />
+                <Skeleton className="w-12 h-4 rounded-full" />
               </div>
-              <Skeleton className="w-32 h-3 rounded-md mt-2.5" />
+              <Skeleton className="w-32 h-3 rounded-full mt-2.5" />
               <div className="mt-4">
-                <Skeleton className="w-28 h-6 rounded-md" />
-                <Skeleton className="w-20 h-3 rounded-md mt-1.5" />
+                <Skeleton className="w-28 h-6 rounded-full" />
+                <Skeleton className="w-20 h-3 rounded-full mt-1.5" />
               </div>
             </div>
-            <div className="pt-3 border-t border-obsidian-border/50">
+            <div className="pt-3 border-t border-white/[0.08]">
               <Skeleton className="w-full h-1.5 rounded-full" />
             </div>
           </div>
@@ -196,7 +196,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4">
       {allDisplayAccounts.map((acc) => {
         const hasPlafon = acc.allocated > 0;
         const pctUsed = hasPlafon ? Math.min(100, Math.round((acc.spent / acc.allocated) * 100)) : 0;
@@ -204,24 +204,24 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
         return (
           <div
             key={acc.name}
-            className="bg-obsidian-card border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl p-4 sm:p-5 transition-all shadow-xs flex flex-col justify-between"
+            className="bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-2xl sm:rounded-3xl p-5 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between"
           >
             <div>
               <div className="flex justify-between items-center gap-2">
                 <div className="relative group/name min-w-0 flex-1">
-                  <div className="text-slateText-primary font-bold text-sm sm:text-base flex items-center gap-1.5 sm:gap-2">
+                  <div className="text-white font-bold text-sm sm:text-base flex items-center gap-1.5 sm:gap-2">
                     <CreditCard className={`w-4 h-4 shrink-0 ${acc.accentColor}`} />
                     <span className="truncate cursor-default">{acc.name}</span>
                   </div>
                   {/* Tooltip Hover Nama Akun */}
-                  <div className="pointer-events-none absolute left-0 bottom-full mb-1.5 z-40 hidden group-hover/name:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12151D]/95 backdrop-blur-md border border-obsidian-borderStrong text-slateText-primary text-xs shadow-2xl shadow-black/80 whitespace-nowrap max-w-[280px] animate-in fade-in zoom-in-95 duration-150">
+                  <div className="pointer-events-none absolute left-0 bottom-full mb-1.5 z-40 hidden group-hover/name:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111217]/95 backdrop-blur-md border border-white/[0.12] text-white text-xs shadow-2xl shadow-black/80 whitespace-nowrap max-w-[280px] animate-in fade-in zoom-in-95 duration-150">
                     <div className="w-1.5 h-1.5 rounded-full bg-amberGold shrink-0" />
-                    <span className="font-semibold text-slate-100">{acc.name}</span>
+                    <span className="font-semibold text-white">{acc.name}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded-md bg-obsidian-panel text-slateText-secondary border border-obsidian-border whitespace-nowrap">
+                  <span className="text-[10px] sm:text-[11px] font-mono font-medium px-2.5 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08] whitespace-nowrap">
                     {acc.badge}
                   </span>
                   {acc.id && onAccountDeleted && (
@@ -232,7 +232,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                         e.stopPropagation();
                         setConfirmDelete({ id: acc.id!, name: acc.name });
                       }}
-                      className="p-1 rounded-md text-slateText-muted hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      className="p-1 rounded-full text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -242,41 +242,41 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
 
               {/* Tag / Deskripsi selebar kartu penuh (mentok ke kanan) */}
               <div className="relative group/tag mt-1 w-full">
-                <div className="text-xs text-slateText-muted truncate w-full cursor-default hover:text-slateText-secondary transition-colors">
+                <div className="text-xs text-zinc-400 truncate w-full cursor-default hover:text-zinc-300 transition-colors">
                   {acc.tag}
                 </div>
                 {/* Tooltip Hover Deskripsi Ber-Style */}
                 {acc.tag && (
-                  <div className="pointer-events-none absolute left-0 top-full mt-1.5 z-40 hidden group-hover/tag:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12151D]/95 backdrop-blur-md border border-obsidian-borderStrong text-slateText-primary text-xs shadow-2xl shadow-black/80 w-max max-w-[280px] break-words animate-in fade-in zoom-in-95 duration-150">
+                  <div className="pointer-events-none absolute left-0 top-full mt-1.5 z-40 hidden group-hover/tag:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111217]/95 backdrop-blur-md border border-white/[0.12] text-white text-xs shadow-2xl shadow-black/80 w-max max-w-[280px] break-words animate-in fade-in zoom-in-95 duration-150">
                     <div className="w-1.5 h-1.5 rounded-full bg-amberGold shrink-0" />
-                    <span className="font-medium text-slate-200 leading-snug">{acc.tag}</span>
+                    <span className="font-medium text-zinc-200 leading-snug">{acc.tag}</span>
                   </div>
                 )}
               </div>
 
               <div className="mt-4 sm:mt-5">
-                <div className="text-xs text-slateText-muted">Saldo Rekening</div>
-                <div className="text-xl sm:text-2xl font-bold font-mono text-slateText-primary mt-0.5 tracking-tight truncate">
+                <div className="text-[11px] text-zinc-400 font-medium">Saldo Rekening</div>
+                <div className="text-xl sm:text-2xl font-black font-mono text-white mt-0.5 tracking-tight truncate">
                   {formatRupiah(acc.balance)}
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-obsidian-border/50">
+            <div className="mt-4 pt-3 border-t border-white/[0.08]">
               {(acc.type === "investasi" || acc.name.toLowerCase().includes("invest") || acc.name.toLowerCase().includes("bibit")) ? (
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5 text-[11px] text-teal-400 font-mono">
                     <span className="whitespace-nowrap">Target Portofolio</span>
                     <span className="whitespace-nowrap font-medium text-teal-300">+{formatRupiah(acc.allocated)}/siklus</span>
                   </div>
-                  <div className="h-1.5 bg-obsidian-panel rounded-full overflow-hidden">
-                    <div style={{ width: "100%" }} className="h-full bg-teal-500"></div>
+                  <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                    <div style={{ width: "100%" }} className="h-full bg-teal-500 rounded-full"></div>
                   </div>
                 </div>
               ) : hasPlafon ? (
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[11px] font-mono">
-                    <span className="text-slateText-secondary whitespace-nowrap">
+                    <span className="text-zinc-400 whitespace-nowrap">
                       Terpakai{" "}
                       <strong
                         className={
@@ -284,32 +284,32 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                             ? "text-coralFall"
                             : pctUsed > 60
                             ? "text-amberGold"
-                            : "text-slateText-primary"
+                            : "text-white"
                         }
                       >
                         {pctUsed}%
                       </strong>
                     </span>
-                    <span className="text-slateText-muted whitespace-nowrap text-right">
+                    <span className="text-zinc-500 whitespace-nowrap text-right">
                       Plafon:{" "}
-                      <strong className="text-slateText-primary font-medium">
+                      <strong className="text-zinc-300 font-medium">
                         {formatRupiah(acc.allocated)}
                       </strong>
                     </span>
                   </div>
-                  <div className="h-1.5 bg-obsidian-panel rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                     <div
                       style={{ width: `${pctUsed}%` }}
-                      className={`h-full ${
+                      className={`h-full rounded-full ${
                         pctUsed > 85 ? "bg-coralFall" : pctUsed > 60 ? "bg-amberGold" : acc.barColor
                       }`}
                     ></div>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between text-xs text-slateText-muted font-mono py-1">
+                <div className="flex items-center justify-between text-xs text-zinc-400 font-mono py-1">
                   <span>Status</span>
-                  <span className="text-mintRise shrink-0 whitespace-nowrap">● Aktif</span>
+                  <span className="text-mintRise shrink-0 whitespace-nowrap font-semibold">● Aktif</span>
                 </div>
               )}
             </div>
@@ -320,28 +320,28 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
       {/* Modal Konfirmasi Hapus Rekening */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-[#12151D] border border-rose-500/30 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+          <div className="bg-obsidian-panel border border-rose-500/30 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-rose-400">
                 <AlertTriangle className="w-5 h-5" />
-                <h3 className="font-semibold text-sm text-slate-100">Hapus Rekening?</h3>
+                <h3 className="font-semibold text-sm text-white">Hapus Rekening?</h3>
               </div>
               <button
                 type="button"
                 onClick={() => { setConfirmDelete(null); setDeleteError(null); }}
-                className="text-slate-400 hover:text-slate-200 transition"
+                className="text-zinc-400 hover:text-white transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-zinc-300 leading-relaxed">
               Apakah Anda yakin ingin menghapus rekening <strong className="text-amberGold font-mono">{confirmDelete.name}</strong>?
               Seluruh riwayat transaksi yang tercatat pada rekening ini akan ikut dihapus. Minimal Anda harus menyisakan 1 rekening aktif.
             </p>
 
             {deleteError && (
-              <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
+              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
                 {deleteError}
               </div>
             )}
@@ -351,7 +351,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 type="button"
                 disabled={isDeleting}
                 onClick={() => { setConfirmDelete(null); setDeleteError(null); }}
-                className="px-3 py-1.5 rounded-lg bg-[#181C26] hover:bg-[#252B3B] text-slate-300 text-xs font-medium border border-[#252B3B] transition"
+                className="px-4 py-2 rounded-full bg-obsidian-card hover:bg-obsidian-hover text-zinc-300 text-xs font-semibold border border-white/[0.08] transition"
               >
                 Batal
               </button>
@@ -359,7 +359,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 type="button"
                 disabled={isDeleting}
                 onClick={handleDeleteAccount}
-                className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-lg shadow-rose-600/20 transition flex items-center gap-1.5 disabled:opacity-50"
+                className="px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-600/20 transition flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isDeleting ? "Menghapus..." : "Ya, Hapus Rekening"}
               </button>
