@@ -28,14 +28,19 @@ router = APIRouter()
 def get_or_seed_config(db: Session, user_id: int = 1) -> PaycheckConfig:
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
     if not cfg:
+        from app.models.account import Account
+        user_accs = db.query(Account).filter(Account.user_id == user_id).all()
+        source_name = user_accs[0].name if user_accs else "Rekening Utama"
+        pocket_acc = next((a for a in user_accs if a.type == "operasional"), None)
+        pocket_name = pocket_acc.name if pocket_acc else source_name
         cfg = PaycheckConfig(
             user_id=user_id,
-            source_account="BRI 1",
+            source_account=source_name,
             use_gate=True,
             gate_name="Flip",
-            cycle_type="biweekly",
-            cycle_days=14,
-            pocket_account="Mandiri",
+            cycle_type="monthly_date",
+            cycle_days=30,
+            pocket_account=pocket_name,
             is_active=True
         )
         db.add(cfg)
@@ -46,53 +51,35 @@ def get_or_seed_config(db: Session, user_id: int = 1) -> PaycheckConfig:
 def get_or_seed_buckets(db: Session, config_id: int = 1) -> List[PaycheckBucket]:
     buckets = db.query(PaycheckBucket).filter(PaycheckBucket.config_id == config_id).order_by(PaycheckBucket.sort_order.asc()).all()
     if not buckets:
-        default_buckets = [
-            PaycheckBucket(
-                config_id=config_id,
-                account="Mandiri",
-                percentage=55.0,
-                via_gate=True,
-                via_secondary=None,
-                purpose="Pos Belanja Operasional & Kebutuhan Pokok",
-                sort_order=1
-            ),
-            PaycheckBucket(
-                config_id=config_id,
-                account="Bank Jago",
-                percentage=18.33,
-                via_gate=True,
-                via_secondary=None,
-                purpose="Langganan & Tagihan Rutin",
-                sort_order=2
-            ),
-            PaycheckBucket(
-                config_id=config_id,
-                account="Bibit",
-                percentage=13.33,
-                via_gate=True,
-                via_secondary="Bank Jago",
-                purpose="Investasi Reksadana & Saham",
-                sort_order=3
-            ),
-            PaycheckBucket(
-                config_id=config_id,
-                account="BRI 2",
-                percentage=6.67,
-                via_gate=False,
-                via_secondary=None,
-                purpose="Tabungan Terkunci",
-                sort_order=4
-            ),
-            PaycheckBucket(
-                config_id=config_id,
-                account="BRI 1",
-                percentage=6.67,
-                via_gate=False,
-                via_secondary=None,
-                purpose="Hub Gajian & Dana Darurat",
-                sort_order=5
-            ),
-        ]
+        cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == config_id).first()
+        from app.models.account import Account
+        user_accs = db.query(Account).filter(Account.user_id == cfg.user_id).all() if cfg else []
+        if user_accs:
+            n = len(user_accs)
+            even_pct = round(100.0 / n, 2)
+            default_buckets = []
+            for i, acc in enumerate(user_accs):
+                pct = round(100.0 - even_pct * (n - 1), 2) if i == n - 1 else even_pct
+                purpose = "Operasional & Belanja" if acc.type == "operasional" else ("Tabungan" if acc.type == "tabungan" else ("Investasi" if acc.type == "investasi" else "Alokasi Pos"))
+                default_buckets.append(PaycheckBucket(
+                    config_id=config_id,
+                    account=acc.name,
+                    percentage=pct,
+                    via_gate=acc.name != (cfg.source_account if cfg else ""),
+                    purpose=purpose,
+                    sort_order=i + 1
+                ))
+        else:
+            default_buckets = [
+                PaycheckBucket(
+                    config_id=config_id,
+                    account="Rekening Utama",
+                    percentage=100.0,
+                    via_gate=False,
+                    purpose="Kebutuhan Pokok & Operasional",
+                    sort_order=1
+                )
+            ]
         db.add_all(default_buckets)
         db.commit()
         buckets = db.query(PaycheckBucket).filter(PaycheckBucket.config_id == config_id).order_by(PaycheckBucket.sort_order.asc()).all()
@@ -104,16 +91,6 @@ def compute_bucket_amounts(total_amount: int, buckets: List[PaycheckBucket], ove
         for b in buckets:
             result[b.account] = int(override.get(b.account, 0))
         return result
-
-    # Standard formula for 1.500.000
-    if total_amount == 1500000:
-        return {
-            "Mandiri": 825000,
-            "Bank Jago": 275000,
-            "Bibit": 200000,
-            "BRI 2": 100000,
-            "BRI 1": 100000,
-        }
 
     # Dynamic percentage calculation
     allocated_sum = 0
@@ -135,15 +112,15 @@ def generate_steps(config: PaycheckConfig, buckets: List[PaycheckBucket], amount
     direct_buckets = [b for b in buckets if not b.via_gate and b.account != config.source_account]
     hub_bucket = next((b for b in buckets if b.account == config.source_account), None)
 
-    # ------------------ PHASE 1: SUMBER DANA (BRImo / source_account) ------------------
-    # 1. Direct transfers (e.g. BRI 1 -> BRI 2)
+    # ------------------ PHASE 1: SUMBER DANA (source_account) ------------------
+    # 1. Direct transfers
     for b in direct_buckets:
         amt = amounts.get(b.account, 0)
         if amt > 0:
             steps.append(PaycheckStep(
                 id=f"direct_{b.account.lower().replace(' ', '_')}",
                 phase=1,
-                app=f"BRImo / {config.source_account}",
+                app=f"M-Banking ({config.source_account})",
                 title=f"Transfer {config.source_account} → {b.account}",
                 badge="Sesama Bank",
                 description=f"{b.purpose} (Rp {amt:,})",
@@ -155,7 +132,7 @@ def generate_steps(config: PaycheckConfig, buckets: List[PaycheckBucket], amount
                 creates_income=True,
             ))
 
-    # 2. Sisa di Rekening Hub (e.g. BRI 1)
+    # 2. Sisa di Rekening Hub
     if hub_bucket:
         hub_amt = amounts.get(hub_bucket.account, 0)
         if hub_amt > 0:
@@ -181,7 +158,7 @@ def generate_steps(config: PaycheckConfig, buckets: List[PaycheckBucket], amount
             steps.append(PaycheckStep(
                 id="gate_funding",
                 phase=1,
-                app=f"BRImo / {config.source_account}",
+                app=f"M-Banking ({config.source_account})",
                 title=f"Top Up / Transfer {config.source_account} → {config.gate_name}",
                 badge="Jembatan Bebas Admin",
                 description=f"Kirim total Rp {gate_total:,} ke {config.gate_name} untuk distribusi ke rekening operasional & investasi",

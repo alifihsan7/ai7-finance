@@ -15,6 +15,7 @@ import {
 import { CustomModal } from "./ui/CustomModal";
 import { CurrencyInput } from "./ui/CurrencyInput";
 import { CustomSelect } from "./ui/CustomSelect";
+import { authFetch } from "@/lib/api";
 
 interface PaycheckConfig {
   id: number;
@@ -83,16 +84,16 @@ export default function PaycheckModal({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Setup state
-  const [totalAmountStr, setTotalAmountStr] = useState<string>("1500000");
+  const [totalAmountStr, setTotalAmountStr] = useState<string>("0");
   const [cycleDate, setCycleDate] = useState<string>(new Date().toISOString().split("T")[0]);
   const [config, setConfig] = useState<PaycheckConfig>({
     id: 1,
-    source_account: "BRI 1",
+    source_account: "Rekening Utama",
     use_gate: true,
     gate_name: "Flip",
-    cycle_type: "biweekly",
-    cycle_days: 14,
-    pocket_account: "Mandiri",
+    cycle_type: "monthly_date",
+    cycle_days: 30,
+    pocket_account: "Rekening Utama",
     is_active: true,
   });
   const [buckets, setBuckets] = useState<PaycheckBucket[]>([]);
@@ -113,7 +114,7 @@ export default function PaycheckModal({
       setErrorMsg(null);
 
       // Check active session
-      const sessRes = await fetch("/api/v1/paycheck/session/active");
+      const sessRes = await authFetch("/api/v1/paycheck/session/active");
       if (sessRes.ok) {
         const sessData = await sessRes.json();
         if (sessData && sessData.id && sessData.status === "in_progress") {
@@ -125,7 +126,7 @@ export default function PaycheckModal({
       }
 
       // If no active session, fetch config & buckets
-      const cfgRes = await fetch("/api/v1/paycheck/config");
+      const cfgRes = await authFetch("/api/v1/paycheck/config");
       if (cfgRes.ok) {
         const data = await cfgRes.json();
         setConfig(data.config);
@@ -133,9 +134,16 @@ export default function PaycheckModal({
         setBuckets(data.buckets);
         setCustomBuckets(data.buckets);
 
-        // Precompute default amounts
-        const numTotal = parseInt(totalAmountStr.replace(/\D/g, ""), 10) || 1500000;
-        initAmounts(numTotal, data.buckets);
+        // Precompute default amounts from salary if available or existing input
+        const initialTotal = data.config.total_salary && data.config.total_salary > 0 
+          ? data.config.total_salary 
+          : (parseInt(totalAmountStr.replace(/\D/g, ""), 10) || 0);
+        if (initialTotal > 0) {
+          setTotalAmountStr(initialTotal.toString());
+          initAmounts(initialTotal, data.buckets);
+        } else {
+          initAmounts(0, data.buckets);
+        }
       }
       setView("setup");
     } catch (err) {
@@ -147,18 +155,18 @@ export default function PaycheckModal({
   };
 
   const initAmounts = (total: number, bList: PaycheckBucket[]) => {
-    if (total === 1500000) {
-      setCustomAmounts({
-        Mandiri: 825000,
-        "Bank Jago": 275000,
-        Bibit: 200000,
-        "BRI 2": 100000,
-        "BRI 1": 100000,
-      });
+    const calculated: { [account: string]: number } = {};
+    if (!bList || bList.length === 0) {
+      setCustomAmounts({});
       return;
     }
-
-    const calculated: { [account: string]: number } = {};
+    if (total <= 0) {
+      bList.forEach((b) => {
+        calculated[b.account] = 0;
+      });
+      setCustomAmounts(calculated);
+      return;
+    }
     let sum = 0;
     bList.forEach((b, idx) => {
       if (idx === bList.length - 1) {
@@ -227,7 +235,7 @@ export default function PaycheckModal({
     try {
       setLoading(true);
       setErrorMsg(null);
-      const res = await fetch("/api/v1/paycheck/session/start", {
+      const res = await authFetch("/api/v1/paycheck/session/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -239,7 +247,8 @@ export default function PaycheckModal({
       });
 
       if (!res.ok) {
-        throw new Error("Gagal memulai checklist gajian");
+        const errJson = await res.json().catch(() => null);
+        throw new Error(errJson?.detail || "Gagal memulai checklist gajian");
       }
 
       const sessionData = await res.json();
@@ -259,7 +268,7 @@ export default function PaycheckModal({
     if (!activeSession) return;
     try {
       setTogglingStepId(stepId);
-      const res = await fetch(
+      const res = await authFetch(
         `/api/v1/paycheck/session/${activeSession.id}/step/${stepId}/toggle`,
         { method: "POST" }
       );
@@ -279,7 +288,7 @@ export default function PaycheckModal({
     if (!activeSession) return;
     try {
       setLoading(true);
-      const res = await fetch(`/api/v1/paycheck/session/${activeSession.id}/complete_all`, {
+      const res = await authFetch(`/api/v1/paycheck/session/${activeSession.id}/complete_all`, {
         method: "POST",
       });
       if (!res.ok) throw new Error("Gagal menyelesaikan semua langkah");
@@ -298,7 +307,7 @@ export default function PaycheckModal({
     if (!activeSession) return;
     try {
       setLoading(true);
-      const res = await fetch(`/api/v1/paycheck/session/${activeSession.id}/cancel`, {
+      const res = await authFetch(`/api/v1/paycheck/session/${activeSession.id}/cancel`, {
         method: "POST",
       });
       if (!res.ok) throw new Error("Gagal membatalkan sesi");
@@ -317,7 +326,7 @@ export default function PaycheckModal({
     try {
       setLoading(true);
       // 1. Update config
-      const cfgRes = await fetch("/api/v1/paycheck/config", {
+      const cfgRes = await authFetch("/api/v1/paycheck/config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -334,7 +343,7 @@ export default function PaycheckModal({
       setConfig(savedCfg);
 
       // 2. Update buckets
-      const bRes = await fetch("/api/v1/paycheck/buckets", {
+      const bRes = await authFetch("/api/v1/paycheck/buckets", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
@@ -663,7 +672,7 @@ export default function PaycheckModal({
                   ? `FASE 1: Buka ${config.source_account} (Rekening Hub)`
                   : phaseNum === 2
                   ? `FASE 2: Buka ${config.gate_name} (Distribusi Bebas Admin)`
-                  : "FASE 3: Buka Bank Jago & Bibit (Investasi & Subs)";
+                  : "FASE 3: Alokasi Rekening Investasi & Sekunder";
 
               const phaseColor =
                 phaseNum === 1
