@@ -111,21 +111,29 @@ def setup_bot_commands():
     except Exception as e:
         print(f"Error registering bot commands: {e}")
 
-def send_message(chat_id: int, text: str, parse_mode: str = "Markdown", reply_to_message_id: Optional[int] = None, reply_markup: Optional[dict] = None, bot_token: Optional[str] = None):
+def send_message(chat_id: int, text: str, parse_mode: Optional[str] = "Markdown", reply_to_message_id: Optional[int] = None, reply_markup: Optional[dict] = None, bot_token: Optional[str] = None):
     token = bot_token or settings.BOT_TOKEN
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = {
         "chat_id": chat_id,
-        "text": text,
-        "parse_mode": parse_mode
+        "text": text
     }
+    if parse_mode:
+        payload["parse_mode"] = parse_mode
     if reply_to_message_id:
         payload["reply_to_message_id"] = reply_to_message_id
     if reply_markup:
         payload["reply_markup"] = reply_markup
     try:
         res = requests.post(url, json=payload, timeout=10)
-        return res.json()
+        data = res.json()
+        if not data.get("ok"):
+            print(f"Telegram API warning sending message to {chat_id}: {data}")
+            if parse_mode and "can't parse entities" in data.get("description", "").lower():
+                payload.pop("parse_mode", None)
+                retry_res = requests.post(url, json=payload, timeout=10)
+                return retry_res.json()
+        return data
     except Exception as e:
         print(f"Error sending message: {e}")
         return None
@@ -1063,6 +1071,8 @@ def process_update(update: dict, bot_token: Optional[str] = None, user_override:
     chat_id = message.get("chat", {}).get("id")
     text = (message.get("text") or "").strip()
     message_id = message.get("message_id")
+
+    print(f"[{datetime.now()}] Update received: chat_id={chat_id}, user={tg_user.get('username')}, text={text}")
 
     if not chat_id:
         return
