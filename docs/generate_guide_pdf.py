@@ -198,7 +198,7 @@ def create_guide_pdf(output_path: str):
     meta_content = [
         [Paragraph("<b>Edisi & Versi:</b>", style_table_cell), Paragraph("v1.0.0 (Open Source Release)", style_table_cell)],
         [Paragraph("<b>Lisensi:</b>", style_table_cell), Paragraph("MIT License (Free & Open Source)", style_table_cell)],
-        [Paragraph("<b>Platform:</b>", style_table_cell), Paragraph("FastAPI • Next.js 14 • PostgreSQL • Telegram Bot", style_table_cell)],
+        [Paragraph("<b>Platform:</b>", style_table_cell), Paragraph("FastAPI • Next.js 14 • PostgreSQL • Telegram Bot & Mini App", style_table_cell)],
         [Paragraph("<b>Tanggal Publikasi:</b>", style_table_cell), Paragraph("Oktober 2026", style_table_cell)],
         [Paragraph("<b>Penyusun:</b>", style_table_cell), Paragraph("Alif Ihsan & Tim Kontributor AI7 Finance", style_table_cell)],
         [Paragraph("<b>Repositori Resmi:</b>", style_table_cell), Paragraph("https://github.com/alifihsan7/ai7-finance", style_table_cell)],
@@ -347,6 +347,13 @@ def create_guide_pdf(output_path: str):
     story.append(Paragraph("2. Salin token HTTP API yang diberikan (format: <code>123456789:AA...</code>).", style_bullet))
     story.append(Paragraph("3. Masuk ke Web Dashboard ➔ Modal Profil ➔ Tab <b>Integrasi Telegram</b> ➔ Pilih <b>Bot Pribadi (BYOB)</b>.", style_bullet))
     story.append(Paragraph("4. Tempelkan bot token Anda dan klik <b>Verifikasi & Simpan</b>.", style_bullet))
+
+    story.append(Spacer(1, 8))
+    story.append(Paragraph("3.4 Akses Telegram Mini App (In-App Web Dashboard)", style_h2))
+    story.append(Paragraph("Selain interaksi pesan teks, Anda dapat membuka seluruh Web Dashboard secara visual langsung di dalam Telegram:", style_body))
+    story.append(Paragraph("• <b>Tombol Menu Tetap:</b> Klik tombol <b>📊 Dashboard</b> di sebelah kiri kolom ketik chat bot untuk membuka dashboard.", style_bullet))
+    story.append(Paragraph("• <b>Zero-Click SSO:</b> Masuk otomatis secara aman tanpa mengetik password berkat validasi kriptografi Telegram WebApp.", style_bullet))
+    story.append(Paragraph("• <b>Tampilan Native:</b> Dashboard meluncur mulus dalam layar penuh dengan tema gelap Slate Obsidian.", style_bullet))
 
     story.append(PageBreak())
 

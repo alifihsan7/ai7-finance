@@ -13,44 +13,45 @@
 ## 🌟 Highlights
 
 - **⚡ Zero-Friction Telegram Capture:** Log expenses in under a second using regex natural language parsing (`kopi 25k bca`, `bensin 50rb cash`, `gaji 5jt`).
+- **📱 Telegram Mini App (TMA):** Access the entire Next.js financial dashboard natively within Telegram via the persistent "📊 Dashboard" menu button, featuring zero-click cryptographic auto-login (HMAC-SHA256 Single Sign-On).
 - **🔐 Multi-Tenant Architecture:** Built from the ground up with secure user isolation, Argon2/Bcrypt password hashing, JWT bearer tokens, and Google OAuth 2.0 Sign-In.
 - **🤖 Dual-Mode Telegram Engine:**
   - **Shared Bot Mode:** One central companion bot securely routes transactions to users based on verified Telegram IDs.
   - **BYOB (Bring Your Own Bot):** Users can link their own private Telegram bot token directly from their profile settings.
 - **🔄 Dynamic Budget Cycles:** Flexible budget periods tailored to your actual paycheck cycle—**Weekly (7 Days)**, **Bi-Weekly (14 Days)**, or **Monthly (30 Days)**—with automated cycle rollover and historical tracking.
 - **📉 Burn-Rate Trajectory & Pacing:** Real-time safe-to-spend velocity meter (`Rp/hari`), pacing status indicators (🟢 Pace Aman vs 🔴 Agak Boros), and ideal cumulative pace lines.
-- **📦 Envelope Budgeting (Strata Allocation):** Dynamic percentage-based distribution across customizable buckets (Operational Saku, Fixed Bills, Investments, Emergency Reserve).
+- **📦 Envelope Budgeting (Strata Allocation):** Dynamic percentage-based distribution across customizable buckets (Operational Saku, Fixed Bills, Investments, Emergency Reserve) connected directly to live account balances.
 - **🧾 AI Receipt & Voice Extractor:** Optional multimodal integration with OpenAI-compatible vision/audio models to ingest physical paper receipts and Telegram voice notes.
-- **📱 Responsive Slate Dark UI:** PWA-ready dashboard styled in slate dark tones, custom React Portal dropdowns (`CustomSelect`), and currency formatting (`CurrencyInput`).
+- **💻 Responsive Slate Dark UI:** PWA-ready dashboard styled in slate dark tones, custom React Portal dropdowns (`CustomSelect`), and currency formatting (`CurrencyInput`).
 
 ---
 
 ## 📚 Dokumentasi & Buku Panduan
 
-- 🏛️ **[Spesifikasi Arsitektur Sistem (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)** — Penjelasan mendalam mengenai isolasi multi-tenant, ERD database PostgreSQL, formula matematika *Safe-to-Spend* dan burn-rate trajectory, spesifikasi engine parser regex, serta katalog REST API lengkap.
-- 📕 **[Buku Panduan Pengguna PDF (docs/Panduan_Pengguna_AI7_Finance.pdf)](docs/Panduan_Pengguna_AI7_Finance.pdf)** — E-book panduan praktis 8 halaman (format A4) siap cetak/baca untuk pengguna baru: panduan onboarding dashboard, menghubungkan Telegram bot (Shared/BYOB), tabel sintaks input cepat, dan FAQ troubleshooting.
+- 🏛️ **[Spesifikasi Arsitektur Sistem (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)** — Penjelasan mendalam mengenai isolasi multi-tenant, ERD database PostgreSQL, formula matematika *Safe-to-Spend* dan burn-rate trajectory, spesifikasi engine parser regex, verifikasi kriptografis Telegram Mini App, serta katalog REST API lengkap.
+- 📕 **[Buku Panduan Pengguna PDF (docs/Panduan_Pengguna_AI7_Finance.pdf)](docs/Panduan_Pengguna_AI7_Finance.pdf)** — E-book panduan praktis 8 halaman (format A4) siap cetak/baca untuk pengguna baru: panduan onboarding dashboard, integrasi Telegram Mini App, menghubungkan Telegram bot (Shared/BYOB), tabel sintaks input cepat, dan FAQ troubleshooting.
 
 ---
 
 ## 🏗️ System Architecture
 
 ```text
-               +-------------------------------------------+
-               |             Telegram Clients              |
-               |  (Voice Notes, Photos/Receipts, Text Tx)  |
-               +---------------------+---------------------+
-                                     |
-                                     v
-                       +---------------------------+
-                       |    Telegram Bot Engine    |
-                       |    (Shared Bot / BYOB)    |
-                       +-------------+-------------+
-                                     |
-                                     v
-+-----------------------+     +-------------------------------+     +-----------------------+
-|   Next.js 14 Client   |<--->|      FastAPI REST Server      |<--->|   PostgreSQL RDBMS    |
-| (React / Tailwind UI) |     |  (/api/v1/ auth, tx, summary) |     | (ACID Multi-Tenant DB)|
-+-----------------------+     +---------------+---------------+     +-----------------------+
+               +-------------------------------------------------------------+
+               |                       Telegram Clients                      |
+               |  (Voice Notes, Photos/Receipts, Text Tx, Telegram Mini App) |
+               +------------------------------+------------------------------+
+                                              |
+                                              v
+                                +---------------------------+
+                                |    Telegram Bot Engine    |
+                                |    (Shared Bot / BYOB)    |
+                                +-------------+-------------+
+                                              |
+                                              v
++-----------------------+      +-------------------------------+      +-----------------------+
+|   Next.js 14 Client   |<---->|      FastAPI REST Server      |<---->|   PostgreSQL RDBMS    |
+| (TMA & Web Dashboard) |      |  (/api/v1/ auth, tx, summary) |      | (ACID Multi-Tenant DB)|
++-----------------------+      +---------------+---------------+      +-----------------------+
                                               |
                                               v
                               +-------------------------------+
