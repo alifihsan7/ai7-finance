@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     
     # Telegram Bot
     BOT_TOKEN: str = os.getenv("BOT_TOKEN", "")
+    TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN", "")
     ALLOWED_USER_ID: int = int(os.getenv("ALLOWED_USER_ID", "0"))
     
     # Web App URL

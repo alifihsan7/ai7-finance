@@ -239,6 +239,44 @@ export default function FinanceDashboard() {
   useEffect(() => {
     const initUser = async () => {
       try {
+        // Cek integrasi Telegram Mini App (TWA)
+        if (typeof window !== "undefined" && window.Telegram?.WebApp) {
+          const tg = window.Telegram.WebApp;
+          try {
+            tg.ready();
+            tg.expand();
+            if (typeof tg.setHeaderColor === "function") tg.setHeaderColor("#0B0D11");
+            if (typeof tg.setBackgroundColor === "function") tg.setBackgroundColor("#0B0D11");
+          } catch (e) {
+            console.warn("Telegram WebApp init warning:", e);
+          }
+
+          // Jika ada initData valid dari Telegram WebApp, autentikasi otomatis
+          if (tg.initData && tg.initData.length > 0) {
+            try {
+              const tgRes = await fetch("/api/v1/auth/telegram-webapp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ init_data: tg.initData }),
+              });
+              if (tgRes.ok) {
+                const authData = await tgRes.json();
+                setAuthToken(authData.access_token);
+                setStoredUser(authData.user);
+                setCurrentUser(authData.user);
+                setIsAuthModalOpen(false);
+                if (!authData.user.is_onboarded) {
+                  setIsOnboardingModalOpen(true);
+                }
+                setLoading(false);
+                return;
+              }
+            } catch (err) {
+              console.error("Gagal auto-login Telegram WebApp:", err);
+            }
+          }
+        }
+
         const token = getAuthToken();
         if (!token) {
           setCurrentUser(null);

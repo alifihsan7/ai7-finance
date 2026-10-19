@@ -1,5 +1,10 @@
 from typing import Optional
 import secrets
+import hmac
+import hashlib
+import json
+import time
+from urllib.parse import parse_qsl
 import requests
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
@@ -18,6 +23,7 @@ from app.schemas.user import (
     LinkTelegramRequest,
     LinkTelegramCustomRequest,
     GoogleAuthRequest,
+    TelegramWebAppAuthRequest,
 )
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
@@ -355,4 +361,108 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
         access_token=token,
         token_type="bearer",
         user=user,
+    )
+
+def verify_telegram_init_data(init_data: str, bot_token: str) -> Optional[dict]:
+    """
+    Validates data received from Telegram WebApp via HMAC-SHA256 signature check.
+    """
+    try:
+        parsed_data = dict(parse_qsl(init_data, keep_blank_values=True))
+        if "hash" not in parsed_data:
+            return None
+        
+        received_hash = parsed_data.pop("hash")
+        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed_data.items()))
+        
+        secret_key = hmac.new(b"WebAppData", bot_token.encode("utf-8"), hashlib.sha256).digest()
+        computed_hash = hmac.new(secret_key, data_check_string.encode("utf-8"), hashlib.sha256).hexdigest()
+        
+        if not hmac.compare_digest(computed_hash, received_hash):
+            return None
+
+        # Check auth_date within 7 days
+        auth_date = int(parsed_data.get("auth_date", 0))
+        if time.time() - auth_date > 86400 * 7:
+            return None
+            
+        if "user" in parsed_data:
+            parsed_data["user"] = json.loads(parsed_data["user"])
+            
+        return parsed_data
+    except Exception as e:
+        print(f"Error validating Telegram WebApp initData: {e}")
+        return None
+
+@router.post("/telegram-webapp", response_model=TokenResponse)
+def telegram_webapp_auth(payload: TelegramWebAppAuthRequest, db: Session = Depends(get_db)):
+    """
+    Authenticate a user directly from Telegram Mini App initData without password.
+    """
+    if not settings.TELEGRAM_BOT_TOKEN:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Telegram Bot Token belum dikonfigurasi di server",
+        )
+
+    # 1. Coba verifikasi dengan shared bot token
+    validated = verify_telegram_init_data(payload.init_data, settings.TELEGRAM_BOT_TOKEN)
+
+    # 2. Jika gagal, cek apakah user menggunakan custom BYOB token
+    if not validated:
+        custom_users = db.query(User).filter(User.telegram_bot_token.isnot(None)).all()
+        for cu in custom_users:
+            if cu.telegram_bot_token:
+                validated = verify_telegram_init_data(payload.init_data, cu.telegram_bot_token)
+                if validated:
+                    break
+
+    if not validated or "user" not in validated:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Data autentikasi Telegram WebApp tidak valid atau telah kedaluwarsa",
+        )
+
+    tg_user = validated["user"]
+    tg_id = tg_user.get("id")
+    if not tg_id:
+        raise HTTPException(status_code=400, detail="Data Telegram tidak memuat ID pengguna")
+
+    # 1. Cari user yang sudah terhubung dengan telegram_chat_id ini
+    user = db.query(User).filter(User.telegram_chat_id == int(tg_id)).first()
+    
+    if not user:
+        # Buat user baru secara otomatis untuk pengguna Telegram baru
+        tg_username = tg_user.get("username")
+        first_name = tg_user.get("first_name") or "Pengguna Telegram"
+        
+        base_username = (tg_username or f"tg_{tg_id}").lower()
+        clean_username = "".join(c for c in base_username if c.isalnum() or c in ("_", "-")) or f"tg_{tg_id}"
+        candidate = clean_username
+        counter = 1
+        while db.query(User).filter(User.username == candidate).first():
+            candidate = f"{clean_username}{counter}"
+            counter += 1
+
+        random_pw = hash_password(secrets.token_urlsafe(32))
+        user = User(
+            username=candidate,
+            full_name=first_name,
+            hashed_password=random_pw,
+            telegram_chat_id=int(tg_id),
+            is_active=True,
+            is_onboarded=False,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Akun ini telah dinonaktifkan")
+
+    token = create_access_token(subject=user.id)
+    return TokenResponse(
+        access_token=token,
+        token_type="bearer",
+        user=UserResponse.from_orm(user),
     )
