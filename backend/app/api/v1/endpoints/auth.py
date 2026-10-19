@@ -14,6 +14,11 @@ from google.auth.transport import requests as google_requests
 
 from app.db.session import get_db
 from app.models.user import User
+from app.models.account import Account
+from app.models.transaction import Transaction
+from app.models.subscription import Subscription
+from app.models.goal import Goal
+from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckSession
 from app.schemas.user import (
     UserCreate,
     UserLogin,
@@ -466,3 +471,26 @@ def telegram_webapp_auth(payload: TelegramWebAppAuthRequest, db: Session = Depen
         token_type="bearer",
         user=UserResponse.from_orm(user),
     )
+
+@router.delete("/me")
+def delete_my_account(
+    current_user: User = Depends(get_strict_current_user),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id
+    # Hapus seluruh relasi data pengguna secara permanen
+    db.query(Transaction).filter(Transaction.user_id == user_id).delete()
+    db.query(Subscription).filter(Subscription.user_id == user_id).delete()
+    db.query(Goal).filter(Goal.user_id == user_id).delete()
+    db.query(PaycheckSession).filter(PaycheckSession.user_id == user_id).delete()
+
+    configs = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).all()
+    for cfg in configs:
+        db.query(PaycheckBucket).filter(PaycheckBucket.config_id == cfg.id).delete()
+        db.delete(cfg)
+
+    db.query(Account).filter(Account.user_id == user_id).delete()
+    db.delete(current_user)
+    db.commit()
+
+    return {"success": True, "message": "Akun dan seluruh data Anda berhasil dihapus secara permanen"}

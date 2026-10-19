@@ -1403,7 +1403,7 @@ export default function FinanceDashboard() {
               formatRupiah={formatRupiah}
               loading={loading}
             />
-            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} />
+            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} onAccountDeleted={fetchData} />
 
             {/* Quick Goals & Milestone Preview */}
             {loading ? (
@@ -1647,7 +1647,7 @@ export default function FinanceDashboard() {
         {/* ============================================================== */}
         {activeNav === "Rekening & Akun" && (
           <div className="space-y-8">
-            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} />
+            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} onAccountDeleted={fetchData} />
 
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">

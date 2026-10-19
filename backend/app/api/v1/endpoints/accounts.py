@@ -10,6 +10,7 @@ from app.db.session import get_db
 from app.models.account import Account
 from app.models.transaction import Transaction
 from app.models.user import User
+from app.models.paycheck import PaycheckConfig, PaycheckBucket
 from app.schemas.account import AccountCreate, AccountResponse
 from app.api.deps import get_current_user
 from app.core.config import settings
@@ -132,3 +133,42 @@ def create_account(
         current_balance=account_in.initial_balance,
         created_at=new_acc.created_at
     )
+
+@router.delete("/{account_id}")
+def delete_account(
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    acc = db.query(Account).filter(Account.id == account_id, Account.user_id == current_user.id).first()
+    if not acc:
+        raise HTTPException(status_code=404, detail="Rekening tidak ditemukan")
+
+    total_accs = db.query(Account).filter(Account.user_id == current_user.id).count()
+    if total_accs <= 1:
+        raise HTTPException(status_code=400, detail="Minimal harus ada 1 rekening aktif")
+
+    acc_name = acc.name
+    # Hapus seluruh transaksi yang terkait rekening ini
+    db.query(Transaction).filter(
+        Transaction.user_id == current_user.id,
+        Transaction.account == acc_name
+    ).delete()
+
+    # Perbarui konfigurasi gajian jika mengacu pada akun ini
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
+    if cfg:
+        db.query(PaycheckBucket).filter(
+            PaycheckBucket.config_id == cfg.id,
+            PaycheckBucket.account == acc_name
+        ).delete()
+        other_acc = db.query(Account).filter(Account.user_id == current_user.id, Account.id != acc.id).first()
+        if other_acc:
+            if cfg.pocket_account == acc_name:
+                cfg.pocket_account = other_acc.name
+            if cfg.source_account == acc_name:
+                cfg.source_account = other_acc.name
+
+    db.delete(acc)
+    db.commit()
+    return {"success": True, "message": f"Rekening '{acc_name}' berhasil dihapus"}

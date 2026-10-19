@@ -1,6 +1,7 @@
-import React from "react";
-import { CreditCard } from "lucide-react";
+import React, { useState } from "react";
+import { CreditCard, Trash2, AlertTriangle, X } from "lucide-react";
 import { Skeleton } from "./ui/Skeleton";
+import { authFetch } from "@/lib/api";
 
 export interface AccountItem {
   id?: number;
@@ -27,6 +28,7 @@ interface AccountGridProps {
   customAccounts?: AccountItem[];
   formatRupiah: (val: number) => string;
   loading?: boolean;
+  onAccountDeleted?: () => void;
 }
 
 const COLOR_MAP: Record<string, { text: string; bg: string; border: string }> = {
@@ -38,7 +40,32 @@ const COLOR_MAP: Record<string, { text: string; bg: string; border: string }> = 
   coralFall: { text: "text-coralFall", bg: "bg-coralFall", border: "border-coralFall/20" },
 };
 
-export function AccountGrid({ summary, customAccounts = [], formatRupiah, loading }: AccountGridProps) {
+export function AccountGrid({ summary, customAccounts = [], formatRupiah, loading, onAccountDeleted }: AccountGridProps) {
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDeleteAccount = async () => {
+    if (!confirmDelete) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await authFetch(`/api/v1/accounts/${confirmDelete.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json();
+        setDeleteError(err.detail || "Gagal menghapus rekening");
+        setIsDeleting(false);
+        return;
+      }
+      setConfirmDelete(null);
+      if (onAccountDeleted) onAccountDeleted();
+    } catch {
+      setDeleteError("Terjadi kesalahan jaringan saat menghapus rekening");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Map balance riil dari summary.accounts
   const balanceMap = (summary.accounts || []).reduce<Record<string, number>>((acc, item) => {
     acc[item.account] = item.balance;
@@ -54,34 +81,40 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
   const pocketSpent = summary.safe_to_spend?.pocket_spent ?? 0;
   const cycleDays = summary.safe_to_spend?.cycle_days ?? 14;
   const cycleBadge = `${cycleDays} Hari`;
-  const baselineSalary = cycleDays === 30 ? 3000000 : (cycleDays === 7 ? 750000 : 1500000);
   const pocketBudget = summary.safe_to_spend?.pocket_budget && summary.safe_to_spend.pocket_budget > 0
     ? summary.safe_to_spend.pocket_budget
-    : Math.round(baselineSalary * 0.55);
+    : 0;
 
   // Akun default generic jika user belum memiliki rekening kustom
   const genericDefaultAccounts = [
     {
+      id: undefined,
       name: "Rekening Utama",
-      tag: "Saku Operasional",
+      tag: "Operasional & Belanja",
       balance: 0,
-      spent: pocketSpent,
-      allocated: pocketBudget,
+      spent: 0,
+      allocated: 0,
       accentColor: "text-amberGold",
       barColor: "bg-amberGold",
       badge: cycleBadge,
+      type: "operasional",
+      isCustom: false,
     },
     {
-      name: "Rekening Tagihan",
-      tag: "Subs & Tagihan",
+      id: undefined,
+      name: "Tabungan",
+      tag: "Akun Simpanan",
       balance: 0,
       spent: 0,
       allocated: 0,
       accentColor: "text-purple-400",
       barColor: "bg-purple-500",
       badge: cycleBadge,
+      type: "tabungan",
+      isCustom: false,
     },
     {
+      id: undefined,
       name: "Investasi",
       tag: "Investasi Portofolio",
       balance: 0,
@@ -90,8 +123,11 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
       accentColor: "text-teal-400",
       barColor: "bg-teal-500",
       badge: "Portofolio",
+      type: "investasi",
+      isCustom: false,
     },
     {
+      id: undefined,
       name: "Dana Darurat",
       tag: "Cadangan Likuid",
       balance: 0,
@@ -100,6 +136,8 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
       accentColor: "text-cyanHub",
       barColor: "bg-cyanHub",
       badge: "Darurat",
+      type: "darurat",
+      isCustom: false,
     },
   ];
 
@@ -111,7 +149,9 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
         const bal = ca.current_balance ?? balanceMap[ca.name] ?? 0;
         const isPocket = ca.name.toLowerCase() === pocketAccountName || (pocketAccountName === "" && ca.name.toLowerCase().includes("mandiri"));
         return {
+          id: ca.id,
           name: ca.name,
+          type: ca.type,
           tag: ca.tag || (ca.type === "investasi" ? "Pos Investasi" : ca.type === "tabungan" ? "Pos Tabungan" : "Rekening Operasional"),
           balance: bal,
           spent: isPocket ? pocketSpent : (expenseMap[ca.name] ?? 0),
@@ -180,9 +220,24 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                   </div>
                 </div>
 
-                <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded-md bg-obsidian-panel text-slateText-secondary border border-obsidian-border shrink-0 whitespace-nowrap">
-                  {acc.badge}
-                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded-md bg-obsidian-panel text-slateText-secondary border border-obsidian-border whitespace-nowrap">
+                    {acc.badge}
+                  </span>
+                  {acc.id && onAccountDeleted && (
+                    <button
+                      type="button"
+                      title={`Hapus rekening ${acc.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmDelete({ id: acc.id!, name: acc.name });
+                      }}
+                      className="p-1 rounded-md text-slateText-muted hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Tag / Deskripsi selebar kartu penuh (mentok ke kanan) */}
@@ -208,7 +263,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
             </div>
 
             <div className="mt-4 pt-3 border-t border-obsidian-border/50">
-              {acc.name === "Bibit" ? (
+              {(acc.type === "investasi" || acc.name.toLowerCase().includes("invest") || acc.name.toLowerCase().includes("bibit")) ? (
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5 text-[11px] text-teal-400 font-mono">
                     <span className="whitespace-nowrap">Target Portofolio</span>
@@ -261,6 +316,57 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
           </div>
         );
       })}
+
+      {/* Modal Konfirmasi Hapus Rekening */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-[#12151D] border border-rose-500/30 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-rose-400">
+                <AlertTriangle className="w-5 h-5" />
+                <h3 className="font-semibold text-sm text-slate-100">Hapus Rekening?</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setConfirmDelete(null); setDeleteError(null); }}
+                className="text-slate-400 hover:text-slate-200 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Apakah Anda yakin ingin menghapus rekening <strong className="text-amberGold font-mono">{confirmDelete.name}</strong>?
+              Seluruh riwayat transaksi yang tercatat pada rekening ini akan ikut dihapus. Minimal Anda harus menyisakan 1 rekening aktif.
+            </p>
+
+            {deleteError && (
+              <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => { setConfirmDelete(null); setDeleteError(null); }}
+                className="px-3 py-1.5 rounded-lg bg-[#181C26] hover:bg-[#252B3B] text-slate-300 text-xs font-medium border border-[#252B3B] transition"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteAccount}
+                className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-lg shadow-rose-600/20 transition flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isDeleting ? "Menghapus..." : "Ya, Hapus Rekening"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

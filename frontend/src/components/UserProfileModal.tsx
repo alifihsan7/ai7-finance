@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { User, Send, CheckCircle2, LogOut, AlertCircle, Bot, Sparkles, ExternalLink, ShieldCheck, Unlink } from "lucide-react";
+import { User, Send, CheckCircle2, LogOut, AlertCircle, Bot, Sparkles, ExternalLink, ShieldCheck, Unlink, Trash2, AlertTriangle } from "lucide-react";
 import { CustomModal } from "./ui/CustomModal";
 import { authFetch, setStoredUser, UserProfile } from "@/lib/api";
 
@@ -36,6 +36,28 @@ export function UserProfileModal({
 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    setMsg(null);
+    try {
+      const res = await authFetch("/api/v1/auth/me", { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json();
+        setMsg({ type: "error", text: err.detail || "Gagal menghapus akun" });
+        setIsDeletingAccount(false);
+        setShowDeleteConfirm(false);
+        return;
+      }
+      onLogout();
+    } catch {
+      setMsg({ type: "error", text: "Terjadi kesalahan jaringan saat menghapus akun" });
+      setIsDeletingAccount(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -329,6 +351,57 @@ export function UserProfileModal({
                   "Simpan Perubahan Profil"
                 )}
               </button>
+            </div>
+
+            {/* Danger Zone: Hapus Akun & Data (Self-Serve Reset) */}
+            <div className="pt-4 mt-3 border-t border-rose-500/20 space-y-2">
+              <div>
+                <h4 className="text-xs font-semibold text-rose-400 flex items-center gap-1.5">
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Zona Bahaya
+                </h4>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Hapus permanen akun Anda beserta seluruh data rekening, transaksi, dan target finansial.
+                </p>
+              </div>
+
+              {!showDeleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="w-full py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 text-rose-400 text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Hapus Akun & Seluruh Data (Reset)
+                </button>
+              ) : (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 space-y-2.5 animate-in fade-in">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <div className="text-[11px] text-slate-200 leading-relaxed">
+                      <strong>Konfirmasi Hapus Akun:</strong> Tindakan ini permanen. Seluruh data keuangan Anda akan dihapus dari server dan Anda akan otomatis keluar.
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      disabled={isDeletingAccount}
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="px-2.5 py-1 rounded-lg bg-[#181C26] hover:bg-[#252B3B] text-slate-300 text-xs font-medium border border-[#252B3B] transition"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isDeletingAccount}
+                      onClick={handleDeleteAccount}
+                      className="px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow transition flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      {isDeletingAccount ? "Menghapus..." : "Ya, Hapus Akun"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </form>
         )}
