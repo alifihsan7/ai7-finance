@@ -2,9 +2,12 @@ import os
 import sys
 import re
 import time
+import logging
 import requests
 from datetime import datetime, date, timedelta
 import zoneinfo
+
+logger = logging.getLogger("ai7-finance-bot")
 
 from typing import Optional
 from sqlalchemy.orm import Session
@@ -879,14 +882,14 @@ def handle_sheets(chat_id: int, db: Session, user: Optional[User] = None, bot_to
     except Exception as e:
         send_message(chat_id, f"❌ Gagal sinkronisasi ke Google Sheets: {str(e)}", bot_token=bot_token)
 
-def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None, voice_prefix: str = ""):
     user_id = user.id if user else 1
     items = parse_multi_transactions(text)
     if not items:
         # Fall back to single parser to report specific error
         fallback = parse_transaction(text)
         err_msg = fallback.get("error", "Format tidak terdeteksi.")
-        send_message(chat_id, f"❌ {err_msg}", reply_to_message_id=message_id, bot_token=bot_token)
+        send_message(chat_id, f"{voice_prefix}❌ {err_msg}", reply_to_message_id=message_id, bot_token=bot_token)
         return
 
     now_wib = datetime.now(WIB)
@@ -920,7 +923,7 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
         type_label = "Pemasukan" if tx.type == "income" else "Pengeluaran"
         icon = "💰" if tx.type == "income" else "💸"
 
-        reply = f"""✅ **Tercatat!**
+        reply = f"""{voice_prefix}✅ **Tercatat!**
 
 {icon} **{type_label}:** {format_rp(tx.amount)}
 📂 **Kategori:** {tx.category}
@@ -1026,15 +1029,21 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
         mime_type = "image/jpeg"
         action_type = "upload_photo"
     elif doc:
-        mime = doc.get("mime_type", "")
+        mime = (doc.get("mime_type") or "").lower()
         fn = (doc.get("file_name") or "").lower()
+        audio_exts = (".mp3", ".m4a", ".wav", ".ogg", ".oga", ".aac", ".flac", ".opus", ".wma", ".caf")
         if mime.startswith("image/") or fn.endswith((".jpg", ".jpeg", ".png", ".webp")):
             file_id = doc["file_id"]
             media_type = "image"
             mime_type = mime or "image/jpeg"
             action_type = "upload_photo"
+        elif mime.startswith("audio/") or any(fn.endswith(ext) for ext in audio_exts):
+            file_id = doc["file_id"]
+            media_type = "audio"
+            mime_type = mime or "audio/mp3"
+            action_type = "record_voice"
         else:
-            send_message(chat_id, "⚠️ Dokumen ini bukan format gambar struk/QRIS yang didukung (.jpg, .png, .webp).", reply_to_message_id=message_id, bot_token=bot_token)
+            send_message(chat_id, "⚠️ Dokumen ini bukan format gambar atau rekaman audio yang didukung.", reply_to_message_id=message_id, bot_token=bot_token)
             return
     elif voice:
         file_id = voice["file_id"]
@@ -1060,6 +1069,37 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
             mime_type = "image/png"
         elif file_path.lower().endswith(".webp"):
             mime_type = "image/webp"
+
+    if media_type == "audio":
+        try:
+            import httpx
+            fn = os.path.basename(file_path) if file_path else "audio.ogg"
+            resp = httpx.post(
+                "http://127.0.0.1:8090/v1/audio/transcriptions",
+                files={"file": (fn, file_bytes)},
+                data={
+                    "language": "id",
+                    "prompt": "Mandiri, Bank Jago, Bibit, pengeluaran, pemasukan, transfer, warteg, nasi padang, kopi, indomaret, alfamart"
+                },
+                timeout=60.0
+            )
+            if resp.status_code == 200:
+                stt_res = resp.json()
+                transcribed_text = (stt_res.get("text") or "").strip()
+                if transcribed_text:
+                    full_text = f"{transcribed_text} ({caption})" if caption else transcribed_text
+                    handle_text_message(
+                        chat_id=chat_id,
+                        text=full_text,
+                        message_id=message_id,
+                        db=db,
+                        user=user,
+                        bot_token=bot_token,
+                        voice_prefix=f"🎙️ *Suara Terdeteksi:* \"_{transcribed_text}_\"\n\n"
+                    )
+                    return
+        except Exception as e:
+            logger.error(f"Whisper STT in finance bot failed: {e}")
 
     db_accounts = [a.name for a in db.query(Account).filter(Account.user_id == user_id).all()]
     all_accounts = list(set(["Mandiri", "Bank Jago", "Bibit", "BRI 1", "BRI 2"] + db_accounts))
