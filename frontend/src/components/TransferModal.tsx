@@ -3,6 +3,7 @@ import { ArrowLeftRight, CheckCircle2 } from "lucide-react";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { authFetch } from "@/lib/api";
 
 interface TransferModalProps {
   isOpen: boolean;
@@ -12,23 +13,33 @@ interface TransferModalProps {
 }
 
 const ACCOUNT_OPTIONS = [
-  { value: "Mandiri", label: "Mandiri (Saku Operasional)", color: "bg-blue-500", description: "Pos belanja harian & saku" },
-  { value: "Bank Jago", label: "Bank Jago (Subs & Bills)", color: "bg-purple-500", description: "Pos langganan rutin" },
-  { value: "Bibit", label: "Bibit (Investasi Reksadana/Saham)", color: "bg-teal-500", description: "Portofolio tabungan investasi" },
-  { value: "BRI 1", label: "BRI 1 (Income Hub)", color: "bg-cyan-500", description: "Rekening penampung utama" },
-  { value: "BRI 2", label: "BRI 2 (Nabung / Dana Dingin)", color: "bg-emerald-500", description: "Pos tabungan & investasi" },
-  { value: "Cash", label: "Cash (Uang Tunai Dompet)", color: "bg-amber-500", description: "Uang tunai fisik" },
+  { value: "Rekening Utama", label: "Rekening Utama (Operasional)", color: "bg-blue-500", description: "Pos belanja harian & saku" },
+  { value: "Tabungan", label: "Tabungan (Simpanan)", color: "bg-emerald-500", description: "Pos tabungan & simpanan" },
+  { value: "Investasi", label: "Investasi (Portofolio)", color: "bg-teal-500", description: "Portofolio tabungan investasi" },
+  { value: "Uang Tunai (Cash)", label: "Uang Tunai (Cash)", color: "bg-amber-500", description: "Uang tunai fisik" },
 ];
 
 export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: TransferModalProps) {
   const options = accountOptions && accountOptions.length > 0 ? accountOptions : ACCOUNT_OPTIONS;
-  const [fromAccount, setFromAccount] = useState("Mandiri");
-  const [toAccount, setToAccount] = useState("Bank Jago");
+  const [fromAccount, setFromAccount] = useState(() => options[0]?.value || "");
+  const [toAccount, setToAccount] = useState(() => options[1]?.value || options[0]?.value || "");
   const [amount, setAmount] = useState<string>("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-sync initial accounts if options change
+  React.useEffect(() => {
+    if (options.length > 0) {
+      if (!fromAccount || !options.some((o) => o.value === fromAccount)) {
+        setFromAccount(options[0].value);
+      }
+      if (!toAccount || !options.some((o) => o.value === toAccount)) {
+        setToAccount(options[1]?.value || options[0].value);
+      }
+    }
+  }, [options]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +58,7 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
 
     setLoading(true);
     try {
-      const res = await fetch("/api/v1/transactions/transfer", {
+      const res = await authFetch("/api/v1/transactions/transfer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

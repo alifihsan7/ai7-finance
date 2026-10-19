@@ -18,6 +18,7 @@ import {
 import { CustomModal } from "@/components/ui/CustomModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { authFetch } from "@/lib/api";
 
 interface AddGoalModalProps {
   isOpen: boolean;
@@ -61,7 +62,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
   const [name, setName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
   const [category, setCategory] = useState("Tabungan");
-  const [linkedAccount, setLinkedAccount] = useState("BRI 2");
+  const [linkedAccount, setLinkedAccount] = useState("");
   const [manualCurrentAmount, setManualCurrentAmount] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [icon, setIcon] = useState("🎯");
@@ -99,7 +100,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
 
     setLoading(true);
     try {
-      const res = await fetch("/api/v1/goals", {
+      const res = await authFetch("/api/v1/goals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

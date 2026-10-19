@@ -9,7 +9,8 @@ from sqlalchemy import func, case, desc
 
 from app.db.session import get_db
 from app.models.transaction import Transaction
-from app.models.paycheck import PaycheckConfig
+from app.models.paycheck import PaycheckConfig, PaycheckBucket
+from app.models.account import Account
 from app.models.user import User
 from app.api.deps import get_current_user
 from app.schemas.transaction import (
@@ -410,9 +411,23 @@ def get_monthly_summary(
         days_remaining = max(1, total_days - day_of_cycle + 1)
 
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
-    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
-    cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "biweekly"
-    pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 30
+    cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "monthly_date"
+
+    # Resolusi rekening saku belanja operasional dinamis dari akun user
+    user_accs = db.query(Account).filter(Account.user_id == current_user.id).all()
+    user_acc_names = [a.name for a in user_accs]
+
+    if cfg and cfg.pocket_account and cfg.pocket_account in user_acc_names:
+        pocket_account = cfg.pocket_account
+    else:
+        op_acc = next((a for a in user_accs if a.type == "operasional"), None)
+        if op_acc:
+            pocket_account = op_acc.name
+        elif user_accs:
+            pocket_account = user_accs[0].name
+        else:
+            pocket_account = "Rekening Utama"
 
     pocket_income_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("inc")
@@ -423,7 +438,30 @@ def get_monthly_summary(
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
     ).first()
-    base_pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else int(55000 * cycle_days)
+
+    base_pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else 0
+    if base_pocket_budget == 0 and cfg:
+        p_bucket = db.query(PaycheckBucket).filter(
+            PaycheckBucket.config_id == cfg.id,
+            PaycheckBucket.account == pocket_account
+        ).first()
+        pct = (p_bucket.percentage / 100.0) if p_bucket else 0.5
+        salary = cfg.total_salary if (cfg.total_salary and cfg.total_salary > 0) else 0
+        if salary > 0:
+            base_pocket_budget = int(round(salary * pct))
+        elif user_accs:
+            # Jika belum ada gaji tercatat, ambil total pemasukan seluruh akun periode ini * proporsi
+            all_inc = db.query(
+                func.coalesce(func.sum(Transaction.amount), 0)
+            ).filter(
+                Transaction.user_id == current_user.id,
+                Transaction.type == "income",
+                Transaction.date >= cycle_start,
+                Transaction.date <= cycle_end
+            ).scalar() or 0
+            if all_inc > 0:
+                base_pocket_budget = int(round(all_inc * pct))
+
     pocket_budget = base_pocket_budget if period_type == "cycle" else int(base_pocket_budget / cycle_days * total_days)
     
     pocket_spent_row = db.query(

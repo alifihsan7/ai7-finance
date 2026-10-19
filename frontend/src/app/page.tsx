@@ -146,9 +146,10 @@ export default function FinanceDashboard() {
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const [customAccounts, setCustomAccounts] = useState<AccountItem[]>([]);
   const availableAccountNames = useMemo(() => {
-    const defaults = ["BRI 2", "Bibit", "BRI 1", "Mandiri", "Bank Jago"];
-    const customs = customAccounts.map((a) => a.name);
-    return Array.from(new Set([...defaults, ...customs]));
+    if (customAccounts.length > 0) {
+      return customAccounts.map((a) => a.name);
+    }
+    return ["Rekening Utama", "Uang Tunai (Cash)", "Tabungan"];
   }, [customAccounts]);
   const [loading, setLoading] = useState(true);
 
@@ -184,19 +185,35 @@ export default function FinanceDashboard() {
   const [formAmount, setFormAmount] = useState("");
   const [formDesc, setFormDesc] = useState("");
   const [formCategory, setFormCategory] = useState("Makanan & Minuman");
-  const [formAccount, setFormAccount] = useState("Mandiri");
+  const [formAccount, setFormAccount] = useState("");
   const [formDate, setFormDate] = useState(() => new Date().toISOString().split("T")[0]);
 
   // Form state for new subscription
   const [subName, setSubName] = useState("");
   const [subAmount, setSubAmount] = useState("");
   const [subCategory, setSubCategory] = useState("Gym & Fitness");
-  const [subAccount, setSubAccount] = useState("Jago");
+  const [subAccount, setSubAccount] = useState("");
   const [subBillingType, setSubBillingType] = useState<"fixed_day" | "exact_date">("fixed_day");
   const [subBillingDay, setSubBillingDay] = useState("1");
   const [subExactDueDate, setSubExactDueDate] = useState("");
   const [subNotes, setSubNotes] = useState("");
   const [subToEdit, setSubToEdit] = useState<SubscriptionItem | null>(null);
+
+  // Paycheck configuration & buckets state
+  const [paycheckConfig, setPaycheckConfig] = useState<{ id?: number; total_salary?: number; pocket_account?: string; source_account?: string; cycle_days?: number; cycle_type?: string } | null>(null);
+  const [paycheckBuckets, setPaycheckBuckets] = useState<{ account: string; percentage: number; purpose?: string }[]>([]);
+
+  // Auto-sync formAccount & subAccount to available accounts
+  useEffect(() => {
+    if (availableAccountNames.length > 0) {
+      if (!formAccount || !availableAccountNames.includes(formAccount)) {
+        setFormAccount(availableAccountNames[0]);
+      }
+      if (!subAccount || !availableAccountNames.includes(subAccount)) {
+        setSubAccount(availableAccountNames[0]);
+      }
+    }
+  }, [availableAccountNames, formAccount, subAccount]);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
@@ -355,13 +372,14 @@ export default function FinanceDashboard() {
       if (selectedPeriod.start) txParams.append("start_date", selectedPeriod.start);
       if (selectedPeriod.end) txParams.append("end_date", selectedPeriod.end);
 
-      const [txRes, sumRes, subRes, accRes, goalRes, sessRes] = await Promise.all([
+      const [txRes, sumRes, subRes, accRes, goalRes, sessRes, paycheckCfgRes] = await Promise.all([
         authFetch(`/api/v1/transactions?${txParams.toString()}`),
         authFetch(`/api/v1/analytics/summary?${periodParams.toString()}`),
         authFetch("/api/v1/subscriptions"),
         authFetch("/api/v1/accounts"),
         authFetch("/api/v1/goals"),
         authFetch("/api/v1/paycheck/session/active"),
+        authFetch("/api/v1/paycheck/config"),
       ]);
 
       if (txRes.ok) {
@@ -415,6 +433,12 @@ export default function FinanceDashboard() {
       } else {
         setActivePaycheckSession(null);
       }
+
+      if (paycheckCfgRes.ok) {
+        const pData = await paycheckCfgRes.json();
+        if (pData?.config) setPaycheckConfig(pData.config);
+        if (Array.isArray(pData?.buckets)) setPaycheckBuckets(pData.buckets);
+      }
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
@@ -463,6 +487,26 @@ export default function FinanceDashboard() {
     }
     return tabs;
   }, [customAccounts]);
+
+  // Dynamic strata allocation buckets mapped from paycheck config or custom accounts
+  const dynamicStrataBuckets = useMemo(() => {
+    if (paycheckBuckets && paycheckBuckets.length > 0) {
+      return paycheckBuckets.map((b) => ({
+        account: b.account,
+        percentage: Number(b.percentage) || 0,
+        purpose: b.purpose || "Pos Rekening",
+      }));
+    }
+    if (customAccounts.length > 0) {
+      const defaultPct = Math.round((100 / customAccounts.length) * 10) / 10;
+      return customAccounts.map((a, i) => ({
+        account: a.name,
+        percentage: i === customAccounts.length - 1 ? Math.max(0, 100 - defaultPct * (customAccounts.length - 1)) : defaultPct,
+        purpose: a.tag || a.type || "Alokasi Rekening",
+      }));
+    }
+    return [];
+  }, [paycheckBuckets, customAccounts]);
 
   const pocketAccountName = (summary.safe_to_spend?.pocket_account || "").toLowerCase();
 
@@ -1378,10 +1422,12 @@ export default function FinanceDashboard() {
                     </div>
                     <div className="text-xs sm:text-sm font-bold font-mono text-slateText-primary mt-0.5 truncate whitespace-nowrap">
                       {formatRupiah(summary.safe_to_spend?.pocket_remaining || 0)}
-                      <span className="text-slateText-muted font-normal text-[11px]">
-                        {" "}
-                        / {summary.safe_to_spend?.pocket_budget ? `${Math.round(summary.safe_to_spend.pocket_budget / 1000)}k` : "825k"}
-                      </span>
+                      {summary.safe_to_spend?.pocket_budget ? (
+                        <span className="text-slateText-muted font-normal text-[11px]">
+                          {" "}
+                          / {Math.round(summary.safe_to_spend.pocket_budget / 1000)}k
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                   <div className="bg-obsidian-card/60 border border-obsidian-border/50 rounded-lg p-2.5 min-w-0">
@@ -1400,6 +1446,8 @@ export default function FinanceDashboard() {
             <StrataAllocationBar
               cycleType={summary.safe_to_spend?.cycle_type}
               cycleDays={summary.safe_to_spend?.cycle_days}
+              totalSalary={paycheckConfig?.total_salary || 0}
+              buckets={dynamicStrataBuckets}
               formatRupiah={formatRupiah}
               loading={loading}
             />
@@ -1490,7 +1538,7 @@ export default function FinanceDashboard() {
               mandiriExpenses={mandiriExpenses}
               formatRupiah={formatRupiah}
               cycleDays={summary.safe_to_spend?.cycle_days || 14}
-              pocketAccount={summary.safe_to_spend?.pocket_account || "Mandiri"}
+              pocketAccount={summary.safe_to_spend?.pocket_account || (customAccounts[0]?.name || "Saku Belanja")}
               pocketBudget={summary.safe_to_spend?.pocket_budget}
               loading={loading}
             />
@@ -1539,6 +1587,8 @@ export default function FinanceDashboard() {
             <StrataAllocationBar
               cycleType={summary.safe_to_spend?.cycle_type}
               cycleDays={summary.safe_to_spend?.cycle_days}
+              totalSalary={paycheckConfig?.total_salary || 0}
+              buckets={dynamicStrataBuckets}
               formatRupiah={formatRupiah}
               loading={loading}
             />
@@ -1546,7 +1596,7 @@ export default function FinanceDashboard() {
               mandiriExpenses={mandiriExpenses}
               formatRupiah={formatRupiah}
               cycleDays={summary.safe_to_spend?.cycle_days || 14}
-              pocketAccount={summary.safe_to_spend?.pocket_account || "Mandiri"}
+              pocketAccount={summary.safe_to_spend?.pocket_account || (customAccounts[0]?.name || "Saku Belanja")}
               pocketBudget={summary.safe_to_spend?.pocket_budget}
               loading={loading}
             />
@@ -1601,11 +1651,11 @@ export default function FinanceDashboard() {
                     <Skeleton className="h-7 w-36 rounded-md" />
                   ) : (
                     <div className="text-xl font-bold font-mono text-slateText-primary">
-                      {formatRupiah(investasiLabels ? totalInvestasiReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.2) : 0))}
+                      {formatRupiah(totalInvestasiReal)}
                     </div>
                   )}
                   <div className="text-xs text-slateText-muted">
-                    {investasiLabels ? `${investasiLabels} • Saldo riil investasi` : "Estimasi 20% pertumbuhan modal dan investasi"}
+                    {investasiLabels ? `${investasiLabels} • Saldo riil investasi` : "Belum ada rekening tipe Investasi"}
                   </div>
                 </div>
               </div>
@@ -1618,11 +1668,11 @@ export default function FinanceDashboard() {
                   <Skeleton className="h-8 w-40 rounded-md" />
                 ) : (
                   <div className="text-2xl font-bold font-mono text-slateText-primary">
-                    {formatRupiah(daruratLabels ? totalDaruratReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0))}
+                    {formatRupiah(totalDaruratReal)}
                   </div>
                 )}
                 <p className="text-xs text-slateText-muted">
-                  {daruratLabels ? `${daruratLabels} • Cadangan likuid darurat` : "Disimpan sebagai cadangan likuid jika ada kebutuhan tak terduga."}
+                  {daruratLabels ? `${daruratLabels} • Cadangan likuid darurat` : "Belum ada rekening tipe Dana Darurat"}
                 </p>
               </div>
               <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
@@ -1631,11 +1681,11 @@ export default function FinanceDashboard() {
                   <Skeleton className="h-8 w-40 rounded-md" />
                 ) : (
                   <div className="text-2xl font-bold font-mono text-slateText-primary">
-                    {formatRupiah(tabunganLabels ? totalTabunganReal : (summary.total_balance > 0 ? Math.round(summary.total_balance * 0.1) : 0))}
+                    {formatRupiah(totalTabunganReal)}
                   </div>
                 )}
                 <p className="text-xs text-slateText-muted">
-                  {tabunganLabels ? `${tabunganLabels} • Tabungan terpisah terkunci` : "Tidak boleh disentuh untuk operasional belanja harian."}
+                  {tabunganLabels ? `${tabunganLabels} • Tabungan terpisah terkunci` : "Belum ada rekening tipe Tabungan"}
                 </p>
               </div>
             </div>
