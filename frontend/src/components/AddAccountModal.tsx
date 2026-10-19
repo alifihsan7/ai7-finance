@@ -98,7 +98,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
         )}
 
         <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
             Nama Rekening / Akun *
           </label>
           <input
@@ -107,13 +107,13 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             placeholder="Misal: BCA, SeaBank, GoPay, OVO"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-30">
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Tipe / Kategori Pos
             </label>
             <CustomSelect
@@ -123,7 +123,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Warna / Aksen
             </label>
             <CustomSelect
@@ -135,7 +135,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
             Label / Deskripsi Ringkas
           </label>
           <input
@@ -143,12 +143,12 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             placeholder="Misal: Saku Tambahan, Tabungan Pribadi, Rekening Bisnis"
             value={tag}
             onChange={(e) => setTag(e.target.value)}
-            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
             Saldo Awal (Opsional)
           </label>
           <CurrencyInput
@@ -156,23 +156,23 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             onChange={setInitialBalance}
             placeholder="0"
           />
-          <p className="text-[11px] text-slateText-muted mt-1">
+          <p className="text-[11px] text-zinc-500 mt-1">
             Jika diisi lebih dari Rp 0, sistem otomatis mencatat transaksi pemasukan &ldquo;Saldo Awal&rdquo; di buku transaksi.
           </p>
         </div>
 
-        <div className="pt-3 flex justify-end gap-3 border-t border-obsidian-border/50 mt-5">
+        <div className="pt-3 flex justify-end gap-3 border-t border-white/[0.08] mt-5">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-hover transition"
+            className="px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/[0.06] transition cursor-pointer"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 bg-amberGold text-[#0B0D11] px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm hover:bg-amber-400 transition shadow-sm active:scale-95 disabled:opacity-50"
+            className="inline-flex items-center gap-2 bg-amberGold text-slate-950 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm hover:bg-amber-300 transition shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {loading ? (
               <span>Menyimpan...</span>

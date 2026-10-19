@@ -78,10 +78,10 @@ export function CustomModal({
       }}
     >
       <div
-        className={`relative bg-obsidian-card border border-obsidian-borderStrong/90 rounded-2xl w-full shadow-2xl flex flex-col max-h-[90vh] my-auto animate-in zoom-in-95 duration-200 ${maxWidthStyles[maxWidth]}`}
+        className={`relative bg-obsidian-card border border-white/[0.12] rounded-3xl w-full shadow-2xl flex flex-col max-h-[90vh] my-auto animate-in zoom-in-95 duration-200 ${maxWidthStyles[maxWidth]}`}
       >
         {/* Subtle Accent Glow Line at Top */}
-        <div className="absolute top-0 left-4 right-4 h-[2px] rounded-full pointer-events-none overflow-hidden z-20">
+        <div className="absolute top-0 left-6 right-6 h-[2px] rounded-full pointer-events-none overflow-hidden z-20">
           <div className={`w-full h-full ${currentAccent.bar}`} />
         </div>
 
@@ -89,7 +89,7 @@ export function CustomModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 sm:top-5 right-4 sm:right-5 p-1.5 rounded-lg text-slateText-muted hover:text-slateText-primary hover:bg-obsidian-hover border border-transparent hover:border-obsidian-border transition-all z-20"
+          className="absolute top-4 sm:top-5 right-4 sm:right-5 p-2 rounded-full text-slateText-muted hover:text-white hover:bg-white/[0.08] border border-transparent hover:border-white/[0.1] transition-all z-20"
         >
           <X className="w-4 h-4" />
         </button>

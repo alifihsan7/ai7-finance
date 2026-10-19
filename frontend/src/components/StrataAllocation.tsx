@@ -63,21 +63,21 @@ export function StrataAllocationBar({
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
-            <Skeleton className="w-48 h-5 rounded-md" />
-            <Skeleton className="w-72 h-3.5 rounded-md mt-1.5" />
+            <Skeleton className="w-48 h-5 rounded-full" />
+            <Skeleton className="w-72 h-3.5 rounded-full mt-1.5" />
           </div>
-          <Skeleton className="w-36 h-6 rounded-lg" />
+          <Skeleton className="w-36 h-6 rounded-full" />
         </div>
-        <Skeleton className="w-full h-6 rounded-lg" />
+        <Skeleton className="w-full h-7 rounded-full" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-1">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="p-3 rounded-xl bg-obsidian-card border border-obsidian-border space-y-2">
+            <div key={i} className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] space-y-2">
               <div className="flex items-center gap-1.5">
                 <Skeleton className="w-2 h-2 rounded-full" />
-                <Skeleton className="w-16 h-3 rounded-md" />
+                <Skeleton className="w-16 h-3 rounded-full" />
               </div>
-              <Skeleton className="w-20 h-4 rounded-md" />
-              <Skeleton className="w-12 h-3 rounded-md" />
+              <Skeleton className="w-20 h-4 rounded-full" />
+              <Skeleton className="w-12 h-3 rounded-full" />
             </div>
           ))}
         </div>
@@ -103,20 +103,20 @@ export function StrataAllocationBar({
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-slateText-primary">Distribusi Alokasi Anggaran</h2>
-          <p className="text-xs sm:text-sm text-slateText-secondary mt-0.5">
+          <h2 className="text-base sm:text-lg font-bold text-white">Distribusi Alokasi Anggaran</h2>
+          <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
             {effectiveSalary > 0
               ? `Alokasi anggaran ${formatRupiah(effectiveSalary)} / ${cycleDays} hari dipecah ke ${activeBuckets.length} pos rekening`
               : `Proporsi alokasi dipecah ke ${activeBuckets.length} pos rekening sesuai rasio alur gajian`}
           </p>
         </div>
-        <span className="text-xs font-mono font-semibold text-amberGold px-3 py-1 rounded-lg bg-amberGold/15 border border-amberGold/30 shrink-0 self-start sm:self-center">
+        <span className="text-xs font-mono font-semibold text-amberGold px-3 py-1 rounded-full bg-amberGold/15 border border-amberGold/30 shrink-0 self-start sm:self-center">
           {formulaLabel}
         </span>
       </div>
 
       {/* Horizontal Stacked Bar */}
-      <div className="flex gap-1.5 h-6 rounded-lg overflow-hidden p-1 bg-obsidian-panel border border-obsidian-border shadow-inner">
+      <div className="flex gap-1 h-7 rounded-full overflow-hidden p-1 bg-obsidian-card border border-white/[0.08] shadow-inner">
         {activeBuckets.map((b, idx) => {
           const color = getBucketColor(b.account, idx);
           const isFirst = idx === 0;
@@ -127,7 +127,7 @@ export function StrataAllocationBar({
             <div
               key={b.account}
               style={{ flex: b.percentage }}
-              className={`${color.bar} ${isFirst ? "rounded-l-md" : ""} ${isLast ? "rounded-r-md" : ""} transition-all hover:brightness-110 flex items-center justify-center text-xs font-mono font-bold shadow-xs`}
+              className={`${color.bar} ${isFirst ? "rounded-l-full" : ""} ${isLast ? "rounded-r-full" : ""} transition-all hover:brightness-110 flex items-center justify-center text-xs font-mono font-bold shadow-xs`}
               title={`${b.account}: ${b.percentage.toFixed(1)}%`}
             >
               {showText ? (
@@ -154,10 +154,10 @@ export function StrataAllocationBar({
               key={b.account}
               className={`border-l-2 ${color.border} pl-3 py-0.5 min-w-0`}
             >
-              <div className="text-slateText-primary font-semibold text-xs sm:text-sm truncate">
+              <div className="text-white font-semibold text-xs sm:text-sm truncate">
                 {b.account} ({b.percentage.toFixed(1)}%)
               </div>
-              <div className="text-slateText-secondary font-mono text-[11px] sm:text-xs mt-0.5 truncate">
+              <div className="text-zinc-400 font-mono text-[11px] sm:text-xs mt-0.5 truncate">
                 {effectiveSalary > 0
                   ? `${formatRupiah(allocatedAmt)} • ${shortPurpose}`
                   : `${b.percentage.toFixed(1)}% • ${shortPurpose}`}

@@ -18,6 +18,7 @@ import {
 import { CustomModal } from "@/components/ui/CustomModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { authFetch } from "@/lib/api";
 
 export interface GoalItem {
   id: number;
@@ -138,7 +139,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/goals/${goal.id}`, {
+      const res = await authFetch(`/api/v1/goals/${goal.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -181,14 +182,14 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 bg-coralFall/10 border border-coralFall/20 rounded-xl text-coralFall text-xs">
+          <div className="p-3 bg-coralFall/10 border border-coralFall/20 rounded-2xl text-coralFall text-xs">
             {error}
           </div>
         )}
 
         {/* Nama Target */}
         <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
             Nama Target / Milestone <span className="text-coralFall">*</span>
           </label>
           <input
@@ -196,13 +197,13 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
         {/* Nominal Target */}
         <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
             Nominal Target (Rp) <span className="text-coralFall">*</span>
           </label>
           <CurrencyInput
@@ -218,7 +219,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
         {/* 2 Kolom: Rekening & Kategori */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Sinkronisasi Rekening
             </label>
             <CustomSelect
@@ -230,7 +231,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Kategori
             </label>
             <CustomSelect
@@ -243,7 +244,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
 
         {!linkedAccount && (
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Saldo Terkumpul Saat Ini (Rp)
             </label>
             <CurrencyInput
@@ -257,7 +258,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
 
         {/* Tema Warna - Grid 5 Kolom Proporsional */}
         <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
             Tema Warna Aksen
           </label>
           <div className="grid grid-cols-5 gap-2 pt-0.5">
@@ -266,10 +267,10 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
                 key={c.value}
                 type="button"
                 onClick={() => setColor(c.value)}
-                className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl border text-xs font-medium transition-all ${
+                className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-2xl border text-xs font-medium transition cursor-pointer ${
                   color === c.value
-                    ? "bg-obsidian-hover border-amberGold text-white shadow-xs"
-                    : "bg-obsidian-panel border-obsidian-border text-slateText-secondary hover:text-white hover:border-obsidian-borderStrong"
+                    ? "bg-obsidian-card border-amberGold text-white shadow-xs"
+                    : "bg-obsidian-panel border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/[0.16]"
                 }`}
               >
                 <span className={`w-2.5 h-2.5 rounded-full ${c.dot} shrink-0`} />
@@ -282,7 +283,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
 
         {/* Pilih Ikon */}
         <div>
-          <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
             Pilih Ikon
           </label>
           <div className="grid grid-cols-6 gap-2 pt-0.5">
@@ -295,10 +296,10 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
                   type="button"
                   onClick={() => setIcon(item.id)}
                   title={item.label}
-                  className={`h-11 rounded-xl flex items-center justify-center transition-all ${
+                  className={`h-11 rounded-2xl flex items-center justify-center transition cursor-pointer ${
                     isSelected
                       ? "bg-amberGold/15 border-2 border-amberGold text-amberGold shadow-xs scale-105"
-                      : "bg-obsidian-panel border border-obsidian-border text-slateText-muted hover:text-white hover:border-obsidian-borderStrong"
+                      : "bg-obsidian-panel border border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/[0.16]"
                   }`}
                 >
                   <IconComp className="w-5 h-5" />
@@ -311,19 +312,19 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
         {/* 2 Kolom: Tanggal & Catatan */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Target Tanggal (Opsional)
             </label>
             <input
               type="date"
               value={targetDate}
               onChange={(e) => setTargetDate(e.target.value)}
-              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-slateText-primary focus:outline-none focus:border-amberGold transition"
+              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-white focus:outline-none focus:border-amberGold transition"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slateText-muted uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
               Catatan / Rencana (Opsional)
             </label>
             <input
@@ -331,24 +332,24 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
               placeholder="Strategi alokasi atau tujuan..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-obsidian-panel border border-obsidian-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slateText-primary focus:outline-none focus:border-amberGold transition placeholder:text-slateText-muted"
+              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-500"
             />
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-3 border-t border-obsidian-border/50 mt-5">
+        <div className="flex justify-end gap-3 pt-3 border-t border-white/[0.08] mt-5">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slateText-secondary hover:text-slateText-primary border border-obsidian-border hover:border-obsidian-borderStrong transition"
+            className="px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] transition cursor-pointer"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2.5 rounded-xl text-xs sm:text-sm bg-amberGold text-obsidian-bg font-semibold hover:bg-amber-400 transition-colors flex items-center gap-2 shadow-xs disabled:opacity-50"
+            className="px-6 py-2.5 rounded-2xl text-xs sm:text-sm bg-amberGold text-slate-950 font-bold hover:bg-amber-300 transition flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
           >
             {loading ? "Menyimpan..." : (
               <>

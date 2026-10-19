@@ -62,7 +62,7 @@ export function CurrencyInput({
   return (
     <div className={`space-y-2 ${className}`}>
       <div
-        className={`relative flex items-stretch rounded-xl overflow-hidden border border-obsidian-border bg-obsidian-panel transition-all ${currentAccent.focus}`}
+        className={`relative flex items-stretch rounded-2xl overflow-hidden border border-white/[0.08] bg-obsidian-panel transition-all ${currentAccent.focus}`}
       >
         {/* Rp Prefix Badge */}
         <div
@@ -97,7 +97,7 @@ export function CurrencyInput({
                 key={amt}
                 type="button"
                 onClick={() => onChange(amt.toString())}
-                className={`py-1.5 px-2 rounded-lg bg-obsidian-panel border text-xs font-mono font-medium transition-all text-center flex items-center justify-center ${currentAccent.btn}`}
+                className={`py-1.5 px-2 rounded-full bg-obsidian-panel border text-xs font-mono font-medium transition-all text-center flex items-center justify-center ${currentAccent.btn}`}
               >
                 +{label}
               </button>

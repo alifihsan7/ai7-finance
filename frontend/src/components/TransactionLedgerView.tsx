@@ -277,84 +277,84 @@ export function TransactionLedgerView({
       {/* 1. QUICK-STATS KPI BAR (REAL-TIME AGGREGATES) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Transaksi */}
-        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-3.5 sm:p-4 flex flex-col justify-between shadow-xs">
-          <div className="flex items-center justify-between gap-2 text-slateText-muted">
+        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+          <div className="flex items-center justify-between gap-2 text-zinc-400">
             <span className="text-xs font-medium truncate">Total Transaksi</span>
             <Receipt className="w-4 h-4 text-amberGold shrink-0" />
           </div>
           <div className="mt-2.5">
             {loading ? (
-              <Skeleton className="h-7 w-20 rounded-md" />
+              <Skeleton className="h-7 w-20 rounded-full" />
             ) : (
-              <div className="text-xl sm:text-2xl font-bold font-mono text-slateText-primary tracking-tight">
+              <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight">
                 {stats.count}{" "}
-                <span className="text-xs font-normal text-slateText-muted">item</span>
+                <span className="text-xs font-normal text-zinc-400">item</span>
               </div>
             )}
-            <p className="text-[11px] text-slateText-secondary mt-0.5 truncate">
+            <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
               {activeFiltersCount > 0 ? "Berdasarkan filter aktif" : "Seluruh catatan kas"}
             </p>
           </div>
         </div>
 
         {/* Total Pemasukan */}
-        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-3.5 sm:p-4 flex flex-col justify-between shadow-xs">
-          <div className="flex items-center justify-between gap-2 text-slateText-muted">
+        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+          <div className="flex items-center justify-between gap-2 text-zinc-400">
             <span className="text-xs font-medium truncate">Total Pemasukan</span>
-            <div className="w-5 h-5 rounded-md bg-mintRise/15 border border-mintRise/30 flex items-center justify-center text-mintRise shrink-0">
+            <div className="w-6 h-6 rounded-full bg-mintRise/15 border border-mintRise/30 flex items-center justify-center text-mintRise shrink-0">
               <ArrowDownRight className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-2.5">
             {loading ? (
-              <Skeleton className="h-7 w-28 rounded-md" />
+              <Skeleton className="h-7 w-28 rounded-full" />
             ) : (
-              <div className="text-xl sm:text-2xl font-bold font-mono text-mintRise tracking-tight truncate">
+              <div className="text-xl sm:text-2xl font-black font-mono text-mintRise tracking-tight truncate">
                 +{formatRupiah(stats.income)}
               </div>
             )}
-            <p className="text-[11px] text-slateText-secondary mt-0.5 truncate">
+            <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
               Kas masuk & transfer terima
             </p>
           </div>
         </div>
 
         {/* Total Pengeluaran */}
-        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-3.5 sm:p-4 flex flex-col justify-between shadow-xs">
-          <div className="flex items-center justify-between gap-2 text-slateText-muted">
+        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+          <div className="flex items-center justify-between gap-2 text-zinc-400">
             <span className="text-xs font-medium truncate">Total Pengeluaran</span>
-            <div className="w-5 h-5 rounded-md bg-coralFall/15 border border-coralFall/30 flex items-center justify-center text-coralFall shrink-0">
+            <div className="w-6 h-6 rounded-full bg-coralFall/15 border border-coralFall/30 flex items-center justify-center text-coralFall shrink-0">
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-2.5">
             {loading ? (
-              <Skeleton className="h-7 w-28 rounded-md" />
+              <Skeleton className="h-7 w-28 rounded-full" />
             ) : (
-              <div className="text-xl sm:text-2xl font-bold font-mono text-coralFall tracking-tight truncate">
+              <div className="text-xl sm:text-2xl font-black font-mono text-coralFall tracking-tight truncate">
                 -{formatRupiah(stats.expense)}
               </div>
             )}
-            <p className="text-[11px] text-slateText-secondary mt-0.5 truncate">
+            <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
               Belanja & transfer keluar
             </p>
           </div>
         </div>
 
         {/* Arus Kas Bersih (Net Flow) */}
-        <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-3.5 sm:p-4 flex flex-col justify-between shadow-xs">
-          <div className="flex items-center justify-between gap-2 text-slateText-muted">
+        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+          <div className="flex items-center justify-between gap-2 text-zinc-400">
             <span className="text-xs font-medium truncate">Arus Kas Bersih</span>
-            <div className="w-5 h-5 rounded-md bg-cyanHub/15 border border-cyanHub/30 flex items-center justify-center text-cyanHub shrink-0">
+            <div className="w-6 h-6 rounded-full bg-cyanHub/15 border border-cyanHub/30 flex items-center justify-center text-cyanHub shrink-0">
               <ArrowLeftRight className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-2.5">
             {loading ? (
-              <Skeleton className="h-7 w-28 rounded-md" />
+              <Skeleton className="h-7 w-28 rounded-full" />
             ) : (
               <div
-                className={`text-xl sm:text-2xl font-bold font-mono tracking-tight truncate ${
+                className={`text-xl sm:text-2xl font-black font-mono tracking-tight truncate ${
                   stats.net >= 0 ? "text-mintRise" : "text-coralFall"
                 }`}
               >
@@ -362,7 +362,7 @@ export function TransactionLedgerView({
                 {formatRupiah(Math.abs(stats.net))}
               </div>
             )}
-            <p className="text-[11px] text-slateText-secondary mt-0.5 truncate">
+            <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
               {stats.net >= 0 ? "Surplus kas terfilter" : "Defisit kas terfilter"}
             </p>
           </div>
@@ -370,11 +370,11 @@ export function TransactionLedgerView({
       </div>
 
       {/* 2. FILTER & CONTROL PANEL */}
-      <div className="bg-obsidian-panel border border-obsidian-border rounded-xl p-3.5 sm:p-4 space-y-3.5 shadow-xs">
+      <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
         {/* Top Control Bar: Search & Account Pills */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
           {/* Account Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 w-full lg:w-auto max-w-full">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 w-full lg:w-auto max-w-full">
             {accounts.map((tab) => (
               <button
                 key={tab.id}
@@ -383,10 +383,10 @@ export function TransactionLedgerView({
                   setActiveAccount(tab.id);
                   setCurrentPage(1);
                 }}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                className={`text-xs px-3.5 py-1.5 rounded-full font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                   activeAccount === tab.id
-                    ? "text-slateText-primary bg-obsidian-card border border-obsidian-borderStrong font-semibold shadow-xs"
-                    : "text-slateText-secondary hover:text-slateText-primary hover:bg-obsidian-card/60"
+                    ? "text-slate-950 bg-amberGold font-bold shadow-sm"
+                    : "text-zinc-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08]"
                 }`}
               >
                 {tab.label}
@@ -397,7 +397,7 @@ export function TransactionLedgerView({
           {/* Search Bar & Quick Add */}
           <div className="flex items-center gap-2 w-full lg:w-auto shrink-0 justify-end">
             <div className="relative flex-1 lg:w-64">
-              <Search className="w-4 h-4 text-slateText-muted absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
@@ -406,13 +406,13 @@ export function TransactionLedgerView({
                   setCurrentPage(1);
                 }}
                 placeholder="Cari transaksi, ket, atau akun..."
-                className="w-full bg-obsidian-card border border-obsidian-border rounded-lg pl-9 pr-8 py-2 text-xs sm:text-sm text-slateText-primary placeholder-slateText-muted focus:outline-none focus:border-amberGold transition font-mono"
+                className="w-full bg-obsidian-card border border-white/[0.08] rounded-2xl pl-10 pr-8 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amberGold transition font-mono"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slateText-muted hover:text-slateText-primary p-0.5 rounded cursor-pointer"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-0.5 rounded cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -422,7 +422,7 @@ export function TransactionLedgerView({
             <button
               type="button"
               onClick={onOpenAddModal}
-              className="px-3 py-2 bg-amberGold text-obsidian-bg hover:bg-amberGold/90 font-semibold text-xs sm:text-sm rounded-lg transition shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
+              className="px-4 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 font-bold text-xs sm:text-sm rounded-2xl transition shadow-sm flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span className="hidden sm:inline">Catat Transaksi</span>
@@ -431,10 +431,10 @@ export function TransactionLedgerView({
         </div>
 
         {/* Bottom Filter Controls: Type, Category, Date, Sort */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 border-t border-obsidian-border/60">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-white/[0.08]">
           {/* Filter Tipe Transaksi */}
           <div>
-            <label className="block text-[11px] font-medium text-slateText-muted mb-1">
+            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
               Tipe Transaksi
             </label>
             <CustomSelect
@@ -451,7 +451,7 @@ export function TransactionLedgerView({
 
           {/* Filter Kategori */}
           <div>
-            <label className="block text-[11px] font-medium text-slateText-muted mb-1">
+            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
               Kategori
             </label>
             <CustomSelect
@@ -468,7 +468,7 @@ export function TransactionLedgerView({
 
           {/* Filter Rentang Tanggal */}
           <div>
-            <label className="block text-[11px] font-medium text-slateText-muted mb-1">
+            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
               Rentang Waktu
             </label>
             <CustomSelect
@@ -485,7 +485,7 @@ export function TransactionLedgerView({
 
           {/* Pengurutan (Sort By) */}
           <div>
-            <label className="block text-[11px] font-medium text-slateText-muted mb-1">
+            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
               Urutkan Berdasarkan
             </label>
             <CustomSelect
@@ -503,8 +503,8 @@ export function TransactionLedgerView({
 
         {/* Conditional Custom Date Range Picker */}
         {dateFilter === "custom" && (
-          <div className="p-3 rounded-lg bg-obsidian-card border border-obsidian-border flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-xs text-slateText-secondary">
+          <div className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-zinc-300">
               <Calendar className="w-4 h-4 text-amberGold shrink-0" />
               <span className="font-medium">Rentang Tanggal Kustom:</span>
             </div>
@@ -516,9 +516,9 @@ export function TransactionLedgerView({
                   setCustomStartDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-obsidian-panel border border-obsidian-border rounded-lg px-2.5 py-1.5 text-xs text-slateText-primary font-mono focus:outline-none focus:border-amberGold"
+                className="bg-obsidian-panel border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-amberGold"
               />
-              <span className="text-slateText-muted text-xs">s/d</span>
+              <span className="text-zinc-500 text-xs">s/d</span>
               <input
                 type="date"
                 value={customEndDate}
@@ -526,7 +526,7 @@ export function TransactionLedgerView({
                   setCustomEndDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-obsidian-panel border border-obsidian-border rounded-lg px-2.5 py-1.5 text-xs text-slateText-primary font-mono focus:outline-none focus:border-amberGold"
+                className="bg-obsidian-panel border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-amberGold"
               />
             </div>
           </div>
@@ -535,7 +535,7 @@ export function TransactionLedgerView({
         {/* Active Filters Bar & Reset Action */}
         {activeFiltersCount > 0 && (
           <div className="flex items-center justify-between pt-1 text-xs">
-            <div className="flex items-center gap-2 text-slateText-muted font-medium">
+            <div className="flex items-center gap-2 text-zinc-400 font-medium">
               <Filter className="w-3.5 h-3.5 text-amberGold" />
               <span>
                 Menampilkan hasil dengan{" "}
@@ -545,7 +545,7 @@ export function TransactionLedgerView({
             <button
               type="button"
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-slateText-secondary hover:text-coralFall hover:bg-coralFall/10 border border-obsidian-border hover:border-coralFall/30 transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-zinc-300 hover:text-coralFall hover:bg-coralFall/10 border border-white/[0.08] hover:border-coralFall/30 transition cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               Reset Semua Filter
@@ -566,18 +566,18 @@ export function TransactionLedgerView({
 
         {/* 4. PAGINATION FOOTER */}
         {sortedTransactions.length > pageSize && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 pt-1 text-xs text-slateText-secondary font-mono">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 pt-1 text-xs text-zinc-400 font-mono">
             <div>
               Menampilkan{" "}
-              <strong className="text-slateText-primary">
+              <strong className="text-white">
                 {(currentPage - 1) * pageSize + 1}
               </strong>{" "}
               -{" "}
-              <strong className="text-slateText-primary">
+              <strong className="text-white">
                 {Math.min(currentPage * pageSize, sortedTransactions.length)}
               </strong>{" "}
               dari{" "}
-              <strong className="text-slateText-primary">
+              <strong className="text-white">
                 {sortedTransactions.length}
               </strong>{" "}
               transaksi terfilter
@@ -588,13 +588,13 @@ export function TransactionLedgerView({
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-1.5 rounded-lg border border-obsidian-border bg-obsidian-card hover:bg-obsidian-hover text-slateText-primary disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="p-2 rounded-xl border border-white/[0.08] bg-obsidian-card hover:bg-white/[0.06] text-white disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                 title="Halaman Sebelumnya"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              <div className="px-3 py-1 rounded-lg bg-obsidian-card border border-obsidian-border text-slateText-primary font-bold">
+              <div className="px-3.5 py-1.5 rounded-xl bg-obsidian-card border border-white/[0.08] text-white font-bold">
                 {currentPage} / {totalPages}
               </div>
 
@@ -602,7 +602,7 @@ export function TransactionLedgerView({
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="p-1.5 rounded-lg border border-obsidian-border bg-obsidian-card hover:bg-obsidian-hover text-slateText-primary disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="p-2 rounded-xl border border-white/[0.08] bg-obsidian-card hover:bg-white/[0.06] text-white disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                 title="Halaman Berikutnya"
               >
                 <ChevronRight className="w-4 h-4" />
