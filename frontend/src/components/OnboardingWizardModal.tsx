@@ -43,21 +43,46 @@ interface OnboardingWizardModalProps {
 }
 
 const DEFAULT_INITIAL_ACCOUNTS: InitialAccountInput[] = [
-  { name: "Mandiri", type: "operasional", tag: "Saku Operasional (55%)", color: "amberGold", initial_balance: 50000 },
-  { name: "Bank Jago", type: "operasional", tag: "Subs & Tagihan (18.3%)", color: "purpleLock", initial_balance: 10000 },
-  { name: "Bibit", type: "investasi", tag: "Investasi Portofolio (13.3%)", color: "teal", initial_balance: 0 },
-  { name: "BRI 1", type: "darurat", tag: "Hub & Dana Darurat (6.7%)", color: "cyanHub", initial_balance: 100000 },
-  { name: "BRI 2", type: "tabungan", tag: "Tabungan Terkunci (6.7%)", color: "purpleLock", initial_balance: 0 },
-  { name: "Cash", type: "operasional", tag: "Uang Tunai Fisik", color: "amberGold", initial_balance: 0 },
+  { name: "Rekening Utama", type: "operasional", tag: "Saku Belanja Harian", color: "amberGold", initial_balance: 0 },
+  { name: "Uang Tunai (Cash)", type: "operasional", tag: "Dompet Tunai", color: "amberGold", initial_balance: 0 },
+  { name: "Tabungan", type: "tabungan", tag: "Pos Simpanan", color: "purpleLock", initial_balance: 0 },
 ];
 
-const DEFAULT_BUCKETS: BucketInput[] = [
-  { account: "Mandiri", percentage: 55.0, via_gate: true, via_secondary: null, purpose: "Kebutuhan Pokok & Operasional" },
-  { account: "Bank Jago", percentage: 18.33, via_gate: true, via_secondary: null, purpose: "Langganan & Tagihan Rutin" },
-  { account: "Bibit", percentage: 13.33, via_gate: true, via_secondary: "Bank Jago", purpose: "Investasi Portofolio" },
-  { account: "BRI 2", percentage: 6.67, via_gate: false, via_secondary: null, purpose: "Tabungan Terkunci" },
-  { account: "BRI 1", percentage: 6.67, via_gate: false, via_secondary: null, purpose: "Hub Gajian & Dana Darurat" },
-];
+function generateBucketsFromAccounts(accList: InitialAccountInput[]): BucketInput[] {
+  if (!accList || accList.length === 0) return [];
+  const n = accList.length;
+  if (n === 1) {
+    return [{
+      account: accList[0].name,
+      percentage: 100.0,
+      via_gate: false,
+      via_secondary: null,
+      purpose: "Alokasi Operasional & Saku",
+    }];
+  }
+  if (n === 2) {
+    return [
+      { account: accList[0].name, percentage: 70.0, via_gate: false, via_secondary: null, purpose: "Kebutuhan Pokok & Saku" },
+      { account: accList[1].name, percentage: 30.0, via_gate: false, via_secondary: null, purpose: "Tabungan & Cadangan" },
+    ];
+  }
+  if (n === 3) {
+    return [
+      { account: accList[0].name, percentage: 50.0, via_gate: false, via_secondary: null, purpose: "Kebutuhan Pokok & Saku" },
+      { account: accList[1].name, percentage: 30.0, via_gate: false, via_secondary: null, purpose: "Tagihan & Kebutuhan Rutin" },
+      { account: accList[2].name, percentage: 20.0, via_gate: false, via_secondary: null, purpose: "Tabungan & Investasi" },
+    ];
+  }
+  const basePct = Math.floor((100 / n) * 10) / 10;
+  const remPct = Math.round((100 - basePct * (n - 1)) * 10) / 10;
+  return accList.map((acc, idx) => ({
+    account: acc.name,
+    percentage: idx === 0 ? remPct : basePct,
+    via_gate: false,
+    via_secondary: null,
+    purpose: acc.tag || (acc.type === "investasi" ? "Investasi & Aset" : acc.type === "darurat" ? "Dana Darurat" : "Operasional"),
+  }));
+}
 
 export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: OnboardingWizardModalProps) {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -72,14 +97,44 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
   // Step 2: Budget Cycle & Pocket
   const [cycleType, setCycleType] = useState<"biweekly" | "monthly" | "weekly" | "custom">("biweekly");
   const [customDays, setCustomDays] = useState(14);
-  const [pocketAccount, setPocketAccount] = useState("Mandiri");
+  const [pocketAccount, setPocketAccount] = useState("Rekening Utama");
   const [startDateStr, setStartDateStr] = useState(new Date().toISOString().split("T")[0]);
 
   // Step 3: Paycheck & Gate
-  const [sourceAccount, setSourceAccount] = useState("BRI 1");
-  const [useGate, setUseGate] = useState(true);
-  const gateName = "Flip";
-  const [buckets, setBuckets] = useState<BucketInput[]>(DEFAULT_BUCKETS);
+  const [sourceAccount, setSourceAccount] = useState("Rekening Utama");
+  const [useGate, setUseGate] = useState(false);
+  const gateName = "Direct Transfer";
+  const [buckets, setBuckets] = useState<BucketInput[]>(() => generateBucketsFromAccounts(DEFAULT_INITIAL_ACCOUNTS));
+
+  const syncAccountsWithState = (updatedAccounts: InitialAccountInput[]) => {
+    if (!updatedAccounts.some((a) => a.name === pocketAccount)) {
+      if (updatedAccounts.length > 0) setPocketAccount(updatedAccounts[0].name);
+    }
+    if (!updatedAccounts.some((a) => a.name === sourceAccount)) {
+      if (updatedAccounts.length > 0) setSourceAccount(updatedAccounts[0].name);
+    }
+    setBuckets((prevBuckets) => {
+      const accNames = new Set(updatedAccounts.map((a) => a.name));
+      const validBuckets = prevBuckets.filter((b) => accNames.has(b.account));
+      const existingNames = new Set(validBuckets.map((b) => b.account));
+      const missingAccounts = updatedAccounts.filter((a) => !existingNames.has(a.name));
+
+      if (validBuckets.length === 0) {
+        return generateBucketsFromAccounts(updatedAccounts);
+      }
+      if (missingAccounts.length > 0) {
+        const added: BucketInput[] = missingAccounts.map((a) => ({
+          account: a.name,
+          percentage: 0,
+          via_gate: false,
+          via_secondary: null,
+          purpose: a.tag || "Alokasi Pos",
+        }));
+        return [...validBuckets, ...added];
+      }
+      return validBuckets;
+    });
+  };
 
   const getEffectiveCycleDays = () => {
     if (cycleType === "biweekly") return 14;
