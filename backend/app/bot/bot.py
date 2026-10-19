@@ -1082,7 +1082,11 @@ def process_update(update: dict, bot_token: Optional[str] = None, user_override:
         user = user_override
         if not user:
             # Look up user by telegram_chat_id
-            user = db.query(User).filter(User.telegram_chat_id == str(chat_id)).first()
+            try:
+                tg_id_int = int(chat_id)
+                user = db.query(User).filter(User.telegram_chat_id == tg_id_int).first()
+            except (ValueError, TypeError):
+                user = None
             if not user and chat_id == settings.ALLOWED_USER_ID:
                 user = db.query(User).filter(User.id == 1).first()
 
