@@ -80,17 +80,24 @@ def get_safe_to_spend_snippet(db: Session, user_id: int = 1) -> str:
 
     return f"🛡️ **Safe-to-Spend:** {format_rp(safe_daily)} / hari ({pace_icon} {pace_label} • Sisa {days_remaining} hari)"
 
-MAIN_KEYBOARD = {
-    "keyboard": [
-        [{"text": "📊 Rekap"}, {"text": "💳 Saldo"}],
-        [{"text": "🎯 Target & Goals"}, {"text": "🔔 Tagihan / Subs"}],
-        [{"text": "📜 Transaksi"}, {"text": "🔄 Transfer"}],
-        [{"text": "💰 Info Gajian"}, {"text": "📑 Google Sheets"}],
-        [{"text": "🌐 Web Dashboard"}],
-    ],
-    "resize_keyboard": True,
-    "is_persistent": True,
-}
+def get_main_keyboard() -> dict:
+    url = settings.APP_BASE_URL
+    dashboard_btn = (
+        {"text": "🚀 Buka Dashboard", "web_app": {"url": url}}
+        if url.startswith("https://")
+        else {"text": "🌐 Web Dashboard"}
+    )
+    return {
+        "keyboard": [
+            [{"text": "📊 Rekap"}, {"text": "💳 Saldo"}],
+            [{"text": "🎯 Target & Goals"}, {"text": "🔔 Tagihan / Subs"}],
+            [{"text": "📜 Transaksi"}, {"text": "🔄 Transfer"}],
+            [{"text": "💰 Info Gajian"}, {"text": "📑 Google Sheets"}],
+            [dashboard_btn],
+        ],
+        "resize_keyboard": True,
+        "is_persistent": True,
+    }
 
 def setup_bot_commands():
     commands = [
@@ -110,6 +117,23 @@ def setup_bot_commands():
         requests.post(f"{API_BASE}/setMyCommands", json={"commands": commands}, timeout=10)
     except Exception as e:
         print(f"Error registering bot commands: {e}")
+
+    url = settings.APP_BASE_URL
+    if url.startswith("https://"):
+        try:
+            requests.post(
+                f"{API_BASE}/setChatMenuButton",
+                json={
+                    "menu_button": {
+                        "type": "web_app",
+                        "text": "📊 Dashboard",
+                        "web_app": {"url": url}
+                    }
+                },
+                timeout=10
+            )
+        except Exception as e:
+            print(f"Error registering bot menu button: {e}")
 
 def send_message(chat_id: int, text: str, parse_mode: Optional[str] = "Markdown", reply_to_message_id: Optional[int] = None, reply_markup: Optional[dict] = None, bot_token: Optional[str] = None):
     token = bot_token or settings.BOT_TOKEN
@@ -140,16 +164,26 @@ def send_message(chat_id: int, text: str, parse_mode: Optional[str] = "Markdown"
 
 def handle_menu(chat_id: int, bot_token: Optional[str] = None):
     msg = "📱 **Menu Navigasi AI7 Finance**\n\nGunakan tombol di bawah untuk akses cepat, atau ketik langsung pengeluaran lo (contoh: `makan siang 25k`)."
-    send_message(chat_id, msg, reply_markup=MAIN_KEYBOARD, bot_token=bot_token)
+    send_message(chat_id, msg, reply_markup=get_main_keyboard(), bot_token=bot_token)
 
 def send_dashboard_link(chat_id: int, bot_token: Optional[str] = None):
     url = settings.APP_BASE_URL
-    inline_kb = {
-        "inline_keyboard": [
-            [{"text": "🚀 Buka Web Dashboard", "url": url}]
-        ]
-    }
-    send_message(chat_id, f"🌐 **Web Dashboard AI7 Finance:**\n`{url}`\n\nAkses aman via Tailscale untuk review bulanan & detail transaksi.", reply_markup=inline_kb, bot_token=bot_token)
+    if url.startswith("https://"):
+        inline_kb = {
+            "inline_keyboard": [
+                [{"text": "🚀 Buka Mini App (In-App)", "web_app": {"url": url}}],
+                [{"text": "🔗 Buka di Browser Luar", "url": url}]
+            ]
+        }
+        msg = f"🌐 **Web Dashboard AI7 Finance:**\n`{url}`\n\nKlik tombol di bawah untuk membuka dashboard langsung di dalam Telegram!"
+    else:
+        inline_kb = {
+            "inline_keyboard": [
+                [{"text": "🚀 Buka Web Dashboard", "url": url}]
+            ]
+        }
+        msg = f"🌐 **Web Dashboard AI7 Finance:**\n`{url}`\n\nAkses aman via Tailscale untuk review bulanan & detail transaksi."
+    send_message(chat_id, msg, reply_markup=inline_kb, bot_token=bot_token)
 
 def handle_start(chat_id: int, user: Optional[User] = None, bot_token: Optional[str] = None):
     user_name = user.full_name if user else "Kawan"
@@ -174,7 +208,7 @@ Bot ini terintegrasi langsung dengan Web Dashboard AI7 Finance lo.
 • `/menu` - Tampilkan tombol menu cepat
 
 Tinggal ketik catatan pengeluaran/pemasukan lo kapan saja!"""
-    send_message(chat_id, msg, reply_markup=MAIN_KEYBOARD, bot_token=bot_token)
+    send_message(chat_id, msg, reply_markup=get_main_keyboard(), bot_token=bot_token)
 
 def handle_rekap(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
     user_id = user.id if user else 1

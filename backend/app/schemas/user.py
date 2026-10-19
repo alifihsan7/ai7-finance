@@ -47,6 +47,9 @@ class TokenResponse(BaseModel):
 class GoogleAuthRequest(BaseModel):
     credential: str
 
+class TelegramWebAppAuthRequest(BaseModel):
+    init_data: str
+
 class LinkTelegramRequest(BaseModel):
     telegram_chat_id: int
 
