@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { User, Send, CheckCircle2, LogOut, AlertCircle, Bot, Sparkles, ExternalLink, ShieldCheck, Unlink, Trash2, AlertTriangle } from "lucide-react";
+import { User, Send, CheckCircle2, LogOut, AlertCircle, Bot, ExternalLink, ShieldCheck, Unlink, Trash2, AlertTriangle } from "lucide-react";
 import { CustomModal } from "./ui/CustomModal";
 import { authFetch, setStoredUser, UserProfile } from "@/lib/api";
 
@@ -271,7 +271,7 @@ export function UserProfileModal({
             <Send className="w-3.5 h-3.5" />
             Integrasi Telegram
             {isConnected && (
-              <span className="w-2 h-2 rounded-full bg-mintRise animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-mintRise" />
             )}
           </button>
         </div>
@@ -500,7 +500,7 @@ export function UserProfileModal({
                     <span className={`text-xs font-semibold flex items-center gap-1.5 ${
                       telegramMode === "custom" ? "text-amberGold" : "text-white"
                     }`}>
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Bot className="w-3.5 h-3.5" />
                       2. Bot Sendiri (BYOB)
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-amberGold/10 text-amberGold border border-amberGold/20 font-medium">
@@ -596,7 +596,7 @@ export function UserProfileModal({
             {telegramMode === "custom" && (
               <div className="p-5 rounded-3xl bg-obsidian-panel border border-white/[0.08] space-y-3.5 shadow-sm">
                 <div className="flex items-center gap-2 text-amberGold text-xs font-semibold">
-                  <Sparkles className="w-4 h-4" />
+                  <Bot className="w-4 h-4" />
                   Panduan 4 Langkah: Buat & Hubungkan Bot Pribadi (BYOB)
                 </div>
 
@@ -663,7 +663,7 @@ export function UserProfileModal({
 
                   <div>
                     <label className="block text-xs font-medium text-zinc-300 mb-1">
-                      Telegram Chat ID Kamu <span className="text-zinc-500 font-normal">(Opsional — untuk notifikasi & sambutan)</span>
+                      Telegram Chat ID Kamu <span className="text-zinc-500 font-normal">(Opsional: untuk notifikasi & sambutan)</span>
                     </label>
                     <input
                       type="number"

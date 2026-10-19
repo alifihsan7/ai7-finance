@@ -359,7 +359,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 type="button"
                 disabled={isDeleting}
                 onClick={handleDeleteAccount}
-                className="px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-600/20 transition flex items-center gap-1.5 disabled:opacity-50"
+                className="px-4 py-2 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isDeleting ? "Menghapus..." : "Ya, Hapus Rekening"}
               </button>

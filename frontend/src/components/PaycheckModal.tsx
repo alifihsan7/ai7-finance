@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  Sparkles,
+  ArrowDownLeft,
   ArrowRight,
   ArrowLeft,
   Settings2,
@@ -375,11 +375,11 @@ export default function PaycheckModal({
 
   // Colors per account for visual polish
   const getAccountDot = (acc: string) => {
-    if (acc === "Mandiri") return "bg-amberGold shadow-amberGold/30";
-    if (acc === "Bank Jago") return "bg-mintRise shadow-mintRise/30";
-    if (acc === "Bibit") return "bg-emerald-400 shadow-emerald-400/30";
-    if (acc === "BRI 1") return "bg-cyanHub shadow-cyanHub/30";
-    if (acc === "BRI 2") return "bg-purpleLock shadow-purpleLock/30";
+    if (acc === "Mandiri") return "bg-amberGold";
+    if (acc === "Bank Jago") return "bg-mintRise";
+    if (acc === "Bibit") return "bg-emerald-400";
+    if (acc === "BRI 1") return "bg-cyanHub";
+    if (acc === "BRI 2") return "bg-purpleLock";
     return "bg-slate-400";
   };
 
@@ -420,7 +420,7 @@ export default function PaycheckModal({
           ? "Konfigurasi rekening hub, jembatan transfer, dan pos alokasi dinamis"
           : "Distribusi alokasi pemasukan gajian ke pos-pos rekening Anda"
       }
-      icon={<Sparkles className="w-5 h-5 text-mintRise" />}
+      icon={<ArrowDownLeft className="w-5 h-5 text-mintRise" />}
       accent="mint"
       maxWidth="xl"
     >
@@ -642,7 +642,7 @@ export default function PaycheckModal({
             <div className="p-4 rounded-2xl bg-mintRise/10 border border-mintRise/30 flex items-center justify-between gap-3 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-mintRise/20 flex items-center justify-center text-mintRise shrink-0">
-                  <Sparkles className="w-5 h-5" />
+                  <Check className="w-5 h-5 stroke-[2.5]" />
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-mintRise">Alokasi Gajian Selesai!</h4>
