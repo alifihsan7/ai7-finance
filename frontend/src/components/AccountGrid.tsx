@@ -134,17 +134,36 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah }: Acco
             className="bg-obsidian-card border border-obsidian-border hover:border-obsidian-borderStrong rounded-xl p-4 sm:p-5 transition-all shadow-xs flex flex-col justify-between"
           >
             <div>
-              <div className="flex justify-between items-start gap-2">
-                <div className="min-w-0 flex-1">
+              <div className="flex justify-between items-center gap-2">
+                <div className="relative group/name min-w-0 flex-1">
                   <div className="text-slateText-primary font-bold text-sm sm:text-base flex items-center gap-1.5 sm:gap-2">
                     <CreditCard className={`w-4 h-4 shrink-0 ${acc.accentColor}`} />
-                    <span className="truncate">{acc.name}</span>
+                    <span className="truncate cursor-default">{acc.name}</span>
                   </div>
-                  <div className="text-xs text-slateText-muted mt-0.5 truncate">{acc.tag}</div>
+                  {/* Tooltip Hover Nama Akun */}
+                  <div className="pointer-events-none absolute left-0 bottom-full mb-1.5 z-40 hidden group-hover/name:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12151D]/95 backdrop-blur-md border border-obsidian-borderStrong text-slateText-primary text-xs shadow-2xl shadow-black/80 whitespace-nowrap max-w-[280px] animate-in fade-in zoom-in-95 duration-150">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amberGold shrink-0" />
+                    <span className="font-semibold text-slate-100">{acc.name}</span>
+                  </div>
                 </div>
+
                 <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded-md bg-obsidian-panel text-slateText-secondary border border-obsidian-border shrink-0 whitespace-nowrap">
                   {acc.badge}
                 </span>
+              </div>
+
+              {/* Tag / Deskripsi selebar kartu penuh (mentok ke kanan) */}
+              <div className="relative group/tag mt-1 w-full">
+                <div className="text-xs text-slateText-muted truncate w-full cursor-default hover:text-slateText-secondary transition-colors">
+                  {acc.tag}
+                </div>
+                {/* Tooltip Hover Deskripsi Ber-Style */}
+                {acc.tag && (
+                  <div className="pointer-events-none absolute left-0 top-full mt-1.5 z-40 hidden group-hover/tag:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12151D]/95 backdrop-blur-md border border-obsidian-borderStrong text-slateText-primary text-xs shadow-2xl shadow-black/80 w-max max-w-[280px] break-words animate-in fade-in zoom-in-95 duration-150">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amberGold shrink-0" />
+                    <span className="font-medium text-slate-200 leading-snug">{acc.tag}</span>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4 sm:mt-5">
