@@ -296,6 +296,190 @@ def handle_saldo(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
     lines.append(f"\n{get_safe_to_spend_snippet(db, user_id=user_id)}")
     send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
+def handle_pacing(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
+    now_wib = datetime.now(WIB)
+    today_wib = now_wib.date()
+
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
+
+    latest_paycheck = db.query(Transaction).filter(
+        Transaction.user_id == user_id,
+        Transaction.type == "income",
+        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
+    ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
+
+    cycle_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else (latest_paycheck.date if latest_paycheck else today_wib)
+    cycle_end = cycle_start + timedelta(days=cycle_days - 1)
+    days_passed = (today_wib - cycle_start).days + 1
+    day_of_cycle = min(cycle_days, max(1, days_passed))
+    days_remaining = max(1, cycle_days - day_of_cycle + 1)
+
+    pocket_income_row = db.query(
+        func.coalesce(func.sum(Transaction.amount), 0).label("inc")
+    ).filter(
+        Transaction.user_id == user_id,
+        Transaction.account == pocket_account,
+        Transaction.type == "income",
+        Transaction.date >= cycle_start,
+        Transaction.date <= cycle_end
+    ).first()
+    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (cfg.total_salary if cfg else 825000)
+
+    spent_row = db.query(
+        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
+    ).filter(
+        Transaction.user_id == user_id,
+        Transaction.account == pocket_account,
+        Transaction.type == "expense",
+        Transaction.date >= cycle_start,
+        Transaction.date <= cycle_end
+    ).first()
+    pocket_spent = int(spent_row.spent if spent_row else 0)
+    pocket_remaining = max(0, pocket_budget - pocket_spent)
+    safe_daily = int(pocket_remaining / days_remaining)
+
+    ratio = min(1.0, pocket_spent / pocket_budget) if pocket_budget > 0 else 0
+    filled = int(round(ratio * 10))
+    bar = f"[{'█' * filled}{'░' * (10 - filled)}] {int(ratio * 100)}%"
+
+    ideal_daily_rate = pocket_budget / cycle_days
+    ideal_pace_today = int(ideal_daily_rate * day_of_cycle)
+
+    if pocket_spent <= ideal_pace_today:
+        pace_status = "🟢 On Track (Pengeluaran hemat & terkontrol)"
+    elif pocket_spent <= ideal_pace_today * 1.15:
+        pace_status = "🟡 Pacing Warning (Mendekati batas rata-rata)"
+    else:
+        pace_status = "🔴 Over Budget (Pengeluaran melebihi laju harian)"
+
+    lines = [
+        "🎯 **AI7.Steward — Status Pacing Belanja Kantong**",
+        f"📅 Siklus: `{cycle_start} s/d {cycle_end}` (Hari ke-{day_of_cycle}/{cycle_days})",
+        f"🕒 `{now_wib.strftime('%d %B %Y - %H:%M WIB')}`",
+        "──────────────────────────────",
+        f"💳 **Rekening Kantong:** `{pocket_account}`",
+        f"📊 **Burn Rate:** `{bar}`",
+        f"• Terpakai: `{format_rp(pocket_spent)}` / `{format_rp(pocket_budget)}`",
+        f"• Sisa Budget Siklus: **{format_rp(pocket_remaining)}** ({days_remaining} hari lagi)",
+        f"• Batas Aman Belanja: **{format_rp(safe_daily)} / hari**",
+        "",
+        f"🛡️ **Status Disiplin:** {pace_status}",
+    ]
+    send_message(chat_id, "\n".join(lines), bot_token=bot_token)
+
+def handle_obsidian(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
+    user_id = user.id if user else 1
+    if user_id != 1:
+        send_message(chat_id, "ℹ️ Fitur ekspor Obsidian hanya aktif untuk akun utama Alif.", bot_token=bot_token)
+        return
+
+    now_wib = datetime.now(WIB)
+    vault_path = "/home/alifihsan/SecondBrainAI7"
+    finance_dir = os.path.join(vault_path, "2 Areas", "Finance")
+    os.makedirs(finance_dir, exist_ok=True)
+
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
+
+    latest_paycheck = db.query(Transaction).filter(
+        Transaction.user_id == user_id,
+        Transaction.type == "income",
+        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
+    ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
+
+    today_wib = now_wib.date()
+    cycle_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else (latest_paycheck.date if latest_paycheck else today_wib)
+    cycle_end = cycle_start + timedelta(days=cycle_days - 1)
+    days_passed = (today_wib - cycle_start).days + 1
+    day_of_cycle = min(cycle_days, max(1, days_passed))
+    days_remaining = max(1, cycle_days - day_of_cycle + 1)
+
+    pocket_income_row = db.query(
+        func.coalesce(func.sum(Transaction.amount), 0).label("inc")
+    ).filter(
+        Transaction.user_id == user_id,
+        Transaction.account == pocket_account,
+        Transaction.type == "income",
+        Transaction.date >= cycle_start,
+        Transaction.date <= cycle_end
+    ).first()
+    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (cfg.total_salary if cfg else 825000)
+
+    spent_row = db.query(
+        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
+    ).filter(
+        Transaction.user_id == user_id,
+        Transaction.account == pocket_account,
+        Transaction.type == "expense",
+        Transaction.date >= cycle_start,
+        Transaction.date <= cycle_end
+    ).first()
+    pocket_spent = int(spent_row.spent if spent_row else 0)
+    pocket_remaining = max(0, pocket_budget - pocket_spent)
+    safe_daily = int(pocket_remaining / days_remaining)
+
+    accounts = db.query(
+        Transaction.account,
+        func.sum(
+            case((Transaction.type.in_(["income", "transfer_in"]), Transaction.amount), else_=-Transaction.amount)
+        ).label("balance")
+    ).filter(
+        Transaction.user_id == user_id
+    ).group_by(Transaction.account).all()
+
+    filename = f"Siklus_{cycle_start}_sd_{cycle_end}.md"
+    file_path = os.path.join(finance_dir, filename)
+
+    doc = f"""---
+type: finance-cycle
+cycle_start: {cycle_start}
+cycle_end: {cycle_end}
+budget: "{pocket_budget}"
+spent: "{pocket_spent}"
+remaining: "{pocket_remaining}"
+updated_at: "{now_wib.strftime('%Y-%m-%d %H:%M:%S WIB')}"
+tags: [finance, cycle-snapshot, mandiri, pacing]
+---
+
+# 🏛️ Laporan Siklus Keuangan: {cycle_start} s/d {cycle_end}
+
+> Diekspor secara otomatis oleh **AI7.Steward** pada {now_wib.strftime('%d %B %Y, %H:%M WIB')}.
+
+## 🎯 Ringkasan Pacing Kantong ({pocket_account})
+- **Hari Siklus:** H-{day_of_cycle}/{cycle_days} ({days_remaining} hari tersisa)
+- **Alokasi Budget Kantong:** {format_rp(pocket_budget)}
+- **Total Belanja Terpakai:** {format_rp(pocket_spent)}
+- **Sisa Budget Siklus:** {format_rp(pocket_remaining)}
+- **Safe-to-Spend Harian:** {format_rp(safe_daily)} / hari
+
+---
+
+## 💳 Posisi Saldo Rekening
+| Rekening | Estimasi Saldo |
+| --- | --- |
+"""
+    for a in accounts:
+        doc += f"| {a.account} | {format_rp(int(a.balance or 0))} |\n"
+
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(doc)
+
+    cmd = f'cd "{vault_path}" && git add . && git commit -m "finance: sync cycle snapshot {cycle_start} sd {cycle_end}" && git push origin main'
+    os.system(cmd)
+
+    send_message(
+        chat_id,
+        f"✅ **Snapshot Finansial Berhasil Diekspor ke Obsidian!**\n\n"
+        f"📄 File: `SecondBrainAI7/2 Areas/Finance/{filename}`\n"
+        f"🔄 Berhasil di-commit dan di-push ke GitHub!\n"
+        f"Safe-to-Spend saat ini: **{format_rp(safe_daily)} / hari** 🛡️",
+        bot_token=bot_token
+    )
+
 def handle_transaksi(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
     user_id = user.id if user else 1
     recent = db.query(Transaction).filter(Transaction.user_id == user_id).order_by(desc(Transaction.id)).limit(5).all()
@@ -1184,6 +1368,10 @@ Setelah terhubung, kamu bisa langsung mencatat pengeluaran, struk kasir, QRIS, d
             handle_rekap(chat_id, db, user=user, bot_token=bot_token)
         elif cmd in ["/saldo"]:
             handle_saldo(chat_id, db, user=user, bot_token=bot_token)
+        elif lower_text in ["🎯 pacing", "pacing", "pace"] or cmd in ["/pacing", "/pace", "/status"]:
+            handle_pacing(chat_id, db, user=user, bot_token=bot_token)
+        elif lower_text in ["📓 obsidian", "obsidian"] or cmd in ["/obsidian", "/export"]:
+            handle_obsidian(chat_id, db, user=user, bot_token=bot_token)
         elif cmd in ["/transaksi", "/history"]:
             handle_transaksi(chat_id, db, user=user, bot_token=bot_token)
         elif cmd in ["/batal", "/undo", "/hapus"]:
