@@ -84,6 +84,28 @@ function generateBucketsFromAccounts(accList: InitialAccountInput[]): BucketInpu
   }));
 }
 
+function getMonthlyDateStart(payday: number): string {
+  const now = new Date();
+  const curDay = now.getDate();
+  const curMonth = now.getMonth();
+  const curYear = now.getFullYear();
+  let startYear = curYear;
+  let startMonth = curMonth;
+  if (curDay < payday) {
+    if (curMonth === 0) {
+      startYear = curYear - 1;
+      startMonth = 11;
+    } else {
+      startMonth = curMonth - 1;
+    }
+  }
+  const maxDays = new Date(startYear, startMonth + 1, 0).getDate();
+  const actualDay = Math.min(payday, maxDays);
+  const mm = String(startMonth + 1).padStart(2, "0");
+  const dd = String(actualDay).padStart(2, "0");
+  return `${startYear}-${mm}-${dd}`;
+}
+
 export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: OnboardingWizardModalProps) {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [loading, setLoading] = useState(false);
@@ -95,7 +117,8 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
   const [newAccType, setNewAccType] = useState("operasional");
 
   // Step 2: Budget Cycle & Pocket
-  const [cycleType, setCycleType] = useState<"biweekly" | "monthly" | "weekly" | "custom">("biweekly");
+  const [cycleType, setCycleType] = useState<"biweekly" | "monthly_date" | "monthly" | "weekly" | "custom">("biweekly");
+  const [paycheckDay, setPaycheckDay] = useState(25);
   const [customDays, setCustomDays] = useState(14);
   const [pocketAccount, setPocketAccount] = useState("Rekening Utama");
   const [startDateStr, setStartDateStr] = useState(new Date().toISOString().split("T")[0]);
@@ -140,6 +163,17 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
     if (cycleType === "biweekly") return 14;
     if (cycleType === "monthly") return 30;
     if (cycleType === "weekly") return 7;
+    if (cycleType === "monthly_date") {
+      // Days between cycle start and next month's payday - 1
+      try {
+        const s = new Date(startDateStr);
+        const nextMonth = new Date(s.getFullYear(), s.getMonth() + 1, paycheckDay);
+        const diffMs = nextMonth.getTime() - s.getTime();
+        return Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+      } catch {
+        return 30;
+      }
+    }
     return customDays;
   };
 
@@ -158,8 +192,8 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
       setError("Nama rekening sudah ada");
       return;
     }
-    setAccounts((prev) => [
-      ...prev,
+    const updated = [
+      ...accounts,
       {
         name: clean,
         type: newAccType,
@@ -167,7 +201,9 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
         color: "amberGold",
         initial_balance: 0,
       },
-    ]);
+    ];
+    setAccounts(updated);
+    syncAccountsWithState(updated);
     setNewAccName("");
     setError(null);
   };
@@ -177,7 +213,9 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
       setError("Minimal harus ada 1 rekening");
       return;
     }
-    setAccounts((prev) => prev.filter((_, idx) => idx !== index));
+    const updated = accounts.filter((_, idx) => idx !== index);
+    setAccounts(updated);
+    syncAccountsWithState(updated);
   };
 
   const handleFinishOnboarding = async () => {
@@ -189,6 +227,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
         initial_accounts: accounts,
         cycle_type: cycleType,
         cycle_days: getEffectiveCycleDays(),
+        paycheck_day: paycheckDay,
         cycle_start_date: startDateStr,
         pocket_account: pocketAccount,
         source_account: sourceAccount,
@@ -229,7 +268,8 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
   const totalInitialBalance = accounts.reduce((acc, curr) => acc + curr.initial_balance, 0);
 
   const getCycleTypeLabel = () => {
-    if (cycleType === "monthly") return "Bulanan Penuh";
+    if (cycleType === "monthly_date") return `Bulanan (Tiap Tgl ${paycheckDay})`;
+    if (cycleType === "monthly") return "Bulanan (30 Hari)";
     if (cycleType === "biweekly") return "2-Mingguan";
     if (cycleType === "weekly") return "Mingguan";
     return "Kustom";
@@ -411,20 +451,27 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
               <label className="block text-xs font-medium text-slate-300 mb-2">
                 Mode Durasi Siklus
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {[
                   { id: "biweekly", label: "2-Mingguan", desc: "14 Hari (Bi-Weekly)" },
-                  { id: "monthly", label: "Bulanan", desc: "30 Hari (Gaji Bulanan)" },
-                  { id: "weekly", label: "Mingguan", desc: "7 Hari (Frekuensi Cepat)" },
-                  { id: "custom", label: "Kustom N-Hari", desc: "Fleksibel Bebas" },
+                  { id: "monthly_date", label: "Tgl Gajian", desc: `Rutin Tiap Tgl ${paycheckDay}` },
+                  { id: "monthly", label: "Bulanan", desc: "30 Hari Kalender" },
+                  { id: "weekly", label: "Mingguan", desc: "7 Hari (Cepat)" },
+                  { id: "custom", label: "Kustom", desc: "Fleksibel N-Hari" },
                 ].map((item) => {
                   const isSel = cycleType === item.id;
                   return (
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setCycleType(item.id as "biweekly" | "monthly" | "weekly" | "custom")}
-                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      onClick={() => {
+                        const newType = item.id as "biweekly" | "monthly_date" | "monthly" | "weekly" | "custom";
+                        setCycleType(newType);
+                        if (newType === "monthly_date") {
+                          setStartDateStr(getMonthlyDateStart(paycheckDay));
+                        }
+                      }}
+                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                         isSel
                           ? "bg-cyan-500/15 border-cyan-500/50 text-cyan-300 shadow-sm"
                           : "bg-[#181C26] border-[#252B3B] text-slate-400 hover:border-slate-700"
@@ -437,6 +484,48 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                 })}
               </div>
             </div>
+
+            {cycleType === "monthly_date" && (
+              <div className="p-3.5 rounded-xl bg-[#181C26] border border-cyan-500/30 space-y-2 animate-in fade-in">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-medium text-slate-200">
+                    Gajian Setiap Tanggal Berapa?
+                  </label>
+                  <span className="text-xs font-mono text-cyan-400 font-semibold px-2 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/20">
+                    Tanggal {paycheckDay}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={1}
+                    max={31}
+                    value={paycheckDay}
+                    onChange={(e) => {
+                      const d = parseInt(e.target.value, 10);
+                      setPaycheckDay(d);
+                      setStartDateStr(getMonthlyDateStart(d));
+                    }}
+                    className="flex-1 accent-cyan-400 cursor-pointer"
+                  />
+                  <input
+                    type="number"
+                    min={1}
+                    max={31}
+                    value={paycheckDay}
+                    onChange={(e) => {
+                      const d = Math.min(31, Math.max(1, parseInt(e.target.value, 10) || 1));
+                      setPaycheckDay(d);
+                      setStartDateStr(getMonthlyDateStart(d));
+                    }}
+                    className="w-16 bg-[#12151D] border border-[#252B3B] text-slate-100 rounded-xl px-2.5 py-1.5 text-xs text-center font-mono focus:outline-none focus:border-cyan-500/50"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Siklus anggaran bulanan Anda akan otomatis berjalan dari setiap tanggal {paycheckDay} hingga H-1 tanggal {paycheckDay} bulan berikutnya.
+                </p>
+              </div>
+            )}
 
             {cycleType === "custom" && (
               <div className="p-3.5 rounded-xl bg-[#181C26] border border-[#252B3B] space-y-1.5 animate-in fade-in">

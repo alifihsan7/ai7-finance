@@ -61,9 +61,10 @@ def complete_onboarding(
                 user_id=user.id,
                 source_account=payload.source_account,
                 use_gate=payload.use_gate,
-                gate_name=payload.gate_name or "Flip",
+                gate_name=payload.gate_name or "Direct Transfer",
                 cycle_type=payload.cycle_type,
                 cycle_days=payload.cycle_days,
+                paycheck_day=payload.paycheck_day or (tx_date.day if tx_date else 25),
                 cycle_start_date=tx_date,
                 pocket_account=payload.pocket_account,
                 is_active=True,
@@ -73,9 +74,10 @@ def complete_onboarding(
         else:
             cfg.source_account = payload.source_account
             cfg.use_gate = payload.use_gate
-            cfg.gate_name = payload.gate_name or "Flip"
+            cfg.gate_name = payload.gate_name or "Direct Transfer"
             cfg.cycle_type = payload.cycle_type
             cfg.cycle_days = payload.cycle_days
+            cfg.paycheck_day = payload.paycheck_day or (tx_date.day if tx_date else 25)
             cfg.cycle_start_date = tx_date
             cfg.pocket_account = payload.pocket_account
 

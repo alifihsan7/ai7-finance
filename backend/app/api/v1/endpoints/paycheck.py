@@ -325,6 +325,8 @@ def update_paycheck_config(
     cfg.gate_name = payload.gate_name
     cfg.cycle_type = payload.cycle_type
     cfg.cycle_days = payload.cycle_days
+    if payload.paycheck_day:
+        cfg.paycheck_day = payload.paycheck_day
     if payload.cycle_start_date:
         cfg.cycle_start_date = payload.cycle_start_date
     cfg.pocket_account = payload.pocket_account

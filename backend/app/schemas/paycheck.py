@@ -9,6 +9,7 @@ class PaycheckConfigOut(BaseModel):
     gate_name: str
     cycle_type: str = "biweekly"
     cycle_days: int = 14
+    paycheck_day: Optional[int] = 25
     cycle_start_date: Optional[dt_date] = None
     pocket_account: str = "Mandiri"
     is_active: bool
@@ -22,6 +23,7 @@ class PaycheckConfigUpdate(BaseModel):
     gate_name: str
     cycle_type: str = "biweekly"
     cycle_days: int = 14
+    paycheck_day: Optional[int] = 25
     cycle_start_date: Optional[dt_date] = None
     pocket_account: str = "Mandiri"
 
