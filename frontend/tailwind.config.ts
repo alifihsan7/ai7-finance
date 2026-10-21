@@ -35,6 +35,9 @@ const config: Config = {
       borderWidth: {
         hairline: "1px",
       },
+      spacing: {
+        "8.5": "2.125rem",
+      },
     },
   },
   plugins: [],

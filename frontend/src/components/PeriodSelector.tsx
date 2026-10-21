@@ -94,7 +94,7 @@ export function PeriodSelector({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="px-4 py-2 rounded-full text-xs font-mono font-semibold bg-obsidian-card border border-white/[0.08] hover:border-amberGold/50 text-white hover:bg-obsidian-hover transition inline-flex items-center gap-2 shadow-xs group"
+        className="py-1.5 px-3 rounded-full text-xs font-mono font-semibold bg-obsidian-card border border-white/[0.08] hover:border-amberGold/50 text-white hover:bg-obsidian-hover transition inline-flex items-center gap-2 shadow-xs group"
       >
         <Calendar className="w-3.5 h-3.5 text-amberGold shrink-0 group-hover:scale-105 transition-transform" />
         <span className="max-w-[200px] sm:max-w-none truncate">
