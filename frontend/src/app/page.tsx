@@ -1261,45 +1261,34 @@ export default function FinanceDashboard() {
       {/* MAIN VIEWPORT */}
       <main ref={mainContentRef} className="flex-1 overflow-y-auto w-full">
         {/* Persistent Sticky Topbar Header */}
-        <header className="sticky top-0 z-20 bg-obsidian-panel/90 backdrop-blur-md border-b border-obsidian-border p-4 sm:p-5 lg:px-6">
-          <div className="max-w-7xl mx-auto w-full flex flex-col 2xl:flex-row justify-between items-start 2xl:items-center gap-4">
-            <div className="min-w-0 w-full 2xl:w-auto">
-              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slateText-primary">
-                  {activeNav === "Ringkasan" && "Ringkasan Portofolio & Alokasi"}
-                  {activeNav === "Target Finansial" && "Target Finansial & Milestone Tabungan"}
-                  {activeNav === "Alokasi Amplop" && "Alokasi Amplop & Plafon Belanja"}
-                  {activeNav === "Rekening & Akun" && "Daftar Rekening & Saldo Akun"}
-                  {activeNav === "Buku Transaksi" && "Buku Transaksi Lengkap (Ledger)"}
-                  {activeNav === "Langganan & Tagihan" && "Pelacak Langganan & Tagihan Rutin"}
-                  {activeNav === "Analisis & Tren" && "Analisis Tren & Burn-Rate Pengeluaran"}
-                </h1>
-                <div className="shrink-0">
-                  <PeriodSelector
-                    key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
-                    currentPeriod={selectedPeriod}
-                    onSelectPeriod={(p) => setSelectedPeriod(p)}
-                  />
-                </div>
+        <header className="sticky top-0 z-20 bg-obsidian-panel/90 backdrop-blur-md border-b border-obsidian-border py-2.5 px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto w-full flex flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0">
+              <h1 className="text-base sm:text-lg font-bold tracking-tight text-white shrink-0">
+                {activeNav === "Ringkasan" && "Ringkasan Portofolio & Alokasi"}
+                {activeNav === "Target Finansial" && "Target Finansial & Milestone Tabungan"}
+                {activeNav === "Alokasi Amplop" && "Alokasi Amplop & Plafon Belanja"}
+                {activeNav === "Rekening & Akun" && "Daftar Rekening & Saldo Akun"}
+                {activeNav === "Buku Transaksi" && "Buku Transaksi Lengkap (Ledger)"}
+                {activeNav === "Langganan & Tagihan" && "Pelacak Langganan & Tagihan Rutin"}
+                {activeNav === "Analisis & Tren" && "Analisis Tren & Burn-Rate Pengeluaran"}
+              </h1>
+              <div className="shrink-0">
+                <PeriodSelector
+                  key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
+                  currentPeriod={selectedPeriod}
+                  onSelectPeriod={(p) => setSelectedPeriod(p)}
+                />
               </div>
-              <p className="text-xs sm:text-sm text-slateText-secondary mt-1.5 line-clamp-1">
-                {activeNav === "Ringkasan" && "Ikhtisar saldo real-time, laju belanja harian, dan alokasi anggaran"}
-                {activeNav === "Target Finansial" && "Pantau akumulasi tabungan, portofolio investasi, dan milestone finansial"}
-                {activeNav === "Alokasi Amplop" && "Monitoring batas belanja amplop kebutuhan pokok dan pos operasional"}
-                {activeNav === "Rekening & Akun" && "Rincian saldo all-time dan pergerakan kas pada seluruh rekening aktif"}
-                {activeNav === "Buku Transaksi" && "Histori seluruh pencatatan pengeluaran, pemasukan, dan transfer kas"}
-                {activeNav === "Langganan & Tagihan" && "Kelola komitmen tagihan berulang dan evaluasi tanggal jatuh tempo"}
-                {activeNav === "Analisis & Tren" && "Evaluasi kecepatan belanja kumulatif vs batas aman anggaran"}
-              </p>
             </div>
 
             {/* Action Toolbar */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full 2xl:w-auto justify-start sm:justify-end">
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
               {/* Refresh Button (Icon-Only Compact) */}
               <button
                 onClick={fetchData}
                 title="Refresh Data Transaksi & Saldo"
-                className="p-2.5 text-zinc-400 hover:text-white bg-obsidian-card hover:bg-obsidian-hover border border-white/[0.08] hover:border-white/[0.16] rounded-full transition inline-flex items-center justify-center shrink-0 shadow-xs active:scale-95 cursor-pointer"
+                className="p-2 rounded-full w-8.5 h-8.5 flex items-center justify-center text-zinc-400 hover:text-white bg-obsidian-card hover:bg-obsidian-hover border border-white/[0.08] hover:border-white/[0.16] transition shrink-0 shadow-xs active:scale-95 cursor-pointer"
               >
                 <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-amberGold" : ""}`} />
               </button>
@@ -1309,9 +1298,9 @@ export default function FinanceDashboard() {
                 <button
                   type="button"
                   onClick={() => setIsExportMenuOpen((prev) => !prev)}
-                  className="px-4 py-2 text-xs sm:text-sm font-semibold border border-white/[0.08] rounded-2xl bg-obsidian-card text-zinc-300 hover:text-white hover:bg-obsidian-hover hover:border-white/[0.16] transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-xs active:scale-95"
+                  className="py-1.5 px-3 text-xs rounded-xl font-semibold border border-white/[0.08] bg-obsidian-card text-zinc-300 hover:text-white hover:bg-obsidian-hover hover:border-white/[0.16] transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-xs active:scale-95"
                 >
-                  <Download className="w-4 h-4 text-zinc-400 shrink-0" />
+                  <Download className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                   <span className="font-semibold text-white hidden sm:inline">Ekspor</span>
                   <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-200 ${isExportMenuOpen ? "rotate-180 text-amberGold" : ""}`} />
                 </button>
@@ -1363,33 +1352,33 @@ export default function FinanceDashboard() {
               {activeNav === "Target Finansial" ? (
                 <button
                   onClick={() => setIsAddGoalModalOpen(true)}
-                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                  className="py-1.5 px-3.5 text-xs font-bold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                 >
-                  <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Tambah Target</span>
                 </button>
               ) : activeNav === "Langganan & Tagihan" ? (
                 <button
                   onClick={() => setIsSubModalOpen(true)}
-                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                  className="py-1.5 px-3.5 text-xs font-bold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                 >
-                  <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Tambah Tagihan</span>
                 </button>
               ) : activeNav === "Rekening & Akun" ? (
                 <>
                   <button
                     onClick={() => setIsTransferModalOpen(true)}
-                    className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-2xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                    className="py-1.5 px-3 text-xs font-semibold rounded-xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
                   >
-                    <ArrowLeftRight className="w-4 h-4 shrink-0 text-cyanHub" />
+                    <ArrowLeftRight className="w-3.5 h-3.5 shrink-0 text-cyanHub" />
                     <span className="whitespace-nowrap font-semibold">Transfer Antar Akun</span>
                   </button>
                   <button
                     onClick={() => setIsModalOpen(true)}
-                    className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                    className="py-1.5 px-3.5 text-xs font-bold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                   >
-                    <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                     <span className="whitespace-nowrap">Catat Transaksi</span>
                   </button>
                 </>
@@ -1397,16 +1386,16 @@ export default function FinanceDashboard() {
                 <>
                   <button
                     onClick={() => setIsPaycheckModalOpen(true)}
-                    className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-2xl bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                    className="py-1.5 px-3 text-xs font-semibold rounded-xl bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
                   >
-                    <ArrowDownLeft className="w-4 h-4 shrink-0 text-mintRise" />
+                    <ArrowDownLeft className="w-3.5 h-3.5 shrink-0 text-mintRise" />
                     <span className="whitespace-nowrap font-semibold">Gajian Masuk</span>
                   </button>
                   <button
                     onClick={() => setIsModalOpen(true)}
-                    className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                    className="py-1.5 px-3.5 text-xs font-bold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                   >
-                    <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                     <span className="whitespace-nowrap">Catat Transaksi</span>
                   </button>
                 </>
