@@ -133,10 +133,45 @@ const SUB_ACCOUNT_OPTIONS = [
   { value: "Kartu Kredit", label: "Kartu Kredit / PayLater", color: "bg-cyan-500" },
 ];
 
+const NAV_SLUGS: Record<string, string> = {
+  "Ringkasan": "#/overview",
+  "Target Finansial": "#/goals",
+  "Alokasi Amplop": "#/envelopes",
+  "Rekening & Akun": "#/accounts",
+  "Buku Transaksi": "#/ledger",
+  "Langganan & Tagihan": "#/subscriptions",
+  "Analisis & Tren": "#/analytics",
+};
+
+const SLUG_TO_NAV: Record<string, string> = {
+  "#/overview": "Ringkasan",
+  "/overview": "Ringkasan",
+  "overview": "Ringkasan",
+  "#/goals": "Target Finansial",
+  "/goals": "Target Finansial",
+  "goals": "Target Finansial",
+  "#/envelopes": "Alokasi Amplop",
+  "/envelopes": "Alokasi Amplop",
+  "envelopes": "Alokasi Amplop",
+  "#/accounts": "Rekening & Akun",
+  "/accounts": "Rekening & Akun",
+  "accounts": "Rekening & Akun",
+  "#/ledger": "Buku Transaksi",
+  "/ledger": "Buku Transaksi",
+  "ledger": "Buku Transaksi",
+  "#/subscriptions": "Langganan & Tagihan",
+  "/subscriptions": "Langganan & Tagihan",
+  "subscriptions": "Langganan & Tagihan",
+  "#/analytics": "Analisis & Tren",
+  "/analytics": "Analisis & Tren",
+  "analytics": "Analisis & Tren",
+};
+
 export default function FinanceDashboard() {
   const googleSheetUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL;
   const [activeTab, setActiveTab] = useState<string>("all");
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
+  const mainContentRef = useRef<HTMLElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaycheckModalOpen, setIsPaycheckModalOpen] = useState(false);
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
@@ -215,6 +250,34 @@ export default function FinanceDashboard() {
       }
     }
   }, [availableAccountNames, formAccount, subAccount]);
+
+  // SPA Hash Routing sync & browser Back/Forward navigation listener
+  useEffect(() => {
+    const handleHashSync = () => {
+      const hash = window.location.hash;
+      const matched = SLUG_TO_NAV[hash] || SLUG_TO_NAV[hash.replace(/^#/, "")];
+      if (matched) {
+        setActiveNav(matched);
+      } else if (!hash) {
+        window.location.hash = "#/overview";
+      }
+    };
+
+    handleHashSync();
+    window.addEventListener("hashchange", handleHashSync);
+    return () => window.removeEventListener("hashchange", handleHashSync);
+  }, []);
+
+  // Update URL hash and auto-scroll viewport when activeNav changes
+  useEffect(() => {
+    const targetHash = NAV_SLUGS[activeNav];
+    if (targetHash && window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
+    }
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTop = 0;
+    }
+  }, [activeNav]);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
@@ -754,7 +817,11 @@ export default function FinanceDashboard() {
               return (
                 <button
                   key={item.name}
-                  onClick={() => setActiveNav(item.name)}
+                  onClick={() => {
+                    setActiveNav(item.name);
+                    const slug = NAV_SLUGS[item.name];
+                    if (slug) window.location.hash = slug;
+                  }}
                   className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                     isActive
                       ? "text-white bg-white/[0.08] border border-white/[0.1] shadow-xs font-semibold"
@@ -960,6 +1027,8 @@ export default function FinanceDashboard() {
                       key={item.name}
                       onClick={() => {
                         setActiveNav(item.name);
+                        const slug = NAV_SLUGS[item.name];
+                        if (slug) window.location.hash = slug;
                         setIsMobileDrawerOpen(false);
                       }}
                       className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
@@ -1138,7 +1207,7 @@ export default function FinanceDashboard() {
       </nav>
 
       {/* MAIN VIEWPORT */}
-      <main className="flex-1 overflow-y-auto w-full">
+      <main ref={mainContentRef} className="flex-1 overflow-y-auto w-full">
         <div className="p-3.5 sm:p-5 md:p-6 lg:p-8 xl:p-10 pb-24 md:pb-10 max-w-7xl mx-auto w-full space-y-5 sm:space-y-8">
         
         {/* Guest Mode Banner */}
@@ -1318,7 +1387,7 @@ export default function FinanceDashboard() {
         {/* VIEW 1: RINGKASAN */}
         {/* ============================================================== */}
         {activeNav === "Ringkasan" && (
-          <>
+          <div className="space-y-5 sm:space-y-8 animate-fadeIn">
             {/* Active Paycheck Session Banner */}
             {activePaycheckSession && activePaycheckSession.status === "in_progress" && (
               <div className="p-4 sm:p-4.5 rounded-2xl bg-gradient-to-r from-mintRise/15 via-obsidian-card to-cyanHub/15 border border-mintRise/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
@@ -1596,28 +1665,30 @@ export default function FinanceDashboard() {
                 loading={loading}
               />
             </div>
-          </>
+          </div>
         )}
 
         {/* ============================================================== */}
         {/* VIEW: TARGET FINANSIAL */}
         {/* ============================================================== */}
         {activeNav === "Target Finansial" && (
-          <GoalsView
-            goals={goals}
-            formatRupiah={formatRupiah}
-            onOpenAddModal={() => setIsAddGoalModalOpen(true)}
-            onEdit={(goal) => setGoalToEdit(goal)}
-            onDelete={(id) => setGoalToDelete(id)}
-            loading={loading}
-          />
+          <div className="animate-fadeIn">
+            <GoalsView
+              goals={goals}
+              formatRupiah={formatRupiah}
+              onOpenAddModal={() => setIsAddGoalModalOpen(true)}
+              onEdit={(goal) => setGoalToEdit(goal)}
+              onDelete={(id) => setGoalToDelete(id)}
+              loading={loading}
+            />
+          </div>
         )}
 
         {/* ============================================================== */}
         {/* VIEW 2: ALOKASI AMPLOP */}
         {/* ============================================================== */}
         {activeNav === "Alokasi Amplop" && (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-fadeIn">
             <StrataAllocationBar
               cycleType={summary.safe_to_spend?.cycle_type}
               cycleDays={summary.safe_to_spend?.cycle_days}
@@ -1731,7 +1802,7 @@ export default function FinanceDashboard() {
         {/* VIEW 3: REKENING & AKUN */}
         {/* ============================================================== */}
         {activeNav === "Rekening & Akun" && (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-fadeIn">
             <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} onAccountDeleted={fetchData} />
 
             <div className="space-y-4">
@@ -1785,65 +1856,71 @@ export default function FinanceDashboard() {
         {/* VIEW 4: BUKU TRANSAKSI (LEDGER) */}
         {/* ============================================================== */}
         {activeNav === "Buku Transaksi" && (
-          <TransactionLedgerView
-            transactions={transactions}
-            accounts={allAccountTabs}
-            currentCycle={
-              summary.start_date && summary.end_date
-                ? {
-                    start_date: summary.start_date,
-                    end_date: summary.end_date,
-                    label: summary.period_label || "",
-                  }
-                : undefined
-            }
-            formatRupiah={formatRupiah}
-            onEdit={(tx) => setTxToEdit(tx)}
-            onDelete={(tx) => setTxToDelete(tx)}
-            onOpenAddModal={() => setIsModalOpen(true)}
-            loading={loading}
-          />
+          <div className="animate-fadeIn">
+            <TransactionLedgerView
+              transactions={transactions}
+              accounts={allAccountTabs}
+              currentCycle={
+                summary.start_date && summary.end_date
+                  ? {
+                      start_date: summary.start_date,
+                      end_date: summary.end_date,
+                      label: summary.period_label || "",
+                    }
+                  : undefined
+              }
+              formatRupiah={formatRupiah}
+              onEdit={(tx) => setTxToEdit(tx)}
+              onDelete={(tx) => setTxToDelete(tx)}
+              onOpenAddModal={() => setIsModalOpen(true)}
+              loading={loading}
+            />
+          </div>
         )}
 
         {/* ============================================================== */}
         {/* VIEW 5: LANGGANAN & TAGIHAN RUTIN */}
         {/* ============================================================== */}
         {activeNav === "Langganan & Tagihan" && (
-          <SubscriptionsView
-            subsData={subsData}
-            formatRupiah={formatRupiah}
-            onOpenModal={() => setIsSubModalOpen(true)}
-            onToggleActive={handleToggleSubscription}
-            onDelete={handleDeleteSubscription}
-            onEdit={(sub) => setSubToEdit(sub)}
-            loading={loading}
-          />
+          <div className="animate-fadeIn">
+            <SubscriptionsView
+              subsData={subsData}
+              formatRupiah={formatRupiah}
+              onOpenModal={() => setIsSubModalOpen(true)}
+              onToggleActive={handleToggleSubscription}
+              onDelete={handleDeleteSubscription}
+              onEdit={(sub) => setSubToEdit(sub)}
+              loading={loading}
+            />
+          </div>
         )}
 
         {/* ============================================================== */}
         {/* VIEW 6: ANALISIS & TREN */}
         {/* ============================================================== */}
         {activeNav === "Analisis & Tren" && (
-          <AnalyticsView
-            summary={{
-              ...summary,
-              period_type: summary.period_type || "cycle",
-              period_label: summary.period_label || "",
-              start_date: summary.start_date || "",
-              end_date: summary.end_date || "",
-              month_num: 10,
-              year: 2026,
-              daily_trend: summary.daily_trend || [],
-              accounts: (summary.accounts || []).map((a) => ({
-                name: a.account,
-                type: "regular",
-                balance: a.balance,
-                expense: a.expense,
-              })),
-            }}
-            formatRupiah={formatRupiah}
-            loading={loading}
-          />
+          <div className="animate-fadeIn">
+            <AnalyticsView
+              summary={{
+                ...summary,
+                period_type: summary.period_type || "cycle",
+                period_label: summary.period_label || "",
+                start_date: summary.start_date || "",
+                end_date: summary.end_date || "",
+                month_num: 10,
+                year: 2026,
+                daily_trend: summary.daily_trend || [],
+                accounts: (summary.accounts || []).map((a) => ({
+                  name: a.account,
+                  type: "regular",
+                  balance: a.balance,
+                  expense: a.expense,
+                })),
+              }}
+              formatRupiah={formatRupiah}
+              loading={loading}
+            />
+          </div>
         )}
         </div>
       </main>
