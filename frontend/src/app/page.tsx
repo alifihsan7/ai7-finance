@@ -13,7 +13,6 @@ import {
   CheckCircle2,
   ShieldCheck,
   Layers,
-  Wallet,
   Bell,
   BarChart2,
   LayoutDashboard,
@@ -27,9 +26,11 @@ import {
   ExternalLink,
   Target,
   AlertCircle,
+  Receipt,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { AccountGrid } from "@/components/AccountGrid";
+import { CategoryGrid } from "@/components/CategoryGrid";
 import { MandiriEnvelopes } from "@/components/MandiriEnvelopes";
 import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionTable, Transaction } from "@/components/TransactionTable";
@@ -141,7 +142,7 @@ const NAV_SLUGS: Record<string, string> = {
   "Ringkasan": "#/overview",
   "Target Finansial": "#/goals",
   "Alokasi Amplop": "#/envelopes",
-  "Rekening & Akun": "#/accounts",
+  "Akun & Kategori": "#/accounts",
   "Buku Transaksi": "#/ledger",
   "Langganan & Tagihan": "#/subscriptions",
   "Analisis & Tren": "#/analytics",
@@ -157,9 +158,12 @@ const SLUG_TO_NAV: Record<string, string> = {
   "#/envelopes": "Alokasi Amplop",
   "/envelopes": "Alokasi Amplop",
   "envelopes": "Alokasi Amplop",
-  "#/accounts": "Rekening & Akun",
-  "/accounts": "Rekening & Akun",
-  "accounts": "Rekening & Akun",
+  "#/accounts": "Akun & Kategori",
+  "/accounts": "Akun & Kategori",
+  "accounts": "Akun & Kategori",
+  "#/categories": "Akun & Kategori",
+  "/categories": "Akun & Kategori",
+  "categories": "Akun & Kategori",
   "#/ledger": "Buku Transaksi",
   "/ledger": "Buku Transaksi",
   "ledger": "Buku Transaksi",
@@ -859,8 +863,8 @@ export default function FinanceDashboard() {
               { name: "Ringkasan", icon: LayoutDashboard },
               { name: "Target Finansial", icon: Target },
               { name: "Alokasi Amplop", icon: Layers },
-              { name: "Rekening & Akun", icon: Wallet },
-              { name: "Buku Transaksi", icon: CreditCard },
+              { name: "Akun & Kategori", icon: CreditCard },
+              { name: "Buku Transaksi", icon: Receipt },
               { name: "Langganan & Tagihan", icon: Bell },
               { name: "Analisis & Tren", icon: BarChart2 },
             ].map((item) => {
@@ -1067,8 +1071,8 @@ export default function FinanceDashboard() {
                   { name: "Ringkasan", icon: LayoutDashboard },
                   { name: "Target Finansial", icon: Target },
                   { name: "Alokasi Amplop", icon: Layers },
-                  { name: "Rekening & Akun", icon: Wallet },
-                  { name: "Buku Transaksi", icon: CreditCard },
+                  { name: "Akun & Kategori", icon: CreditCard },
+                  { name: "Buku Transaksi", icon: Receipt },
                   { name: "Langganan & Tagihan", icon: Bell },
                   { name: "Analisis & Tren", icon: BarChart2 },
                 ].map((item) => {
@@ -1241,21 +1245,21 @@ export default function FinanceDashboard() {
               : "text-zinc-400 hover:text-white"
           }`}
         >
-          <CreditCard className="w-5 h-5 shrink-0" />
+          <Receipt className="w-5 h-5 shrink-0" />
           <span className="text-[10px] mt-0.5 leading-tight">Buku Kas</span>
         </button>
 
         <button
           onClick={() => setIsMobileDrawerOpen(true)}
           className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition min-w-[56px] ${
-            ["Rekening & Akun", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav)
+            ["Akun & Kategori", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav)
               ? "text-amberGold font-semibold"
               : "text-zinc-400 hover:text-white"
           }`}
         >
           <div className="relative">
             <Menu className="w-5 h-5 shrink-0" />
-            {["Rekening & Akun", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav) && (
+            {["Akun & Kategori", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav) && (
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amberGold"></span>
             )}
           </div>
@@ -1360,7 +1364,7 @@ export default function FinanceDashboard() {
                   <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Tambah Tagihan</span>
                 </button>
-              ) : activeNav === "Rekening & Akun" ? (
+              ) : activeNav === "Akun & Kategori" ? (
                 <>
                   <button
                     onClick={() => setIsTransferModalOpen(true)}
@@ -1406,7 +1410,7 @@ export default function FinanceDashboard() {
               {activeNav === "Ringkasan" && "Ringkasan"}
               {activeNav === "Target Finansial" && "Target Simpanan"}
               {activeNav === "Alokasi Amplop" && "Amplop Belanja"}
-              {activeNav === "Rekening & Akun" && "Daftar Rekening"}
+              {activeNav === "Akun & Kategori" && "Akun & Kategori"}
               {activeNav === "Buku Transaksi" && "Buku Transaksi"}
               {activeNav === "Langganan & Tagihan" && "Langganan Rutin"}
               {activeNav === "Analisis & Tren" && "Tren Pengeluaran"}
@@ -1415,7 +1419,7 @@ export default function FinanceDashboard() {
               {activeNav === "Ringkasan" && "Total saldo kas, sisa batas belanja harian, dan distribusi rekening."}
               {activeNav === "Target Finansial" && "Progres tabungan darurat, investasi, dan rencana beli barang."}
               {activeNav === "Alokasi Amplop" && "Batas jatah makan, jajan, dan kebutuhan rutin saku Mandiri."}
-              {activeNav === "Rekening & Akun" && "Saldo fisik di Mandiri, Jago, Bibit, dan rekening lainnya."}
+              {activeNav === "Akun & Kategori" && "Daftar rekening simpanan fisik dan pengaturan pos kategori pengeluaran."}
               {activeNav === "Buku Transaksi" && "Riwayat keluar masuk uang, filter kategori, dan pencatatan kas."}
               {activeNav === "Langganan & Tagihan" && "Daftar tagihan bulanan berulang dan jadwal jatuh tempo."}
               {activeNav === "Analisis & Tren" && "Grafik laju belanja per siklus gajian dibanding batas aman."}
@@ -1873,20 +1877,42 @@ export default function FinanceDashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 3: REKENING & AKUN */}
+        {/* VIEW 3: AKUN & KATEGORI */}
         {/* ============================================================== */}
-        {activeNav === "Rekening & Akun" && (
+        {activeNav === "Akun & Kategori" && (
           <div className="space-y-8 animate-fadeIn">
-            <AccountGrid
-              summary={summary}
-              customAccounts={customAccounts}
+            {/* Seksi 1: Rekening & Dompet Kas */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                    Rekening & Dompet Kas
+                  </h2>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Daftar rekening bank fisik, dompet digital, dan pos simpanan kas aktif.
+                  </p>
+                </div>
+              </div>
+              <AccountGrid
+                summary={summary}
+                customAccounts={customAccounts}
+                formatRupiah={formatRupiah}
+                loading={loading}
+                onAccountDeleted={fetchData}
+                onEditAccount={(acc) => setAccountToEdit(acc)}
+              />
+            </section>
+
+            {/* Seksi 2: Kategori Belanja & Pemasukan */}
+            <CategoryGrid
+              categories={categories}
+              summaryCategories={summary.categories}
               formatRupiah={formatRupiah}
               loading={loading}
-              onAccountDeleted={fetchData}
-              onEditAccount={(acc) => setAccountToEdit(acc)}
+              onOpenManageCategories={() => setIsManageCategoriesOpen(true)}
             />
 
-            {/* Navigasi CTA ke Buku Transaksi */}
+            {/* Seksi 3: Navigasi CTA ke Buku Transaksi */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-white/[0.08] bg-obsidian-panel/60 backdrop-blur-xs">
               <div className="text-sm text-zinc-400">
                 Ingin melihat seluruh mutasi dan riwayat transaksi kas?
@@ -1897,7 +1923,7 @@ export default function FinanceDashboard() {
                   setActiveNav("Buku Transaksi");
                   window.location.hash = "#/ledger";
                 }}
-                className="text-xs font-semibold text-amberGold hover:underline flex items-center gap-1.5 cursor-pointer"
+                className="text-xs font-semibold text-amberGold hover:underline flex items-center gap-1.5 cursor-pointer min-h-[44px]"
               >
                 <span>Buka Buku Transaksi</span>
                 <span aria-hidden="true">→</span>
@@ -1928,7 +1954,6 @@ export default function FinanceDashboard() {
               onEdit={(tx) => setTxToEdit(tx)}
               onDelete={(tx) => setTxToDelete(tx)}
               onOpenAddModal={() => setIsModalOpen(true)}
-              onOpenManageCategories={() => setIsManageCategoriesOpen(true)}
               loading={loading}
             />
           </div>
