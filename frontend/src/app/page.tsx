@@ -1260,6 +1260,161 @@ export default function FinanceDashboard() {
 
       {/* MAIN VIEWPORT */}
       <main ref={mainContentRef} className="flex-1 overflow-y-auto w-full">
+        {/* Persistent Sticky Topbar Header */}
+        <header className="sticky top-0 z-20 bg-obsidian-panel/90 backdrop-blur-md border-b border-obsidian-border p-4 sm:p-5 lg:px-6">
+          <div className="max-w-7xl mx-auto w-full flex flex-col 2xl:flex-row justify-between items-start 2xl:items-center gap-4">
+            <div className="min-w-0 w-full 2xl:w-auto">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slateText-primary">
+                  {activeNav === "Ringkasan" && "Ringkasan Portofolio & Alokasi"}
+                  {activeNav === "Target Finansial" && "Target Finansial & Milestone Tabungan"}
+                  {activeNav === "Alokasi Amplop" && "Alokasi Amplop & Plafon Belanja"}
+                  {activeNav === "Rekening & Akun" && "Daftar Rekening & Saldo Akun"}
+                  {activeNav === "Buku Transaksi" && "Buku Transaksi Lengkap (Ledger)"}
+                  {activeNav === "Langganan & Tagihan" && "Pelacak Langganan & Tagihan Rutin"}
+                  {activeNav === "Analisis & Tren" && "Analisis Tren & Burn-Rate Pengeluaran"}
+                </h1>
+                <div className="shrink-0">
+                  <PeriodSelector
+                    key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
+                    currentPeriod={selectedPeriod}
+                    onSelectPeriod={(p) => setSelectedPeriod(p)}
+                  />
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm text-slateText-secondary mt-1.5 line-clamp-1">
+                {activeNav === "Ringkasan" && "Ikhtisar saldo real-time, laju belanja harian, dan alokasi anggaran"}
+                {activeNav === "Target Finansial" && "Pantau akumulasi tabungan, portofolio investasi, dan milestone finansial"}
+                {activeNav === "Alokasi Amplop" && "Monitoring batas belanja amplop kebutuhan pokok dan pos operasional"}
+                {activeNav === "Rekening & Akun" && "Rincian saldo all-time dan pergerakan kas pada seluruh rekening aktif"}
+                {activeNav === "Buku Transaksi" && "Histori seluruh pencatatan pengeluaran, pemasukan, dan transfer kas"}
+                {activeNav === "Langganan & Tagihan" && "Kelola komitmen tagihan berulang dan evaluasi tanggal jatuh tempo"}
+                {activeNav === "Analisis & Tren" && "Evaluasi kecepatan belanja kumulatif vs batas aman anggaran"}
+              </p>
+            </div>
+
+            {/* Action Toolbar */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full 2xl:w-auto justify-start sm:justify-end">
+              {/* Refresh Button (Icon-Only Compact) */}
+              <button
+                onClick={fetchData}
+                title="Refresh Data Transaksi & Saldo"
+                className="p-2.5 text-zinc-400 hover:text-white bg-obsidian-card hover:bg-obsidian-hover border border-white/[0.08] hover:border-white/[0.16] rounded-full transition inline-flex items-center justify-center shrink-0 shadow-xs active:scale-95 cursor-pointer"
+              >
+                <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-amberGold" : ""}`} />
+              </button>
+
+              {/* Export Dropdown Menu */}
+              <div className="relative" ref={exportMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsExportMenuOpen((prev) => !prev)}
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold border border-white/[0.08] rounded-2xl bg-obsidian-card text-zinc-300 hover:text-white hover:bg-obsidian-hover hover:border-white/[0.16] transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-xs active:scale-95"
+                >
+                  <Download className="w-4 h-4 text-zinc-400 shrink-0" />
+                  <span className="font-semibold text-white hidden sm:inline">Ekspor</span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-200 ${isExportMenuOpen ? "rotate-180 text-amberGold" : ""}`} />
+                </button>
+
+                {isExportMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 p-2 bg-obsidian-panel/95 backdrop-blur-md border border-white/[0.12] rounded-2xl shadow-2xl z-50 text-xs font-mono space-y-1 animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={handleExportCSV}
+                      disabled={isExportingCSV}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-white hover:bg-obsidian-hover hover:text-amberGold transition disabled:opacity-50 disabled:cursor-not-allowed text-left cursor-pointer"
+                    >
+                      {isExportingCSV ? (
+                        <RefreshCw className="w-4 h-4 text-amberGold shrink-0 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4 text-zinc-400 shrink-0" />
+                      )}
+                      <div className="text-left font-sans">
+                        <div className="font-semibold text-xs text-white">
+                          {isExportingCSV ? "Sedang Mengunduh..." : "Unduh CSV Transaksi"}
+                        </div>
+                        <div className="text-[10px] text-zinc-400">Seluruh histori ledger</div>
+                      </div>
+                    </button>
+
+                    {currentUser?.id === 1 && googleSheetUrl && (
+                      <a
+                        href={googleSheetUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setIsExportMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-emerald-400 hover:bg-emerald-500/10 transition border-t border-white/[0.08]"
+                      >
+                        <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <div className="text-left font-sans min-w-0">
+                          <div className="font-semibold text-xs text-emerald-400 flex items-center gap-1">
+                            Google Sheets Rapor
+                            <ExternalLink className="w-3 h-3 opacity-70" />
+                          </div>
+                          <div className="text-[10px] text-zinc-400">Spreadsheet sinkronisasi</div>
+                        </div>
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Contextual Primary Actions */}
+              {activeNav === "Target Finansial" ? (
+                <button
+                  onClick={() => setIsAddGoalModalOpen(true)}
+                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                >
+                  <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                  <span className="whitespace-nowrap">Tambah Target</span>
+                </button>
+              ) : activeNav === "Langganan & Tagihan" ? (
+                <button
+                  onClick={() => setIsSubModalOpen(true)}
+                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                >
+                  <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                  <span className="whitespace-nowrap">Tambah Tagihan</span>
+                </button>
+              ) : activeNav === "Rekening & Akun" ? (
+                <>
+                  <button
+                    onClick={() => setIsTransferModalOpen(true)}
+                    className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-2xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                  >
+                    <ArrowLeftRight className="w-4 h-4 shrink-0 text-cyanHub" />
+                    <span className="whitespace-nowrap font-semibold">Transfer Antar Akun</span>
+                  </button>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                    <span className="whitespace-nowrap">Catat Transaksi</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setIsPaycheckModalOpen(true)}
+                    className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-2xl bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
+                  >
+                    <ArrowDownLeft className="w-4 h-4 shrink-0 text-mintRise" />
+                    <span className="whitespace-nowrap font-semibold">Gajian Masuk</span>
+                  </button>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                    <span className="whitespace-nowrap">Catat Transaksi</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </header>
+
         <div className="p-3.5 sm:p-5 md:p-6 lg:p-8 xl:p-10 pb-24 md:pb-10 max-w-7xl mx-auto w-full space-y-5 sm:space-y-8">
         
         {/* Guest Mode Banner */}
@@ -1287,159 +1442,6 @@ export default function FinanceDashboard() {
             </button>
           </div>
         )}
-
-        {/* Refined Obsidian Slate Top Header */}
-        <div className="flex flex-col 2xl:flex-row justify-between items-start 2xl:items-center gap-4 pb-5 sm:pb-6 border-b border-obsidian-border">
-          <div className="min-w-0 w-full 2xl:w-auto">
-            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slateText-primary">
-                {activeNav === "Ringkasan" && "Ringkasan Portofolio & Alokasi"}
-                {activeNav === "Target Finansial" && "Target Finansial & Milestone Tabungan"}
-                {activeNav === "Alokasi Amplop" && "Alokasi Amplop & Plafon Belanja"}
-                {activeNav === "Rekening & Akun" && "Daftar Rekening & Saldo Akun"}
-                {activeNav === "Buku Transaksi" && "Buku Transaksi Lengkap (Ledger)"}
-                {activeNav === "Langganan & Tagihan" && "Pelacak Langganan & Tagihan Rutin"}
-                {activeNav === "Analisis & Tren" && "Analisis Tren & Burn-Rate Pengeluaran"}
-              </h1>
-              <div className="shrink-0">
-                <PeriodSelector
-                  key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
-                  currentPeriod={selectedPeriod}
-                  onSelectPeriod={(p) => setSelectedPeriod(p)}
-                />
-              </div>
-            </div>
-            <p className="text-xs sm:text-sm text-slateText-secondary mt-1.5 line-clamp-1">
-              {activeNav === "Ringkasan" && "Ikhtisar saldo real-time, laju belanja harian, dan alokasi anggaran"}
-              {activeNav === "Target Finansial" && "Pantau akumulasi tabungan, portofolio investasi, dan milestone finansial"}
-              {activeNav === "Alokasi Amplop" && "Monitoring batas belanja amplop kebutuhan pokok dan pos operasional"}
-              {activeNav === "Rekening & Akun" && "Rincian saldo all-time dan pergerakan kas pada seluruh rekening aktif"}
-              {activeNav === "Buku Transaksi" && "Histori seluruh pencatatan pengeluaran, pemasukan, dan transfer kas"}
-              {activeNav === "Langganan & Tagihan" && "Kelola komitmen tagihan berulang dan evaluasi tanggal jatuh tempo"}
-              {activeNav === "Analisis & Tren" && "Evaluasi kecepatan belanja kumulatif vs batas aman anggaran"}
-            </p>
-          </div>
-
-          {/* Action Toolbar */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full 2xl:w-auto justify-start sm:justify-end">
-            {/* Refresh Button (Icon-Only Compact) */}
-            <button
-              onClick={fetchData}
-              title="Refresh Data Transaksi & Saldo"
-              className="p-2.5 text-zinc-400 hover:text-white bg-obsidian-card hover:bg-obsidian-hover border border-white/[0.08] hover:border-white/[0.16] rounded-full transition inline-flex items-center justify-center shrink-0 shadow-xs active:scale-95 cursor-pointer"
-            >
-              <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-amberGold" : ""}`} />
-            </button>
-
-            {/* Export Dropdown Menu */}
-            <div className="relative" ref={exportMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsExportMenuOpen((prev) => !prev)}
-                className="px-4 py-2 text-xs sm:text-sm font-semibold border border-white/[0.08] rounded-2xl bg-obsidian-card text-zinc-300 hover:text-white hover:bg-obsidian-hover hover:border-white/[0.16] transition inline-flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-xs active:scale-95"
-              >
-                <Download className="w-4 h-4 text-zinc-400 shrink-0" />
-                <span className="font-semibold text-white hidden sm:inline">Ekspor</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-200 ${isExportMenuOpen ? "rotate-180 text-amberGold" : ""}`} />
-              </button>
-
-              {isExportMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 p-2 bg-obsidian-panel/95 backdrop-blur-md border border-white/[0.12] rounded-2xl shadow-2xl z-50 text-xs font-mono space-y-1 animate-fadeIn">
-                  <button
-                    type="button"
-                    onClick={handleExportCSV}
-                    disabled={isExportingCSV}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-white hover:bg-obsidian-hover hover:text-amberGold transition disabled:opacity-50 disabled:cursor-not-allowed text-left cursor-pointer"
-                  >
-                    {isExportingCSV ? (
-                      <RefreshCw className="w-4 h-4 text-amberGold shrink-0 animate-spin" />
-                    ) : (
-                      <Download className="w-4 h-4 text-zinc-400 shrink-0" />
-                    )}
-                    <div className="text-left font-sans">
-                      <div className="font-semibold text-xs text-white">
-                        {isExportingCSV ? "Sedang Mengunduh..." : "Unduh CSV Transaksi"}
-                      </div>
-                      <div className="text-[10px] text-zinc-400">Seluruh histori ledger</div>
-                    </div>
-                  </button>
-
-                  {currentUser?.id === 1 && googleSheetUrl && (
-                    <a
-                      href={googleSheetUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setIsExportMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-emerald-400 hover:bg-emerald-500/10 transition border-t border-white/[0.08]"
-                    >
-                      <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <div className="text-left font-sans min-w-0">
-                        <div className="font-semibold text-xs text-emerald-400 flex items-center gap-1">
-                          Google Sheets Rapor
-                          <ExternalLink className="w-3 h-3 opacity-70" />
-                        </div>
-                        <div className="text-[10px] text-zinc-400">Spreadsheet sinkronisasi</div>
-                      </div>
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Contextual Primary Actions */}
-            {activeNav === "Target Finansial" ? (
-              <button
-                onClick={() => setIsAddGoalModalOpen(true)}
-                className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
-              >
-                <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
-                <span className="whitespace-nowrap">Tambah Target</span>
-              </button>
-            ) : activeNav === "Langganan & Tagihan" ? (
-              <button
-                onClick={() => setIsSubModalOpen(true)}
-                className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
-              >
-                <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
-                <span className="whitespace-nowrap">Tambah Tagihan</span>
-              </button>
-            ) : activeNav === "Rekening & Akun" ? (
-              <>
-                <button
-                  onClick={() => setIsTransferModalOpen(true)}
-                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-2xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
-                >
-                  <ArrowLeftRight className="w-4 h-4 shrink-0 text-cyanHub" />
-                  <span className="whitespace-nowrap font-semibold">Transfer Antar Akun</span>
-                </button>
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
-                >
-                  <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
-                  <span className="whitespace-nowrap">Catat Transaksi</span>
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => setIsPaycheckModalOpen(true)}
-                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-2xl bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
-                >
-                  <ArrowDownLeft className="w-4 h-4 shrink-0 text-mintRise" />
-                  <span className="whitespace-nowrap font-semibold">Gajian Masuk</span>
-                </button>
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="px-5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
-                >
-                  <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
-                  <span className="whitespace-nowrap">Catat Transaksi</span>
-                </button>
-              </>
-            )}
-          </div>
-        </div>
 
         {/* ============================================================== */}
         {/* VIEW 1: RINGKASAN */}
