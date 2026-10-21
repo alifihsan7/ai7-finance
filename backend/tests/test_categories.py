@@ -12,6 +12,7 @@ from app.models.transaction import Transaction
 from app.models.subscription import Subscription
 from app.models.goal import Goal
 from app.api.deps import get_current_user
+from app.api.v1.endpoints.categories import sync_transaction_categories
 from main import app
 
 # In-memory SQLite for isolated, fast, deterministic testing
@@ -472,3 +473,197 @@ def test_multi_user_tenant_isolation(client, db_session, test_user, other_user):
 
     db_session.refresh(tx_other)
     assert tx_other.category == "SharedCat"  # Still untouched!
+
+
+# ============================================================================
+# 6. AUTO-SYNC TRANSACTION CATEGORIES & CASCADE WORKFLOW
+# ============================================================================
+
+def test_sync_transaction_categories_direct_function(db_session, test_user):
+    txs = [
+        Transaction(
+            user_id=test_user.id,
+            type="expense",
+            amount=50000,
+            account="BCA",
+            category="Social & Hiburan",
+            description="Nongkrong weekend",
+            date=date(2026, 10, 10),
+        ),
+        Transaction(
+            user_id=test_user.id,
+            type="income",
+            amount=1500000,
+            account="BCA",
+            category="Uang Saku Ortu",
+            description="Transfer ortu",
+            date=date(2026, 10, 1),
+        ),
+        Transaction(
+            user_id=test_user.id,
+            type="income",
+            amount=5000000,
+            account="BCA",
+            category="Saldo Awal",
+            description="Inisialisasi akun",
+            date=date(2026, 10, 1),
+        ),
+        Transaction(
+            user_id=test_user.id,
+            type="expense",
+            amount=20000,
+            account="Cash",
+            category="Galon / Air",
+            description="Beli air mineral",
+            date=date(2026, 10, 12),
+        ),
+    ]
+    db_session.add_all(txs)
+    db_session.commit()
+
+    # Initial sync
+    created_count = sync_transaction_categories(db_session, test_user.id)
+    assert created_count == 4
+
+    # Verify categories in database
+    cats = {
+        c.name: c
+        for c in db_session.query(Category).filter(Category.user_id == test_user.id).all()
+    }
+    assert "Social & Hiburan" in cats
+    assert cats["Social & Hiburan"].type == "expense"
+    assert cats["Social & Hiburan"].color == "coralFall"
+    assert cats["Social & Hiburan"].icon == "Film"
+
+    assert "Uang Saku Ortu" in cats
+    assert cats["Uang Saku Ortu"].type == "income"
+    assert cats["Uang Saku Ortu"].color == "mintRise"
+
+    assert "Saldo Awal" in cats
+    assert cats["Saldo Awal"].type == "income"
+
+    assert "Galon / Air" in cats
+    assert cats["Galon / Air"].type == "expense"
+    assert cats["Galon / Air"].icon == "Droplet"
+
+    # Idempotent: running again should create 0 categories
+    created_again = sync_transaction_categories(db_session, test_user.id)
+    assert created_again == 0
+
+
+def test_get_categories_auto_sync_endpoint(client, db_session, test_user):
+    # Seed transactions with legacy categories
+    tx1 = Transaction(
+        user_id=test_user.id,
+        type="expense",
+        amount=15000,
+        account="Cash",
+        category="Laundry",
+        description="Cuci baju kiloan",
+        date=date(2026, 10, 14),
+    )
+    tx2 = Transaction(
+        user_id=test_user.id,
+        type="expense",
+        amount=250000,
+        account="BCA",
+        category="Pendidikan & Tools",
+        description="Beli API key",
+        date=date(2026, 10, 15),
+    )
+    db_session.add_all([tx1, tx2])
+    db_session.commit()
+
+    # Call GET /api/v1/categories
+    response = client.get("/api/v1/categories")
+    assert response.status_code == 200
+    cat_list = response.json()
+    cat_names = [c["name"] for c in cat_list]
+
+    assert "Laundry" in cat_names
+    assert "Pendidikan & Tools" in cat_names
+    # Defaults must also be present
+    assert "Makan" in cat_names
+    assert "Gaji" in cat_names
+
+    # Check that newly synced category has valid integer id
+    laundry_cat = next(c for c in cat_list if c["name"] == "Laundry")
+    assert isinstance(laundry_cat["id"], int)
+    assert laundry_cat["type"] == "expense"
+
+
+def test_edit_and_cascade_synced_category(client, db_session, test_user):
+    tx = Transaction(
+        user_id=test_user.id,
+        type="expense",
+        amount=38000,
+        account="GoPay",
+        category="Jajan / Ngopi",
+        description="Es Kopi Susu",
+        date=date(2026, 10, 18),
+    )
+    db_session.add(tx)
+    db_session.commit()
+
+    # GET endpoint triggers auto-sync
+    res = client.get("/api/v1/categories")
+    assert res.status_code == 200
+    jajan_cat = next(c for c in res.json() if c["name"] == "Jajan / Ngopi")
+
+    # Rename category via PUT endpoint
+    update_res = client.put(
+        f"/api/v1/categories/{jajan_cat['id']}",
+        json={"name": "Coffee & Treats", "color": "amberGold"}
+    )
+    assert update_res.status_code == 200
+    assert update_res.json()["name"] == "Coffee & Treats"
+
+    # Verify transaction cascaded
+    db_session.refresh(tx)
+    assert tx.category == "Coffee & Treats"
+
+
+def test_delete_and_cascade_synced_category(client, db_session, test_user):
+    tx = Transaction(
+        user_id=test_user.id,
+        type="expense",
+        amount=75000,
+        account="BCA",
+        category="Perawatan Diri",
+        description="Potong rambut",
+        date=date(2026, 10, 19),
+    )
+    db_session.add(tx)
+    db_session.commit()
+
+    # GET endpoint triggers auto-sync
+    res = client.get("/api/v1/categories")
+    assert res.status_code == 200
+    perawatan_cat = next(c for c in res.json() if c["name"] == "Perawatan Diri")
+
+    # Delete category with fallback to Lainnya
+    del_res = client.delete(f"/api/v1/categories/{perawatan_cat['id']}?fallback_to=Lainnya")
+    assert del_res.status_code == 200
+    assert del_res.json()["success"] is True
+
+    # Verify transaction reassigned to Lainnya
+    db_session.refresh(tx)
+    assert tx.category == "Lainnya"
+
+
+def test_sync_ignores_empty_or_whitespace_categories(db_session, test_user):
+    tx1 = Transaction(
+        user_id=test_user.id,
+        type="expense",
+        amount=1000,
+        account="Cash",
+        category="   ",
+        description="blank",
+        date=date(2026, 10, 1),
+    )
+    db_session.add(tx1)
+    db_session.commit()
+
+    synced = sync_transaction_categories(db_session, test_user.id)
+    assert synced == 0
+

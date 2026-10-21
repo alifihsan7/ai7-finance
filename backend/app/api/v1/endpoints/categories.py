@@ -32,6 +32,51 @@ DEFAULT_CATEGORIES = [
 ]
 
 
+def get_category_color_and_icon(name: str, cat_type: str) -> tuple[str, str]:
+    """
+    Map category name and type to an appropriate Solaris theme color and icon.
+    """
+    lower = name.lower()
+    if cat_type == "income":
+        if "gaji" in lower:
+            return "mintRise", "Wallet"
+        if "bonus" in lower or "hadiah" in lower:
+            return "amberGold", "Gift"
+        if "investasi" in lower or "dividen" in lower:
+            return "teal", "TrendingUp"
+        if "saldo awal" in lower:
+            return "cyanHub", "Coins"
+        if "uang saku" in lower:
+            return "mintRise", "HandCoins"
+        return "mintRise", "Wallet"
+
+    # Expense mappings
+    if any(k in lower for k in ("makan", "minum", "jajan", "ngopi", "kuliner", "resto")):
+        return "amberGold", "Utensils"
+    if any(k in lower for k in ("trans", "bensin", "ojek", "grab", "gojek", "parkir", "tol")):
+        return "cyanHub", "Car"
+    if any(k in lower for k in ("tagihan", "listrik", "pln", "langganan", "servis", "wifi", "internet")):
+        return "purpleLock", "Receipt"
+    if any(k in lower for k in ("belanja", "mart", "supermarket", "mall")):
+        return "pink", "ShoppingBag"
+    if any(k in lower for k in ("hiburan", "film", "bioskop", "social", "game")):
+        return "coralFall", "Film"
+    if any(k in lower for k in ("darurat", "tabungan", "simpanan")):
+        return "teal", "PiggyBank"
+    if any(k in lower for k in ("sehat", "gym", "obat", "dokter", "klinik", "fitness")):
+        return "mintRise", "HeartPulse"
+    if any(k in lower for k in ("pendidikan", "tools", "kursus", "buku", "kuliah", "sekolah")):
+        return "cyanHub", "GraduationCap"
+    if any(k in lower for k in ("laundry", "cuci")):
+        return "cyanHub", "Shirt"
+    if any(k in lower for k in ("galon", "air")):
+        return "cyanHub", "Droplet"
+    if any(k in lower for k in ("perawatan", "skincare", "salon")):
+        return "pink", "Sparkles"
+
+    return "slateText", "Tag"
+
+
 def ensure_default_categories(db: Session, user_id: int):
     has_category = db.query(Category).filter(Category.user_id == user_id).first()
     if not has_category:
@@ -50,6 +95,81 @@ def ensure_default_categories(db: Session, user_id: int):
             db.rollback()
 
 
+def sync_transaction_categories(db: Session, user_id: int) -> int:
+    """
+    Sync distinct category values from Transaction into Category table for the given user.
+    Creates concrete Category rows so they can be edited or deleted with cascade support.
+    """
+    existing_cats = db.query(Category).filter(Category.user_id == user_id).all()
+    existing_names_lower = {c.name.strip().lower() for c in existing_cats if c.name}
+
+    tx_rows = (
+        db.query(Transaction.category, Transaction.type)
+        .filter(
+            Transaction.user_id == user_id,
+            Transaction.category.isnot(None),
+            func.trim(Transaction.category) != "",
+        )
+        .all()
+    )
+
+    if not tx_rows:
+        return 0
+
+    # Aggregate distinct category names (case-insensitive deduplication, preserve first clean casing)
+    tx_cat_map: dict[str, dict] = {}
+    for raw_cat, tx_type in tx_rows:
+        if not raw_cat:
+            continue
+        clean_cat = raw_cat.strip()
+        if not clean_cat:
+            continue
+        key = clean_cat.lower()
+        if key not in tx_cat_map:
+            tx_cat_map[key] = {
+                "name": clean_cat,
+                "types": set(),
+            }
+        if tx_type:
+            tx_cat_map[key]["types"].add(tx_type.strip().lower())
+
+    new_count = 0
+    for key, item in tx_cat_map.items():
+        if key in existing_names_lower:
+            continue
+
+        clean_name = item["name"]
+        types = item["types"]
+
+        # Determine type: "income" jika transaksi bertipe income atau nama mengandung "gaji"/"masuk"/"saldo awal", selain itu "expense"
+        is_income = (
+            "income" in types
+            or any(kw in key for kw in ("gaji", "masuk", "saldo awal"))
+        )
+        cat_type = "income" if is_income else "expense"
+        color, icon = get_category_color_and_icon(clean_name, cat_type)
+
+        new_cat = Category(
+            user_id=user_id,
+            name=clean_name,
+            type=cat_type,
+            color=color,
+            icon=icon,
+        )
+        db.add(new_cat)
+        existing_names_lower.add(key)
+        new_count += 1
+
+    if new_count > 0:
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            return 0
+
+    return new_count
+
+
 @router.get("", response_model=List[CategoryResponse])
 def get_categories(
     type: Optional[str] = Query(None, description="Filter kategori berdasarkan tipe: expense | income"),
@@ -57,6 +177,7 @@ def get_categories(
     db: Session = Depends(get_db)
 ):
     ensure_default_categories(db, current_user.id)
+    sync_transaction_categories(db, current_user.id)
 
     query = db.query(Category).filter(Category.user_id == current_user.id)
     if type:
