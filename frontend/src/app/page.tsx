@@ -179,6 +179,7 @@ export default function FinanceDashboard() {
   const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isExportingCSV, setIsExportingCSV] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const [customAccounts, setCustomAccounts] = useState<AccountItem[]>([]);
   const availableAccountNames = useMemo(() => {
@@ -770,6 +771,52 @@ export default function FinanceDashboard() {
     }
   };
 
+  const handleExportCSV = async () => {
+    if (isExportingCSV) return;
+    setIsExportingCSV(true);
+    try {
+      const token = getAuthToken();
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const res = await fetch("/api/v1/transactions/export", {
+        headers,
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          setIsAuthModalOpen(true);
+        }
+        throw new Error(`Export failed with status: ${res.status}`);
+      }
+
+      let filename = "finance_export.csv";
+      const disposition = res.headers.get("Content-Disposition");
+      if (disposition && disposition.includes("filename=")) {
+        const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (match && match[1]) {
+          filename = match[1].replace(/['"]/g, "").trim();
+        }
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Gagal mengunduh CSV:", err);
+    } finally {
+      setIsExportingCSV(false);
+      setIsExportMenuOpen(false);
+    }
+  };
+
   const filteredTransactions = useMemo(() => {
     return transactions.filter((tx) => {
       const txAcc = tx.account.toLowerCase();
@@ -1059,14 +1106,19 @@ export default function FinanceDashboard() {
                   <ArrowLeftRight className="w-4 h-4 shrink-0" />
                   <span>Transfer Antar Rekening</span>
                 </button>
-                <a
-                  href="/api/v1/transactions/export"
-                  download
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium rounded-2xl bg-obsidian-card border border-white/[0.08] text-zinc-300 hover:text-white transition"
+                <button
+                  type="button"
+                  onClick={handleExportCSV}
+                  disabled={isExportingCSV}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium rounded-2xl bg-obsidian-card border border-white/[0.08] text-zinc-300 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  <Download className="w-4 h-4 shrink-0" />
-                  <span>Ekspor CSV Transaksi</span>
-                </a>
+                  {isExportingCSV ? (
+                    <RefreshCw className="w-4 h-4 shrink-0 animate-spin text-amberGold" />
+                  ) : (
+                    <Download className="w-4 h-4 shrink-0" />
+                  )}
+                  <span>{isExportingCSV ? "Mengunduh CSV..." : "Ekspor CSV Transaksi"}</span>
+                </button>
                 {currentUser?.id === 1 && googleSheetUrl && (
                   <a
                     href={googleSheetUrl}
@@ -1293,18 +1345,24 @@ export default function FinanceDashboard() {
 
               {isExportMenuOpen && (
                 <div className="absolute right-0 mt-2 w-56 p-2 bg-obsidian-panel/95 backdrop-blur-md border border-white/[0.12] rounded-2xl shadow-2xl z-50 text-xs font-mono space-y-1 animate-fadeIn">
-                  <a
-                    href="/api/v1/transactions/export"
-                    download
-                    onClick={() => setIsExportMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-white hover:bg-obsidian-hover hover:text-amberGold transition"
+                  <button
+                    type="button"
+                    onClick={handleExportCSV}
+                    disabled={isExportingCSV}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-white hover:bg-obsidian-hover hover:text-amberGold transition disabled:opacity-50 disabled:cursor-not-allowed text-left cursor-pointer"
                   >
-                    <Download className="w-4 h-4 text-zinc-400 shrink-0" />
+                    {isExportingCSV ? (
+                      <RefreshCw className="w-4 h-4 text-amberGold shrink-0 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 text-zinc-400 shrink-0" />
+                    )}
                     <div className="text-left font-sans">
-                      <div className="font-semibold text-xs text-white">Unduh CSV Transaksi</div>
+                      <div className="font-semibold text-xs text-white">
+                        {isExportingCSV ? "Sedang Mengunduh..." : "Unduh CSV Transaksi"}
+                      </div>
                       <div className="text-[10px] text-zinc-400">Seluruh histori ledger</div>
                     </div>
-                  </a>
+                  </button>
 
                   {currentUser?.id === 1 && googleSheetUrl && (
                     <a
