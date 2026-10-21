@@ -12,10 +12,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Receipt,
+  Tag,
 } from "lucide-react";
 import { CustomSelect, SelectOption } from "./ui/CustomSelect";
 import { Skeleton } from "./ui/Skeleton";
 import { TransactionTable, Transaction } from "./TransactionTable";
+import { CategoryItem } from "./ManageCategoriesModal";
 
 interface AccountTab {
   id: string;
@@ -25,6 +27,7 @@ interface AccountTab {
 interface TransactionLedgerViewProps {
   transactions: Transaction[];
   accounts: AccountTab[];
+  categories?: CategoryItem[];
   currentCycle?: {
     start_date: string;
     end_date: string;
@@ -34,17 +37,20 @@ interface TransactionLedgerViewProps {
   onEdit: (tx: Transaction) => void;
   onDelete: (tx: Transaction) => void;
   onOpenAddModal: () => void;
+  onOpenManageCategories?: () => void;
   loading?: boolean;
 }
 
 export function TransactionLedgerView({
   transactions,
   accounts,
+  categories,
   currentCycle,
   formatRupiah,
   onEdit,
   onDelete,
   onOpenAddModal,
+  onOpenManageCategories,
   loading,
 }: TransactionLedgerViewProps) {
   // Filter States
@@ -61,17 +67,17 @@ export function TransactionLedgerView({
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 25;
 
-  // Dynamic Categories from available transactions
+  // Dynamic Categories from API categories + available transactions
   const categoryOptions: SelectOption[] = useMemo(() => {
-    const uniqueCats = Array.from(
-      new Set(transactions.map((tx) => tx.category).filter(Boolean))
-    ).sort();
+    const apiCats = categories ? categories.map((c) => c.name) : [];
+    const txCats = transactions.map((tx) => tx.category).filter(Boolean);
+    const uniqueCats = Array.from(new Set([...apiCats, ...txCats])).sort();
 
     return [
       { value: "all", label: "Semua Kategori" },
       ...uniqueCats.map((cat) => ({ value: cat, label: cat })),
     ];
-  }, [transactions]);
+  }, [categories, transactions]);
 
   // Type filter options
   const typeOptions: SelectOption[] = [
@@ -418,6 +424,19 @@ export function TransactionLedgerView({
                 </button>
               )}
             </div>
+
+            {/* Kelola Kategori Button */}
+            {onOpenManageCategories && (
+              <button
+                type="button"
+                onClick={onOpenManageCategories}
+                className="px-3.5 py-2 bg-obsidian-card hover:bg-obsidian-hover text-zinc-200 hover:text-amberGold font-medium text-xs sm:text-sm rounded-2xl border border-white/[0.08] hover:border-amberGold/30 transition shadow-xs flex items-center justify-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
+                title="Kelola Kategori Transaksi"
+              >
+                <Tag className="w-4 h-4 text-amberGold" />
+                <span className="inline">Kelola Kategori</span>
+              </button>
+            )}
 
             <button
               type="button"

@@ -1,6 +1,7 @@
 import React from "react";
 import { Edit2, Trash2 } from "lucide-react";
 import { Skeleton } from "./ui/Skeleton";
+import { getCategoryBadgeClasses } from "@/lib/categoryColors";
 
 export interface Transaction {
   id: number;
@@ -97,7 +98,7 @@ export function TransactionTable({
                         className={`inline-block px-3 py-1 rounded-full text-xs font-mono font-medium border whitespace-nowrap ${
                           isTransfer
                             ? "bg-cyanHub/10 border-cyanHub/30 text-cyanHub"
-                            : "bg-white/[0.06] border-white/[0.08] text-zinc-300"
+                            : getCategoryBadgeClasses(tx.category)
                         }`}
                       >
                         {tx.category}
