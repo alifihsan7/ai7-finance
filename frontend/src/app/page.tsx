@@ -1347,58 +1347,24 @@ export default function FinanceDashboard() {
                 )}
               </div>
 
-              {/* Contextual Primary Actions */}
-              {activeNav === "Target Finansial" ? (
-                <button
-                  onClick={() => setIsAddGoalModalOpen(true)}
-                  className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
-                >
-                  <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                  <span className="whitespace-nowrap">Tambah Target</span>
-                </button>
-              ) : activeNav === "Langganan & Tagihan" ? (
-                <button
-                  onClick={() => setIsSubModalOpen(true)}
-                  className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
-                >
-                  <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                  <span className="whitespace-nowrap">Tambah Tagihan</span>
-                </button>
-              ) : activeNav === "Akun & Kategori" ? (
-                <>
-                  <button
-                    onClick={() => setIsTransferModalOpen(true)}
-                    className="py-2 px-3.5 text-xs font-semibold rounded-xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
-                  >
-                    <ArrowLeftRight className="w-3.5 h-3.5 shrink-0 text-cyanHub" />
-                    <span className="whitespace-nowrap font-semibold">Transfer Antar Akun</span>
-                  </button>
-                  <button
-                    onClick={() => setIsAddAccountModalOpen(true)}
-                    className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
-                  >
-                    <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                    <span className="whitespace-nowrap">Tambah Akun</span>
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => setIsPaycheckModalOpen(true)}
-                    className="py-2 px-3.5 text-xs font-semibold rounded-xl bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95"
-                  >
-                    <ArrowDownLeft className="w-3.5 h-3.5 shrink-0 text-mintRise" />
-                    <span className="whitespace-nowrap font-semibold">Gajian Masuk</span>
-                  </button>
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
-                  >
-                    <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                    <span className="whitespace-nowrap">Catat Transaksi</span>
-                  </button>
-                </>
-              )}
+              {/* Universal Persistent Primary Actions */}
+              <button
+                type="button"
+                onClick={() => setIsPaycheckModalOpen(true)}
+                className="py-2 px-3 sm:px-3.5 text-xs font-semibold rounded-xl bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition inline-flex items-center justify-center gap-1.5 sm:gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+              >
+                <ArrowDownLeft className="w-3.5 h-3.5 text-mintRise shrink-0" />
+                <span className="hidden xs:inline font-semibold">Gajian Masuk</span>
+                <span className="xs:hidden font-semibold">Gajian</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                <span>Catat Transaksi</span>
+              </button>
             </div>
           </div>
         </header>
@@ -1883,7 +1849,7 @@ export default function FinanceDashboard() {
           <div className="space-y-8 animate-fadeIn">
             {/* Seksi 1: Rekening & Dompet Kas */}
             <section className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
                     Rekening & Dompet Kas
@@ -1891,6 +1857,24 @@ export default function FinanceDashboard() {
                   <p className="text-xs text-zinc-400 mt-0.5">
                     Daftar rekening bank fisik, dompet digital, dan pos simpanan kas aktif.
                   </p>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsTransferModalOpen(true)}
+                    className="py-2 px-3.5 text-xs font-semibold rounded-xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap active:scale-95 cursor-pointer min-h-[38px]"
+                  >
+                    <ArrowLeftRight className="w-3.5 h-3.5 text-cyanHub shrink-0" />
+                    <span>Transfer Antar Akun</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddAccountModalOpen(true)}
+                    className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer min-h-[38px]"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                    <span>Tambah Akun</span>
+                  </button>
                 </div>
               </div>
               <AccountGrid
@@ -1909,6 +1893,8 @@ export default function FinanceDashboard() {
               summaryCategories={summary.categories}
               formatRupiah={formatRupiah}
               loading={loading}
+              onCategoriesUpdated={fetchData}
+              transactions={transactions}
               onOpenManageCategories={() => setIsManageCategoriesOpen(true)}
             />
 

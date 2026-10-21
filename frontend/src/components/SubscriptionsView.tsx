@@ -107,23 +107,33 @@ export function SubscriptionsView({
           </div>
           <button
             onClick={onOpenModal}
-            className="mt-3 px-4 py-2 text-xs font-bold bg-amberGold text-slate-950 hover:bg-amber-300 rounded-xl transition flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer"
+            className="mt-3 px-4 py-2 text-xs font-bold bg-amberGold text-slate-950 hover:bg-yellow-300 rounded-xl transition flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Tambah Manual</span>
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Tambah Tagihan</span>
           </button>
         </div>
       </div>
 
       {/* Subscriptions Grid Cards */}
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <h3 className="font-bold text-base sm:text-lg text-white">
-            Daftar Layanan & Tagihan Terjadwal
-          </h3>
-          <span className="text-xs text-zinc-400 font-mono shrink-0">
-            Total {subsData.items.length} langganan terdaftar
-          </span>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h3 className="font-bold text-base sm:text-lg text-white">
+              Daftar Layanan & Tagihan Terjadwal
+            </h3>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Total {subsData.items.length} langganan dan tagihan rutin terdaftar
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenModal}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-amberGold text-slate-950 font-bold rounded-xl hover:bg-yellow-300 transition shadow-sm text-xs shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Tambah Tagihan</span>
+          </button>
         </div>
 
         {loading ? (

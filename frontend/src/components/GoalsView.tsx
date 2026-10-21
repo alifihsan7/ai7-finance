@@ -251,11 +251,12 @@ export function GoalsView({
         </div>
 
         <button
+          type="button"
           onClick={onOpenAddModal}
-          className="flex items-center gap-2 px-5 py-2.5 bg-amberGold text-slate-950 font-bold rounded-2xl hover:bg-amber-300 transition shadow-sm text-sm shrink-0 whitespace-nowrap cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2.5 bg-amberGold text-slate-950 font-bold rounded-xl hover:bg-yellow-300 transition shadow-sm text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
         >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>Tambah Target Baru</span>
+          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+          <span>Tambah Target</span>
         </button>
       </div>
 
