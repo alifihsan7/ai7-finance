@@ -13,6 +13,7 @@ import app.models.account
 import app.models.goal
 import app.models.paycheck
 import app.models.user
+import app.models.category
 
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)

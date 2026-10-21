@@ -18,6 +18,7 @@ from app.models.account import Account
 from app.models.transaction import Transaction
 from app.models.subscription import Subscription
 from app.models.goal import Goal
+from app.models.category import Category
 from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckSession
 from app.schemas.user import (
     UserCreate,
@@ -495,6 +496,7 @@ def delete_my_account(
         db.delete(cfg)
 
     db.query(Account).filter(Account.user_id == user_id).delete()
+    db.query(Category).filter(Category.user_id == user_id).delete()
     db.delete(current_user)
     db.commit()
 
