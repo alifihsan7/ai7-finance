@@ -413,14 +413,19 @@ def telegram_webapp_auth(payload: TelegramWebAppAuthRequest, db: Session = Depen
     # 1. Coba verifikasi dengan shared bot token
     validated = verify_telegram_init_data(payload.init_data, settings.TELEGRAM_BOT_TOKEN)
 
-    # 2. Jika gagal, cek apakah user menggunakan custom BYOB token
+    # 2. Jika gagal, parsing unverified payload HANYA untuk mencari kandidat user pemilik bot
     if not validated:
-        custom_users = db.query(User).filter(User.telegram_bot_token.isnot(None)).all()
-        for cu in custom_users:
-            if cu.telegram_bot_token:
-                validated = verify_telegram_init_data(payload.init_data, cu.telegram_bot_token)
-                if validated:
-                    break
+        try:
+            raw_pairs = dict(parse_qsl(payload.init_data, keep_blank_values=True))
+            if "user" in raw_pairs:
+                raw_user = json.loads(raw_pairs["user"])
+                candidate_tg_id = int(raw_user.get("id"))
+                target_user = db.query(User).filter(User.telegram_chat_id == candidate_tg_id).first()
+                # Custom bot token HANYA boleh memverifikasi akun pemilik bot itu sendiri
+                if target_user and target_user.telegram_bot_token:
+                    validated = verify_telegram_init_data(payload.init_data, target_user.telegram_bot_token)
+        except Exception:
+            validated = None
 
     if not validated or "user" not in validated:
         raise HTTPException(
