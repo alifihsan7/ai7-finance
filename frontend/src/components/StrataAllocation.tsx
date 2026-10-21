@@ -154,10 +154,13 @@ export function StrataAllocationBar({
               key={b.account}
               className={`border-l-2 ${color.border} pl-3 py-0.5 min-w-0`}
             >
-              <div className="text-white font-semibold text-xs sm:text-sm truncate">
-                {b.account} ({b.percentage.toFixed(1)}%)
+              <div className="text-white font-semibold text-xs sm:text-sm break-words leading-snug">
+                {b.account}{" "}
+                <span className="text-zinc-400 font-mono text-[11px] sm:text-xs font-normal whitespace-nowrap">
+                  ({b.percentage.toFixed(1)}%)
+                </span>
               </div>
-              <div className="text-zinc-400 font-mono text-[11px] sm:text-xs mt-0.5 truncate">
+              <div className="text-zinc-400 font-mono text-[11px] sm:text-xs mt-1 break-words leading-relaxed">
                 {effectiveSalary > 0
                   ? `${formatRupiah(allocatedAmt)} • ${shortPurpose}`
                   : `${b.percentage.toFixed(1)}% • ${shortPurpose}`}

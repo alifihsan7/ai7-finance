@@ -354,7 +354,7 @@ export function GoalsView({
                           )}
                         </div>
 
-                        <h3 className="font-bold text-base sm:text-lg text-white truncate tracking-tight">
+                        <h3 className="font-bold text-base sm:text-lg text-white line-clamp-2 tracking-tight leading-snug">
                           {goal.name}
                         </h3>
                       </div>
