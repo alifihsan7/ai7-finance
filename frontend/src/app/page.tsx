@@ -755,10 +755,10 @@ export default function FinanceDashboard() {
                 <button
                   key={item.name}
                   onClick={() => setActiveNav(item.name)}
-                  className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none ${
+                  className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                     isActive
                       ? "text-white bg-white/[0.08] border border-white/[0.1] shadow-xs font-semibold"
-                      : "text-zinc-400 hover:text-white hover:bg-white/[0.04] font-medium"
+                      : "text-zinc-400 hover:text-white border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
                   }`}
                 >
                   <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-zinc-500"}`} />
@@ -962,10 +962,10 @@ export default function FinanceDashboard() {
                         setActiveNav(item.name);
                         setIsMobileDrawerOpen(false);
                       }}
-                      className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none ${
+                      className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                         isActive
                           ? "text-white bg-white/[0.08] border border-white/[0.1] shadow-xs font-semibold"
-                          : "text-zinc-400 hover:text-white hover:bg-white/[0.04] font-medium"
+                          : "text-zinc-400 hover:text-white border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
                       }`}
                     >
                       <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-zinc-500"}`} />
