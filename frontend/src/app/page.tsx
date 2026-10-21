@@ -1261,25 +1261,15 @@ export default function FinanceDashboard() {
       {/* MAIN VIEWPORT */}
       <main ref={mainContentRef} className="flex-1 overflow-y-auto w-full">
         {/* Persistent Sticky Topbar Header */}
-        <header className="sticky top-0 z-20 bg-obsidian-panel/90 backdrop-blur-md border-b border-obsidian-border py-3.5 px-4 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-20 bg-obsidian-panel/90 backdrop-blur-md border-b border-obsidian-border py-2.5 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto w-full flex flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white shrink-0">
-                {activeNav === "Ringkasan" && "Ringkasan Portofolio & Alokasi"}
-                {activeNav === "Target Finansial" && "Target Finansial & Milestone Tabungan"}
-                {activeNav === "Alokasi Amplop" && "Alokasi Amplop & Plafon Belanja"}
-                {activeNav === "Rekening & Akun" && "Daftar Rekening & Saldo Akun"}
-                {activeNav === "Buku Transaksi" && "Buku Transaksi Lengkap (Ledger)"}
-                {activeNav === "Langganan & Tagihan" && "Pelacak Langganan & Tagihan Rutin"}
-                {activeNav === "Analisis & Tren" && "Analisis Tren & Burn-Rate Pengeluaran"}
-              </h1>
-              <div className="shrink-0">
-                <PeriodSelector
-                  key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
-                  currentPeriod={selectedPeriod}
-                  onSelectPeriod={(p) => setSelectedPeriod(p)}
-                />
-              </div>
+            {/* Pure Control Period Selector */}
+            <div className="flex items-center shrink-0">
+              <PeriodSelector
+                key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
+                currentPeriod={selectedPeriod}
+                onSelectPeriod={(p) => setSelectedPeriod(p)}
+              />
             </div>
 
             {/* Action Toolbar */}
@@ -1352,7 +1342,7 @@ export default function FinanceDashboard() {
               {activeNav === "Target Finansial" ? (
                 <button
                   onClick={() => setIsAddGoalModalOpen(true)}
-                  className="py-2 px-4 text-xs font-bold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                  className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Tambah Target</span>
@@ -1360,7 +1350,7 @@ export default function FinanceDashboard() {
               ) : activeNav === "Langganan & Tagihan" ? (
                 <button
                   onClick={() => setIsSubModalOpen(true)}
-                  className="py-2 px-4 text-xs font-bold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                  className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                   <span className="whitespace-nowrap">Tambah Tagihan</span>
@@ -1376,7 +1366,7 @@ export default function FinanceDashboard() {
                   </button>
                   <button
                     onClick={() => setIsModalOpen(true)}
-                    className="py-2 px-4 text-xs font-bold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                    className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                     <span className="whitespace-nowrap">Catat Transaksi</span>
@@ -1393,7 +1383,7 @@ export default function FinanceDashboard() {
                   </button>
                   <button
                     onClick={() => setIsModalOpen(true)}
-                    className="py-2 px-4 text-xs font-bold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                    className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                     <span className="whitespace-nowrap">Catat Transaksi</span>
@@ -1404,9 +1394,30 @@ export default function FinanceDashboard() {
           </div>
         </header>
 
-        <div className="p-3.5 sm:p-5 md:p-6 lg:p-8 xl:p-10 pb-24 md:pb-10 max-w-7xl 2xl:max-w-[1600px] mx-auto w-full space-y-5 sm:space-y-8">
-        
-        {/* Guest Mode Banner */}
+        <div className="p-3.5 sm:p-5 md:p-6 lg:p-8 xl:p-10 pb-24 md:pb-10 max-w-7xl 2xl:max-w-[1600px] mx-auto w-full space-y-6 sm:space-y-8">
+          {/* Page Title & Antislop Copy Header */}
+          <div className="mb-2 sm:mb-4">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              {activeNav === "Ringkasan" && "Ringkasan"}
+              {activeNav === "Target Finansial" && "Target Simpanan"}
+              {activeNav === "Alokasi Amplop" && "Amplop Belanja"}
+              {activeNav === "Rekening & Akun" && "Daftar Rekening"}
+              {activeNav === "Buku Transaksi" && "Buku Transaksi"}
+              {activeNav === "Langganan & Tagihan" && "Langganan Rutin"}
+              {activeNav === "Analisis & Tren" && "Tren Pengeluaran"}
+            </h1>
+            <p className="text-sm text-zinc-400 mt-1">
+              {activeNav === "Ringkasan" && "Total saldo kas, sisa batas belanja harian, dan distribusi rekening."}
+              {activeNav === "Target Finansial" && "Progres tabungan darurat, investasi, dan rencana beli barang."}
+              {activeNav === "Alokasi Amplop" && "Batas jatah makan, jajan, dan kebutuhan rutin saku Mandiri."}
+              {activeNav === "Rekening & Akun" && "Saldo fisik di Mandiri, Jago, Bibit, dan rekening lainnya."}
+              {activeNav === "Buku Transaksi" && "Riwayat keluar masuk uang, filter kategori, dan pencatatan kas."}
+              {activeNav === "Langganan & Tagihan" && "Daftar tagihan bulanan berulang dan jadwal jatuh tempo."}
+              {activeNav === "Analisis & Tren" && "Grafik laju belanja per siklus gajian dibanding batas aman."}
+            </p>
+          </div>
+
+          {/* Guest Mode Banner */}
         {!currentUser && (
           <div className="p-4 sm:p-5 rounded-3xl bg-obsidian-card border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
             <div className="flex items-center gap-3">
