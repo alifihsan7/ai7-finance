@@ -1532,12 +1532,21 @@ export default function FinanceDashboard() {
                       </div>
                     </div>
                     <div className="bg-black/10 border border-black/15 rounded-2xl p-3 min-w-0">
-                      <div className="text-[11px] text-slate-900/80 font-bold truncate uppercase tracking-wider">Rentang Waktu</div>
-                      <div className="text-sm sm:text-base font-black font-mono text-slate-950 mt-1 truncate whitespace-nowrap">
-                        {summary.safe_to_spend?.days_remaining === 0
-                          ? "Periode Berakhir"
-                          : `Hari ke-${summary.safe_to_spend?.day_of_cycle || 1} (sisa ${summary.safe_to_spend?.days_remaining || 0} hr)`}
-                      </div>
+                      <div className="text-[11px] text-slate-900/80 font-bold uppercase tracking-wider">Rentang Waktu</div>
+                      {summary.safe_to_spend?.days_remaining === 0 ? (
+                        <div className="text-sm sm:text-base font-black font-mono text-slate-950 mt-1">
+                          Periode Berakhir
+                        </div>
+                      ) : (
+                        <div className="mt-1">
+                          <div className="text-sm sm:text-base font-black font-mono text-slate-950 leading-tight">
+                            Hari {summary.safe_to_spend?.day_of_cycle || 1} / {summary.safe_to_spend?.cycle_days || 14}
+                          </div>
+                          <div className="text-[11px] font-semibold font-mono text-slate-900/70 mt-0.5">
+                            Sisa {summary.safe_to_spend?.days_remaining || 0} hari
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
