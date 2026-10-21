@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -17,20 +17,53 @@ import app.models.user
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)
 
+IS_PROD = os.getenv("ENVIRONMENT", "production").lower() == "production"
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=None if IS_PROD else f"{settings.API_V1_STR}/openapi.json",
+    docs_url=None if IS_PROD else "/docs",
+    redoc_url=None if IS_PROD else "/redoc",
 )
 
-# Enable CORS for local dev / frontend
+# Enable CORS with strict origin allowlist
+ALLOWED_ORIGINS = [
+    "https://ai7finance.alifihsan.my.id",
+]
+if not IS_PROD:
+    ALLOWED_ORIGINS.extend([
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+    ])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://telegram.org https://accounts.google.com; "
+        "frame-src 'self' https://accounts.google.com; "
+        "style-src 'self' 'unsafe-inline' https://accounts.google.com; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' data:; "
+        "connect-src 'self' https://accounts.google.com https://ai7finance.alifihsan.my.id;"
+    )
+    return response
 
 # Include API Router
 app.include_router(api_router, prefix=settings.API_V1_STR)
@@ -57,6 +90,11 @@ if os.path.exists(STATIC_DIR):
 
     @app.get("/{file_name:path}")
     def serve_static(file_name: str):
+        clean_name = file_name.strip("/")
+        # Block soft-404 fallthrough on unhandled API routes and prod docs
+        if clean_name.startswith("api") or (IS_PROD and clean_name in ("docs", "redoc", "openapi.json")):
+            return JSONResponse({"detail": "Not Found"}, status_code=404)
+
         target_path = os.path.realpath(os.path.join(STATIC_DIR, file_name))
         # Prevent directory traversal attacks
         try:

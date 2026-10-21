@@ -14,8 +14,17 @@ class SimpleRateLimiter:
         self.requests = defaultdict(list)
         self.lock = Lock()
 
+    def _get_real_ip(self, request: Request) -> str:
+        cf_ip = request.headers.get("CF-Connecting-IP")
+        if cf_ip:
+            return cf_ip.strip()
+        xf_ip = request.headers.get("X-Forwarded-For")
+        if xf_ip:
+            return xf_ip.split(",")[0].strip()
+        return request.client.host if request.client else "unknown"
+
     def check(self, request: Request, identifier: Optional[str] = None):
-        client_ip: str = identifier or (request.client.host if request.client else "unknown")
+        client_ip: str = identifier or self._get_real_ip(request)
         now = time.time()
         
         with self.lock:
