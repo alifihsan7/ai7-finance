@@ -1,16 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   TrendingUp,
   PiggyBank,
   Wallet,
-  Utensils,
-  Coffee,
-  Shirt,
-  Droplet,
-  Repeat,
-  ShoppingBag,
-  Zap,
-  Tag,
   ArrowUpRight,
   ArrowDownRight,
   ShieldCheck,
@@ -90,8 +82,6 @@ interface AnalyticsViewProps {
 }
 
 export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewProps) {
-  const [categoryFilter, setCategoryFilter] = useState<"all" | "major" | "minor">("all");
-
   const safe = summary.safe_to_spend;
   const cycleDays = safe?.cycle_days || 14;
   const dayOfCycle = safe?.day_of_cycle || 1;
@@ -120,88 +110,6 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
       return dateStr;
     }
   };
-
-  // Helper for category icons & styling
-  const getCategoryMeta = (cat: string) => {
-    const lower = cat.toLowerCase();
-    if (lower.includes("makan") || lower.includes("food")) {
-      return {
-        icon: Utensils,
-        color: "text-amberGold",
-        bg: "bg-amberGold/10",
-        border: "border-amberGold/30",
-        barColor: "bg-amberGold",
-      };
-    }
-    if (lower.includes("jajan") || lower.includes("kopi") || lower.includes("coffee")) {
-      return {
-        icon: Coffee,
-        color: "text-amber-400",
-        bg: "bg-amber-400/10",
-        border: "border-amber-400/30",
-        barColor: "bg-amber-400",
-      };
-    }
-    if (lower.includes("laundry") || lower.includes("cuci")) {
-      return {
-        icon: Shirt,
-        color: "text-sky-400",
-        bg: "bg-sky-400/10",
-        border: "border-sky-400/30",
-        barColor: "bg-sky-400",
-      };
-    }
-    if (lower.includes("galon") || lower.includes("air") || lower.includes("water")) {
-      return {
-        icon: Droplet,
-        color: "text-cyan-400",
-        bg: "bg-cyan-400/10",
-        border: "border-cyan-400/30",
-        barColor: "bg-cyan-400",
-      };
-    }
-    if (lower.includes("langganan") || lower.includes("sub") || lower.includes("tagihan")) {
-      return {
-        icon: Repeat,
-        color: "text-purple-400",
-        bg: "bg-purple-400/10",
-        border: "border-purple-400/30",
-        barColor: "bg-purple-400",
-      };
-    }
-    if (lower.includes("belanja") || lower.includes("shop")) {
-      return {
-        icon: ShoppingBag,
-        color: "text-pink-400",
-        bg: "bg-pink-400/10",
-        border: "border-pink-400/30",
-        barColor: "bg-pink-400",
-      };
-    }
-    if (lower.includes("listrik") || lower.includes("pulsa") || lower.includes("utilitas")) {
-      return {
-        icon: Zap,
-        color: "text-yellow-400",
-        bg: "bg-yellow-400/10",
-        border: "border-yellow-400/30",
-        barColor: "bg-yellow-400",
-      };
-    }
-    return {
-      icon: Tag,
-      color: "text-slateText-secondary",
-      bg: "bg-obsidian-panel",
-      border: "border-obsidian-border",
-      barColor: "bg-slate-400",
-    };
-  };
-
-  // Filtered categories
-  const filteredCategories = summary.categories.filter((c) => {
-    if (categoryFilter === "major") return c.percentage >= 15;
-    if (categoryFilter === "minor") return c.percentage < 15;
-    return true;
-  });
 
   // Find peak daily spend
   const peakDay = summary.daily_trend.reduce(
@@ -436,109 +344,7 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
         )}
       </div>
 
-      {/* 4. EXPENSE CATEGORY BREAKDOWN (Interactive Grid Cards) */}
-      <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <h3 className="font-bold text-base sm:text-lg text-white">
-              Distribusi Kategori Pengeluaran
-            </h3>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
-              Rincian pos biaya, porsi terhadap total belanja, dan frekuensi transaksi
-            </p>
-          </div>
-
-          {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 p-1 bg-obsidian-card rounded-full border border-white/[0.08] text-xs font-mono">
-            <button
-              onClick={() => setCategoryFilter("all")}
-              className={`px-3 py-1 rounded-full transition cursor-pointer ${
-                categoryFilter === "all"
-                  ? "bg-amberGold text-slate-950 font-bold shadow-sm"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Semua ({summary.categories.length})
-            </button>
-            <button
-              onClick={() => setCategoryFilter("major")}
-              className={`px-3 py-1 rounded-full transition cursor-pointer ${
-                categoryFilter === "major"
-                  ? "bg-amberGold text-slate-950 font-bold shadow-sm"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Utama (≥15%)
-            </button>
-            <button
-              onClick={() => setCategoryFilter("minor")}
-              className={`px-3 py-1 rounded-full transition cursor-pointer ${
-                categoryFilter === "minor"
-                  ? "bg-amberGold text-slate-950 font-bold shadow-sm"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Lainnya (&lt;15%)
-            </button>
-          </div>
-        </div>
-
-        {filteredCategories.length === 0 ? (
-          <div className="text-center py-8 text-xs sm:text-sm text-zinc-500 font-mono">
-            Tidak ada kategori yang sesuai dengan filter ini.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            {filteredCategories.map((c) => {
-              const meta = getCategoryMeta(c.category);
-              const Icon = meta.icon;
-              const avgSpend = c.count > 0 ? Math.round(c.total / c.count) : 0;
-
-              return (
-                <div
-                  key={c.category}
-                  className="bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-2xl p-4 sm:p-5 space-y-3 transition shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={`w-8 h-8 rounded-xl ${meta.bg} ${meta.border} border flex items-center justify-center ${meta.color} shrink-0`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="font-bold text-sm text-white block truncate">
-                          {c.category}
-                        </span>
-                        <span className="text-[11px] font-mono text-zinc-400 block">
-                          {c.count} transaksi • Rata-rata {formatRupiah(avgSpend)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="font-mono font-black text-sm text-white">
-                        {formatRupiah(c.total)}
-                      </div>
-                      <span className={`text-[11px] font-mono font-semibold ${meta.color}`}>
-                        {c.percentage.toFixed(1)}% dari total
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                      <div
-                        style={{ width: `${Math.min(100, c.percentage)}%` }}
-                        className={`h-full ${meta.barColor} transition-all duration-500 rounded-full`}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* 5. SMART FINANCIAL INSIGHTS & PACING ADVISORY */}
+      {/* 4. SMART FINANCIAL INSIGHTS & PACING ADVISORY */}
       <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-4 shadow-sm">
         <div className="flex items-center gap-2">
           <Lightbulb className="w-5 h-5 text-amberGold" />
