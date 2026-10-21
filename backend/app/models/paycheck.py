@@ -19,6 +19,14 @@ class PaycheckConfig(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
+    @property
+    def main_income_account(self) -> str:
+        return self.source_account
+
+    @main_income_account.setter
+    def main_income_account(self, value: str):
+        self.source_account = value
+
 class PaycheckBucket(Base):
     __tablename__ = "paycheck_buckets"
 

@@ -12,6 +12,12 @@ class AccountBase(BaseModel):
 class AccountCreate(AccountBase):
     pass
 
+class AccountUpdate(BaseModel):
+    name: Optional[str] = None
+    type: Optional[str] = None
+    tag: Optional[str] = None
+    color: Optional[str] = None
+
 class AccountResponse(AccountBase):
     id: int
     current_balance: int = 0
