@@ -43,10 +43,12 @@ import { AddAccountModal } from "@/components/AddAccountModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
 import { EditSubscriptionModal } from "@/components/EditSubscriptionModal";
+import { ManageCategoriesModal, CategoryItem } from "@/components/ManageCategoriesModal";
+import { AddTransactionModal } from "@/components/AddTransactionModal";
 import PaycheckModal from "@/components/PaycheckModal";
 import { AccountItem } from "@/components/AccountGrid";
 import { CustomModal } from "@/components/ui/CustomModal";
-import { CustomSelect } from "@/components/ui/CustomSelect";
+import { CustomSelect, SelectOption } from "@/components/ui/CustomSelect";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -57,6 +59,7 @@ import { AuthModal } from "@/components/AuthModal";
 import { OnboardingWizardModal } from "@/components/OnboardingWizardModal";
 import { UserProfileModal } from "@/components/UserProfileModal";
 import { authFetch, getAuthToken, setStoredUser, setAuthToken, UserProfile } from "@/lib/api";
+import { getCategoryColorDef } from "@/lib/categoryColors";
 
 interface MonthlySummary {
   period_type?: string;
@@ -231,13 +234,24 @@ export default function FinanceDashboard() {
   const [goalToDelete, setGoalToDelete] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Form state for new transaction
-  const [formType, setFormType] = useState<"expense" | "income">("expense");
-  const [formAmount, setFormAmount] = useState("");
-  const [formDesc, setFormDesc] = useState("");
-  const [formCategory, setFormCategory] = useState("Makanan & Minuman");
-  const [formAccount, setFormAccount] = useState("");
-  const [formDate, setFormDate] = useState(() => new Date().toISOString().split("T")[0]);
+  // Dynamic Categories & Manage Categories Modal state
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
+
+  // Dynamic category options derived from API categories
+  const dynamicTxCategoryOptions: SelectOption[] = useMemo(() => {
+    if (categories.length > 0) {
+      return categories.map((c) => {
+        const colorDef = getCategoryColorDef(c.color);
+        return {
+          value: c.name,
+          label: `${c.name} (${c.type === "expense" ? "Pengeluaran" : "Pemasukan"})`,
+          color: colorDef.dotClass,
+        };
+      });
+    }
+    return TX_CATEGORY_OPTIONS;
+  }, [categories]);
 
   // Form state for new subscription
   const [subName, setSubName] = useState("");
@@ -254,17 +268,14 @@ export default function FinanceDashboard() {
   const [paycheckConfig, setPaycheckConfig] = useState<{ id?: number; total_salary?: number; pocket_account?: string; source_account?: string; cycle_days?: number; cycle_type?: string } | null>(null);
   const [paycheckBuckets, setPaycheckBuckets] = useState<{ account: string; percentage: number; purpose?: string }[]>([]);
 
-  // Auto-sync formAccount & subAccount to available accounts
+  // Auto-sync subAccount to available accounts
   useEffect(() => {
     if (availableAccountNames.length > 0) {
-      if (!formAccount || !availableAccountNames.includes(formAccount)) {
-        setFormAccount(availableAccountNames[0]);
-      }
       if (!subAccount || !availableAccountNames.includes(subAccount)) {
         setSubAccount(availableAccountNames[0]);
       }
     }
-  }, [availableAccountNames, formAccount, subAccount]);
+  }, [availableAccountNames, subAccount]);
 
   // SPA Hash Routing sync & browser Back/Forward navigation listener
   useEffect(() => {
@@ -431,6 +442,7 @@ export default function FinanceDashboard() {
     const token = getAuthToken();
     if (!token) {
       setTransactions([]);
+      setCategories([]);
       setSummary({
         month: "",
         income: 0,
@@ -468,7 +480,7 @@ export default function FinanceDashboard() {
       if (selectedPeriod.start) txParams.append("start_date", selectedPeriod.start);
       if (selectedPeriod.end) txParams.append("end_date", selectedPeriod.end);
 
-      const [txRes, sumRes, subRes, accRes, goalRes, sessRes, paycheckCfgRes] = await Promise.all([
+      const [txRes, sumRes, subRes, accRes, goalRes, sessRes, paycheckCfgRes, catRes] = await Promise.all([
         authFetch(`/api/v1/transactions?${txParams.toString()}`),
         authFetch(`/api/v1/analytics/summary?${periodParams.toString()}`),
         authFetch("/api/v1/subscriptions"),
@@ -476,6 +488,7 @@ export default function FinanceDashboard() {
         authFetch("/api/v1/goals"),
         authFetch("/api/v1/paycheck/session/active"),
         authFetch("/api/v1/paycheck/config"),
+        authFetch("/api/v1/categories"),
       ]);
 
       if (txRes.ok) {
@@ -534,6 +547,13 @@ export default function FinanceDashboard() {
         const pData = await paycheckCfgRes.json();
         if (pData?.config) setPaycheckConfig(pData.config);
         if (Array.isArray(pData?.buckets)) setPaycheckBuckets(pData.buckets);
+      }
+
+      if (catRes.ok) {
+        const catData = await catRes.json();
+        if (Array.isArray(catData)) {
+          setCategories(catData);
+        }
       }
     } catch (err) {
       console.error("Fetch error:", err);
@@ -651,34 +671,6 @@ export default function FinanceDashboard() {
       tabunganLabels: tab.map((a) => a.name).join(", "),
     };
   }, [summary.accounts, customAccounts]);
-
-  const handleCreateTransaction = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const numAmount = parseInt(formAmount.replace(/\D/g, ""), 10);
-    if (!numAmount || !formDesc.trim()) return;
-
-    setIsModalOpen(false);
-    setFormAmount("");
-    setFormDesc("");
-
-    try {
-      await authFetch("/api/v1/transactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: formType,
-          amount: numAmount,
-          account: formAccount,
-          category: formCategory,
-          description: formDesc.trim(),
-          date: formDate || new Date().toISOString().split("T")[0],
-        }),
-      });
-      fetchData();
-    } catch (err) {
-      console.error("API Error:", err);
-    }
-  };
 
   const handleCreateSubscription = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1922,6 +1914,7 @@ export default function FinanceDashboard() {
             <TransactionLedgerView
               transactions={transactions}
               accounts={allAccountTabs}
+              categories={categories}
               currentCycle={
                 summary.start_date && summary.end_date
                   ? {
@@ -1935,6 +1928,7 @@ export default function FinanceDashboard() {
               onEdit={(tx) => setTxToEdit(tx)}
               onDelete={(tx) => setTxToDelete(tx)}
               onOpenAddModal={() => setIsModalOpen(true)}
+              onOpenManageCategories={() => setIsManageCategoriesOpen(true)}
               loading={loading}
             />
           </div>
@@ -1988,128 +1982,22 @@ export default function FinanceDashboard() {
       </main>
 
       {/* QUICK ADD TRANSACTION MODAL */}
-      <CustomModal
+      <AddTransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Catat Transaksi Baru"
-        subtitle="Catat transaksi untuk otomatis memperbarui saldo rekening & amplop anggaran"
-        icon={<Plus className="w-5 h-5" />}
-        accent={formType === "expense" ? "coral" : "mint"}
-        maxWidth="md"
-      >
-        <form onSubmit={handleCreateTransaction} className="space-y-4">
-          <div className="grid grid-cols-2 gap-2 bg-obsidian-panel p-1 rounded-2xl border border-white/[0.08]">
-            <button
-              type="button"
-              onClick={() => setFormType("expense")}
-              className={`py-2 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer ${
-                formType === "expense"
-                  ? "bg-coralFall text-slate-950 font-bold shadow-xs"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Pengeluaran
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormType("income")}
-              className={`py-2 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer ${
-                formType === "income"
-                  ? "bg-mintRise text-slate-950 font-bold shadow-xs"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Pemasukan
-            </button>
-          </div>
+        onSuccess={fetchData}
+        accountOptions={availableAccountOptions}
+        categories={categories}
+        defaultAccount={availableAccountNames[0] || "Rekening Utama"}
+      />
 
-          <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-              Nominal Transaksi
-            </label>
-            <CurrencyInput
-              value={formAmount}
-              onChange={setFormAmount}
-              placeholder="0"
-              required
-              accent={formType === "expense" ? "coral" : "mint"}
-              quickAmounts={
-                formType === "expense"
-                  ? [15000, 25000, 50000, 100000]
-                  : [500000, 1000000, 1500000]
-              }
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-              Keterangan
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Contoh: Nasi Padang + Es Teh"
-              value={formDesc}
-              onChange={(e) => setFormDesc(e.target.value)}
-              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-20">
-            <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                Akun Rekening
-              </label>
-              <CustomSelect
-                value={formAccount}
-                onChange={setFormAccount}
-                options={availableAccountOptions}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                Kategori
-              </label>
-              <CustomSelect
-                value={formCategory}
-                onChange={setFormCategory}
-                options={TX_CATEGORY_OPTIONS}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-              Tanggal Transaksi
-            </label>
-            <input
-              type="date"
-              required
-              value={formDate}
-              onChange={(e) => setFormDate(e.target.value)}
-              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
-            />
-          </div>
-
-          <div className="pt-3 flex justify-end gap-3 border-t border-white/[0.08] mt-5">
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className={`px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer ${
-                formType === "expense" ? "bg-coralFall" : "bg-mintRise"
-              }`}
-            >
-              Simpan Transaksi
-            </button>
-          </div>
-        </form>
-      </CustomModal>
+      {/* MANAGE CATEGORIES MODAL */}
+      <ManageCategoriesModal
+        isOpen={isManageCategoriesOpen}
+        onClose={() => setIsManageCategoriesOpen(false)}
+        onCategoriesUpdated={fetchData}
+        transactions={transactions}
+      />
 
       {/* QUICK ADD SUBSCRIPTION MODAL */}
       <CustomModal
@@ -2325,7 +2213,7 @@ export default function FinanceDashboard() {
         transaction={txToEdit}
         onSuccess={fetchData}
         accountOptions={availableAccountOptions}
-        categoryOptions={TX_CATEGORY_OPTIONS}
+        categoryOptions={dynamicTxCategoryOptions}
       />
 
       {/* Confirm Delete Transaction Modal */}

@@ -33,6 +33,13 @@ export function EditTransactionModal({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
+  const effectiveCategoryOptions = React.useMemo(() => {
+    if (category && !categoryOptions.some((opt) => opt.value === category)) {
+      return [{ value: category, label: category }, ...categoryOptions];
+    }
+    return categoryOptions;
+  }, [category, categoryOptions]);
+
   useEffect(() => {
     if (transaction) {
       setType(transaction.type === "income" ? "income" : "expense");
@@ -177,7 +184,7 @@ export function EditTransactionModal({
           <CustomSelect
             value={category}
             onChange={setCategory}
-            options={categoryOptions}
+            options={effectiveCategoryOptions}
           />
         </div>
 
