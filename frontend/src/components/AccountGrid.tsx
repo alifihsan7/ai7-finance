@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CreditCard, Trash2, AlertTriangle, X } from "lucide-react";
+import { CreditCard, Trash2, AlertTriangle, X, Edit2 } from "lucide-react";
 import { Skeleton } from "./ui/Skeleton";
 import { authFetch } from "@/lib/api";
 
@@ -29,6 +29,7 @@ interface AccountGridProps {
   formatRupiah: (val: number) => string;
   loading?: boolean;
   onAccountDeleted?: () => void;
+  onEditAccount?: (acc: AccountItem) => void;
 }
 
 const COLOR_MAP: Record<string, { text: string; bg: string; border: string }> = {
@@ -40,7 +41,7 @@ const COLOR_MAP: Record<string, { text: string; bg: string; border: string }> = 
   coralFall: { text: "text-coralFall", bg: "bg-coralFall", border: "border-coralFall/20" },
 };
 
-export function AccountGrid({ summary, customAccounts = [], formatRupiah, loading, onAccountDeleted }: AccountGridProps) {
+export function AccountGrid({ summary, customAccounts = [], formatRupiah, loading, onAccountDeleted, onEditAccount }: AccountGridProps) {
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -224,6 +225,29 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                   <span className="text-[10px] sm:text-[11px] font-mono font-medium px-2.5 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08] whitespace-nowrap">
                     {acc.badge}
                   </span>
+                  {acc.id && onEditAccount && (
+                    <button
+                      type="button"
+                      title={`Edit rekening ${acc.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const found = customAccounts.find((c) => c.id === acc.id);
+                        onEditAccount(
+                          found || {
+                            id: acc.id,
+                            name: acc.name,
+                            type: acc.type,
+                            tag: acc.tag,
+                            color: "amberGold",
+                            current_balance: acc.balance,
+                          }
+                        );
+                      }}
+                      className="p-1 rounded-full text-zinc-500 hover:text-amberGold hover:bg-amberGold/10 transition-colors cursor-pointer"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   {acc.id && onAccountDeleted && (
                     <button
                       type="button"

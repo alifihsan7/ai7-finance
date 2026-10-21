@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   Plus,
   Download,
@@ -40,6 +40,7 @@ import { AddGoalModal } from "@/components/AddGoalModal";
 import { EditGoalModal, GoalItem } from "@/components/EditGoalModal";
 import { TransferModal } from "@/components/TransferModal";
 import { AddAccountModal } from "@/components/AddAccountModal";
+import { EditAccountModal } from "@/components/EditAccountModal";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
 import { EditSubscriptionModal } from "@/components/EditSubscriptionModal";
 import PaycheckModal from "@/components/PaycheckModal";
@@ -169,7 +170,6 @@ const SLUG_TO_NAV: Record<string, string> = {
 
 export default function FinanceDashboard() {
   const googleSheetUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL;
-  const [activeTab, setActiveTab] = useState<string>("all");
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
   const mainContentRef = useRef<HTMLElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -177,6 +177,20 @@ export default function FinanceDashboard() {
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
+  const [accountToEdit, setAccountToEdit] = useState<AccountItem | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const showToast = useCallback((msg: string) => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setToastMessage(msg);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  }, []);
+
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isExportingCSV, setIsExportingCSV] = useState(false);
@@ -730,6 +744,17 @@ export default function FinanceDashboard() {
     }
   };
 
+  const handleAccountEditSuccess = (updatedAcc?: AccountItem) => {
+    if (updatedAcc) {
+      setCustomAccounts((prev) =>
+        prev.map((acc) => (acc.id === updatedAcc.id ? { ...acc, ...updatedAcc } : acc))
+      );
+    }
+    fetchData();
+    showToast(`Rekening ${updatedAcc?.name ? `"${updatedAcc.name}"` : ""} berhasil diperbarui!`);
+    setAccountToEdit(null);
+  };
+
   const handleConfirmDeleteTransaction = async () => {
     if (!txToDelete) return;
     try {
@@ -816,18 +841,6 @@ export default function FinanceDashboard() {
       setIsExportMenuOpen(false);
     }
   };
-
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((tx) => {
-      const txAcc = tx.account.toLowerCase();
-      const tab = activeTab.toLowerCase();
-      const matchTab =
-        activeTab === "all" ||
-        txAcc.includes(tab) ||
-        (tab.includes("jago") && txAcc.includes("jago"));
-      return matchTab;
-    });
-  }, [transactions, activeTab]);
 
   return (
     <div className="h-screen h-[100dvh] bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans overflow-hidden">
@@ -1365,11 +1378,11 @@ export default function FinanceDashboard() {
                     <span className="whitespace-nowrap font-semibold">Transfer Antar Akun</span>
                   </button>
                   <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsAddAccountModalOpen(true)}
                     className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                    <span className="whitespace-nowrap">Catat Transaksi</span>
+                    <span className="whitespace-nowrap">Tambah Akun</span>
                   </button>
                 </>
               ) : (
@@ -1621,7 +1634,7 @@ export default function FinanceDashboard() {
               formatRupiah={formatRupiah}
               loading={loading}
             />
-            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} onAccountDeleted={fetchData} />
+            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} onAccountDeleted={fetchData} onEditAccount={(acc) => setAccountToEdit(acc)} />
 
             {/* Quick Goals & Milestone Preview */}
             {loading ? (
@@ -1872,51 +1885,31 @@ export default function FinanceDashboard() {
         {/* ============================================================== */}
         {activeNav === "Rekening & Akun" && (
           <div className="space-y-8 animate-fadeIn">
-            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} onAccountDeleted={fetchData} />
+            <AccountGrid
+              summary={summary}
+              customAccounts={customAccounts}
+              formatRupiah={formatRupiah}
+              loading={loading}
+              onAccountDeleted={fetchData}
+              onEditAccount={(acc) => setAccountToEdit(acc)}
+            />
 
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-bold text-base text-white whitespace-nowrap">Histori Transaksi per Rekening</h3>
-                  <button
-                    onClick={() => setIsTransferModalOpen(true)}
-                    className="text-xs px-3 py-1.5 rounded-full bg-cyanHub/10 border border-cyanHub/25 text-cyanHub hover:bg-cyanHub/20 transition inline-flex items-center gap-1.5 font-mono shrink-0 whitespace-nowrap cursor-pointer"
-                  >
-                    <ArrowLeftRight className="w-3.5 h-3.5" />
-                    <span>Pindah Saldo</span>
-                  </button>
-                  <button
-                    onClick={() => setIsAddAccountModalOpen(true)}
-                    className="text-xs px-3 py-1.5 rounded-full bg-amberGold/10 border border-amberGold/25 text-amberGold hover:bg-amberGold/20 transition inline-flex items-center gap-1.5 font-mono font-semibold shrink-0 whitespace-nowrap cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Tambah Akun</span>
-                  </button>
-                </div>
-                <div className="flex gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-                  {allAccountTabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`text-xs px-3.5 py-1.5 rounded-full font-mono transition shrink-0 whitespace-nowrap cursor-pointer ${
-                        activeTab === tab.id
-                          ? "bg-amberGold text-slate-950 font-bold shadow-xs"
-                          : "bg-obsidian-card border border-white/[0.08] text-zinc-400 hover:text-white"
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
+            {/* Navigasi CTA ke Buku Transaksi */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-white/[0.08] bg-obsidian-panel/60 backdrop-blur-xs">
+              <div className="text-sm text-zinc-400">
+                Ingin melihat seluruh mutasi dan riwayat transaksi kas?
               </div>
-
-              <TransactionTable
-                transactions={filteredTransactions}
-                formatRupiah={formatRupiah}
-                onEdit={(tx) => setTxToEdit(tx)}
-                onDelete={(tx) => setTxToDelete(tx)}
-                loading={loading}
-              />
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveNav("Buku Transaksi");
+                  window.location.hash = "#/ledger";
+                }}
+                className="text-xs font-semibold text-amberGold hover:underline flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Buka Buku Transaksi</span>
+                <span aria-hidden="true">→</span>
+              </button>
             </div>
           </div>
         )}
@@ -2306,6 +2299,14 @@ export default function FinanceDashboard() {
         onSuccess={fetchData}
       />
 
+      {/* Edit Account Modal */}
+      <EditAccountModal
+        isOpen={accountToEdit !== null}
+        onClose={() => setAccountToEdit(null)}
+        account={accountToEdit}
+        onSuccess={handleAccountEditSuccess}
+      />
+
       {/* Confirm Delete Subscription Modal */}
       <ConfirmModal
         isOpen={subToDelete !== null}
@@ -2423,6 +2424,28 @@ export default function FinanceDashboard() {
             fetchData();
           }}
         />
+      )}
+
+      {/* Anti-Slop Toast Notification */}
+      {toastMessage && (
+        <aside
+          aria-live="polite"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#111217]/95 backdrop-blur-md border border-amberGold/30 text-white shadow-2xl shadow-black/80 animate-in fade-in slide-in-from-bottom-3 duration-200"
+        >
+          <div className="w-7 h-7 rounded-xl bg-amberGold/15 border border-amberGold/30 flex items-center justify-center text-amberGold shrink-0">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+          <div className="text-xs sm:text-sm font-medium text-zinc-100 pr-2">
+            {toastMessage}
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            className="text-zinc-500 hover:text-zinc-300 p-1 rounded-lg transition"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </aside>
       )}
     </div>
   );
