@@ -11,7 +11,7 @@ from app.models.account import Account
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.models.paycheck import PaycheckConfig, PaycheckBucket
-from app.schemas.account import AccountCreate, AccountResponse
+from app.schemas.account import AccountCreate, AccountResponse, AccountUpdate
 from app.api.deps import get_current_user
 from app.core.config import settings
 
@@ -132,6 +132,85 @@ def create_account(
         initial_balance=new_acc.initial_balance,
         current_balance=account_in.initial_balance,
         created_at=new_acc.created_at
+    )
+
+@router.put("/{account_id}", response_model=AccountResponse)
+def update_account(
+    account_id: int,
+    account_in: AccountUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    acc = db.query(Account).filter(Account.id == account_id, Account.user_id == current_user.id).first()
+    if not acc:
+        raise HTTPException(status_code=404, detail="Rekening tidak ditemukan")
+
+    old_name = acc.name
+    new_name = account_in.name.strip() if account_in.name is not None else old_name
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Nama rekening tidak boleh kosong")
+
+    # Cek duplikasi jika nama berubah
+    if new_name != old_name:
+        if new_name.lower() != old_name.lower():
+            existing = db.query(Account).filter(
+                Account.user_id == current_user.id,
+                Account.id != account_id,
+                func.lower(Account.name) == new_name.lower()
+            ).first()
+            if existing:
+                raise HTTPException(status_code=400, detail=f"Rekening '{new_name}' sudah terdaftar")
+        
+        # Cascade update nama akun pada transaksi terkait
+        db.query(Transaction).filter(
+            Transaction.user_id == current_user.id,
+            Transaction.account == old_name
+        ).update({Transaction.account: new_name}, synchronize_session=False)
+
+        # Update PaycheckConfig jika menggunakan akun lama
+        cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
+        if cfg:
+            if cfg.main_income_account == old_name:
+                cfg.main_income_account = new_name
+            if cfg.pocket_account == old_name:
+                cfg.pocket_account = new_name
+            db.query(PaycheckBucket).filter(
+                PaycheckBucket.config_id == cfg.id,
+                PaycheckBucket.account == old_name
+            ).update({PaycheckBucket.account: new_name}, synchronize_session=False)
+        
+        acc.name = new_name
+
+    if account_in.type is not None:
+        acc.type = account_in.type
+    if account_in.tag is not None:
+        acc.tag = account_in.tag
+    if account_in.color is not None:
+        acc.color = account_in.color
+
+    db.commit()
+    db.refresh(acc)
+
+    # Hitung saldo riil
+    bal = db.query(
+        func.sum(
+            case(
+                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
+                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                else_=0
+            )
+        )
+    ).filter(Transaction.user_id == current_user.id, Transaction.account == acc.name).scalar() or 0
+
+    return AccountResponse(
+        id=acc.id,
+        name=acc.name,
+        type=acc.type,
+        tag=acc.tag,
+        color=acc.color,
+        initial_balance=acc.initial_balance,
+        current_balance=int(bal),
+        created_at=acc.created_at
     )
 
 @router.delete("/{account_id}")
