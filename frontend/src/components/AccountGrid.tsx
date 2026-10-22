@@ -215,9 +215,9 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                     <span className="truncate cursor-default">{acc.name}</span>
                   </div>
                   {/* Tooltip Hover Nama Akun */}
-                  <div className="pointer-events-none absolute left-0 bottom-full mb-1.5 z-40 hidden group-hover/name:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111217]/95 backdrop-blur-md border border-white/[0.12] text-white text-xs shadow-2xl shadow-black/80 whitespace-nowrap max-w-[280px] animate-in fade-in zoom-in-95 duration-150">
+                  <div className="pointer-events-none absolute left-0 bottom-full mb-1.5 z-40 hidden group-hover/name:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-obsidian-card/95 backdrop-blur-md border border-obsidian-border text-slateText-primary text-xs shadow-2xl whitespace-nowrap max-w-[280px] animate-in fade-in zoom-in-95 duration-150">
                     <div className="w-1.5 h-1.5 rounded-full bg-amberGold shrink-0" />
-                    <span className="font-semibold text-white">{acc.name}</span>
+                    <span className="font-semibold text-slateText-primary">{acc.name}</span>
                   </div>
                 </div>
 
@@ -271,9 +271,9 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 </div>
                 {/* Tooltip Hover Deskripsi Ber-Style */}
                 {acc.tag && (
-                  <div className="pointer-events-none absolute left-0 top-full mt-1.5 z-40 hidden group-hover/tag:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111217]/95 backdrop-blur-md border border-white/[0.12] text-white text-xs shadow-2xl shadow-black/80 w-max max-w-[280px] break-words animate-in fade-in zoom-in-95 duration-150">
+                  <div className="pointer-events-none absolute left-0 top-full mt-1.5 z-40 hidden group-hover/tag:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-obsidian-card/95 backdrop-blur-md border border-obsidian-border text-slateText-primary text-xs shadow-2xl w-max max-w-[280px] break-words animate-in fade-in zoom-in-95 duration-150">
                     <div className="w-1.5 h-1.5 rounded-full bg-amberGold shrink-0" />
-                    <span className="font-medium text-zinc-200 leading-snug">{acc.tag}</span>
+                    <span className="font-medium text-slateText-secondary leading-snug">{acc.tag}</span>
                   </div>
                 )}
               </div>

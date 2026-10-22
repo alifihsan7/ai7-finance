@@ -58,6 +58,7 @@ import { PeriodSelector, PeriodOption } from "@/components/PeriodSelector";
 import { AnalyticsView } from "@/components/AnalyticsView";
 import { AuthModal } from "@/components/AuthModal";
 import { OnboardingWizardModal } from "@/components/OnboardingWizardModal";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserProfileModal } from "@/components/UserProfileModal";
 import { authFetch, getAuthToken, setStoredUser, setAuthToken, UserProfile } from "@/lib/api";
 import { getCategoryColorDef } from "@/lib/categoryColors";
@@ -996,14 +997,15 @@ export default function FinanceDashboard() {
           <button
             onClick={fetchData}
             title="Refresh Data"
-            className="p-2 text-zinc-400 hover:text-white bg-obsidian-card border border-white/[0.08] rounded-full transition active:scale-95"
+            className="p-2 text-zinc-400 hover:text-white bg-obsidian-card border border-white/[0.08] rounded-full transition active:scale-95 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-amberGold" : ""}`} />
           </button>
+          <ThemeToggle size="sm" />
           <button
             onClick={() => setIsPaycheckModalOpen(true)}
             title="Gajian Masuk"
-            className="px-3 py-1.5 bg-mintRise/15 text-mintRise border border-mintRise/30 font-semibold text-[11px] rounded-xl transition shadow-xs active:scale-95 flex items-center gap-1"
+            className="px-2.5 sm:px-3 py-1.5 bg-mintRise/15 text-mintRise border border-mintRise/30 font-semibold text-[11px] rounded-xl transition shadow-xs active:scale-95 flex items-center gap-1 cursor-pointer"
           >
             <ArrowDownLeft className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap">Gajian</span>
@@ -1017,14 +1019,14 @@ export default function FinanceDashboard() {
               }
             }}
             title={currentUser ? currentUser.full_name : "Masuk / Akun"}
-            className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 active:scale-95"
+            className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 active:scale-95 cursor-pointer"
           >
             {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
           </button>
           <button
             onClick={() => setIsMobileDrawerOpen(true)}
             title="Buka Menu"
-            className="p-2 text-zinc-400 hover:text-white bg-obsidian-card border border-white/[0.08] rounded-full transition active:scale-95"
+            className="p-2 text-zinc-400 hover:text-white bg-obsidian-card border border-white/[0.08] rounded-full transition active:scale-95 cursor-pointer"
           >
             <Menu className="w-4 h-4" />
           </button>
@@ -1057,12 +1059,15 @@ export default function FinanceDashboard() {
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => setIsMobileDrawerOpen(false)}
-                  className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-obsidian-card transition"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <ThemeToggle size="sm" />
+                  <button
+                    onClick={() => setIsMobileDrawerOpen(false)}
+                    className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-obsidian-card transition cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Navigation Items (Clean Obsidian Slate Minimalist) */}
@@ -1272,13 +1277,14 @@ export default function FinanceDashboard() {
         {/* Persistent Sticky Topbar Header */}
         <header className="sticky top-0 z-20 bg-obsidian-panel/90 backdrop-blur-md border-b border-obsidian-border py-2.5 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto w-full flex flex-row items-center justify-between gap-4">
-            {/* Pure Control Period Selector */}
-            <div className="flex items-center shrink-0">
+            {/* Pure Control Period Selector & Theme Switch */}
+            <div className="flex items-center gap-2.5 shrink-0">
               <PeriodSelector
                 key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
                 currentPeriod={selectedPeriod}
                 onSelectPeriod={(p) => setSelectedPeriod(p)}
               />
+              <ThemeToggle />
             </div>
 
             {/* Action Toolbar */}
@@ -2329,7 +2335,7 @@ export default function FinanceDashboard() {
       {toastMessage && (
         <aside
           aria-live="polite"
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#111217]/95 backdrop-blur-md border border-amberGold/30 text-white shadow-2xl shadow-black/80 animate-in fade-in slide-in-from-bottom-3 duration-200"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-obsidian-card/95 backdrop-blur-md border border-amberGold/30 text-slateText-primary shadow-2xl animate-in fade-in slide-in-from-bottom-3 duration-200"
         >
           <div className="w-7 h-7 rounded-xl bg-amberGold/15 border border-amberGold/30 flex items-center justify-center text-amberGold shrink-0">
             <CheckCircle2 className="w-4 h-4" />
