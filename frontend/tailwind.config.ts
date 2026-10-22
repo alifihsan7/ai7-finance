@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,23 +11,23 @@ const config: Config = {
     extend: {
       colors: {
         obsidian: {
-          bg: "#090A0D",
-          panel: "#111217",
-          card: "#16171F",
-          hover: "#1E202B",
-          border: "#242630",
-          borderStrong: "#343746",
+          bg: "rgb(var(--obsidian-bg-rgb) / <alpha-value>)",
+          panel: "rgb(var(--obsidian-panel-rgb) / <alpha-value>)",
+          card: "rgb(var(--obsidian-card-rgb) / <alpha-value>)",
+          hover: "rgb(var(--obsidian-hover-rgb) / <alpha-value>)",
+          border: "rgb(var(--obsidian-border-rgb) / <alpha-value>)",
+          borderStrong: "rgb(var(--obsidian-border-strong-rgb) / <alpha-value>)",
         },
         slateText: {
-          primary: "#FFFFFF",
-          secondary: "#D4D4D8",
-          muted: "#71717A",
+          primary: "rgb(var(--slate-primary-rgb) / <alpha-value>)",
+          secondary: "rgb(var(--slate-secondary-rgb) / <alpha-value>)",
+          muted: "rgb(var(--slate-muted-rgb) / <alpha-value>)",
         },
-        amberGold: "#FACC15",
-        mintRise: "#2ED8B6",
-        coralFall: "#FF6B4A",
-        cyanHub: "#38BDF8",
-        purpleLock: "#A78BFA",
+        amberGold: "rgb(var(--amber-gold-rgb) / <alpha-value>)",
+        mintRise: "rgb(var(--mint-rise-rgb) / <alpha-value>)",
+        coralFall: "rgb(var(--coral-fall-rgb) / <alpha-value>)",
+        cyanHub: "rgb(var(--cyan-hub-rgb) / <alpha-value>)",
+        purpleLock: "rgb(var(--purple-lock-rgb) / <alpha-value>)",
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", "ui-sans-serif", "system-ui", "sans-serif"],

@@ -120,9 +120,9 @@ export function MandiriEnvelopes({
                       {env.title}
                     </span>
                     {/* Tooltip Hover Amplop */}
-                    <div className="pointer-events-none absolute left-0 top-full mt-1 z-40 hidden group-hover/env:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111217]/95 backdrop-blur-md border border-white/[0.12] text-white text-xs shadow-2xl shadow-black/80 w-max max-w-[260px] animate-in fade-in zoom-in-95 duration-150">
+                    <div className="pointer-events-none absolute left-0 top-full mt-1 z-40 hidden group-hover/env:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-obsidian-card/95 backdrop-blur-md border border-obsidian-border text-slateText-primary text-xs shadow-2xl w-max max-w-[260px] animate-in fade-in zoom-in-95 duration-150">
                       <div className="w-1.5 h-1.5 rounded-full bg-amberGold shrink-0" />
-                      <span className="font-semibold text-white">{env.title}</span>
+                      <span className="font-semibold text-slateText-primary">{env.title}</span>
                     </div>
                   </div>
                   <span

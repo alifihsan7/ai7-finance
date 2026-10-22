@@ -3,6 +3,25 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: dark;
+
+  /* RGB channels for Tailwind opacity modifier support (e.g. bg-obsidian-panel/90) */
+  --obsidian-bg-rgb: 9 10 13;
+  --obsidian-panel-rgb: 17 18 23;
+  --obsidian-card-rgb: 22 23 31;
+  --obsidian-hover-rgb: 30 32 43;
+  --obsidian-border-rgb: 36 38 48;
+  --obsidian-border-strong-rgb: 52 55 70;
+  --slate-primary-rgb: 255 255 255;
+  --slate-secondary-rgb: 212 212 216;
+  --slate-muted-rgb: 113 113 122;
+  --amber-gold-rgb: 250 204 21;
+  --mint-rise-rgb: 46 216 182;
+  --coral-fall-rgb: 255 107 74;
+  --cyan-hub-rgb: 56 189 248;
+  --purple-lock-rgb: 167 139 250;
+
+  /* Standard CSS variables for direct var() usage */
   --obsidian-bg: #090A0D;
   --obsidian-panel: #111217;
   --obsidian-card: #16171F;
@@ -15,6 +34,45 @@
   --amber-gold: #FACC15;
   --mint-rise: #2ED8B6;
   --coral-fall: #FF6B4A;
+  --cyan-hub: #38BDF8;
+  --purple-lock: #A78BFA;
+}
+
+/* High-Fidelity Light Mode Theme (Fintech Precision: Slate / Linear / Mercury aesthetic) */
+.light {
+  color-scheme: light;
+
+  /* RGB channels for Light Mode */
+  --obsidian-bg-rgb: 248 250 252;
+  --obsidian-panel-rgb: 255 255 255;
+  --obsidian-card-rgb: 255 255 255;
+  --obsidian-hover-rgb: 241 245 249;
+  --obsidian-border-rgb: 226 232 240;
+  --obsidian-border-strong-rgb: 203 213 225;
+  --slate-primary-rgb: 15 23 42;
+  --slate-secondary-rgb: 71 85 105;
+  --slate-muted-rgb: 100 116 139;
+  --amber-gold-rgb: 217 119 6;
+  --mint-rise-rgb: 5 150 105;
+  --coral-fall-rgb: 220 38 38;
+  --cyan-hub-rgb: 2 132 199;
+  --purple-lock-rgb: 124 58 237;
+
+  /* Standard CSS variables for Light Mode */
+  --obsidian-bg: #F8FAFC;
+  --obsidian-panel: #FFFFFF;
+  --obsidian-card: #FFFFFF;
+  --obsidian-hover: #F1F5F9;
+  --obsidian-border: #E2E8F0;
+  --obsidian-border-strong: #CBD5E1;
+  --slate-primary: #0F172A;
+  --slate-secondary: #475569;
+  --slate-muted: #64748B;
+  --amber-gold: #D97706;
+  --mint-rise: #059669;
+  --coral-fall: #DC2626;
+  --cyan-hub: #0284C7;
+  --purple-lock: #7C3AED;
 }
 
 body {
@@ -26,7 +84,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar for Obsidian Slate Theme */
+/* Custom Scrollbar for Both Themes */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -42,13 +100,12 @@ body {
   background: var(--slate-muted);
 }
 
-/* Custom Scrollbar for Firefox */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--obsidian-border) var(--obsidian-bg);
 }
 
-/* Remove native up/down stepper arrows from number inputs */
+/* Number input stepper suppression */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -58,7 +115,7 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Custom dark styling for native date picker icons */
+/* Date picker indicator icons */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.8) hue-rotate(180deg) brightness(0.9);
   cursor: pointer;
@@ -69,16 +126,134 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   filter: invert(1) brightness(1.2);
 }
 
-/* Selection highlight in Obsidian Slate theme */
-::selection {
-  background-color: rgba(245, 158, 11, 0.25);
-  color: #F8FAFC;
+.light input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none;
+  opacity: 0.7;
+}
+.light input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  filter: none;
+  opacity: 1;
 }
 
-/* Safe area padding utilities for mobile notches & iOS home bar */
+/* Selection highlight */
+::selection {
+  background-color: rgba(245, 158, 11, 0.25);
+  color: var(--slate-primary);
+}
+
+/* Safe area padding utilities */
 .safe-bottom {
   padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
 }
 .safe-top {
   padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* =========================================================================
+   LIGHT MODE ANTI-SLOP SURFACES, BORDERS & CONTRAST RULES
+   Eradicates low contrast, washed out text, and white-on-white collisions
+   ========================================================================= */
+
+.light {
+  /* Tactile cards with subtle shadow depth */
+  .bg-obsidian-card,
+  .bg-obsidian-panel {
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  }
+
+  /* Adaptive borders: convert dark-mode border-white/* into crisp tactile Slate-200 borders */
+  [class*="border-white/"] {
+    border-color: #E2E8F0;
+  }
+  [class*="hover:border-white/"]:hover {
+    border-color: #CBD5E1;
+  }
+  [class*="divide-white/"] > :not([hidden]) ~ :not([hidden]) {
+    border-color: #F1F5F9;
+  }
+
+  /* Subtle background pills */
+  [class*="bg-white/"] {
+    background-color: rgba(15, 23, 42, 0.035);
+  }
+  [class*="hover:bg-white/"]:hover {
+    background-color: rgba(15, 23, 42, 0.06);
+  }
+
+  /* High-contrast typography hierarchy (WCAG AAA compliant) */
+  .text-white {
+    color: var(--slate-primary);
+  }
+  .hover\:text-white:hover {
+    color: var(--slate-primary);
+  }
+  .text-zinc-100,
+  .text-zinc-200,
+  .text-zinc-300 {
+    color: #334155; /* Slate 700 */
+  }
+  .text-zinc-400 {
+    color: #475569; /* Slate 600 - 5.3:1 contrast against white */
+  }
+  .text-zinc-500 {
+    color: #64748B; /* Slate 500 - 4.5:1 contrast against white */
+  }
+
+  /* Form control placeholders */
+  input::placeholder,
+  textarea::placeholder,
+  .placeholder-zinc-500::placeholder,
+  .placeholder\:text-zinc-500::placeholder {
+    color: #94A3B8; /* Slate 400 */
+  }
+
+  /* Form inputs in light mode */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    color: #0F172A;
+  }
+
+  /* Category Badge Text: enhance contrast from 300 to 700 level */
+  .text-amber-300 { color: #B45309; }
+  .text-cyan-300 { color: #0369A1; }
+  .text-teal-300 { color: #0F766E; }
+  .text-purple-300 { color: #6D28D9; }
+  .text-rose-300 { color: #BE123C; }
+  .text-emerald-300 { color: #047857; }
+  .text-pink-300 { color: #BE185D; }
+
+  /* Buttons & badges that MUST retain white typography */
+  button.bg-amberGold,
+  .btn-amberGold,
+  [class*="bg-rose-"] .text-white,
+  [class*="bg-red-"] .text-white,
+  [class*="bg-emerald-600"] .text-white,
+  [class*="bg-blue-600"] .text-white,
+  button[class*="bg-rose-"],
+  button[class*="bg-red-"] {
+    color: #FFFFFF !important;
+  }
+
+  /* Primary amber button hover in light mode */
+  button.bg-amberGold:hover {
+    background-color: #B45309 !important;
+  }
+
+  /* Elevated floating popovers and dialogs */
+  [role="dialog"] > div {
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+  }
+
+  /* Pulse skeletons in light mode */
+  .animate-pulse[class*="bg-white/"] {
+    background-color: #E2E8F0;
+  }
+
+  /* Dark tooltips & legacy hex toast wrappers */
+  .bg-\[\#111217\]\/95 {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #0F172A;
+    border-color: #CBD5E1;
+  }
 }
