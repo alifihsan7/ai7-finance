@@ -186,3 +186,135 @@ def test_parser_edge_cases():
     assert multi[0]["account"] == "BRI 1"
     assert multi[1]["amount"] == 25000
     assert multi[1]["account"] == "Mandiri"
+
+
+def test_decimal_comma_nominals():
+    """Kasus desimal berkoma (16,5k, 1,5jt, 2,5jt) terkonversi dengan presisi nominal yang tepat."""
+    res16k = parse_transaction("kopi 16,5k")
+    assert res16k["success"] is True
+    assert res16k["amount"] == 16500
+    assert res16k["description"] == "Kopi"
+
+    res1_5jt = parse_transaction("invest 1,5jt mandiri")
+    assert res1_5jt["success"] is True
+    assert res1_5jt["amount"] == 1500000
+    assert res1_5jt["account"] == "Mandiri"
+
+    res2_5jt = parse_transaction("gaji 2,5jt bri 1")
+    assert res2_5jt["success"] is True
+    assert res2_5jt["amount"] == 2500000
+    assert res2_5jt["account"] == "BRI 1"
+
+
+def test_split_raw_into_items_decimal_safety():
+    """split_raw_into_items tidak memecah koma desimal menjadi 2 item terpisah."""
+    from app.core.parser import split_raw_into_items
+
+    # Single item with decimal comma must remain 1 item
+    items_single = split_raw_into_items("kopi 16,5k")
+    assert len(items_single) == 1
+    assert items_single[0] == "kopi 16,5k"
+
+    items_single_jt = split_raw_into_items("invest 1,5jt")
+    assert len(items_single_jt) == 1
+    assert items_single_jt[0] == "invest 1,5jt"
+
+    # Multiple items separated by list comma must split correctly without corrupting decimals
+    items_multi = split_raw_into_items("kopi 16,5k, roti 10k")
+    assert len(items_multi) == 2
+    assert items_multi[0] == "kopi 16,5k"
+    assert items_multi[1] == "roti 10k"
+
+    items_multi_parsed = parse_multi_transactions("kopi 16,5k, roti 10k")
+    assert len(items_multi_parsed) == 2
+    assert items_multi_parsed[0]["amount"] == 16500
+    assert items_multi_parsed[1]["amount"] == 10000
+
+
+def test_multigroup_thousands_separator():
+    """Pemisah ribuan berulang (25.000.000, 1.500.000) terurai penuh tanpa mencemari deskripsi."""
+    res_motor = parse_transaction("beli motor 25.000.000 mandiri")
+    assert res_motor["success"] is True
+    assert res_motor["amount"] == 25000000
+    assert res_motor["account"] == "Mandiri"
+    assert "000" not in res_motor["description"]
+    assert res_motor["description"] == "Beli motor"
+
+    res_1_5m = parse_transaction("beli laptop 1.500.000 bca")
+    assert res_1_5m["success"] is True
+    assert res_1_5m["amount"] == 1500000
+    assert res_1_5m["account"] == "BCA"
+    assert res_1_5m["description"] == "Beli laptop"
+
+    # With rp prefix
+    res_rp = parse_transaction("rp 25.000.000 beli tanah mandiri")
+    assert res_rp["success"] is True
+    assert res_rp["amount"] == 25000000
+    assert res_rp["description"] == "Beli tanah"
+
+
+def test_fraction_without_leading_zero():
+    """Pecahan desimal tanpa leading zero (.5k, ,5k, .5jt) terkonversi akurat."""
+    res_half_k = parse_transaction("permen .5k cash")
+    assert res_half_k["success"] is True
+    assert res_half_k["amount"] == 500
+    assert res_half_k["account"] == "Cash"
+    assert res_half_k["description"] == "Permen"
+
+    res_comma_k = parse_transaction("permen ,5k")
+    assert res_comma_k["success"] is True
+    assert res_comma_k["amount"] == 500
+
+    res_half_jt = parse_transaction("invest .5jt mandiri")
+    assert res_half_jt["success"] is True
+    assert res_half_jt["amount"] == 500000
+    assert res_half_jt["account"] == "Mandiri"
+
+
+def test_account_entity_collision_handling():
+    """Tabrakan nama entitas akun pada komoditas/deskripsi barang ditangani deterministik."""
+    # 'bibit cabe 15k tunai' -> account Cash, description Bibit cabe
+    res_bibit_tunai = parse_transaction("bibit cabe 15k tunai")
+    assert res_bibit_tunai["success"] is True
+    assert res_bibit_tunai["amount"] == 15000
+    assert res_bibit_tunai["account"] == "Cash"
+    assert res_bibit_tunai["description"] == "Bibit cabe"
+    assert res_bibit_tunai["category"] != "Investasi & Tabungan"
+
+    # 'bibit cabe 15k' -> fallback Mandiri, NOT Bibit account
+    res_bibit_fallback = parse_transaction("bibit cabe 15k")
+    assert res_bibit_fallback["success"] is True
+    assert res_bibit_fallback["amount"] == 15000
+    assert res_bibit_fallback["account"] == "Mandiri"
+    assert res_bibit_fallback["description"] == "Bibit cabe"
+    assert res_bibit_fallback["category"] != "Investasi & Tabungan"
+
+    # 'ayam jago 30k' -> fallback Mandiri, NOT Bank Jago account
+    res_jago = parse_transaction("ayam jago 30k")
+    assert res_jago["success"] is True
+    assert res_jago["amount"] == 30000
+    assert res_jago["account"] == "Mandiri"
+    assert res_jago["description"] == "Ayam jago"
+    assert res_jago["category"] == "Makanan & Minuman"
+
+    # 'ayam jago 30k tunai' -> account Cash
+    res_jago_tunai = parse_transaction("ayam jago 30k tunai")
+    assert res_jago_tunai["success"] is True
+    assert res_jago_tunai["amount"] == 30000
+    assert res_jago_tunai["account"] == "Cash"
+    assert res_jago_tunai["description"] == "Ayam jago"
+    assert res_jago_tunai["category"] == "Makanan & Minuman"
+
+    # 'ayam jago 30k jago' -> account Bank Jago
+    res_jago_acc = parse_transaction("ayam jago 30k jago")
+    assert res_jago_acc["success"] is True
+    assert res_jago_acc["amount"] == 30000
+    assert res_jago_acc["account"] == "Bank Jago"
+    assert res_jago_acc["description"] == "Ayam jago"
+
+    # 'dana darurat 500k bri 1' -> account BRI 1, NOT DANA
+    res_dana_darurat = parse_transaction("dana darurat 500k bri 1")
+    assert res_dana_darurat["success"] is True
+    assert res_dana_darurat["amount"] == 500000
+    assert res_dana_darurat["account"] == "BRI 1"
+    assert res_dana_darurat["description"] == "Dana darurat"

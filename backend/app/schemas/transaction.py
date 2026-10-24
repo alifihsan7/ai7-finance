@@ -1,21 +1,21 @@
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import date as dt_date, datetime as dt_datetime
 from pydantic import BaseModel, Field
 
 class TransactionBase(BaseModel):
-    type: str
-    amount: int
+    type: Literal["expense", "income", "transfer_out", "transfer_in"]
+    amount: int = Field(..., gt=0, le=9_000_000_000_000_000, description="Nominal transaksi wajib > 0 dan <= 9.000.000.000.000.000")
     account: str
     category: str
     description: str
     date: Optional[dt_date] = None
 
 class TransactionCreate(TransactionBase):
-    amount: int = Field(..., gt=0, description="Nominal transaksi wajib lebih besar dari 0")
+    pass
 
 class TransactionUpdate(BaseModel):
-    type: Optional[str] = None
-    amount: Optional[int] = Field(None, gt=0, description="Nominal transaksi wajib lebih besar dari 0")
+    type: Optional[Literal["expense", "income", "transfer_out", "transfer_in"]] = None
+    amount: Optional[int] = Field(None, gt=0, le=9_000_000_000_000_000, description="Nominal transaksi wajib > 0 dan <= 9.000.000.000.000.000")
     account: Optional[str] = None
     category: Optional[str] = None
     description: Optional[str] = None
@@ -87,7 +87,7 @@ class MonthlySummary(BaseModel):
     safe_to_spend: Optional[SafeToSpendInfo] = None
 
 class PaycheckRequest(BaseModel):
-    total_amount: int = 1500000
+    total_amount: int = Field(1500000, gt=0, le=9_000_000_000_000_000, description="Nominal alokasi gajian wajib > 0 dan <= 9.000.000.000.000.000")
     date: Optional[dt_date] = None
     note: Optional[str] = "Alokasi Gajian Siklus"
 
@@ -108,7 +108,7 @@ class PaycheckResponse(BaseModel):
 class TransferCreate(BaseModel):
     from_account: str
     to_account: str
-    amount: int = Field(..., gt=0, description="Nominal transfer wajib lebih besar dari 0")
+    amount: int = Field(..., gt=0, le=9_000_000_000_000_000, description="Nominal transfer wajib > 0 dan <= 9.000.000.000.000.000")
     description: Optional[str] = "Transfer Antar Rekening"
     date: Optional[dt_date] = None
 

@@ -62,7 +62,7 @@ export function CurrencyInput({
   return (
     <div className={`space-y-2 ${className}`}>
       <div
-        className={`relative flex items-stretch rounded-2xl overflow-hidden border border-white/[0.08] bg-obsidian-panel transition-all ${currentAccent.focus}`}
+        className={`relative flex items-stretch min-h-[44px] rounded-2xl overflow-hidden border border-white/[0.08] bg-obsidian-panel transition-all ${currentAccent.focus}`}
       >
         {/* Rp Prefix Badge */}
         <div
@@ -80,7 +80,7 @@ export function CurrencyInput({
           value={formatDisplay(value)}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className="w-full bg-transparent px-3.5 py-2.5 text-slateText-primary font-mono font-semibold text-base sm:text-lg focus:outline-none placeholder:text-slateText-muted placeholder:font-normal"
+          className="w-full bg-transparent px-3.5 py-2.5 text-slateText-primary font-mono font-semibold text-base sm:text-lg focus:outline-none placeholder:text-zinc-400 placeholder:font-normal"
         />
       </div>
 
@@ -97,7 +97,7 @@ export function CurrencyInput({
                 key={amt}
                 type="button"
                 onClick={() => onChange(amt.toString())}
-                className={`py-1.5 px-2 rounded-full bg-obsidian-panel border text-xs font-mono font-medium transition-all text-center flex items-center justify-center ${currentAccent.btn}`}
+                className={`min-h-[44px] py-2 px-2.5 rounded-xl bg-obsidian-panel border text-xs sm:text-sm font-mono font-medium transition-all text-center flex items-center justify-center cursor-pointer ${currentAccent.btn}`}
               >
                 +{label}
               </button>

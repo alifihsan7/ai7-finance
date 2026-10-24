@@ -15,6 +15,7 @@ from sqlalchemy import desc, func, case
 
 from app.core.config import settings
 from app.core.parser import parse_transaction, parse_multi_transactions
+from app.core.transfer import find_paired_transfer
 from app.db.session import SessionLocal, Base, engine
 from app.models.transaction import Transaction
 from app.models.account import Account
@@ -717,6 +718,9 @@ atau singkat:
 
     db.add(tx_out)
     db.add(tx_in)
+    db.flush()
+    tx_out.raw_text = f"{tx_out.raw_text} [pair_id:{tx_in.id}]"
+    tx_in.raw_text = f"{tx_in.raw_text} [pair_id:{tx_out.id}]"
     db.commit()
 
     bal_from = get_acc_balance(from_acc, db, user_id=user_id)
@@ -743,23 +747,33 @@ def handle_batal(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
         "description": last.description,
         "amount": last.amount,
         "account": last.account,
-        "category": last.category
+        "category": last.category,
+        "type": last.type,
     }
 
-    if last.type == "transfer_in":
-        prev = db.query(Transaction).filter(
-            Transaction.user_id == user_id,
-            Transaction.id == last.id - 1,
-            Transaction.type == "transfer_out",
-            Transaction.amount == last.amount
-        ).first()
-        if prev:
-            db.delete(prev)
+    is_paired_transfer = False
+    pair_account = None
+
+    if last.type in ("transfer_out", "transfer_in"):
+        pair = find_paired_transfer(db, last)
+        if pair:
+            is_paired_transfer = True
+            pair_account = pair.account
+            db.delete(pair)
 
     db.delete(last)
     db.commit()
 
-    msg = f"""🗑️ **Transaksi Terakhir Dibatalkan!**
+    if is_paired_transfer:
+        msg = f"""🗑️ **Transfer Berpasangan Berhasil Dibatalkan!**
+
+• **Nominal:** {format_rp(deleted_info['amount'])}
+• **Rekening Terkait:** {deleted_info['account']} & {pair_account}
+• **Kategori:** Transfer
+
+Kedua sisi mutasi transfer (keluar & masuk) telah dihapus dari database secara sinkron."""
+    else:
+        msg = f"""🗑️ **Transaksi Terakhir Dibatalkan!**
 
 • **Deskripsi:** {deleted_info['description']}
 • **Nominal:** {format_rp(deleted_info['amount'])}
@@ -827,6 +841,18 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
             date=cycle_start
         )
         db.add(tx)
+
+    # Synchronize cycle_start_date so Safe-to-Spend telemetry tracks the new cycle
+    if cfg:
+        cfg.cycle_start_date = cycle_start
+        db.add(cfg)
+    else:
+        cfg = PaycheckConfig(
+            user_id=user_id,
+            cycle_start_date=cycle_start,
+            cycle_days=cycle_days
+        )
+        db.add(cfg)
 
     db.commit()
 
@@ -1183,6 +1209,9 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
             )
             db.add(tx_out)
             db.add(tx_in)
+            db.flush()
+            tx_out.raw_text = f"{tx_out.raw_text} [pair_id:{tx_in.id}]"
+            tx_in.raw_text = f"{tx_in.raw_text} [pair_id:{tx_out.id}]"
             db.commit()
 
             bal_from = get_acc_balance(from_acc, db, user_id=user_id)

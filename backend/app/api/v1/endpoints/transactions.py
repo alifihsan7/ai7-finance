@@ -26,6 +26,7 @@ from app.schemas.transaction import (
     TransferResponse,
 )
 from app.core.config import settings
+from app.core.transfer import find_paired_transfer
 
 router = APIRouter()
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
@@ -142,6 +143,12 @@ def execute_transfer(
 
     db.add(tx_out)
     db.add(tx_in)
+    db.flush()
+
+    # Link both records explicitly via raw_text tag for unambiguous paired operations
+    tx_out.raw_text = f"{tx_out.raw_text} [pair_id:{tx_in.id}]"
+    tx_in.raw_text = f"{tx_in.raw_text} [pair_id:{tx_out.id}]"
+
     db.commit()
     db.refresh(tx_out)
     db.refresh(tx_in)
@@ -168,6 +175,18 @@ def execute_paycheck_split(
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 30
     cycle_end = cycle_start + timedelta(days=cycle_days - 1)
     total = payload.total_amount
+
+    # Synchronize cycle_start_date so Safe-to-Spend telemetry tracks the new cycle
+    if cfg:
+        cfg.cycle_start_date = cycle_start
+        db.add(cfg)
+    else:
+        cfg = PaycheckConfig(
+            user_id=current_user.id,
+            cycle_start_date=cycle_start,
+            cycle_days=cycle_days
+        )
+        db.add(cfg)
 
     buckets = db.query(PaycheckBucket).filter(PaycheckBucket.config_id == cfg.id).order_by(PaycheckBucket.sort_order.asc()).all() if cfg else []
     if not buckets:
@@ -270,9 +289,17 @@ def delete_transaction(
     tx = db.query(Transaction).filter(Transaction.id == tx_id, Transaction.user_id == current_user.id).first()
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
+
+    deleted_ids = [tx.id]
+    if tx.type in ("transfer_out", "transfer_in"):
+        pair = find_paired_transfer(db, tx)
+        if pair:
+            db.delete(pair)
+            deleted_ids.append(pair.id)
+
     db.delete(tx)
     db.commit()
-    return {"success": True, "deleted_id": tx_id}
+    return {"success": True, "deleted_id": tx_id, "deleted_ids": deleted_ids}
 
 @router.get("/export")
 def export_csv(
