@@ -31,7 +31,7 @@
 ## 📚 Dokumentasi & Buku Panduan
 
 - 🏛️ **[Spesifikasi Arsitektur Sistem (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)** — Penjelasan mendalam mengenai isolasi multi-tenant, ERD database PostgreSQL, formula matematika *Safe-to-Spend* dan burn-rate trajectory, spesifikasi engine parser regex, verifikasi kriptografis Telegram Mini App, serta katalog REST API lengkap.
-- 🚀 **[Panduan Deployment & Cloudflare Tunnel (docs/DEPLOYMENT.md)](docs/DEPLOYMENT.md)** — Panduan operasi server Linux 24/7 dengan systemd, arsitektur Cloudflare Zero Trust Tunnel (zero open inbound ports), dan konfigurasi Google OAuth 2.0.
+- 🚀 **[Panduan Production Deployment (docs/DEPLOYMENT.md)](docs/DEPLOYMENT.md)** — Panduan operasi server Linux 24/7 dengan systemd services, setup PostgreSQL, environment variables, reverse proxy, dan konfigurasi Google OAuth 2.0.
 - 📕 **[Buku Panduan Pengguna PDF (docs/Panduan_Pengguna_AI7_Finance.pdf)](docs/Panduan_Pengguna_AI7_Finance.pdf)** — E-book panduan praktis 8 halaman (format A4) siap cetak/baca untuk pengguna baru: panduan onboarding dashboard, integrasi Telegram Mini App, menghubungkan Telegram bot (Shared/BYOB), tabel sintaks input cepat, dan FAQ troubleshooting.
 
 ---
@@ -169,14 +169,14 @@ The bot parses natural language strings instantly with zero LLM token costs:
 
 ## 🛠️ Production Deployment
 
-Untuk panduan deployment lengkap langkah-demi-langkah, arsitektur *zero open inbound ports* menggunakan Cloudflare Zero Trust Tunnel, dan konfigurasi Google OAuth 2.0, silakan pelajari dokumen terpisah:
+Untuk panduan deployment langkah-demi-langkah di server Linux (Ubuntu/Debian), konfigurasi database PostgreSQL, environment variables, reverse proxy, dan konfigurasi Google OAuth 2.0, silakan pelajari dokumen terpisah:
 
-👉 **[Panduan Deployment & Cloudflare Tunnel (docs/DEPLOYMENT.md)](docs/DEPLOYMENT.md)**
+👉 **[Panduan Production Deployment (docs/DEPLOYMENT.md)](docs/DEPLOYMENT.md)**
 
 Ringkasan cepat operasi 24/7 di server Linux:
-1. **Layanan Background:** Dikelola melalui unit systemd `ai7-finance-web.service` (port 8080) dan `ai7-finance.service` (bot polling).
-2. **Eksposur Publik Aman:** Menggunakan `cloudflared` connector tanpa perlu membuka port VM pada Network Security Group (NSG).
-3. **Autentikasi Google:** Mendaftarkan domain publik di Google Cloud Console (*Authorized JavaScript origins*).
+1. **Layanan Background:** Dikelola melalui unit systemd `ai7-finance-web.service` (FastAPI backend & web dashboard di port 8080) dan `ai7-finance.service` (Telegram companion bot).
+2. **Reverse Proxy & SSL:** Menggunakan reverse proxy standar (seperti Nginx atau Caddy) untuk meneruskan lalu lintas HTTPS (port 443) ke backend lokal (`http://127.0.0.1:8080`).
+3. **Autentikasi Google:** Daftarkan origin domain publik di Google Cloud Console (*Authorized JavaScript origins* & *Authorized redirect URIs*).
 
 ---
 
