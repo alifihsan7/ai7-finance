@@ -81,7 +81,7 @@ CATEGORY_DEFAULT_ACCOUNT = {
 }
 
 def parse_amount_with_span(text: str) -> tuple[int | None, str | None, tuple[int, int] | None]:
-    pattern = r'(?i)\b((?:rp|idr)\.?\s*)?(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta|m|mio)?\b'
+    pattern = r'(?i)(?<!\w)((?:rp|idr)\.?\s*)?(\d+(?:[.,]\d+)*|[.,]\d+)\s*(k|rb|ribu|jt|juta|m|mio)?\b'
     matches = list(re.finditer(pattern, text))
     if not matches:
         return None, None, None
@@ -110,6 +110,9 @@ def parse_amount_with_span(text: str) -> tuple[int | None, str | None, tuple[int
                 # Explicit unit suffix has highest priority (3)
                 candidates.append((3, idx, amount, match.group(0), match.span()))
         else:
+            # Standalone leading dot/comma without unit is not a valid rupiah nominal
+            if num_str.startswith(('.', ',')):
+                continue
             cleaned = num_str.replace('.', '').replace(',', '')
             if cleaned.isdigit() and int(cleaned) > 0:
                 amount = int(cleaned)
@@ -120,7 +123,7 @@ def parse_amount_with_span(text: str) -> tuple[int | None, str | None, tuple[int
                     # Standalone single digit (e.g. 1, 2) has lowest priority (1)
                     prio = 1
                 else:
-                    # Multi-digit without unit/prefix (e.g. 25000) has medium priority (2)
+                    # Multi-digit without unit/prefix (e.g. 25000, 25.000.000) has medium priority (2)
                     prio = 2
                 candidates.append((prio, idx, amount, match.group(0), match.span()))
 
@@ -146,14 +149,17 @@ def split_raw_into_items(text: str) -> list[str]:
     if len(lines) > 1:
         return lines
 
-    # Priority 2: Comma or semicolon separated
+    # Priority 2: Comma or semicolon separated (do not split commas flanked by digits)
     if "," in clean or ";" in clean:
-        parts = [p.strip() for p in re.split(r'[,;]+', clean) if p.strip()]
+        parts = [p.strip() for p in re.split(r';+|(?:(?<!\d),|,(?!\d))+', clean) if p.strip()]
         if len(parts) > 1:
             return parts
 
     # Priority 3: Multiple amounts in single line (e.g. 'nasgor 20k kopi 28k')
-    amt_pattern = r'\b(?:rp\.?\s*)?(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta|m|mio)\b|\b(?:rp\.?\s*)(\d+(?:[.,]\d+)?)\b'
+    amt_pattern = (
+        r'(?i)(?<!\w)(?:(?:rp|idr)\.?\s*)?(?:\d+(?:[.,]\d+)*|[.,]\d+)\s*(?:k|rb|ribu|jt|juta|m|mio)\b|'
+        r'(?<!\w)(?:rp|idr)\.?\s*(?:\d+(?:[.,]\d+)*)\b'
+    )
     matches = list(re.finditer(amt_pattern, clean, flags=re.IGNORECASE))
     
     if len(matches) <= 1:
@@ -183,10 +189,34 @@ def parse_transaction(text: str):
     selected_account = None
     remaining = raw
     for pattern, acc_name in ACCOUNT_PATTERNS:
-        match = re.search(pattern, remaining, re.IGNORECASE)
-        if match:
+        matches = list(re.finditer(pattern, remaining, re.IGNORECASE))
+        valid_match = None
+        for m in matches:
+            # Disambiguate account keywords that clash with item descriptions
+            if acc_name == "Bank Jago" and m.group(0).lower() == "jago":
+                prefix_text = remaining[:m.start()].rstrip().lower()
+                if prefix_text.endswith(("ayam", "ikan", "bebek")):
+                    continue
+            if acc_name == "Bibit":
+                suffix_text = remaining[m.end():].lstrip().lower()
+                crop_words = (
+                    "cabe", "cabai", "tomat", "tanaman", "pohon", "bunga", "buah",
+                    "sayur", "sayuran", "lele", "ikan", "jagung", "padi", "kangkung",
+                    "bayam", "sawit", "unggul", "jamur", "benih", "pupuk"
+                )
+                if any(suffix_text.startswith(w) for w in crop_words):
+                    continue
+            if acc_name == "DANA":
+                suffix_text = remaining[m.end():].lstrip().lower()
+                if suffix_text.startswith("darurat"):
+                    continue
+
+            valid_match = m
+            break
+
+        if valid_match:
             selected_account = acc_name
-            remaining = remaining[:match.start()] + " " + remaining[match.end():]
+            remaining = remaining[:valid_match.start()] + " " + remaining[valid_match.end():]
             break
 
     # 2. Extract transaction amount with unit priority
@@ -215,10 +245,17 @@ def parse_transaction(text: str):
         for cat_name, cat_kws in CATEGORY_RULES:
             matched = False
             for ckw in cat_kws:
-                if re.search(rf'\b{re.escape(ckw)}\b', raw.lower()):
-                    selected_category = cat_name
-                    matched = True
-                    break
+                if ckw == "bibit":
+                    # Do not classify agricultural seeds as financial investment
+                    if re.search(r'\bbibit\b(?!\s+(?:cabe|cabai|tomat|tanaman|pohon|bunga|buah|sayur|sayuran|lele|ikan|jagung|padi|kangkung|bayam|sawit|unggul|jamur|benih|pupuk))', raw.lower()):
+                        selected_category = cat_name
+                        matched = True
+                        break
+                else:
+                    if re.search(rf'\b{re.escape(ckw)}\b', raw.lower()):
+                        selected_category = cat_name
+                        matched = True
+                        break
             if matched:
                 break
 

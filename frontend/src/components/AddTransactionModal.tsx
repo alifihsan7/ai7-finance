@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { CustomModal } from "./ui/CustomModal";
 import { CurrencyInput } from "./ui/CurrencyInput";
 import { CustomSelect, SelectOption } from "./ui/CustomSelect";
@@ -45,6 +45,7 @@ export function AddTransactionModal({
   defaultAccount,
 }: AddTransactionModalProps) {
   const prevIsOpenRef = useRef(false);
+  const isSubmittingRef = useRef(false);
   const [formType, setFormType] = useState<"expense" | "income">("expense");
   const [formAmount, setFormAmount] = useState("");
   const [formDesc, setFormDesc] = useState("");
@@ -88,6 +89,7 @@ export function AddTransactionModal({
   // Reset and initialize form state cleanly only when modal opens (transition to isOpen === true)
   useEffect(() => {
     if (isOpen && !prevIsOpenRef.current) {
+      isSubmittingRef.current = false;
       setFormType("expense");
       setFormAmount("");
       setFormDesc("");
@@ -111,6 +113,10 @@ export function AddTransactionModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent double submit race conditions
+    if (loading || isSubmittingRef.current) return;
+
     const numAmount = parseInt(formAmount.replace(/\D/g, ""), 10);
     if (!numAmount) {
       setError("Nominal transaksi harus lebih dari 0");
@@ -121,6 +127,7 @@ export function AddTransactionModal({
       return;
     }
 
+    isSubmittingRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -143,12 +150,18 @@ export function AddTransactionModal({
         throw new Error(errJson?.detail || `Gagal mencatat transaksi (${res.status})`);
       }
 
+      // Reset form on success
+      setFormAmount("");
+      setFormDesc("");
+      setError(null);
+
       onSuccess();
       onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Terjadi kesalahan";
       setError(msg);
     } finally {
+      isSubmittingRef.current = false;
       setLoading(false);
     }
   };
@@ -169,7 +182,7 @@ export function AddTransactionModal({
           <button
             type="button"
             onClick={() => setFormType("expense")}
-            className={`py-2 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer ${
+            className={`min-h-[44px] py-2 px-3 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer flex items-center justify-center ${
               formType === "expense"
                 ? "bg-coralFall text-slate-950 font-bold shadow-xs"
                 : "text-zinc-400 hover:text-white"
@@ -180,7 +193,7 @@ export function AddTransactionModal({
           <button
             type="button"
             onClick={() => setFormType("income")}
-            className={`py-2 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer ${
+            className={`min-h-[44px] py-2 px-3 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer flex items-center justify-center ${
               formType === "income"
                 ? "bg-mintRise text-slate-950 font-bold shadow-xs"
                 : "text-zinc-400 hover:text-white"
@@ -220,7 +233,7 @@ export function AddTransactionModal({
             placeholder="Contoh: Nasi Padang + Es Teh"
             value={formDesc}
             onChange={(e) => setFormDesc(e.target.value)}
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-500"
+            className="w-full min-h-[44px] bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
           />
         </div>
 
@@ -258,7 +271,7 @@ export function AddTransactionModal({
             required
             value={formDate}
             onChange={(e) => setFormDate(e.target.value)}
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
+            className="w-full min-h-[44px] bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
@@ -275,18 +288,25 @@ export function AddTransactionModal({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
+            className="min-h-[44px] px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 ${
+            className={`min-h-[44px] px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
               formType === "expense" ? "bg-coralFall" : "bg-mintRise"
             }`}
           >
-            {loading ? "Menyimpan..." : "Simpan Transaksi"}
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              "Simpan Transaksi"
+            )}
           </button>
         </div>
       </form>

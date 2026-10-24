@@ -148,7 +148,7 @@ export function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={handleToggle}
-        className={`w-full bg-obsidian-panel border rounded-2xl px-3.5 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between gap-2 transition-all select-none ${
+        className={`w-full bg-obsidian-panel border rounded-2xl px-3.5 py-2.5 min-h-[44px] text-left text-xs sm:text-sm flex items-center justify-between gap-2 transition-all select-none cursor-pointer ${
           disabled
             ? "opacity-50 cursor-not-allowed border-white/[0.06]"
             : isOpen
@@ -164,7 +164,7 @@ export function CustomSelect({
           {selectedOption?.color && (
             <span className={`w-2 h-2 rounded-full shrink-0 ${selectedOption.color}`} />
           )}
-          <span className="truncate block flex-1">
+          <span className={`truncate block flex-1 ${selectedOption ? "text-slateText-primary" : "text-zinc-400 font-normal"}`}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </span>
@@ -205,7 +205,7 @@ export function CustomSelect({
                   key={opt.value}
                   type="button"
                   onClick={() => handleSelect(opt.value)}
-                  className={`w-full px-3.5 py-2 text-left text-xs sm:text-sm flex items-center justify-between gap-2 transition-colors select-none ${
+                  className={`w-full min-h-[44px] px-3.5 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between gap-2 transition-colors select-none cursor-pointer ${
                     isSelected
                       ? "bg-amberGold/10 text-amberGold font-semibold"
                       : "text-slateText-primary hover:bg-obsidian-hover hover:text-slateText-primary"

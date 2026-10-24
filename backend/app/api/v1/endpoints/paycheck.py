@@ -491,6 +491,10 @@ def toggle_paycheck_step(
     all_done = all(s["is_done"] for s in steps_data)
     if all_done:
         session.status = "completed"
+        cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
+        if cfg:
+            cfg.cycle_start_date = session.date
+            db.add(cfg)
         # Auto sync Google Sheets snapshot in background (User #1 only)
         if current_user.id == 1:
             try:
@@ -540,6 +544,10 @@ def complete_all_paycheck_steps(
 
     session.status = "completed"
     session.steps_json = json.dumps(steps_data)
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
+    if cfg:
+        cfg.cycle_start_date = session.date
+        db.add(cfg)
     db.commit()
     db.refresh(session)
 
