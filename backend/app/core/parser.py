@@ -2,13 +2,14 @@ import re
 
 # Specific regex patterns for account detection (multi-word patterns first)
 ACCOUNT_PATTERNS = [
-    (r"\b(?:bri\s*1|bri1)\b", "BRI 1"),
-    (r"\b(?:bri\s*2|bri2)\b", "BRI 2"),
-    (r"\b(?:mandiri|livin)\b", "Mandiri"),
+    (r"\b(?:bank\s*bri[\s-]*1|bri[\s-]*1|bri1)\b", "BRI 1"),
+    (r"\b(?:bank\s*bri[\s-]*2|bri[\s-]*2|bri2)\b", "BRI 2"),
+    (r"\b(?:bank\s*bri|bri)\b", "BRI 1"),
+    (r"\b(?:bank\s*mandiri|mandiri|livin)\b", "Mandiri"),
     (r"\b(?:bank\s*jago|jago)\b", "Bank Jago"),
     (r"\b(?:bibit)\b", "Bibit"),
-    (r"\b(?:bca|halo\s*bca)\b", "BCA"),
-    (r"\b(?:bni)\b", "BNI"),
+    (r"\b(?:bank\s*bca|bca|halo\s*bca)\b", "BCA"),
+    (r"\b(?:bank\s*bni|bni)\b", "BNI"),
     (r"\b(?:seabank)\b", "SeaBank"),
     (r"\b(?:gopay|go-pay)\b", "GoPay"),
     (r"\b(?:ovo)\b", "OVO"),
@@ -32,7 +33,7 @@ CATEGORY_RULES = [
         "burger", "pizza", "mcd", "kfc"
     ]),
     ("Jajan / Ngopi", [
-        "kopi", "coffee", "cafe", "kafe", "starbucks", "kenangan", "janji jiwa", 
+        "warkop", "kopi", "coffee", "cafe", "kafe", "starbucks", "kenangan", "janji jiwa", 
         "tomoro", "fore", "boba", "chatime", "es teh", "esteh", "teh", "mixue", "snack", 
         "cemilan", "roti", "ice cream", "eskrim", "croissant", "jajan", "gorengan",
         "martabak", "cilok", "cireng", "siomay", "batagor", "tahu bulat"
@@ -79,22 +80,25 @@ CATEGORY_DEFAULT_ACCOUNT = {
     "Investasi & Tabungan": "Bibit",
 }
 
-def parse_amount(text: str):
-    pattern = r'(?i)\b(?:rp\.?\s*)?(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta|m|mio)?\b'
+def parse_amount_with_span(text: str) -> tuple[int | None, str | None, tuple[int, int] | None]:
+    pattern = r'(?i)\b((?:rp|idr)\.?\s*)?(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta|m|mio)?\b'
     matches = list(re.finditer(pattern, text))
-    
-    for match in matches:
-        num_str = match.group(1).replace(',', '.')
-        unit = (match.group(2) or '').lower()
-        
-        if not unit:
-            cleaned = match.group(1).replace('.', '').replace(',', '')
-            if cleaned.isdigit() and int(cleaned) > 0:
-                return int(cleaned), match.group(0)
-            continue
-            
-        try:
-            val = float(num_str)
+    if not matches:
+        return None, None, None
+
+    candidates = []
+    for idx, match in enumerate(matches):
+        prefix = match.group(1)
+        num_str = match.group(2)
+        unit = (match.group(3) or '').lower()
+
+        if unit:
+            num_clean = num_str.replace(',', '.')
+            try:
+                val = float(num_clean)
+            except ValueError:
+                continue
+
             if unit in ['k', 'rb', 'ribu']:
                 multiplier = 1_000
             elif unit in ['jt', 'juta', 'm', 'mio']:
@@ -103,11 +107,34 @@ def parse_amount(text: str):
                 multiplier = 1
             amount = int(val * multiplier)
             if amount > 0:
-                return amount, match.group(0)
-        except ValueError:
-            continue
-            
-    return None, None
+                # Explicit unit suffix has highest priority (3)
+                candidates.append((3, idx, amount, match.group(0), match.span()))
+        else:
+            cleaned = num_str.replace('.', '').replace(',', '')
+            if cleaned.isdigit() and int(cleaned) > 0:
+                amount = int(cleaned)
+                if prefix:
+                    # Explicit currency prefix (e.g. rp 25000, rp. 25.000) has highest priority (3)
+                    prio = 3
+                elif len(cleaned) == 1:
+                    # Standalone single digit (e.g. 1, 2) has lowest priority (1)
+                    prio = 1
+                else:
+                    # Multi-digit without unit/prefix (e.g. 25000) has medium priority (2)
+                    prio = 2
+                candidates.append((prio, idx, amount, match.group(0), match.span()))
+
+    if not candidates:
+        return None, None, None
+
+    # Sort candidates: highest priority score descending, then text appearance order ascending
+    candidates.sort(key=lambda c: (-c[0], c[1]))
+    best = candidates[0]
+    return best[2], best[3], best[4]
+
+def parse_amount(text: str) -> tuple[int | None, str | None]:
+    amt, matched, _ = parse_amount_with_span(text)
+    return amt, matched
 
 def split_raw_into_items(text: str) -> list[str]:
     clean = text.strip()
@@ -151,39 +178,38 @@ def parse_transaction(text: str):
     raw = text.strip()
     if not raw:
         return {"success": False, "error": "Pesan kosong"}
-        
-    amount, matched_num = parse_amount(raw)
-    if not amount or not matched_num:
-        return {
-            "success": False, 
-            "error": "Nominal tidak terdeteksi. Contoh format: `nasi padang 25k` atau `kopi 20k mandiri`"
-        }
-        
-    remaining = raw.replace(matched_num, " ")
-    
-    # Check explicit account
+
+    # 1. Detect and extract explicit account first to protect account numbers (e.g. BRI 1, BRI 2)
     selected_account = None
-    matched_acc_span = None
+    remaining = raw
     for pattern, acc_name in ACCOUNT_PATTERNS:
         match = re.search(pattern, remaining, re.IGNORECASE)
         if match:
             selected_account = acc_name
-            matched_acc_span = match.group(0)
+            remaining = remaining[:match.start()] + " " + remaining[match.end():]
             break
-            
-    if matched_acc_span:
-        remaining = re.sub(re.escape(matched_acc_span), " ", remaining, flags=re.IGNORECASE)
-        
-    # Check transaction type
+
+    # 2. Extract transaction amount with unit priority
+    amount, matched_num, span = parse_amount_with_span(remaining)
+    if not amount or not matched_num or not span:
+        return {
+            "success": False, 
+            "error": "Nominal tidak terdeteksi. Contoh format: `nasi padang 25k` atau `kopi 20k mandiri`"
+        }
+
+    # Remove matched amount from remaining text via exact span
+    remaining = remaining[:span[0]] + " " + remaining[span[1]:]
+
+    # 3. Check transaction type (income vs expense)
     is_income = False
     for ikw in INCOME_KEYWORDS:
         if re.search(rf'\b{re.escape(ikw)}\b', raw.lower()):
             is_income = True
             break
-            
+
     tx_type = "income" if is_income else "expense"
-    
-    # Determine category
+
+    # 4. Determine category
     selected_category = "Pemasukan" if is_income else "Lainnya"
     if not is_income:
         for cat_name, cat_kws in CATEGORY_RULES:
@@ -196,7 +222,7 @@ def parse_transaction(text: str):
             if matched:
                 break
 
-    # If no explicit account was given, smart-infer from category or default to Mandiri
+    # 5. Smart-infer fallback account if no explicit account was given
     if not selected_account:
         if selected_category in CATEGORY_DEFAULT_ACCOUNT:
             selected_account = CATEGORY_DEFAULT_ACCOUNT[selected_category]
@@ -204,15 +230,16 @@ def parse_transaction(text: str):
             selected_account = "BRI 1"  # Default hub for income
         else:
             selected_account = "Mandiri"  # Default daily operational pocket
-                
+
+    # 6. Description cleanup
     desc_clean = re.sub(r'[^\w\s-]', '', remaining).strip()
     desc_clean = re.sub(r'\s+', ' ', desc_clean)
-    
+
     if not desc_clean:
         desc_clean = selected_category
     else:
         desc_clean = desc_clean.capitalize()
-        
+
     return {
         "success": True,
         "type": tx_type,
