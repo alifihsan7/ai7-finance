@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Plus } from "lucide-react";
 import { CustomModal } from "./ui/CustomModal";
 import { CurrencyInput } from "./ui/CurrencyInput";
@@ -44,10 +44,16 @@ export function AddTransactionModal({
   categories = [],
   defaultAccount,
 }: AddTransactionModalProps) {
+  const prevIsOpenRef = useRef(false);
   const [formType, setFormType] = useState<"expense" | "income">("expense");
   const [formAmount, setFormAmount] = useState("");
   const [formDesc, setFormDesc] = useState("");
-  const [formAccount, setFormAccount] = useState("Rekening Utama");
+  const [formAccount, setFormAccount] = useState(() => {
+    if (defaultAccount && (accountOptions.length === 0 || accountOptions.some((opt) => opt.value === defaultAccount))) {
+      return defaultAccount;
+    }
+    return accountOptions[0]?.value || "Rekening Utama";
+  });
   const [formCategory, setFormCategory] = useState("Makan");
   const [formDate, setFormDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [loading, setLoading] = useState(false);
@@ -79,31 +85,29 @@ export function AddTransactionModal({
     }
   }, [activeCategoryOptions, formCategory]);
 
-  // Sync default account if provided
+  // Reset and initialize form state cleanly only when modal opens (transition to isOpen === true)
   useEffect(() => {
-    if (defaultAccount) {
-      setFormAccount(defaultAccount);
-    } else if (accountOptions.length > 0 && !formAccount) {
-      setFormAccount(accountOptions[0].value);
-    }
-  }, [defaultAccount, accountOptions, formAccount]);
-
-  // Reset form when reopened
-  useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !prevIsOpenRef.current) {
       setFormType("expense");
       setFormAmount("");
       setFormDesc("");
       setFormDate(new Date().toISOString().split("T")[0]);
       setError(null);
       setLoading(false);
-      if (defaultAccount) {
-        setFormAccount(defaultAccount);
-      } else if (accountOptions.length > 0) {
-        setFormAccount(accountOptions[0].value);
-      }
+
+      const initialAccount =
+        defaultAccount && (accountOptions.length === 0 || accountOptions.some((opt) => opt.value === defaultAccount))
+          ? defaultAccount
+          : accountOptions[0]?.value || "Rekening Utama";
+      setFormAccount(initialAccount);
+
+      const initialCat = activeCategoryOptions.some((opt) => opt.value === "Makan")
+        ? "Makan"
+        : activeCategoryOptions[0]?.value || "Makan";
+      setFormCategory(initialCat);
     }
-  }, [isOpen, defaultAccount, accountOptions]);
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, defaultAccount, accountOptions, activeCategoryOptions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
