@@ -157,7 +157,7 @@ def send_message(chat_id: int, text: str, parse_mode: Optional[str] = "Markdown"
         data = res.json()
         if not data.get("ok"):
             print(f"Telegram API warning sending message to {chat_id}: {data}")
-            if parse_mode and "can't parse entities" in data.get("description", "").lower():
+            if parse_mode:
                 payload.pop("parse_mode", None)
                 retry_res = requests.post(url, json=payload, timeout=10)
                 return retry_res.json()
@@ -900,7 +900,7 @@ def handle_sheets(chat_id: int, db: Session, user: Optional[User] = None, bot_to
 • **Periode:** `{res['cycle_range']}`
 • **Total Transaksi:** `{res['transaction_count']} catatan`
 • **Amplop Terpantau:** `{res['envelopes_count']} pos dinamis`
-• **Realisasi Belanja:** {format_rp(res['pocket_spent'])} *(Sisa {format_rp(res['pocket_remaining'])})*
+• **Realisasi Belanja:** {format_rp(res['pocket_spent'])} (Sisa {format_rp(res['pocket_remaining'])})
 • **Total Net Worth:** {format_rp(res['total_balance'])}
 
 🔗 [Buka Lembar Google Sheets]({res['spreadsheet_url']})"""
