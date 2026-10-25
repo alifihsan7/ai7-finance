@@ -484,6 +484,14 @@ def delete_my_account(
     db: Session = Depends(get_db)
 ):
     user_id = current_user.id
+
+    # Hapus webhook Telegram jika pengguna memiliki custom bot aktif
+    if current_user.telegram_bot_token:
+        try:
+            requests.post(f"https://api.telegram.org/bot{current_user.telegram_bot_token}/deleteWebhook", timeout=10)
+        except Exception as e:
+            print(f"Warning: gagal deleteWebhook saat delete_my_account: {e}")
+
     # Hapus seluruh relasi data pengguna secara permanen
     db.query(Transaction).filter(Transaction.user_id == user_id).delete()
     db.query(Subscription).filter(Subscription.user_id == user_id).delete()

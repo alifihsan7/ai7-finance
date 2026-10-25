@@ -499,7 +499,7 @@ def toggle_paycheck_step(
         if current_user.id == 1:
             try:
                 from app.services.sheets_sync import sync_cycle_snapshot
-                sync_cycle_snapshot(db, cycle_start_date=session.date)
+                sync_cycle_snapshot(db, user_id=current_user.id, cycle_start_date=session.date)
             except Exception as e:
                 print(f"[Paycheck Sync Warning] Failed to auto sync sheets: {e}")
     else:
@@ -554,7 +554,7 @@ def complete_all_paycheck_steps(
     if current_user.id == 1:
         try:
             from app.services.sheets_sync import sync_cycle_snapshot
-            sync_cycle_snapshot(db, cycle_start_date=session.date)
+            sync_cycle_snapshot(db, user_id=current_user.id, cycle_start_date=session.date)
         except Exception as e:
             print(f"[Paycheck Sync Warning] Failed to auto sync sheets: {e}")
 

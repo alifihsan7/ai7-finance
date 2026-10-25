@@ -57,6 +57,7 @@ def get_google_sheets_client():
 
 def sync_cycle_snapshot(
     db: Session,
+    user_id: int,
     cycle_start_date: Optional[date] = None,
     envelopes_config: Optional[List[Dict[str, Any]]] = None
 ) -> Dict[str, Any]:
@@ -68,14 +69,15 @@ def sync_cycle_snapshot(
     today_wib = now_wib.date()
 
     # 1. Tentukan tanggal siklus
-    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.id == 1).first()
+    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
     pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
 
     if not cycle_start_date:
         paycheck = db.query(Transaction).filter(
+            Transaction.user_id == user_id,
             Transaction.type == "income",
-            Transaction.category.in_(["Gajian", "Gaji", "Pemasukan", "Uang Saku Ortu", "Income"]) | Transaction.description.ilike("%gajian%") | Transaction.description.ilike("%pemasukan%")
+            (Transaction.category.in_(["Gajian", "Gaji", "Pemasukan", "Uang Saku Ortu", "Income"])) | (Transaction.description.ilike("%gajian%")) | (Transaction.description.ilike("%pemasukan%"))
         ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
         cycle_start_date = paycheck.date if paycheck else today_wib
 
@@ -89,6 +91,7 @@ def sync_cycle_snapshot(
         Transaction.type,
         func.coalesce(func.sum(Transaction.amount), 0).label("total")
     ).filter(
+        Transaction.user_id == user_id,
         Transaction.date >= cycle_start_date,
         Transaction.date < query_end_date
     ).group_by(Transaction.type).all()
@@ -116,16 +119,23 @@ def sync_cycle_snapshot(
     mandiri_spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
     ).filter(
+        Transaction.user_id == user_id,
         Transaction.account == pocket_account,
         Transaction.type == "expense",
         Transaction.date >= cycle_start_date,
         Transaction.date <= cycle_end_date
     ).first()
     pocket_spent = int(mandiri_spent_row.spent if mandiri_spent_row else 0)
-    pocket_budget = int(cfg.total_salary * 0.55) if cfg and cfg.total_salary else 825000
+    pocket_budget = int(getattr(cfg, "total_salary", 0) * 0.55) if cfg and getattr(cfg, "total_salary", None) else 825000
     if cfg and cfg.id:
-        bucket_match = db.query(PaycheckBucket).filter(PaycheckBucket.config_id == cfg.id, PaycheckBucket.account == pocket_account).first()
-        if bucket_match and bucket_match.percentage > 0 and cfg.total_salary:
+        bucket_match = db.query(PaycheckBucket).join(
+            PaycheckConfig, PaycheckBucket.config_id == PaycheckConfig.id
+        ).filter(
+            PaycheckConfig.user_id == user_id,
+            PaycheckBucket.config_id == cfg.id,
+            PaycheckBucket.account == pocket_account
+        ).first()
+        if bucket_match and bucket_match.percentage > 0 and getattr(cfg, "total_salary", None):
             pocket_budget = int(round(cfg.total_salary * (bucket_match.percentage / 100.0)))
     pocket_remaining = max(0, pocket_budget - pocket_spent)
     safe_daily = int(pocket_remaining / days_remaining) if days_remaining > 0 else 0
@@ -146,6 +156,7 @@ def sync_cycle_snapshot(
         spent_row = db.query(
             func.coalesce(func.sum(Transaction.amount), 0).label("spent")
         ).filter(
+            Transaction.user_id == user_id,
             Transaction.account == "Mandiri",
             Transaction.type == "expense",
             Transaction.date >= cycle_start_date,
@@ -183,6 +194,8 @@ def sync_cycle_snapshot(
                 else_=0
             )
         ).label("balance")
+    ).filter(
+        Transaction.user_id == user_id
     ).group_by(Transaction.account).order_by(
         func.sum(
             case(
@@ -192,11 +205,20 @@ def sync_cycle_snapshot(
             )
         ).desc()
     ).all()
-    accounts = [{"account": a.account, "balance": int(a.balance or 0)} for a in acc_rows]
+    user_accounts = db.query(Account).filter(Account.user_id == user_id).all()
+    account_tags = {acc.name: (acc.tag or ACCOUNT_FUNCTIONS.get(acc.name, "Pos Finansial")) for acc in user_accounts}
+
+    balance_map = {a.account: int(a.balance or 0) for a in acc_rows}
+    for acc in user_accounts:
+        if acc.name not in balance_map:
+            balance_map[acc.name] = 0
+
+    accounts = [{"account": name, "balance": bal} for name, bal in sorted(balance_map.items(), key=lambda x: x[1], reverse=True)]
     total_balance = sum(a["balance"] for a in accounts)
 
     # 5. Seluruh Transaksi dalam Siklus
     tx_rows = db.query(Transaction).filter(
+        Transaction.user_id == user_id,
         Transaction.date >= cycle_start_date,
         Transaction.date <= cycle_end_date
     ).order_by(desc(Transaction.date), desc(Transaction.id)).all()
@@ -286,7 +308,7 @@ def sync_cycle_snapshot(
     rows.append(["", "Nama Rekening / Pos", "", "Fungsi Alokasi", "", "Saldo Akhir", ""])
     sec3_data_start = len(rows)
     for acc in accounts:
-        f_desc = ACCOUNT_FUNCTIONS.get(acc["account"], "Pos Finansial")
+        f_desc = account_tags.get(acc["account"], ACCOUNT_FUNCTIONS.get(acc["account"], "Pos Finansial"))
         rows.append([
             "",
             acc["account"],

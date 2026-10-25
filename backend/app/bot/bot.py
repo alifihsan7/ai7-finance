@@ -29,7 +29,7 @@ WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 def format_rp(amount: int) -> str:
     return f"Rp {amount:,}".replace(",", ".")
 
-def get_user_cycle_info(db: Session, user_id: int = 1) -> dict:
+def get_user_cycle_info(db: Session, user_id: int) -> dict:
     now_wib = datetime.now(WIB)
     today_wib = now_wib.date()
 
@@ -105,7 +105,7 @@ def get_mandiri_envelopes(cycle_days: int) -> dict:
     }
     return {cat: int(round(limit * base_ratio)) for cat, limit in base_limits.items()}
 
-def get_safe_to_spend_snippet(db: Session, user_id: int = 1) -> str:
+def get_safe_to_spend_snippet(db: Session, user_id: int) -> str:
     c_info = get_user_cycle_info(db, user_id=user_id)
     cfg = c_info["cfg"]
     cycle_days = c_info["cycle_days"]
@@ -257,7 +257,10 @@ def send_dashboard_link(chat_id: int, bot_token: Optional[str] = None):
     send_message(chat_id, msg, reply_markup=inline_kb, bot_token=bot_token)
 
 def handle_start(chat_id: int, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_name = user.full_name if user else "Kawan"
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_name = user.full_name or "Kawan"
     msg = f"""👋 **Halo, {user_name}! Selamat datang di AI7 Finance Bot.**
 
 Bot ini terintegrasi langsung dengan Web Dashboard AI7 Finance lo.
@@ -282,7 +285,10 @@ Tinggal ketik catatan pengeluaran/pemasukan lo kapan saja!"""
     send_message(chat_id, msg, reply_markup=get_main_keyboard(), bot_token=bot_token)
 
 def handle_rekap(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     now = datetime.now(WIB)
     month_names = [
         "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -340,7 +346,10 @@ def handle_rekap(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
     send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
 def handle_saldo(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     rows = db.query(
         Transaction.account,
         func.sum(
@@ -368,7 +377,10 @@ def handle_saldo(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
     send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
 def handle_pacing(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     now_wib = datetime.now(WIB)
     c_info = get_user_cycle_info(db, user_id=user_id)
     cfg = c_info["cfg"]
@@ -434,7 +446,10 @@ def handle_pacing(chat_id: int, db: Session, user: Optional[User] = None, bot_to
     send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
 def handle_obsidian(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     if user_id != 1:
         send_message(chat_id, "ℹ️ Fitur ekspor Obsidian hanya aktif untuk akun utama Alif.", bot_token=bot_token)
         return
@@ -536,7 +551,10 @@ tags: [finance, cycle-snapshot, mandiri, pacing]
     )
 
 def handle_transaksi(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     recent = db.query(Transaction).filter(Transaction.user_id == user_id).order_by(desc(Transaction.id)).limit(5).all()
     if not recent:
         send_message(chat_id, "ℹ️ Belum ada riwayat transaksi.", bot_token=bot_token)
@@ -551,7 +569,10 @@ def handle_transaksi(chat_id: int, db: Session, user: Optional[User] = None, bot
     send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
 def handle_subs(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     from app.models.subscription import Subscription
     from app.api.v1.endpoints.subscriptions import compute_due_info
 
@@ -597,7 +618,10 @@ def handle_subs(chat_id: int, db: Session, user: Optional[User] = None, bot_toke
     send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
 def handle_goals(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     from app.models.goal import Goal
     from app.api.v1.endpoints.goals import compute_goal_metrics
 
@@ -633,7 +657,7 @@ def handle_goals(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
         )
 
     lines.append("💡 _Saldo terupdate otomatis dari mutasi rekening atau dapat disesuaikan di Web Dashboard._")
-    send_message(chat_id, "\n".join(lines))
+    send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
 def send_chat_action(chat_id: int, action: str = "typing", bot_token: Optional[str] = None):
     token = bot_token or settings.BOT_TOKEN
@@ -657,7 +681,7 @@ def download_telegram_file(file_id: str, bot_token: Optional[str] = None):
         print(f"Error downloading Telegram file {file_id}: {e}")
     return None, None
 
-def get_acc_balance(acc_name: str, db: Session, user_id: int = 1) -> int:
+def get_acc_balance(acc_name: str, db: Session, user_id: int) -> int:
     row = db.query(
         func.coalesce(
             func.sum(
@@ -671,7 +695,7 @@ def get_acc_balance(acc_name: str, db: Session, user_id: int = 1) -> int:
     ).filter(Transaction.user_id == user_id, Transaction.account == acc_name).scalar()
     return int(row or 0)
 
-def normalize_account(raw: str, db: Optional[Session] = None, user_id: int = 1):
+def normalize_account(raw: str, db: Optional[Session] = None, user_id: Optional[int] = None):
     if not raw:
         return None
     r = raw.strip().lower()
@@ -687,14 +711,17 @@ def normalize_account(raw: str, db: Optional[Session] = None, user_id: int = 1):
         return "BRI 2"
     elif "cash" in r or "tunai" in r:
         return "Cash"
-    if db:
+    if db and user_id is not None:
         for acc in db.query(Account).filter(Account.user_id == user_id).all():
             if acc.name.lower() in r or r in acc.name.lower():
                 return acc.name
     return raw.strip().title()
 
 def handle_transfer(chat_id: int, text: str, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     clean = text.strip()
     if clean.lower() in ["/transfer", "transfer", "tf", "🔄 transfer"]:
         guide = """🔄 **Panduan Transfer Antar Rekening**
@@ -788,7 +815,10 @@ atau singkat:
     send_message(chat_id, res_msg, bot_token=bot_token)
 
 def handle_batal(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     last = db.query(Transaction).filter(Transaction.user_id == user_id).order_by(desc(Transaction.id)).first()
     if not last:
         send_message(chat_id, "⚠️ Tidak ada transaksi yang bisa dibatalkan.", bot_token=bot_token)
@@ -835,7 +865,10 @@ Catatan tersebut sudah dihapus dari database PostgreSQL."""
     send_message(chat_id, msg, bot_token=bot_token)
 
 def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
     total = cfg.total_salary if cfg and cfg.total_salary > 0 else 1500000
@@ -911,7 +944,7 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
     if user_id == 1:
         try:
             from app.services.sheets_sync import sync_cycle_snapshot
-            res = sync_cycle_snapshot(db, cycle_start_date=cycle_start)
+            res = sync_cycle_snapshot(db, user_id=user_id, cycle_start_date=cycle_start)
             sheet_info = f"\n\n📑 **Google Sheets:** Tab `{res['sheet_title']}` otomatis dibuat & disinkronkan!"
         except Exception as e:
             print(f"Sheets auto-sync error: {e}")
@@ -936,7 +969,10 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
     send_message(chat_id, msg, bot_token=bot_token)
 
 def handle_sheets(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
+        return
+    user_id = user.id
     if user_id != 1:
         send_message(chat_id, "ℹ️ Integrasi Google Sheets dikonfigurasi khusus untuk akun admin utama.", bot_token=bot_token)
         return
@@ -944,7 +980,7 @@ def handle_sheets(chat_id: int, db: Session, user: Optional[User] = None, bot_to
     send_message(chat_id, "⏳ _Sedang menyinkronkan data snapshot siklus ke Google Sheets..._", bot_token=bot_token)
     try:
         from app.services.sheets_sync import sync_cycle_snapshot
-        res = sync_cycle_snapshot(db)
+        res = sync_cycle_snapshot(db, user_id=user_id)
         msg = f"""📑 **GOOGLE SHEETS DISINKRONKAN!**
 
 • **Tab:** `{res['sheet_title']}`
@@ -960,7 +996,10 @@ def handle_sheets(chat_id: int, db: Session, user: Optional[User] = None, bot_to
         send_message(chat_id, f"❌ Gagal sinkronisasi ke Google Sheets: {str(e)}", bot_token=bot_token)
 
 def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None, voice_prefix: str = ""):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", reply_to_message_id=message_id, bot_token=bot_token)
+        return
+    user_id = user.id
     items = parse_multi_transactions(text)
     if not items:
         # Fall back to single parser to report specific error
@@ -1089,7 +1128,10 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
     send_message(chat_id, "\n".join(lines), reply_to_message_id=message_id, bot_token=bot_token)
 
 def handle_media_message(chat_id: int, message: dict, message_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
-    user_id = user.id if user else 1
+    if not user:
+        send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", reply_to_message_id=message_id, bot_token=bot_token)
+        return
+    user_id = user.id
     photo = message.get("photo")
     doc = message.get("document")
     voice = message.get("voice")
@@ -1419,8 +1461,31 @@ def process_update(update: dict, bot_token: Optional[str] = None, user_override:
 
     db = SessionLocal()
     try:
-        user = user_override
-        if not user:
+        user = None
+        if user_override:
+            sender_id = None
+            try:
+                sender_id = int(chat_id)
+            except (ValueError, TypeError):
+                pass
+
+            owner = db.query(User).filter(User.id == user_override.id).first() or user_override
+            owner_chat_id = owner.telegram_chat_id
+
+            if sender_id is None or owner_chat_id is None or sender_id != int(owner_chat_id):
+                logger.warning(
+                    f"[BYOB Guard] Unauthorized access attempt: sender chat_id={chat_id} "
+                    f"attempted to access custom bot owned by user_id={owner.id} "
+                    f"({owner.username}, expected chat_id={owner_chat_id})"
+                )
+                unauthorized_msg = (
+                    "⛔ **Akses Ditolak**\n\n"
+                    "Bot ini dikonfigurasi secara privat (BYOB) dan hanya dapat digunakan oleh pemilik bot yang terdaftar."
+                )
+                send_message(chat_id, unauthorized_msg, bot_token=bot_token)
+                return
+            user = owner
+        else:
             # Look up user by telegram_chat_id
             try:
                 tg_id_int = int(chat_id)

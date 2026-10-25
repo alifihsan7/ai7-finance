@@ -579,7 +579,7 @@ def sync_sheets_endpoint(
         except Exception:
             raise HTTPException(status_code=400, detail="Invalid date format, use YYYY-MM-DD")
     try:
-        res = sync_cycle_snapshot(db, cycle_start_date=start_d)
+        res = sync_cycle_snapshot(db, user_id=current_user.id, cycle_start_date=start_d)
         return res
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Google Sheets sync failed: {str(e)}")
