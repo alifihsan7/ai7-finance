@@ -5,6 +5,7 @@ import time
 import logging
 import requests
 from datetime import datetime, date, timedelta
+import calendar
 import zoneinfo
 
 logger = logging.getLogger("ai7-finance-bot")
@@ -28,13 +29,16 @@ WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 def format_rp(amount: int) -> str:
     return f"Rp {amount:,}".replace(",", ".")
 
-def get_safe_to_spend_snippet(db: Session, user_id: int = 1) -> str:
+def get_user_cycle_info(db: Session, user_id: int = 1) -> dict:
     now_wib = datetime.now(WIB)
     today_wib = now_wib.date()
 
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "biweekly"
     pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
+    anchor_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else None
+    paycheck_day = cfg.paycheck_day if cfg and cfg.paycheck_day else (anchor_start.day if anchor_start else 25)
 
     latest_paycheck = db.query(Transaction).filter(
         Transaction.user_id == user_id,
@@ -42,11 +46,74 @@ def get_safe_to_spend_snippet(db: Session, user_id: int = 1) -> str:
         (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
     ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
 
-    cycle_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else (latest_paycheck.date if latest_paycheck else today_wib)
-    cycle_end = cycle_start + timedelta(days=cycle_days - 1)
+    if cycle_type == "monthly_date":
+        if today_wib.day >= paycheck_day:
+            start_year, start_month = today_wib.year, today_wib.month
+        else:
+            if today_wib.month == 1:
+                start_year, start_month = today_wib.year - 1, 12
+            else:
+                start_year, start_month = today_wib.year, today_wib.month - 1
+        _, max_days_start = calendar.monthrange(start_year, start_month)
+        cycle_start = date(start_year, start_month, min(paycheck_day, max_days_start))
+
+        if start_month == 12:
+            next_year, next_month = start_year + 1, 1
+        else:
+            next_year, next_month = start_year, start_month + 1
+        _, max_days_next = calendar.monthrange(next_year, next_month)
+        cycle_end = date(next_year, next_month, min(paycheck_day, max_days_next)) - timedelta(days=1)
+        cycle_days = (cycle_end - cycle_start).days + 1
+        cycle_label = f"Siklus Bulanan (Tgl {paycheck_day})"
+    else:
+        cycle_start = anchor_start or (latest_paycheck.date if latest_paycheck else today_wib)
+        cycle_end = cycle_start + timedelta(days=cycle_days - 1)
+        if cycle_type == "weekly" or cycle_days == 7:
+            cycle_label = "Siklus Mingguan"
+        elif cycle_type == "biweekly" or cycle_days == 14:
+            cycle_label = "Siklus 2-Mingguan"
+        elif cycle_type == "monthly" or cycle_days == 30:
+            cycle_label = "Siklus Bulanan (30 Hari)"
+        else:
+            cycle_label = f"Siklus {cycle_days} Hari"
+
     days_passed = (today_wib - cycle_start).days + 1
     day_of_cycle = min(cycle_days, max(1, days_passed))
     days_remaining = max(1, cycle_days - day_of_cycle + 1)
+
+    return {
+        "cfg": cfg,
+        "cycle_type": cycle_type,
+        "cycle_days": cycle_days,
+        "cycle_label": cycle_label,
+        "cycle_start": cycle_start,
+        "cycle_end": cycle_end,
+        "pocket_account": pocket_account,
+        "day_of_cycle": day_of_cycle,
+        "days_remaining": days_remaining,
+        "latest_paycheck": latest_paycheck
+    }
+
+def get_mandiri_envelopes(cycle_days: int) -> dict:
+    base_ratio = cycle_days / 30.0
+    # Plafon dasar (referensi 30 hari / 1 bulan)
+    base_limits = {
+        "Makanan & Minuman": 450000,
+        "Jajan / Ngopi": 100000,
+        "Laundry": 70000,
+        "Galon & Air": 44000,
+    }
+    return {cat: int(round(limit * base_ratio)) for cat, limit in base_limits.items()}
+
+def get_safe_to_spend_snippet(db: Session, user_id: int = 1) -> str:
+    c_info = get_user_cycle_info(db, user_id=user_id)
+    cfg = c_info["cfg"]
+    cycle_days = c_info["cycle_days"]
+    pocket_account = c_info["pocket_account"]
+    cycle_start = c_info["cycle_start"]
+    cycle_end = c_info["cycle_end"]
+    day_of_cycle = c_info["day_of_cycle"]
+    days_remaining = c_info["days_remaining"]
 
     pocket_income_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("inc")
@@ -303,23 +370,15 @@ def handle_saldo(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
 def handle_pacing(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
     user_id = user.id if user else 1
     now_wib = datetime.now(WIB)
-    today_wib = now_wib.date()
-
-    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
-    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
-    pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
-
-    latest_paycheck = db.query(Transaction).filter(
-        Transaction.user_id == user_id,
-        Transaction.type == "income",
-        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
-    ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
-
-    cycle_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else (latest_paycheck.date if latest_paycheck else today_wib)
-    cycle_end = cycle_start + timedelta(days=cycle_days - 1)
-    days_passed = (today_wib - cycle_start).days + 1
-    day_of_cycle = min(cycle_days, max(1, days_passed))
-    days_remaining = max(1, cycle_days - day_of_cycle + 1)
+    c_info = get_user_cycle_info(db, user_id=user_id)
+    cfg = c_info["cfg"]
+    cycle_days = c_info["cycle_days"]
+    cycle_label = c_info["cycle_label"]
+    pocket_account = c_info["pocket_account"]
+    cycle_start = c_info["cycle_start"]
+    cycle_end = c_info["cycle_end"]
+    day_of_cycle = c_info["day_of_cycle"]
+    days_remaining = c_info["days_remaining"]
 
     pocket_income_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("inc")
@@ -360,7 +419,7 @@ def handle_pacing(chat_id: int, db: Session, user: Optional[User] = None, bot_to
         pace_status = "🔴 Over Budget (Pengeluaran melebihi laju harian)"
 
     lines = [
-        "🎯 **AI7.Steward — Status Pacing Belanja Kantong**",
+        f"🎯 **AI7.Steward — Status Pacing Belanja ({cycle_label})**",
         f"📅 Siklus: `{cycle_start} s/d {cycle_end}` (Hari ke-{day_of_cycle}/{cycle_days})",
         f"🕒 `{now_wib.strftime('%d %B %Y - %H:%M WIB')}`",
         "──────────────────────────────",
@@ -385,22 +444,14 @@ def handle_obsidian(chat_id: int, db: Session, user: Optional[User] = None, bot_
     finance_dir = os.path.join(vault_path, "2 Areas", "Finance")
     os.makedirs(finance_dir, exist_ok=True)
 
-    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
-    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
-    pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
-
-    latest_paycheck = db.query(Transaction).filter(
-        Transaction.user_id == user_id,
-        Transaction.type == "income",
-        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
-    ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
-
-    today_wib = now_wib.date()
-    cycle_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else (latest_paycheck.date if latest_paycheck else today_wib)
-    cycle_end = cycle_start + timedelta(days=cycle_days - 1)
-    days_passed = (today_wib - cycle_start).days + 1
-    day_of_cycle = min(cycle_days, max(1, days_passed))
-    days_remaining = max(1, cycle_days - day_of_cycle + 1)
+    c_info = get_user_cycle_info(db, user_id=user_id)
+    cfg = c_info["cfg"]
+    cycle_days = c_info["cycle_days"]
+    pocket_account = c_info["pocket_account"]
+    cycle_start = c_info["cycle_start"]
+    cycle_end = c_info["cycle_end"]
+    day_of_cycle = c_info["day_of_cycle"]
+    days_remaining = c_info["days_remaining"]
 
     pocket_income_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("inc")
@@ -920,14 +971,13 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
 
     now_wib = datetime.now(WIB)
     time_str = now_wib.strftime("%Y-%m-%d %H:%M:%S")
-    start_date = date(now_wib.year, now_wib.month, 1)
 
-    MANDIRI_ENVELOPES = {
-        "Makanan & Minuman": 450000,
-        "Jajan / Ngopi": 100000,
-        "Laundry": 70000,
-        "Galon & Air": 44000,
-    }
+    c_info = get_user_cycle_info(db, user_id=user_id)
+    cycle_start = c_info["cycle_start"]
+    cycle_end = c_info["cycle_end"]
+    cycle_days = c_info["cycle_days"]
+    cycle_label = c_info["cycle_label"]
+    MANDIRI_ENVELOPES = get_mandiri_envelopes(cycle_days)
 
     # If single transaction
     if len(items) == 1:
@@ -964,13 +1014,14 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
                 Transaction.account == "Mandiri",
                 Transaction.type == "expense",
                 Transaction.category == tx.category,
-                Transaction.date >= start_date
+                Transaction.date >= cycle_start,
+                Transaction.date <= cycle_end
             ).scalar()
             spent_int = int(spent or 0)
             rem = limit - spent_int
-            pct = round(spent_int / limit * 100, 1)
+            pct = round(spent_int / limit * 100, 1) if limit > 0 else 0
             status_icon = "⚠️" if pct > 85 else "📊"
-            reply += f"\n\n{status_icon} **Status Amplop Mandiri (Bulan Ini):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
+            reply += f"\n\n{status_icon} **Status Amplop Mandiri ({cycle_label}):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
 
         if tx.type == "expense":
             reply += f"\n\n{get_safe_to_spend_snippet(db, user_id=user_id)}"
@@ -1022,15 +1073,16 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
                 Transaction.account == "Mandiri",
                 Transaction.type == "expense",
                 Transaction.category == cat,
-                Transaction.date >= start_date
+                Transaction.date >= cycle_start,
+                Transaction.date <= cycle_end
             ).scalar()
             spent_int = int(spent or 0)
             rem = limit - spent_int
-            pct = round(spent_int / limit * 100, 1)
+            pct = round(spent_int / limit * 100, 1) if limit > 0 else 0
             mandiri_status_lines.append(f"• **{cat}:** {format_rp(spent_int)} / {format_rp(limit)} ({pct}%) ➔ Sisa: {format_rp(rem)}")
 
     if mandiri_status_lines:
-        lines.append("\n📊 **Status Amplop Mandiri (Bulan Ini):**\n" + "\n".join(mandiri_status_lines))
+        lines.append(f"\n📊 **Status Amplop Mandiri ({cycle_label}):**\n" + "\n".join(mandiri_status_lines))
 
     lines.append(f"\n{get_safe_to_spend_snippet(db, user_id=user_id)}")
 
@@ -1157,14 +1209,13 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
 
     now_wib = datetime.now(WIB)
     time_str = now_wib.strftime("%Y-%m-%d %H:%M:%S")
-    start_date = date(now_wib.year, now_wib.month, 1)
 
-    MANDIRI_ENVELOPES = {
-        "Makanan & Minuman": 450000,
-        "Jajan / Ngopi": 100000,
-        "Laundry": 70000,
-        "Galon & Air": 44000,
-    }
+    c_info = get_user_cycle_info(db, user_id=user_id)
+    cycle_start = c_info["cycle_start"]
+    cycle_end = c_info["cycle_end"]
+    cycle_days = c_info["cycle_days"]
+    cycle_label = c_info["cycle_label"]
+    MANDIRI_ENVELOPES = get_mandiri_envelopes(cycle_days)
 
     tx_list = extraction.get("transactions", [])
     transcription = extraction.get("transcription", "")
@@ -1268,13 +1319,14 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
                 Transaction.account == "Mandiri",
                 Transaction.type == "expense",
                 Transaction.category == tx.category,
-                Transaction.date >= start_date
+                Transaction.date >= cycle_start,
+                Transaction.date <= cycle_end
             ).scalar()
             spent_int = int(spent or 0)
             rem = limit - spent_int
-            pct = round(spent_int / limit * 100, 1)
+            pct = round(spent_int / limit * 100, 1) if limit > 0 else 0
             status_icon = "⚠️" if pct > 85 else "📊"
-            reply += f"\n\n{status_icon} **Status Amplop Mandiri (Bulan Ini):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
+            reply += f"\n\n{status_icon} **Status Amplop Mandiri ({cycle_label}):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
 
         if tx.type == "expense":
             reply += f"\n\n{get_safe_to_spend_snippet(db, user_id=user_id)}"
@@ -1335,15 +1387,16 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
                 Transaction.account == "Mandiri",
                 Transaction.type == "expense",
                 Transaction.category == cat,
-                Transaction.date >= start_date
+                Transaction.date >= cycle_start,
+                Transaction.date <= cycle_end
             ).scalar()
             spent_int = int(spent or 0)
             rem = limit - spent_int
-            pct = round(spent_int / limit * 100, 1)
+            pct = round(spent_int / limit * 100, 1) if limit > 0 else 0
             mandiri_status_lines.append(f"• **{cat}:** {format_rp(spent_int)} / {format_rp(limit)} ({pct}%) ➔ Sisa: {format_rp(rem)}")
 
     if mandiri_status_lines:
-        lines.append("\n📊 **Status Amplop Mandiri (Bulan Ini):**\n" + "\n".join(mandiri_status_lines))
+        lines.append(f"\n📊 **Status Amplop Mandiri ({cycle_label}):**\n" + "\n".join(mandiri_status_lines))
 
     lines.append(f"\n{get_safe_to_spend_snippet(db, user_id=user_id)}")
 
