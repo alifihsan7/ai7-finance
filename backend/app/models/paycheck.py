@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy import Column, Integer, BigInteger, Float, String, Boolean, DateTime, Date, Text, ForeignKey, func
 from app.db.session import Base
 from app.models.user import User
@@ -26,6 +27,10 @@ class PaycheckConfig(Base):
     @main_income_account.setter
     def main_income_account(self, value: str):
         self.source_account = value
+
+    @property
+    def total_salary(self) -> Optional[int]:
+        return None
 
 class PaycheckBucket(Base):
     __tablename__ = "paycheck_buckets"

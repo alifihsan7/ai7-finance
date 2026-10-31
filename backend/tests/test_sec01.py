@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 
 from app.db.session import Base
 from app.models.user import User
@@ -84,6 +84,7 @@ def run_tests():
     db.commit()
 
     now = int(time.time())
+    dummy_req = Request({"type": "http", "client": ("127.0.0.1", 12345), "headers": []})
 
     # TEST 1: Attacker attempts signature confusion against victim (shared token user)
     print("\n[Test 1] Attacker signs victim's chat_id (111111) with attacker's bot token...")
@@ -94,7 +95,7 @@ def run_tests():
     }, ATTACKER_BOT_TOKEN)
 
     try:
-        telegram_webapp_auth(TelegramWebAppAuthRequest(init_data=init_data_exploit1), db=db)
+        telegram_webapp_auth(TelegramWebAppAuthRequest(init_data=init_data_exploit1), request=dummy_req, db=db)
         print("FAIL: Exploit succeeded! Vulnerability is still present!")
         sys.exit(1)
     except HTTPException as e:
@@ -110,7 +111,7 @@ def run_tests():
     }, ATTACKER_BOT_TOKEN)
 
     try:
-        telegram_webapp_auth(TelegramWebAppAuthRequest(init_data=init_data_exploit2), db=db)
+        telegram_webapp_auth(TelegramWebAppAuthRequest(init_data=init_data_exploit2), request=dummy_req, db=db)
         print("FAIL: Exploit against custom bot user succeeded!")
         sys.exit(1)
     except HTTPException as e:
@@ -125,7 +126,7 @@ def run_tests():
         "user": {"id": 222222, "first_name": "Attacker", "username": "attacker_user"}
     }, ATTACKER_BOT_TOKEN)
 
-    res3 = telegram_webapp_auth(TelegramWebAppAuthRequest(init_data=init_data_legit_attacker), db=db)
+    res3 = telegram_webapp_auth(TelegramWebAppAuthRequest(init_data=init_data_legit_attacker), request=dummy_req, db=db)
     print(f"PASS: Custom bot user authenticated successfully: user_id={res3.user.id}, username={res3.user.username}")
     assert res3.user.id == 2
 
@@ -137,7 +138,7 @@ def run_tests():
         "user": {"id": 111111, "first_name": "Victim Admin", "username": "victim_admin"}
     }, SHARED_TOKEN)
 
-    res4 = telegram_webapp_auth(TelegramWebAppAuthRequest(init_data=init_data_victim_shared), db=db)
+    res4 = telegram_webapp_auth(TelegramWebAppAuthRequest(init_data=init_data_victim_shared), request=dummy_req, db=db)
     print(f"PASS: Shared bot user authenticated successfully: user_id={res4.user.id}, username={res4.user.username}")
     assert res4.user.id == 1
 

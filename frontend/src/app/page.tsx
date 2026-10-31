@@ -885,7 +885,7 @@ export default function FinanceDashboard() {
                       : "text-zinc-400 hover:text-white border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-zinc-500"}`} />
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-zinc-400"}`} />
                   <span className="truncate whitespace-nowrap">{item.name}</span>
                 </button>
               );
@@ -915,7 +915,7 @@ export default function FinanceDashboard() {
                   <p className="text-white font-semibold text-xs truncate group-hover:text-amberGold transition-colors">
                     {currentUser ? currentUser.full_name : "Masuk / Akun"}
                   </p>
-                  <p className="text-[10px] text-zinc-500 font-mono truncate">
+                  <p className="text-[10px] text-zinc-400 font-mono truncate">
                     {currentUser ? `@${currentUser.username}` : "Mode Tamu"}
                   </p>
                 </div>
@@ -927,7 +927,7 @@ export default function FinanceDashboard() {
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
                   Tamu
                 </span>
               )}
@@ -1098,7 +1098,7 @@ export default function FinanceDashboard() {
                           : "text-zinc-400 hover:text-white border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
                       }`}
                     >
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-zinc-500"}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-zinc-400"}`} />
                       <span className="truncate whitespace-nowrap">{item.name}</span>
                     </button>
                   );
@@ -1161,7 +1161,7 @@ export default function FinanceDashboard() {
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
                     Tamu
                   </span>
                 )}
@@ -1431,7 +1431,7 @@ export default function FinanceDashboard() {
           <div className="space-y-5 sm:space-y-8 animate-fadeIn">
             {/* Active Paycheck Session Banner */}
             {activePaycheckSession && activePaycheckSession.status === "in_progress" && (
-              <div className="p-4 sm:p-4.5 rounded-2xl bg-gradient-to-r from-mintRise/15 via-obsidian-card to-cyanHub/15 border border-mintRise/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+              <div className="p-4 sm:p-4.5 rounded-2xl bg-obsidian-card border border-mintRise/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-mintRise/20 border border-mintRise/40 flex items-center justify-center text-mintRise shrink-0">
                     <CheckCircle2 className="w-5 h-5 text-mintRise" />
@@ -2160,7 +2160,7 @@ export default function FinanceDashboard() {
               placeholder="Contoh: Share family plan / Kartu debit Jago"
               value={subNotes}
               onChange={(e) => setSubNotes(e.target.value)}
-              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-500"
+              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
             />
           </div>
 
@@ -2346,7 +2346,7 @@ export default function FinanceDashboard() {
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-zinc-500 hover:text-zinc-300 p-1 rounded-lg transition"
+            className="text-zinc-400 hover:text-zinc-200 p-1 rounded-lg transition"
           >
             <X className="w-3.5 h-3.5" />
           </button>

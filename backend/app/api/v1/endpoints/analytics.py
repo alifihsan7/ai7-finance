@@ -446,7 +446,8 @@ def get_monthly_summary(
             PaycheckBucket.account == pocket_account
         ).first()
         pct = (p_bucket.percentage / 100.0) if p_bucket else 0.5
-        salary = cfg.total_salary if (cfg.total_salary and cfg.total_salary > 0) else 0
+        salary = getattr(cfg, "total_salary", None)
+        salary = salary if (salary and salary > 0) else 0
         if salary > 0:
             base_pocket_budget = int(round(salary * pct))
         elif user_accs:
@@ -475,7 +476,14 @@ def get_monthly_summary(
     ).first()
     pocket_spent = int(pocket_spent_row.spent if pocket_spent_row else 0)
     pocket_remaining = max(0, pocket_budget - pocket_spent)
-    safe_daily = int(pocket_remaining / days_remaining) if days_remaining > 0 else 0
+    if days_remaining > 0:
+        safe_daily = int(pocket_remaining / days_remaining)
+    elif pocket_remaining > 0:
+        overdue_days = max(1, (today_wib - cycle_end).days)
+        grace_divisor = max(1, 3 - overdue_days + 1)
+        safe_daily = int(pocket_remaining / grace_divisor)
+    else:
+        safe_daily = 0
 
     ideal_daily_rate = pocket_budget / total_days
     ideal_pace_today = int(round(ideal_daily_rate * day_of_cycle / 100) * 100)

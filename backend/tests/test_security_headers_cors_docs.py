@@ -96,6 +96,7 @@ async def main():
         "x-frame-options": "DENY",
         "referrer-policy": "strict-origin-when-cross-origin",
         "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
     }
     
     for h, val in expected_headers.items():

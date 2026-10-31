@@ -400,7 +400,7 @@ export function TransactionLedgerView({
           {/* Search Bar & Quick Add */}
           <div className="flex items-center gap-2 w-full lg:w-auto shrink-0 justify-end">
             <div className="relative flex-1 lg:w-64">
-              <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
@@ -409,7 +409,7 @@ export function TransactionLedgerView({
                   setCurrentPage(1);
                 }}
                 placeholder="Cari transaksi, ket, atau akun..."
-                className="w-full bg-obsidian-card border border-white/[0.08] rounded-2xl pl-10 pr-8 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amberGold transition font-mono"
+                className="w-full bg-obsidian-card border border-white/[0.08] rounded-2xl pl-10 pr-8 py-2 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-amberGold transition font-mono"
               />
               {searchQuery && (
                 <button
@@ -521,7 +521,7 @@ export function TransactionLedgerView({
                 }}
                 className="bg-obsidian-panel border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-amberGold"
               />
-              <span className="text-zinc-500 text-xs">s/d</span>
+              <span className="text-zinc-400 text-xs">s/d</span>
               <input
                 type="date"
                 value={customEndDate}

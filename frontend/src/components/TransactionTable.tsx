@@ -73,7 +73,7 @@ export function TransactionTable({
               ))
             ) : transactions.length === 0 ? (
               <tr>
-                <td colSpan={showActions ? 6 : 5} className="py-12 text-center text-zinc-500">
+                <td colSpan={showActions ? 6 : 5} className="py-12 text-center text-zinc-400">
                   Tidak ada transaksi yang cocok dengan filter pencarian.
                 </td>
               </tr>

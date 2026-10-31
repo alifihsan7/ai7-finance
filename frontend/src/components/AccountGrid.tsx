@@ -243,7 +243,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                           }
                         );
                       }}
-                      className="p-1 rounded-full text-zinc-500 hover:text-amberGold hover:bg-amberGold/10 transition-colors cursor-pointer"
+                      className="p-1 rounded-full text-zinc-400 hover:text-amberGold hover:bg-amberGold/10 transition-colors cursor-pointer"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
@@ -256,7 +256,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                         e.stopPropagation();
                         setConfirmDelete({ id: acc.id!, name: acc.name });
                       }}
-                      className="p-1 rounded-full text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      className="p-1 rounded-full text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -314,7 +314,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                         {pctUsed}%
                       </strong>
                     </span>
-                    <span className="text-zinc-500 whitespace-nowrap text-right">
+                    <span className="text-zinc-400 whitespace-nowrap text-right">
                       Plafon:{" "}
                       <strong className="text-zinc-300 font-medium">
                         {formatRupiah(acc.allocated)}

@@ -338,7 +338,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
           <div className="flex items-center gap-3 pt-1">
             <div className="h-px bg-white/[0.08] flex-1" />
-            <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">
               atau dengan username & password
             </span>
             <div className="h-px bg-white/[0.08] flex-1" />
@@ -361,13 +361,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 Username atau Email
               </label>
               <div className="relative">
-                <AtSign className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <AtSign className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={loginId}
                   onChange={(e) => setLoginId(e.target.value)}
                   placeholder="username atau email@domain.com"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -378,13 +378,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 Password
               </label>
               <div className="relative">
-                <KeyRound className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <KeyRound className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -418,13 +418,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 Nama Lengkap
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <User className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={regFullName}
                   onChange={(e) => setRegFullName(e.target.value)}
                   placeholder="Nama Lengkap Anda"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -435,13 +435,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 Username
               </label>
               <div className="relative">
-                <AtSign className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <AtSign className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={regUsername}
                   onChange={(e) => setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                   placeholder="contoh: user_baru"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -449,14 +449,14 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
             <div>
               <label className="block text-xs font-medium text-zinc-300 mb-1">
-                Email <span className="text-zinc-500 font-normal">(Opsional)</span>
+                Email <span className="text-zinc-400 font-normal">(Opsional)</span>
               </label>
               <input
                 type="email"
                 value={regEmail}
                 onChange={(e) => setRegEmail(e.target.value)}
                 placeholder="nama@email.com"
-                className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
               />
             </div>
 
@@ -470,7 +470,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="Min 6 karakter"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -483,7 +483,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   value={regConfirmPassword}
                   onChange={(e) => setRegConfirmPassword(e.target.value)}
                   placeholder="Ulangi password"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>

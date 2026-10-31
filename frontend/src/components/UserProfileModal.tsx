@@ -319,20 +319,20 @@ export function UserProfileModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@email.com"
-                className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold"
+                className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold"
               />
             </div>
 
             <div>
               <label className="block text-xs font-medium text-zinc-300 mb-1">
-                Password Baru <span className="text-zinc-500 font-normal">(Kosongkan jika tidak diubah)</span>
+                Password Baru <span className="text-zinc-400 font-normal">(Kosongkan jika tidak diubah)</span>
               </label>
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold"
+                className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold"
               />
             </div>
 
@@ -569,7 +569,7 @@ export function UserProfileModal({
                       value={sharedChatId}
                       onChange={(e) => setSharedChatId(e.target.value)}
                       placeholder="Contoh: 987654321"
-                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub font-mono"
+                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub font-mono"
                       required
                     />
                   </div>
@@ -656,21 +656,21 @@ export function UserProfileModal({
                       value={customBotToken}
                       onChange={(e) => setCustomBotToken(e.target.value)}
                       placeholder="Contoh: 7123456789:AAH_XYZ123456789abcdef"
-                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-mono"
+                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-mono"
                       required
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-medium text-zinc-300 mb-1">
-                      Telegram Chat ID Kamu <span className="text-zinc-500 font-normal">(Opsional: untuk notifikasi & sambutan)</span>
+                      Telegram Chat ID Kamu <span className="text-zinc-400 font-normal">(Opsional: untuk notifikasi & sambutan)</span>
                     </label>
                     <input
                       type="number"
                       value={customChatId}
                       onChange={(e) => setCustomChatId(e.target.value)}
                       placeholder="Dapatkan dengan ketik /start di bot baru Anda"
-                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-mono"
+                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-mono"
                     />
                   </div>
 

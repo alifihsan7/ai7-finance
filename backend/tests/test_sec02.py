@@ -93,5 +93,8 @@ def run_tests():
 
     print("\n=== ALL SEC-02 VERIFICATION TESTS PASSED SUCCESSFULLY ===")
 
+def test_sec02_rate_limiter():
+    run_tests()
+
 if __name__ == "__main__":
     run_tests()

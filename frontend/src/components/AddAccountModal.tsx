@@ -156,7 +156,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             onChange={setInitialBalance}
             placeholder="0"
           />
-          <p className="text-[11px] text-zinc-500 mt-1">
+          <p className="text-[11px] text-zinc-400 mt-1">
             Jika diisi lebih dari Rp 0, sistem otomatis mencatat transaksi pemasukan &ldquo;Saldo Awal&rdquo; di buku transaksi.
           </p>
         </div>

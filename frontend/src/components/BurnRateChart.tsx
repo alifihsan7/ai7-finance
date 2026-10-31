@@ -177,7 +177,7 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
                   >
                     D{b.day}
                   </span>
-                  <span className="text-[8px] sm:text-[9px] text-zinc-500 block font-mono">
+                  <span className="text-[8px] sm:text-[9px] text-zinc-400 block font-mono">
                     {b.date.slice(8)}
                   </span>
                 </div>

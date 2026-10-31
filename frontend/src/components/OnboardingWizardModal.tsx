@@ -314,7 +314,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                     ? "bg-amberGold/10 border-amberGold/40 text-amberGold"
                     : isDone
                     ? "bg-mintRise/10 border-mintRise/30 text-mintRise"
-                    : "bg-obsidian-panel border-white/[0.08] text-zinc-500"
+                    : "bg-obsidian-panel border-white/[0.08] text-zinc-400"
                 }`}
               >
                 <div
@@ -383,7 +383,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                       <button
                         type="button"
                         onClick={() => handleRemoveAccount(idx)}
-                        className="p-2 text-zinc-500 hover:text-coralFall rounded-xl hover:bg-coralFall/10 transition cursor-pointer"
+                        className="p-2 text-zinc-400 hover:text-coralFall rounded-xl hover:bg-coralFall/10 transition cursor-pointer"
                         title="Hapus Rekening"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -401,7 +401,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                 value={newAccName}
                 onChange={(e) => setNewAccName(e.target.value)}
                 placeholder="+ Tambah rekening lain (misal: BCA, Seabank)"
-                className="flex-1 bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-500 rounded-2xl px-3 py-2 text-xs focus:outline-none focus:border-amberGold"
+                className="flex-1 bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3 py-2 text-xs focus:outline-none focus:border-amberGold"
               />
               <div className="w-full sm:w-[150px]">
                 <CustomSelect
@@ -477,7 +477,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                       }`}
                     >
                       <p className="text-xs font-semibold">{item.label}</p>
-                      <p className="text-[10px] text-zinc-500 mt-0.5 leading-snug">{item.desc}</p>
+                      <p className="text-[10px] text-zinc-400 mt-0.5 leading-snug">{item.desc}</p>
                     </button>
                   );
                 })}
@@ -556,7 +556,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                   }))}
                   accent="cyan"
                 />
-                <p className="text-[10px] text-zinc-500 mt-1">
+                <p className="text-[10px] text-zinc-400 mt-1">
                   Rekening ini yang dihitung burn-rate dan pengeluaran harian makanan/jajan.
                 </p>
               </div>
@@ -571,7 +571,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                   onChange={(e) => setStartDateStr(e.target.value)}
                   className="w-full bg-obsidian-panel border border-white/[0.08] text-white rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub"
                 />
-                <p className="text-[10px] text-zinc-500 mt-1">
+                <p className="text-[10px] text-zinc-400 mt-1">
                   Tanggal mulai siklus anggaran Anda saat ini.
                 </p>
               </div>

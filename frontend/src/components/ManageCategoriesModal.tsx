@@ -14,6 +14,7 @@ import {
   Layers,
 } from "lucide-react";
 import { CustomModal } from "./ui/CustomModal";
+import { CustomSelect } from "./ui/CustomSelect";
 import { authFetch } from "@/lib/api";
 import { CATEGORY_COLORS, getCategoryColorDef } from "@/lib/categoryColors";
 
@@ -374,7 +375,7 @@ export function ManageCategoriesModal({
               <Plus className="w-3.5 h-3.5 text-amberGold" />
               Tambah Kategori {activeTab === "expense" ? "Pengeluaran" : "Pemasukan"}
             </span>
-            <span className="text-[11px] text-zinc-500 font-mono">
+            <span className="text-[11px] text-zinc-400 font-mono">
               Badge: <span className="text-zinc-300">{getCategoryColorDef(newColor).name}</span>
             </span>
           </div>
@@ -393,7 +394,7 @@ export function ManageCategoriesModal({
                   ? "Contoh: Jajanan Sore, Skincare, Alat Kantor..."
                   : "Contoh: Gaji Tambahan, Dividen, Freelance..."
               }
-              className="w-full bg-obsidian-card border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amberGold transition"
+              className="w-full bg-obsidian-card border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-amberGold transition"
             />
           </div>
 
@@ -463,7 +464,7 @@ export function ManageCategoriesModal({
               Daftar Kategori {activeTab === "expense" ? "Pengeluaran" : "Pemasukan"} ({currentList.length})
             </h4>
             {loading && (
-              <span className="text-xs text-zinc-500 font-mono flex items-center gap-1">
+              <span className="text-xs text-zinc-400 font-mono flex items-center gap-1">
                 <Loader2 className="w-3 h-3 animate-spin text-amberGold" /> Memuat...
               </span>
             )}
@@ -479,7 +480,7 @@ export function ManageCategoriesModal({
           {/* Category List Scrollable Container */}
           <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
             {currentList.length === 0 && !loading ? (
-              <div className="p-8 text-center bg-obsidian-panel/50 rounded-2xl border border-white/[0.06] text-zinc-500 text-xs">
+              <div className="p-8 text-center bg-obsidian-panel/50 rounded-2xl border border-white/[0.06] text-zinc-400 text-xs">
                 Belum ada kategori {activeTab === "expense" ? "pengeluaran" : "pemasukan"}. Buat kategori baru di atas.
               </div>
             ) : (
@@ -659,18 +660,17 @@ export function ManageCategoriesModal({
                   <ArrowRight className="w-3.5 h-3.5 text-amberGold" />
                   Pindahkan Transaksi ke Kategori:
                 </label>
-                <select
+                <CustomSelect
                   value={fallbackCategory}
-                  onChange={(e) => setFallbackCategory(e.target.value)}
-                  className="w-full bg-obsidian-card border border-white/[0.12] text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amberGold"
-                >
-                  {fallbackOptions.map((opt) => (
-                    <option key={opt} value={opt} className="bg-obsidian-card text-white">
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-[11px] text-zinc-500">
+                  onChange={(val) => setFallbackCategory(val)}
+                  options={fallbackOptions.map((opt) => ({
+                    value: opt,
+                    label: opt,
+                  }))}
+                  accent="amber"
+                  placeholder="Pilih kategori tujuan..."
+                />
+                <p className="text-[11px] text-zinc-400">
                   Transaksi, langganan rutin, atau target yang memakai &quot;{deletingCat.name}&quot; akan dialihkan ke &quot;{fallbackCategory}&quot;.
                 </p>
               </div>

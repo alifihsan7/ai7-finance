@@ -480,7 +480,7 @@ export function CategoryGrid({
                       </div>
                       <span
                         className={`text-[11px] font-mono font-semibold ${
-                          c.percentage > 0 ? colorDef.badgeText : "text-zinc-500"
+                          c.percentage > 0 ? colorDef.badgeText : "text-zinc-400"
                         }`}
                       >
                         {c.percentage > 0 ? `${c.percentage.toFixed(1)}%` : "0% total"}
@@ -594,7 +594,7 @@ export function CategoryGrid({
               value={addName}
               onChange={(e) => setAddName(e.target.value)}
               placeholder="Contoh: Makan Harian, Langganan AI, Hiburan"
-              className="w-full bg-obsidian-card border border-white/[0.08] focus:border-amberGold/60 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition"
+              className="w-full bg-obsidian-card border border-white/[0.08] focus:border-amberGold/60 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-400 outline-none transition"
               autoFocus
             />
           </div>
@@ -705,7 +705,7 @@ export function CategoryGrid({
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               placeholder="Nama kategori"
-              className="w-full bg-obsidian-card border border-white/[0.08] focus:border-amberGold/60 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition"
+              className="w-full bg-obsidian-card border border-white/[0.08] focus:border-amberGold/60 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-400 outline-none transition"
             />
           </div>
 

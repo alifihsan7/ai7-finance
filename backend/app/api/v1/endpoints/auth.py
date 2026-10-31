@@ -33,7 +33,7 @@ from app.schemas.user import (
 )
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
-from app.core.rate_limit import login_limiter, register_limiter
+from app.core.rate_limit import login_limiter, register_limiter, auth_limiter
 from app.api.deps import get_strict_current_user
 
 router = APIRouter()
@@ -401,10 +401,12 @@ def verify_telegram_init_data(init_data: str, bot_token: str) -> Optional[dict]:
         return None
 
 @router.post("/telegram-webapp", response_model=TokenResponse)
-def telegram_webapp_auth(payload: TelegramWebAppAuthRequest, db: Session = Depends(get_db)):
+def telegram_webapp_auth(payload: TelegramWebAppAuthRequest, request: Request, db: Session = Depends(get_db)):
     """
     Authenticate a user directly from Telegram Mini App initData without password.
     """
+    if request:
+        auth_limiter.check(request)
     if not settings.TELEGRAM_BOT_TOKEN:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

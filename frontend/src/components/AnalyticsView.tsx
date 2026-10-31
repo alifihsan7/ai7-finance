@@ -271,7 +271,7 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
         </div>
 
         {summary.daily_trend.length === 0 ? (
-          <div className="text-center py-10 text-xs sm:text-sm text-zinc-500 font-mono">
+          <div className="text-center py-10 text-xs sm:text-sm text-zinc-400 font-mono">
             Belum ada aktivitas transaksi pada rentang periode ini.
           </div>
         ) : (

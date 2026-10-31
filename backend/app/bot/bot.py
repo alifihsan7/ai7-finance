@@ -43,7 +43,7 @@ def get_user_cycle_info(db: Session, user_id: int) -> dict:
     latest_paycheck = db.query(Transaction).filter(
         Transaction.user_id == user_id,
         Transaction.type == "income",
-        (Transaction.category == "Uang Saku Ortu") | (Transaction.description.ilike("%gajian%"))
+        Transaction.category.in_(["Gajian", "Gaji", "Pemasukan", "Uang Saku Ortu", "Income"]) | Transaction.description.ilike("%gajian%") | Transaction.description.ilike("%pemasukan%")
     ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
 
     if cycle_type == "monthly_date":
@@ -124,7 +124,8 @@ def get_safe_to_spend_snippet(db: Session, user_id: int) -> str:
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
     ).first()
-    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (cfg.total_salary if cfg else 825000)
+    salary = getattr(cfg, "total_salary", None) if cfg else None
+    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (salary or 825000)
 
     spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
@@ -401,7 +402,8 @@ def handle_pacing(chat_id: int, db: Session, user: Optional[User] = None, bot_to
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
     ).first()
-    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (cfg.total_salary if cfg else 825000)
+    salary = getattr(cfg, "total_salary", None) if cfg else None
+    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (salary or 825000)
 
     spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
@@ -477,7 +479,8 @@ def handle_obsidian(chat_id: int, db: Session, user: Optional[User] = None, bot_
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
     ).first()
-    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (cfg.total_salary if cfg else 825000)
+    salary = getattr(cfg, "total_salary", None) if cfg else None
+    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (salary or 825000)
 
     spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
@@ -871,7 +874,8 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
     user_id = user.id
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
-    total = cfg.total_salary if cfg and cfg.total_salary > 0 else 1500000
+    salary = getattr(cfg, "total_salary", None) if cfg else None
+    total = int(salary) if (salary and salary > 0) else 1500000
 
     parts = text.split()
     if len(parts) > 1:

@@ -520,17 +520,15 @@ export default function PaycheckModal({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                      <span className="text-xs text-zinc-400 font-mono">Rp</span>
-                      <input
-                        type="text"
-                        value={currentAmt > 0 ? currentAmt.toLocaleString("id-ID") : ""}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value.replace(/\D/g, ""), 10) || 0;
-                          handleAmountAdjust(b.account, val);
+                    <div className="w-full sm:w-44 shrink-0 self-end sm:self-center">
+                      <CurrencyInput
+                        value={currentAmt > 0 ? currentAmt.toString() : ""}
+                        onChange={(val) => {
+                          const num = parseInt(val, 10) || 0;
+                          handleAmountAdjust(b.account, num);
                         }}
-                        className="w-32 h-8 px-2.5 text-right font-mono font-bold text-sm text-white rounded-xl bg-obsidian-panel border border-white/[0.08] focus:outline-none focus:border-mintRise focus:ring-1 focus:ring-mintRise/20 transition"
                         placeholder="0"
+                        accent="mint"
                       />
                     </div>
                   </div>
@@ -628,10 +626,10 @@ export default function PaycheckModal({
               </div>
             </div>
 
-            {/* Glowing Progress Bar */}
+            {/* Progress Bar */}
             <div className="w-full h-2 rounded-full bg-obsidian-card overflow-hidden p-0.5 border border-white/[0.08]">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-mintRise to-cyanHub transition-all duration-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+                className="h-full rounded-full bg-mintRise transition-all duration-500"
                 style={{ width: `${activeSession.progress_percentage}%` }}
               />
             </div>
@@ -706,7 +704,7 @@ export default function PaycheckModal({
                             {/* Checkbox button */}
                             <div className="shrink-0">
                               {step.is_done ? (
-                                <div className="w-6 h-6 rounded-lg bg-mintRise/20 border border-mintRise/50 flex items-center justify-center text-mintRise shadow-[0_0_8px_rgba(16,185,129,0.25)]">
+                                <div className="w-6 h-6 rounded-lg bg-mintRise/20 border border-mintRise/50 flex items-center justify-center text-mintRise">
                                   <Check className="w-4 h-4 stroke-[2.5]" />
                                 </div>
                               ) : (
@@ -724,7 +722,7 @@ export default function PaycheckModal({
                                 <span
                                   className={`font-semibold text-sm truncate ${
                                     step.is_done
-                                      ? "text-zinc-500 line-through"
+                                      ? "text-zinc-400 line-through"
                                       : "text-white"
                                   }`}
                                 >
@@ -752,7 +750,7 @@ export default function PaycheckModal({
                             <span
                               className={`font-mono font-bold text-sm ${
                                 step.is_done
-                                  ? "text-zinc-500"
+                                  ? "text-zinc-400"
                                   : "text-mintRise"
                               }`}
                             >

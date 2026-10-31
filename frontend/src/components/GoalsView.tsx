@@ -38,55 +38,43 @@ const COLOR_THEMES: Record<
     badgeBg: string;
     badgeText: string;
     badgeBorder: string;
-    gradient: string;
-    glow: string;
-    radialGlow: string;
+    barBg: string;
   }
 > = {
   emerald: {
-    dot: "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]",
+    dot: "bg-emerald-400",
     badgeBg: "bg-emerald-500/10",
     badgeText: "text-emerald-400",
     badgeBorder: "border-emerald-500/20",
-    gradient: "from-emerald-500 via-teal-400 to-emerald-400",
-    glow: "shadow-[0_0_10px_rgba(16,185,129,0.35)]",
-    radialGlow: "bg-emerald-500/10",
+    barBg: "bg-emerald-500",
   },
   cyan: {
-    dot: "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]",
+    dot: "bg-cyan-400",
     badgeBg: "bg-cyan-500/10",
     badgeText: "text-cyan-400",
     badgeBorder: "border-cyan-500/20",
-    gradient: "from-cyan-500 via-sky-400 to-blue-400",
-    glow: "shadow-[0_0_10px_rgba(6,182,212,0.35)]",
-    radialGlow: "bg-cyan-500/10",
+    barBg: "bg-cyan-500",
   },
   amber: {
-    dot: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]",
+    dot: "bg-amber-400",
     badgeBg: "bg-amber-500/10",
     badgeText: "text-amber-400",
     badgeBorder: "border-amber-500/20",
-    gradient: "from-amber-500 via-amber-400 to-yellow-400",
-    glow: "shadow-[0_0_10px_rgba(245,158,11,0.35)]",
-    radialGlow: "bg-amber-500/10",
+    barBg: "bg-amber-500",
   },
   purple: {
-    dot: "bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.6)]",
+    dot: "bg-purple-400",
     badgeBg: "bg-purple-500/10",
     badgeText: "text-purple-400",
     badgeBorder: "border-purple-500/20",
-    gradient: "from-purple-500 via-fuchsia-400 to-purple-400",
-    glow: "shadow-[0_0_10px_rgba(168,85,247,0.35)]",
-    radialGlow: "bg-purple-500/10",
+    barBg: "bg-purple-500",
   },
   rose: {
-    dot: "bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.6)]",
+    dot: "bg-rose-400",
     badgeBg: "bg-rose-500/10",
     badgeText: "text-rose-400",
     badgeBorder: "border-rose-500/20",
-    gradient: "from-rose-500 via-rose-400 to-pink-400",
-    glow: "shadow-[0_0_10px_rgba(244,63,94,0.35)]",
-    radialGlow: "bg-rose-500/10",
+    barBg: "bg-rose-500",
   },
 };
 
@@ -320,13 +308,8 @@ export function GoalsView({
             return (
               <div
                 key={goal.id}
-                className="group relative bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 overflow-hidden"
+                className="group relative bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 shadow-md hover:shadow-lg overflow-hidden"
               >
-                {/* Subtle corner ambient glow */}
-                <div
-                  className={`pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-15 transition-opacity group-hover:opacity-30 ${theme.radialGlow}`}
-                />
-
                 <div className="space-y-6 relative z-1">
                   {/* Top Header: Icon + Category Badge + Account + Actions */}
                   <div className="flex items-start justify-between gap-3.5">
@@ -402,7 +385,7 @@ export function GoalsView({
                   <div className="space-y-2 pt-1">
                     <div className="h-2 w-full bg-white/[0.06] rounded-full overflow-hidden p-[1px] border border-white/[0.08]">
                       <div
-                        className={`h-full bg-gradient-to-r ${theme.gradient} ${theme.glow} transition-all duration-700 rounded-full`}
+                        className={`h-full ${theme.barBg} transition-all duration-700 rounded-full`}
                         style={{ width: `${Math.min(100, Math.max(3, goal.percentage))}%` }}
                       />
                     </div>

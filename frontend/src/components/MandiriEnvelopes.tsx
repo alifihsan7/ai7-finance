@@ -157,11 +157,11 @@ export function MandiriEnvelopes({
 
               <div className="flex items-center justify-between text-xs text-zinc-400 font-mono pt-3 border-t border-white/[0.08] gap-2">
                 <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-zinc-500 text-[11px]">Limit:</span>
+                  <span className="text-zinc-400 text-[11px]">Limit:</span>
                   <span className="font-semibold text-zinc-300 text-[11px] whitespace-nowrap">{formatRupiah(env.limit)}</span>
                 </div>
                 <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-zinc-500 text-[11px]">Pakai:</span>
+                  <span className="text-zinc-400 text-[11px]">Pakai:</span>
                   <span className={`font-semibold text-[11px] whitespace-nowrap ${pct >= 90 ? "text-coralFall font-bold" : "text-zinc-300"}`}>
                     {formatRupiah(env.spent)}
                   </span>

@@ -151,7 +151,7 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Contoh: Top up tabungan dingin"
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyanHub transition"
+            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-cyanHub transition"
           />
         </div>
 

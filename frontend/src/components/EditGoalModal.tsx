@@ -59,11 +59,11 @@ const CATEGORY_OPTIONS = [
 ];
 
 const COLOR_OPTIONS = [
-  { value: "emerald", label: "Emerald", dot: "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" },
-  { value: "cyan", label: "Cyan", dot: "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]" },
-  { value: "amber", label: "Amber", dot: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]" },
-  { value: "purple", label: "Purple", dot: "bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.6)]" },
-  { value: "rose", label: "Rose", dot: "bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.6)]" },
+  { value: "emerald", label: "Emerald", dot: "bg-emerald-400" },
+  { value: "cyan", label: "Cyan", dot: "bg-cyan-400" },
+  { value: "amber", label: "Amber", dot: "bg-amber-400" },
+  { value: "purple", label: "Purple", dot: "bg-purple-400" },
+  { value: "rose", label: "Rose", dot: "bg-rose-400" },
 ];
 
 const ICON_OPTIONS = [
@@ -332,7 +332,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
               placeholder="Strategi alokasi atau tujuan..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-500"
+              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
             />
           </div>
         </div>
