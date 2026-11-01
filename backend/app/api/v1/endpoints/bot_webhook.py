@@ -4,6 +4,7 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.user import User
+from app.core.security import decrypt_token
 
 router = APIRouter()
 
@@ -15,7 +16,8 @@ async def telegram_bot_webhook(secret: str, request: Request, db: Session = Depe
     Offloads blocking I/O and synchronous bot execution to worker threadpool to prevent freezing the event loop.
     """
     user = db.query(User).filter(User.telegram_webhook_secret == secret).first()
-    if not user or not user.telegram_bot_token:
+    bot_token = decrypt_token(user.telegram_bot_token) if user else None
+    if not user or not bot_token:
         # Return 200 OK so Telegram stops retrying dead/revoked webhooks
         return {"ok": False, "detail": "User or custom bot token not found"}
 
@@ -31,7 +33,7 @@ async def telegram_bot_webhook(secret: str, request: Request, db: Session = Depe
         await run_in_threadpool(
             process_update,
             payload,
-            bot_token=user.telegram_bot_token,
+            bot_token=bot_token,
             user_override=user
         )
     except Exception as e:

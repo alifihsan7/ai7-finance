@@ -1,6 +1,6 @@
 from typing import Optional, List
 from datetime import datetime, date
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 class UserBase(BaseModel):
     username: str
@@ -11,7 +11,7 @@ class UserCreate(BaseModel):
     username: str
     email: Optional[str] = None
     full_name: str
-    password: str
+    password: str = Field(..., min_length=8, description="Password minimal 8 karakter")
     telegram_chat_id: Optional[int] = None
 
 class UserLogin(BaseModel):

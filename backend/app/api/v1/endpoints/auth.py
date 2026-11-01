@@ -1,4 +1,5 @@
 from typing import Optional
+import logging
 import secrets
 import hmac
 import hashlib
@@ -31,10 +32,12 @@ from app.schemas.user import (
     GoogleAuthRequest,
     TelegramWebAppAuthRequest,
 )
-from app.core.security import hash_password, verify_password, create_access_token
+from app.core.security import hash_password, verify_password, create_access_token, encrypt_token, decrypt_token
 from app.core.config import settings
 from app.core.rate_limit import login_limiter, register_limiter, auth_limiter
 from app.api.deps import get_strict_current_user
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -88,6 +91,12 @@ def login(payload: UserLogin, request: Request, db: Session = Depends(get_db)):
     ).first()
 
     if not user or not verify_password(payload.password, user.hashed_password):
+        client_ip = (
+            login_limiter._get_real_ip(request)
+            if hasattr(login_limiter, "_get_real_ip")
+            else (request.client.host if request.client else "unknown")
+        )
+        logger.warning(f"[AUTH_FAIL] IP={client_ip} username={login_id}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Username atau password salah",
@@ -235,7 +244,7 @@ def link_telegram_custom_bot(
         print(f"Warning: gagal setMyCommands pada custom bot: {e}")
 
     # 5. Simpan ke database user
-    user.telegram_bot_token = token
+    user.telegram_bot_token = encrypt_token(token)
     user.telegram_bot_username = bot_username
     user.telegram_webhook_secret = secret
     user.telegram_mode = "custom"
@@ -271,10 +280,11 @@ def unlink_telegram(
     user: User = Depends(get_strict_current_user),
     db: Session = Depends(get_db)
 ):
-    if user.telegram_bot_token:
+    bot_token = decrypt_token(user.telegram_bot_token)
+    if bot_token:
         # Hapus webhook dari Telegram API jika memakai custom bot
         try:
-            requests.post(f"https://api.telegram.org/bot{user.telegram_bot_token}/deleteWebhook", timeout=10)
+            requests.post(f"https://api.telegram.org/bot{bot_token}/deleteWebhook", timeout=10)
         except Exception as e:
             print(f"Warning: gagal deleteWebhook: {e}")
 
@@ -426,7 +436,9 @@ def telegram_webapp_auth(payload: TelegramWebAppAuthRequest, request: Request, d
                 target_user = db.query(User).filter(User.telegram_chat_id == candidate_tg_id).first()
                 # Custom bot token HANYA boleh memverifikasi akun pemilik bot itu sendiri
                 if target_user and target_user.telegram_bot_token:
-                    validated = verify_telegram_init_data(payload.init_data, target_user.telegram_bot_token)
+                    plain_bot_token = decrypt_token(target_user.telegram_bot_token)
+                    if plain_bot_token:
+                        validated = verify_telegram_init_data(payload.init_data, plain_bot_token)
         except Exception:
             validated = None
 
@@ -488,9 +500,10 @@ def delete_my_account(
     user_id = current_user.id
 
     # Hapus webhook Telegram jika pengguna memiliki custom bot aktif
-    if current_user.telegram_bot_token:
+    bot_token = decrypt_token(current_user.telegram_bot_token)
+    if bot_token:
         try:
-            requests.post(f"https://api.telegram.org/bot{current_user.telegram_bot_token}/deleteWebhook", timeout=10)
+            requests.post(f"https://api.telegram.org/bot{bot_token}/deleteWebhook", timeout=10)
         except Exception as e:
             print(f"Warning: gagal deleteWebhook saat delete_my_account: {e}")
 

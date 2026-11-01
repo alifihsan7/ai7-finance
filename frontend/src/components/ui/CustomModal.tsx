@@ -85,18 +85,19 @@ export function CustomModal({
           <div className={`w-full h-full ${currentAccent.bar}`} />
         </div>
 
-        {/* Close Button */}
+        {/* Close Button — 44x44 WCAG AAA touch target */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 sm:top-5 right-4 sm:right-5 p-2 rounded-full text-slateText-muted hover:text-white hover:bg-white/[0.08] border border-transparent hover:border-white/[0.1] transition-all z-20"
+          aria-label="Tutup dialog"
+          className="absolute top-3 sm:top-4 right-3 sm:right-4 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slateText-muted hover:text-white hover:bg-white/[0.08] active:bg-white/[0.14] active:scale-95 border border-transparent hover:border-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amberGold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-card transition-all duration-150 z-20 touch-manipulation"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" aria-hidden="true" />
         </button>
 
         {/* Modal Header (Fixed at top of modal) */}
         <div className="p-5 sm:p-6 pb-4 border-b border-obsidian-border/50 shrink-0">
-          <div className="flex items-start gap-3.5 pr-8">
+          <div className="flex items-start gap-3.5 pr-12 sm:pr-14">
             {icon && (
               <div
                 className={`p-2.5 rounded-xl border shrink-0 ${currentAccent.icon}`}

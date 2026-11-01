@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days (10080 minutes)
 
+    # Bot Token Symmetric Encryption Key (Fernet) - Falls back to JWT_SECRET_KEY
+    BOT_TOKEN_ENCRYPTION_KEY: Optional[str] = os.getenv("BOT_TOKEN_ENCRYPTION_KEY", None)
+
     # Google OAuth Sign-In (Web)
     GOOGLE_CLIENT_ID: Optional[str] = os.getenv("GOOGLE_CLIENT_ID", None)
 

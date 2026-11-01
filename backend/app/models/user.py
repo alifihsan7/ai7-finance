@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, BigInteger
 from sqlalchemy.sql import func
 from app.db.session import Base
@@ -11,7 +12,7 @@ class User(Base):
     full_name = Column(String(100), nullable=False)
     hashed_password = Column(String(255), nullable=False)
     telegram_chat_id = Column(BigInteger, unique=True, nullable=True, index=True)
-    telegram_bot_token = Column(String(200), nullable=True)
+    telegram_bot_token = Column(String(500), nullable=True)
     telegram_bot_username = Column(String(100), nullable=True)
     telegram_webhook_secret = Column(String(64), unique=True, nullable=True, index=True)
     telegram_mode = Column(String(20), default="shared", nullable=False)
@@ -21,3 +22,8 @@ class User(Base):
     is_onboarded = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    @property
+    def decrypted_bot_token(self) -> Optional[str]:
+        from app.core.security import decrypt_token
+        return decrypt_token(self.telegram_bot_token)
