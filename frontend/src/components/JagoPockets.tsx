@@ -109,7 +109,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
       setData(res);
       onDataLoaded?.(res);
       setError(null);
-      onToast?.("Komitmen sub-kantong tersinkron dengan Langganan");
+      onToast?.("Komitmen sub-kantong tersinkron dengan Tagihan");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Gagal menyelaraskan komitmen";
       onToast?.(msg);
@@ -190,7 +190,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
             type="button"
             onClick={handleSync}
             disabled={syncing}
-            title="Selaraskan target kantong dengan Langganan aktif"
+            title="Selaraskan target kantong dengan Tagihan aktif"
             className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-semibold bg-white/[0.06] text-luma-ivory border border-white/[0.12] hover:bg-white/[0.1] hover:border-white/[0.2] active:scale-95 transition inline-flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${syncing ? "animate-spin" : ""}`} aria-hidden="true" />

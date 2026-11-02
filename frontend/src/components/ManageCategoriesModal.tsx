@@ -671,7 +671,7 @@ export function ManageCategoriesModal({
                   placeholder="Pilih kategori tujuan..."
                 />
                 <p className="text-[11px] text-zinc-400">
-                  Transaksi, langganan rutin, atau target yang memakai &quot;{deletingCat.name}&quot; akan dialihkan ke &quot;{fallbackCategory}&quot;.
+                  Transaksi, tagihan rutin, atau target tabungan yang memakai &quot;{deletingCat.name}&quot; akan dialihkan ke &quot;{fallbackCategory}&quot;.
                 </p>
               </div>
             )}

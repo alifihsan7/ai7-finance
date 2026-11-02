@@ -136,7 +136,7 @@ export function EditSubscriptionModal({
 
         <div>
           <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Nama Layanan
+            Nama Tagihan / Layanan
           </label>
           <input
             type="text"
