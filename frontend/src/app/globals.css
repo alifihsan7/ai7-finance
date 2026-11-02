@@ -5,6 +5,29 @@
 :root {
   color-scheme: dark;
 
+  /* Luma Design System (Dark Glass v2.0) — warm organic tokens.
+     Contrast verified: Ivory@Charcoal 14.12:1 AAA, Smoke-txt@Charcoal 7.57:1 AAA,
+     Ember@Charcoal 6.40:1 AA (accents only), Sage/Coral/Gold @Charcoal all AAA. */
+  --luma-charcoal-rgb: 34 34 34;
+  --luma-coal-rgb: 43 40 37;
+  --luma-ivory-rgb: 244 241 236;
+  --luma-ember-rgb: 240 138 75;
+  --luma-smoke-rgb: 185 178 167;
+  --luma-smokeline-rgb: 59 57 56;
+  --luma-sage-rgb: 214 233 184;
+  --luma-coral-rgb: 255 181 157;
+  --luma-gold-rgb: 237 215 116;
+
+  --luma-charcoal: #222222;
+  --luma-coal: #2B2825;
+  --luma-ivory: #F4F1EC;
+  --luma-ember: #F08A4B;
+  --luma-smoke: #B9B2A7;
+  --luma-smokeline: #3B3938;
+  --luma-sage: #D6E9B8;
+  --luma-coral: #FFB59D;
+  --luma-gold: #EDD774;
+
   /* RGB channels for Tailwind opacity modifier support (e.g. bg-obsidian-panel/90) */
   --obsidian-bg-rgb: 9 10 13;
   --obsidian-panel-rgb: 17 18 23;
@@ -255,5 +278,59 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     background-color: rgba(255, 255, 255, 0.95);
     color: #0F172A;
     border-color: #CBD5E1;
+  }
+}
+
+/* =========================================================================
+   LUMA DESIGN SYSTEM (Dark Glass v2.0) UTILITIES
+   Smoked glass surfaces, ember glow, generous radii, 44px touch targets.
+   No purple/blue gradients, no cheap glassmorphism, no excess radius.
+   ========================================================================= */
+
+@layer components {
+  .luma-glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  .luma-hero {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 28px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  .luma-ember-glow {
+    background: radial-gradient(circle, rgba(240, 138, 75, 0.32) 0%, transparent 70%);
+    filter: blur(36px);
+    pointer-events: none;
+  }
+
+  .luma-touch {
+    min-height: 44px;
+  }
+}
+
+/* Visible keyboard focus for all interactive elements (WCAG 2.4.7) */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--luma-ember);
+  outline-offset: 2px;
+}
+
+/* Calm motion: respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn {
+    animation: none;
   }
 }

@@ -7,11 +7,8 @@ import {
   RefreshCw,
   ChevronDown,
   CreditCard,
-  ArrowUpRight,
-  ArrowDownRight,
   ArrowDownLeft,
   CheckCircle2,
-  ShieldCheck,
   Layers,
   Bell,
   BarChart2,
@@ -29,12 +26,14 @@ import {
   Receipt,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
+import { LumaHeroCard } from "@/components/LumaHeroCard";
+import { LumaAccountStrip } from "@/components/LumaAccountStrip";
+import { LumaRecentTransactions } from "@/components/LumaRecentTransactions";
 import { AccountGrid } from "@/components/AccountGrid";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { MandiriEnvelopes } from "@/components/MandiriEnvelopes";
 import { JagoPockets } from "@/components/JagoPockets";
-import { BurnRateChart } from "@/components/BurnRateChart";
-import { TransactionTable, Transaction } from "@/components/TransactionTable";
+import { Transaction } from "@/components/TransactionTable";
 import { TransactionLedgerView } from "@/components/TransactionLedgerView";
 import { SubscriptionsView, SubscriptionItem, SubscriptionsData } from "@/components/SubscriptionsView";
 import { GoalsView } from "@/components/GoalsView";
@@ -845,25 +844,26 @@ export default function FinanceDashboard() {
   };
 
   return (
-    <div className="h-screen h-[100dvh] bg-obsidian-bg text-slateText-primary flex flex-col md:flex-row antialiased font-sans overflow-hidden">
-      {/* DESKTOP/TABLET SIDEBAR NAVIGATION */}
-      <aside className="hidden md:flex md:w-56 lg:w-64 xl:w-72 bg-obsidian-panel border-r border-obsidian-border p-4 sm:p-5 lg:p-6 md:h-screen flex-col justify-between shrink-0 overflow-y-hidden">
+    <div className="h-screen h-[100dvh] bg-luma-charcoal text-luma-ivory flex flex-col md:flex-row antialiased font-sans overflow-hidden">
+      {/* DESKTOP/TABLET SIDEBAR NAVIGATION — slim Luma: pill logo, pill nav, calm footer */}
+      <aside className="hidden md:flex md:w-60 lg:w-64 shrink-0 bg-luma-charcoal border-r border-luma-smokeline/60 p-5 md:h-screen flex-col justify-between overflow-y-hidden">
         <div>
-          {/* Logo & Brand */}
+          {/* Pill logo */}
           <div className="flex items-center gap-2.5">
-            <img
-              src="/ai7-icon-rounded.svg"
-              alt="AI7 Finance"
-              className="w-9 h-9 rounded-lg border border-obsidian-border shadow-xs shrink-0"
-            />
+            <div className="w-10 h-10 rounded-full bg-luma-ivory text-luma-charcoal font-black text-lg flex items-center justify-center shrink-0" aria-hidden="true">
+              l.
+            </div>
             <div>
-              <div className="font-bold text-lg tracking-tight text-slateText-primary leading-none whitespace-nowrap">
-                ai7<span className="text-amberGold">.</span>finance
+              <div className="font-bold text-base tracking-tight text-luma-ivory leading-none whitespace-nowrap">
+                ai7<span className="text-luma-ember">.</span>finance
+              </div>
+              <div className="text-[10px] font-mono text-luma-smoke tracking-widest mt-1">
+                LUMA COCKPIT
               </div>
             </div>
           </div>
 
-          {/* Navigation Items (Clean Obsidian Slate Minimalist) */}
+          {/* Navigation Items — calm pill nav with soft glass hover */}
           <nav className="mt-8 flex flex-col space-y-1">
             {[
               { name: "Ringkasan", icon: LayoutDashboard },
@@ -884,13 +884,14 @@ export default function FinanceDashboard() {
                     const slug = NAV_SLUGS[item.name];
                     if (slug) window.location.hash = slug;
                   }}
-                  className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
+                  aria-current={isActive ? "page" : undefined}
+                  className={`luma-touch flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                     isActive
-                      ? "text-white bg-white/[0.08] border border-white/[0.1] shadow-xs font-semibold"
-                      : "text-zinc-400 hover:text-white border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
+                      ? "text-luma-ivory bg-white/[0.08] border border-white/[0.1] font-semibold"
+                      : "text-luma-smoke hover:text-luma-ivory border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-zinc-400"}`} />
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-luma-ember" : "text-luma-smoke"}`} />
                   <span className="truncate whitespace-nowrap">{item.name}</span>
                 </button>
               );
@@ -898,7 +899,7 @@ export default function FinanceDashboard() {
           </nav>
         </div>
 
-        {/* User Profile Footer */}
+        {/* Slim user footer — single calm pill */}
         <div className="mt-8 pt-5 border-t border-white/[0.08] text-sm">
           <button
             type="button"
@@ -909,71 +910,30 @@ export default function FinanceDashboard() {
                 setIsAuthModalOpen(true);
               }
             }}
-            className="w-full p-3 rounded-2xl bg-obsidian-card hover:bg-obsidian-hover border border-white/[0.08] transition text-left cursor-pointer group shadow-sm"
+            className="luma-touch w-full p-3 rounded-3xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] transition text-left cursor-pointer group"
           >
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0">
-                  {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-white font-semibold text-xs truncate group-hover:text-amberGold transition-colors">
-                    {currentUser ? currentUser.full_name : "Masuk / Akun"}
-                  </p>
-                  <p className="text-[10px] text-zinc-400 font-mono truncate">
-                    {currentUser ? `@${currentUser.username}` : "Mode Tamu"}
-                  </p>
-                </div>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-bold text-xs flex items-center justify-center shrink-0">
+                {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-luma-ivory font-semibold text-xs truncate group-hover:text-luma-ember transition-colors">
+                  {currentUser ? currentUser.full_name : "Masuk / Akun"}
+                </p>
+                <p className="text-[10px] text-luma-smoke font-mono truncate">
+                  {currentUser ? `@${currentUser.username}` : "Mode Tamu"}
+                </p>
               </div>
               {currentUser ? (
-                <span className="inline-flex items-center gap-1.5 text-[10px] text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20 shrink-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-mintRise"></span>
+                <span className="inline-flex items-center gap-1.5 text-[10px] text-luma-sage font-medium px-2 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-luma-sage"></span>
                   Aktif
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+                <span className="inline-flex items-center gap-1.5 text-[10px] text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-luma-smoke"></span>
                   Tamu
                 </span>
-              )}
-            </div>
-            <div className="text-[11px] text-slateText-secondary space-y-1.5 pt-1.5 border-t border-obsidian-border/50">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-slateText-muted shrink-0 text-[11px]">Telegram</span>
-                <span className="font-mono text-slateText-primary text-[10px] truncate text-right">
-                  {currentUser?.telegram_chat_id ? `ID: ${currentUser.telegram_chat_id}` : "Belum Taut"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-slateText-muted shrink-0 text-[11px]">Siklus</span>
-                <span
-                  className="text-amberGold font-medium text-[10px] truncate text-right max-w-[140px]"
-                  title={summary.period_label || "Siklus Anggaran"}
-                >
-                  {summary.period_label
-                    ? summary.period_label.replace(/^Siklus\s+/i, "").replace(/\s+202\d\)/, ")")
-                    : "Siklus Anggaran"}
-                </span>
-              </div>
-              {summary.safe_to_spend && (
-                <div className="space-y-1 pt-0.5">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-slateText-muted">
-                      Hari ke-{summary.safe_to_spend.day_of_cycle || 1}/{summary.safe_to_spend.cycle_days || 14}
-                    </span>
-                    <span className="text-amberGold font-mono font-semibold">
-                      {Math.min(100, Math.round(((summary.safe_to_spend.day_of_cycle || 1) / (summary.safe_to_spend.cycle_days || 14)) * 100))}%
-                    </span>
-                  </div>
-                  <div className="w-full h-1 bg-obsidian-panel rounded-full overflow-hidden border border-obsidian-border/40">
-                    <div
-                      className="h-full bg-gradient-to-r from-amberGold/80 to-amberGold rounded-full transition-all duration-300"
-                      style={{
-                        width: `${Math.min(100, Math.round(((summary.safe_to_spend.day_of_cycle || 1) / (summary.safe_to_spend.cycle_days || 14)) * 100))}%`,
-                      }}
-                    />
-                  </div>
-                </div>
               )}
             </div>
           </button>
@@ -981,18 +941,16 @@ export default function FinanceDashboard() {
       </aside>
 
       {/* MOBILE STICKY TOP APP BAR */}
-      <header className="md:hidden sticky top-0 z-30 w-full bg-obsidian-panel/95 backdrop-blur-md border-b border-white/[0.08] px-3.5 py-2.5 flex items-center justify-between shrink-0">
+      <header className="md:hidden sticky top-0 z-30 w-full bg-luma-charcoal/95 backdrop-blur-md border-b border-luma-smokeline/60 px-3.5 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 min-w-0">
-          <img
-            src="/ai7-icon-rounded.svg"
-            alt="AI7 Finance"
-            className="w-7 h-7 rounded-xl border border-white/[0.08] shadow-xs shrink-0"
-          />
+          <div className="w-8 h-8 rounded-full bg-luma-ivory text-luma-charcoal font-black text-sm flex items-center justify-center shrink-0" aria-hidden="true">
+            l.
+          </div>
           <div className="min-w-0">
-            <div className="font-bold text-sm tracking-tight text-white leading-none truncate">
-              ai7<span className="text-amberGold">.</span>finance
+            <div className="font-bold text-sm tracking-tight text-luma-ivory leading-none truncate">
+              ai7<span className="text-luma-ember">.</span>finance
             </div>
-            <div className="text-[10px] font-mono text-amberGold tracking-wider font-semibold mt-0.5 truncate">
+            <div className="text-[10px] font-mono text-luma-ember tracking-wider font-semibold mt-0.5 truncate">
               {activeNav}
             </div>
           </div>
@@ -1002,15 +960,16 @@ export default function FinanceDashboard() {
           <button
             onClick={fetchData}
             title="Refresh Data"
-            className="p-2 text-zinc-400 hover:text-white bg-obsidian-card border border-white/[0.08] rounded-full transition active:scale-95 cursor-pointer"
+            aria-label="Refresh data"
+            className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-smoke hover:text-luma-ivory bg-white/[0.05] border border-white/[0.08] rounded-full transition active:scale-95 cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-amberGold" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-luma-ember" : ""}`} />
           </button>
           <ThemeToggle size="sm" />
           <button
             onClick={() => setIsPaycheckModalOpen(true)}
             title="Gajian Masuk"
-            className="px-2.5 sm:px-3 py-1.5 bg-mintRise/15 text-mintRise border border-mintRise/30 font-semibold text-[11px] rounded-xl transition shadow-xs active:scale-95 flex items-center gap-1 cursor-pointer"
+            className="luma-touch px-3 py-1.5 bg-luma-sage/15 text-luma-sage border border-luma-sage/30 font-semibold text-[11px] rounded-full transition active:scale-95 flex items-center gap-1 cursor-pointer"
           >
             <ArrowDownLeft className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap">Gajian</span>
@@ -1024,14 +983,16 @@ export default function FinanceDashboard() {
               }
             }}
             title={currentUser ? currentUser.full_name : "Masuk / Akun"}
-            className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 active:scale-95 cursor-pointer"
+            aria-label={currentUser ? currentUser.full_name : "Masuk atau kelola akun"}
+            className="luma-touch min-w-[44px] inline-flex items-center justify-center rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-bold text-xs shrink-0 active:scale-95 cursor-pointer"
           >
             {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
           </button>
           <button
             onClick={() => setIsMobileDrawerOpen(true)}
             title="Buka Menu"
-            className="p-2 text-zinc-400 hover:text-white bg-obsidian-card border border-white/[0.08] rounded-full transition active:scale-95 cursor-pointer"
+            aria-label="Buka menu navigasi"
+            className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-smoke hover:text-luma-ivory bg-white/[0.05] border border-white/[0.08] rounded-full transition active:scale-95 cursor-pointer"
           >
             <Menu className="w-4 h-4" />
           </button>
@@ -1048,19 +1009,17 @@ export default function FinanceDashboard() {
           />
 
           {/* Drawer Content */}
-          <div className="relative w-[280px] max-w-[85vw] bg-obsidian-panel border-r border-white/[0.08] p-5 flex flex-col justify-between h-full z-10 overflow-y-auto">
+          <div className="relative w-[280px] max-w-[85vw] bg-luma-charcoal border-r border-luma-smokeline/60 p-5 flex flex-col justify-between h-full z-10 overflow-y-auto">
             <div>
               {/* Header with Close */}
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
                 <div className="flex items-center gap-2.5">
-                  <img
-                    src="/ai7-icon-rounded.svg"
-                    alt="AI7 Finance"
-                    className="w-8 h-8 rounded-xl border border-white/[0.08] shadow-xs shrink-0"
-                  />
+                  <div className="w-8 h-8 rounded-full bg-luma-ivory text-luma-charcoal font-black text-sm flex items-center justify-center shrink-0" aria-hidden="true">
+                    l.
+                  </div>
                   <div>
-                    <div className="font-bold text-base tracking-tight text-white leading-none">
-                      ai7<span className="text-amberGold">.</span>finance
+                    <div className="font-bold text-base tracking-tight text-luma-ivory leading-none">
+                      ai7<span className="text-luma-ember">.</span>finance
                     </div>
                   </div>
                 </div>
@@ -1068,15 +1027,16 @@ export default function FinanceDashboard() {
                   <ThemeToggle size="sm" />
                   <button
                     onClick={() => setIsMobileDrawerOpen(false)}
-                    className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-obsidian-card transition cursor-pointer"
+                    aria-label="Tutup menu navigasi"
+                    className="luma-touch min-w-[44px] inline-flex items-center justify-center rounded-full text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.06] transition cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
-              {/* Navigation Items (Clean Obsidian Slate Minimalist) */}
-              <nav className="flex flex-col space-y-1">
+              {/* Navigation Items — calm Luma pill nav */}
+              <nav className="flex flex-col space-y-1" aria-label="Navigasi utama">
                 {[
                   { name: "Ringkasan", icon: LayoutDashboard },
                   { name: "Target Finansial", icon: Target },
@@ -1097,13 +1057,14 @@ export default function FinanceDashboard() {
                         if (slug) window.location.hash = slug;
                         setIsMobileDrawerOpen(false);
                       }}
-                      className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
+                      aria-current={isActive ? "page" : undefined}
+                      className={`luma-touch flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                         isActive
-                          ? "text-white bg-white/[0.08] border border-white/[0.1] shadow-xs font-semibold"
-                          : "text-zinc-400 hover:text-white border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
+                          ? "text-luma-ivory bg-white/[0.08] border border-white/[0.1] font-semibold"
+                          : "text-luma-smoke hover:text-luma-ivory border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
                       }`}
                     >
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-amberGold" : "text-zinc-400"}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-luma-ember" : "text-luma-smoke"}`} />
                       <span className="truncate whitespace-nowrap">{item.name}</span>
                     </button>
                   );
@@ -1112,7 +1073,7 @@ export default function FinanceDashboard() {
 
               {/* Quick Actions inside Drawer */}
               <div className="mt-6 pt-4 border-t border-white/[0.08] space-y-2">
-                <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
+                <span className="text-[11px] font-semibold text-luma-smoke uppercase tracking-wider block mb-1">
                   Aksi Cepat
                 </span>
                 <button
@@ -1120,7 +1081,7 @@ export default function FinanceDashboard() {
                     setIsMobileDrawerOpen(false);
                     setIsTransferModalOpen(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold rounded-2xl bg-cyanHub/15 text-cyanHub border border-cyanHub/30 hover:bg-cyanHub/25 transition"
+                  className="luma-touch w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold rounded-full bg-luma-gold/15 text-luma-gold border border-luma-gold/30 hover:bg-luma-gold/25 transition"
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0" />
                   <span>Transfer Antar Rekening</span>
@@ -1129,10 +1090,10 @@ export default function FinanceDashboard() {
                   type="button"
                   onClick={handleExportCSV}
                   disabled={isExportingCSV}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium rounded-2xl bg-obsidian-card border border-white/[0.08] text-zinc-300 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="luma-touch w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium rounded-full bg-white/[0.05] border border-white/[0.08] text-luma-ivory hover:bg-white/[0.08] transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isExportingCSV ? (
-                    <RefreshCw className="w-4 h-4 shrink-0 animate-spin text-amberGold" />
+                    <RefreshCw className="w-4 h-4 shrink-0 animate-spin text-luma-ember" />
                   ) : (
                     <Download className="w-4 h-4 shrink-0" />
                   )}
@@ -1143,68 +1104,40 @@ export default function FinanceDashboard() {
                     href={googleSheetUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition"
+                    className="luma-touch w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-full bg-luma-sage/10 border border-luma-sage/30 text-luma-sage hover:bg-luma-sage/20 transition"
                   >
                     <div className="flex items-center gap-2">
-                      <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <FileSpreadsheet className="w-4 h-4 shrink-0" />
                       <span className="font-semibold">Google Sheets Rapor</span>
                     </div>
-                    <ExternalLink className="w-3.5 h-3.5 text-emerald-400/70" />
+                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
                   </a>
                 )}
               </div>
             </div>
 
-            {/* Profile Footer */}
-            <div className="pt-4 border-t border-obsidian-border text-xs mt-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-slateText-primary font-semibold">{currentUser?.full_name || "Pengguna AI7"}</span>
+            {/* Slim profile footer — single calm line */}
+            <div className="pt-4 border-t border-white/[0.08] text-xs mt-6">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-bold text-xs flex items-center justify-center shrink-0">
+                  {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-luma-ivory font-semibold truncate">{currentUser?.full_name || "Pengguna AI7"}</p>
+                  <p className="text-[11px] text-luma-smoke font-mono truncate">
+                    {currentUser?.telegram_chat_id ? `Telegram ID: ${currentUser.telegram_chat_id}` : "Mode Tamu"}
+                  </p>
+                </div>
                 {currentUser ? (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-mintRise"></span>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-sage font-medium px-2 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25 shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-luma-sage"></span>
                     Aktif
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-luma-smoke"></span>
                     Tamu
                   </span>
-                )}
-              </div>
-              <div className="text-slateText-muted space-y-1.5 text-[11px]">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="shrink-0">Telegram</span>
-                  <span className="font-mono text-slateText-primary text-[10px] truncate text-right">
-                    {currentUser?.telegram_chat_id ? `ID: ${currentUser.telegram_chat_id}` : "Belum Taut"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="shrink-0">Siklus</span>
-                  <span className="text-amberGold font-medium text-[10px] truncate text-right">
-                    {summary.period_label
-                      ? summary.period_label.replace(/^Siklus\s+/i, "").replace(/\s+202\d\)/, ")")
-                      : `${summary.safe_to_spend?.cycle_days || 30} Hari`}
-                  </span>
-                </div>
-                {summary.safe_to_spend && (
-                  <div className="space-y-1 pt-0.5">
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span>
-                        Hari ke-{summary.safe_to_spend.day_of_cycle || 1}/{summary.safe_to_spend.cycle_days || 14}
-                      </span>
-                      <span className="text-amberGold font-mono font-semibold">
-                        {Math.min(100, Math.round(((summary.safe_to_spend.day_of_cycle || 1) / (summary.safe_to_spend.cycle_days || 14)) * 100))}%
-                      </span>
-                    </div>
-                    <div className="w-full h-1 bg-obsidian-panel rounded-full overflow-hidden border border-obsidian-border/40">
-                      <div
-                        className="h-full bg-gradient-to-r from-amberGold/80 to-amberGold rounded-full transition-all duration-300"
-                        style={{
-                          width: `${Math.min(100, Math.round(((summary.safe_to_spend.day_of_cycle || 1) / (summary.safe_to_spend.cycle_days || 14)) * 100))}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
                 )}
               </div>
             </div>
@@ -1213,13 +1146,14 @@ export default function FinanceDashboard() {
       )}
 
       {/* MOBILE BOTTOM NAVIGATION BAR */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-obsidian-panel/95 backdrop-blur-md border-t border-white/[0.08] px-3 py-1.5 flex items-center justify-around safe-bottom shadow-2xl">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-luma-charcoal/95 backdrop-blur-md border-t border-luma-smokeline/60 px-3 py-1.5 flex items-center justify-around safe-bottom shadow-2xl" aria-label="Navigasi utama">
         <button
           onClick={() => setActiveNav("Ringkasan")}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition min-w-[56px] select-none ${
+          aria-current={activeNav === "Ringkasan" ? "page" : undefined}
+          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] select-none ${
             activeNav === "Ringkasan"
-              ? "text-amberGold font-semibold"
-              : "text-zinc-400 hover:text-white"
+              ? "text-luma-ember font-semibold"
+              : "text-luma-smoke hover:text-luma-ivory"
           }`}
         >
           <LayoutDashboard className="w-5 h-5 shrink-0" />
@@ -1228,10 +1162,11 @@ export default function FinanceDashboard() {
 
         <button
           onClick={() => setActiveNav("Alokasi Amplop")}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition min-w-[56px] select-none ${
+          aria-current={activeNav === "Alokasi Amplop" ? "page" : undefined}
+          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] select-none ${
             activeNav === "Alokasi Amplop"
-              ? "text-amberGold font-semibold"
-              : "text-zinc-400 hover:text-white"
+              ? "text-luma-ember font-semibold"
+              : "text-luma-smoke hover:text-luma-ivory"
           }`}
         >
           <Layers className="w-5 h-5 shrink-0" />
@@ -1241,18 +1176,20 @@ export default function FinanceDashboard() {
         {/* Center Floating Plus Action */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="-mt-5 w-12 h-12 rounded-full bg-amberGold text-slate-950 shadow-lg shadow-black/25 flex items-center justify-center font-bold active:scale-90 transition border-2 border-obsidian-panel shrink-0 cursor-pointer"
+          className="luma-touch -mt-5 w-12 h-12 rounded-full bg-luma-ivory text-luma-charcoal shadow-lg shadow-black/25 flex items-center justify-center font-bold active:scale-90 transition border-2 border-luma-charcoal shrink-0 cursor-pointer"
           title="Catat Transaksi Baru"
+          aria-label="Catat transaksi baru"
         >
           <Plus className="w-6 h-6 stroke-[3]" />
         </button>
 
         <button
           onClick={() => setActiveNav("Buku Transaksi")}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition min-w-[56px] select-none ${
+          aria-current={activeNav === "Buku Transaksi" ? "page" : undefined}
+          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] select-none ${
             activeNav === "Buku Transaksi"
-              ? "text-amberGold font-semibold"
-              : "text-zinc-400 hover:text-white"
+              ? "text-luma-ember font-semibold"
+              : "text-luma-smoke hover:text-luma-ivory"
           }`}
         >
           <Receipt className="w-5 h-5 shrink-0" />
@@ -1261,16 +1198,17 @@ export default function FinanceDashboard() {
 
         <button
           onClick={() => setIsMobileDrawerOpen(true)}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition min-w-[56px] select-none ${
+          aria-label="Buka menu navigasi lainnya"
+          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] select-none ${
             ["Akun & Kategori", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav)
-              ? "text-amberGold font-semibold"
-              : "text-zinc-400 hover:text-white"
+              ? "text-luma-ember font-semibold"
+              : "text-luma-smoke hover:text-luma-ivory"
           }`}
         >
           <div className="relative">
             <Menu className="w-5 h-5 shrink-0" />
             {["Akun & Kategori", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav) && (
-              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amberGold"></span>
+              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-luma-ember"></span>
             )}
           </div>
           <span className="text-[10px] mt-1 leading-tight tracking-tight">Menu</span>
@@ -1278,12 +1216,12 @@ export default function FinanceDashboard() {
       </nav>
 
       {/* MAIN VIEWPORT */}
-      <main ref={mainContentRef} className="flex-1 overflow-y-auto w-full">
-        {/* Persistent Sticky Topbar Header */}
-        <header className="sticky top-0 z-20 bg-obsidian-panel/90 backdrop-blur-md border-b border-obsidian-border py-2.5 px-4 sm:px-6 lg:px-8">
+      <main ref={mainContentRef} className="flex-1 overflow-y-auto w-full bg-luma-charcoal">
+        {/* Persistent Sticky Topbar Header — slim Luma: period + utilities menu */}
+        <header className="sticky top-0 z-20 bg-luma-charcoal/90 backdrop-blur-md border-b border-luma-smokeline/60 py-2.5 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto w-full flex flex-row items-center justify-between gap-3 sm:gap-4">
             {/* Pure Control Period Selector & Theme Switch */}
-            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0">
               <PeriodSelector
                 key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
                 currentPeriod={selectedPeriod}
@@ -1294,59 +1232,87 @@ export default function FinanceDashboard() {
               </div>
             </div>
 
-            {/* Action Toolbar */}
+            {/* Slim utility toolbar: guest badge + consolidated utilities menu */}
             <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
               {/* Guest Status Badge in Topbar (Desktop) */}
               {!currentUser && (
                 <button
                   type="button"
                   onClick={() => setIsAuthModalOpen(true)}
-                  className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amberGold/10 border border-amberGold/30 text-amberGold hover:bg-amberGold/20 font-semibold text-xs transition cursor-pointer shadow-xs active:scale-95"
+                  className="luma-touch hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-luma-ember/15 border border-luma-ember/40 text-luma-ember hover:bg-luma-ember/25 font-semibold text-xs transition cursor-pointer active:scale-95"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-amberGold"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-luma-ember"></span>
                   <span>Mode Tamu</span>
                 </button>
               )}
 
-              {/* Refresh Button (Icon-Only Compact) */}
-              <button
-                onClick={fetchData}
-                title="Refresh Data Transaksi & Saldo"
-                className="hidden md:flex p-2 rounded-full w-9 h-9 items-center justify-center text-zinc-300 hover:text-white bg-obsidian-card hover:bg-obsidian-hover border border-white/[0.08] hover:border-white/[0.16] transition shrink-0 shadow-xs active:scale-95 cursor-pointer"
-              >
-                <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-amberGold" : ""}`} />
-              </button>
-
-              {/* Export Dropdown Menu */}
+              {/* Consolidated utilities menu (refresh, export, paycheck checklist) */}
               <div className="relative" ref={exportMenuRef}>
                 <button
                   type="button"
                   onClick={() => setIsExportMenuOpen((prev) => !prev)}
-                  className="py-2 px-3 sm:px-3.5 text-xs rounded-xl font-semibold border border-white/[0.08] bg-obsidian-card text-zinc-200 hover:text-white hover:bg-obsidian-hover hover:border-white/[0.16] transition inline-flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-xs active:scale-95"
+                  aria-haspopup="menu"
+                  aria-expanded={isExportMenuOpen}
+                  className="luma-touch py-2 px-3 sm:px-3.5 text-xs rounded-full font-semibold border border-white/[0.12] bg-white/[0.06] text-luma-ivory hover:bg-white/[0.1] hover:border-white/[0.2] transition inline-flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
                 >
-                  <Download className="w-3.5 h-3.5 text-zinc-300 shrink-0" />
-                  <span className="font-semibold text-white hidden sm:inline">Ekspor</span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-200 ${isExportMenuOpen ? "rotate-180 text-amberGold" : ""}`} />
+                  <Download className="w-3.5 h-3.5 text-luma-smoke shrink-0" />
+                  <span className="font-semibold hidden sm:inline">Utilitas</span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-luma-smoke shrink-0 transition-transform duration-200 ${isExportMenuOpen ? "rotate-180 text-luma-ember" : ""}`} />
                 </button>
 
                 {isExportMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 p-2 bg-obsidian-panel/95 backdrop-blur-md border border-white/[0.12] rounded-2xl shadow-2xl z-50 text-xs font-mono space-y-1 animate-fadeIn">
+                  <div role="menu" className="absolute right-0 mt-2 w-60 p-2 bg-luma-coal/95 backdrop-blur-md border border-white/[0.12] rounded-3xl shadow-luma-glass z-50 text-xs space-y-1 animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        fetchData();
+                        setIsExportMenuOpen(false);
+                      }}
+                      role="menuitem"
+                      className="luma-touch w-full flex items-center gap-2.5 px-3 py-2 rounded-2xl text-luma-ivory hover:bg-white/[0.06] transition text-left cursor-pointer"
+                    >
+                      <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-luma-ember" : "text-luma-smoke"}`} />
+                      <div className="text-left">
+                        <div className="font-semibold text-xs text-luma-ivory">
+                          Refresh Data
+                        </div>
+                        <div className="text-[10px] text-luma-smoke">Saldo & transaksi terkini</div>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsPaycheckModalOpen(true);
+                        setIsExportMenuOpen(false);
+                      }}
+                      role="menuitem"
+                      className="luma-touch w-full flex items-center gap-2.5 px-3 py-2 rounded-2xl text-luma-sage hover:bg-luma-sage/10 transition text-left cursor-pointer"
+                    >
+                      <ArrowDownLeft className="w-4 h-4 shrink-0" />
+                      <div className="text-left">
+                        <div className="font-semibold text-xs">
+                          Gajian Masuk
+                        </div>
+                        <div className="text-[10px] text-luma-smoke">Checklist distribusi gajian</div>
+                      </div>
+                    </button>
                     <button
                       type="button"
                       onClick={handleExportCSV}
                       disabled={isExportingCSV}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-white hover:bg-obsidian-hover hover:text-amberGold transition disabled:opacity-50 disabled:cursor-not-allowed text-left cursor-pointer"
+                      role="menuitem"
+                      className="luma-touch w-full flex items-center gap-2.5 px-3 py-2 rounded-2xl text-luma-ivory hover:bg-white/[0.06] transition disabled:opacity-50 disabled:cursor-not-allowed text-left cursor-pointer"
                     >
                       {isExportingCSV ? (
-                        <RefreshCw className="w-4 h-4 text-amberGold shrink-0 animate-spin" />
+                        <RefreshCw className="w-4 h-4 text-luma-ember shrink-0 animate-spin" />
                       ) : (
-                        <Download className="w-4 h-4 text-zinc-400 shrink-0" />
+                        <Download className="w-4 h-4 text-luma-smoke shrink-0" />
                       )}
-                      <div className="text-left font-sans">
-                        <div className="font-semibold text-xs text-white">
+                      <div className="text-left">
+                        <div className="font-semibold text-xs text-luma-ivory">
                           {isExportingCSV ? "Sedang Mengunduh..." : "Unduh CSV Transaksi"}
                         </div>
-                        <div className="text-[10px] text-zinc-400">Seluruh histori ledger</div>
+                        <div className="text-[10px] text-luma-smoke">Seluruh histori ledger</div>
                       </div>
                     </button>
 
@@ -1356,15 +1322,16 @@ export default function FinanceDashboard() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => setIsExportMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-emerald-400 hover:bg-emerald-500/10 transition border-t border-white/[0.08]"
+                        role="menuitem"
+                        className="luma-touch flex items-center gap-2.5 px-3 py-2 rounded-2xl text-luma-sage hover:bg-luma-sage/10 transition border-t border-white/[0.08]"
                       >
-                        <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <div className="text-left font-sans min-w-0">
-                          <div className="font-semibold text-xs text-emerald-400 flex items-center gap-1">
+                        <FileSpreadsheet className="w-4 h-4 shrink-0" />
+                        <div className="text-left min-w-0">
+                          <div className="font-semibold text-xs flex items-center gap-1">
                             Google Sheets Rapor
                             <ExternalLink className="w-3 h-3 opacity-70" />
                           </div>
-                          <div className="text-[10px] text-zinc-400">Spreadsheet sinkronisasi</div>
+                          <div className="text-[10px] text-luma-smoke">Spreadsheet sinkronisasi</div>
                         </div>
                       </a>
                     )}
@@ -1372,22 +1339,14 @@ export default function FinanceDashboard() {
                 )}
               </div>
 
-              {/* Universal Persistent Primary Actions */}
-              <button
-                type="button"
-                onClick={() => setIsPaycheckModalOpen(true)}
-                className="hidden sm:inline-flex py-2 px-3 sm:px-3.5 text-xs font-semibold rounded-xl bg-mintRise/15 text-mintRise border border-mintRise/40 hover:bg-mintRise/25 transition items-center justify-center gap-1.5 sm:gap-2 shadow-xs shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
-              >
-                <ArrowDownLeft className="w-3.5 h-3.5 text-mintRise shrink-0" />
-                <span className="font-semibold">Gajian Masuk</span>
-              </button>
+              {/* Persistent primary action — stays visible, no stacking */}
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="py-2 px-3 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+                className="luma-touch py-2 px-3 sm:px-4 text-xs font-bold rounded-full bg-luma-ivory text-luma-charcoal hover:brightness-95 transition inline-flex items-center justify-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                <span className="font-semibold">Catat Transaksi</span>
+                <span className="font-bold">Catat Transaksi</span>
               </button>
             </div>
           </div>
@@ -1396,7 +1355,7 @@ export default function FinanceDashboard() {
         <div className="p-3.5 sm:p-5 md:p-6 lg:p-8 xl:p-10 pb-24 md:pb-10 max-w-7xl 2xl:max-w-[1600px] mx-auto w-full space-y-6 sm:space-y-8">
           {/* Page Title & Antislop Copy Header */}
           <div className="mb-2 sm:mb-4">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-luma-ivory">
               {activeNav === "Ringkasan" && "Ringkasan"}
               {activeNav === "Target Finansial" && "Target Simpanan"}
               {activeNav === "Alokasi Amplop" && "Amplop Belanja"}
@@ -1405,7 +1364,7 @@ export default function FinanceDashboard() {
               {activeNav === "Langganan & Tagihan" && "Langganan Rutin"}
               {activeNav === "Analisis & Tren" && "Tren Pengeluaran"}
             </h1>
-            <p className="text-sm text-zinc-300 mt-1">
+            <p className="text-sm text-luma-smoke mt-1 tabular-nums">
               {activeNav === "Ringkasan" && "Total saldo kas, sisa batas belanja harian, dan distribusi rekening."}
               {activeNav === "Target Finansial" && "Progres tabungan darurat, investasi, dan rencana beli barang."}
               {activeNav === "Alokasi Amplop" && "Batas jatah makan, jajan, dan kebutuhan rutin saku Mandiri."}
@@ -1418,16 +1377,16 @@ export default function FinanceDashboard() {
 
           {/* Guest Mode Banner */}
         {!currentUser && (
-          <div className="p-4 sm:p-5 rounded-3xl bg-obsidian-card border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+          <div className="luma-glass !rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-amberGold/15 border border-amberGold/30 flex items-center justify-center text-amberGold shrink-0">
+              <div className="w-10 h-10 rounded-full bg-luma-ember/15 border border-luma-ember/40 flex items-center justify-center text-luma-ember shrink-0">
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs sm:text-sm font-semibold text-white tracking-tight">
+                <p className="text-xs sm:text-sm font-semibold text-luma-ivory tracking-tight">
                   Mode Tamu (Belum Masuk)
                 </p>
-                <p className="text-xs text-zinc-300 mt-0.5 leading-relaxed">
+                <p className="text-xs text-luma-smoke mt-0.5 leading-relaxed">
                   Silakan masuk atau buat akun baru untuk mengakses pencatatan keuangan pribadi Anda secara aman.
                 </p>
               </div>
@@ -1435,7 +1394,7 @@ export default function FinanceDashboard() {
             <button
               type="button"
               onClick={() => setIsAuthModalOpen(true)}
-              className="w-full sm:w-auto px-4 py-2 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 font-bold text-xs transition shrink-0 cursor-pointer shadow-sm text-center"
+              className="luma-touch w-full sm:w-auto px-4 py-2 rounded-full bg-luma-ivory hover:brightness-95 text-luma-charcoal font-bold text-xs transition shrink-0 cursor-pointer text-center"
             >
               Masuk / Daftar Sekarang
             </button>
@@ -1449,28 +1408,28 @@ export default function FinanceDashboard() {
           <div className="space-y-5 sm:space-y-8 animate-fadeIn">
             {/* Active Paycheck Session Banner */}
             {activePaycheckSession && activePaycheckSession.status === "in_progress" && (
-              <div className="p-4 sm:p-4.5 rounded-2xl bg-obsidian-card border border-mintRise/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+              <div className="luma-glass !rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-mintRise/20 border border-mintRise/40 flex items-center justify-center text-mintRise shrink-0">
-                    <CheckCircle2 className="w-5 h-5 text-mintRise" />
+                  <div className="w-10 h-10 rounded-full bg-luma-sage/15 border border-luma-sage/30 flex items-center justify-center text-luma-sage shrink-0">
+                    <CheckCircle2 className="w-5 h-5 text-luma-sage" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-sm text-slateText-primary">
+                      <span className="font-bold text-sm text-luma-ivory">
                         Distribusi Gajian Sedang Berjalan
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-mintRise/20 text-mintRise border border-mintRise/40">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-luma-sage/15 text-luma-sage border border-luma-sage/30">
                         {activePaycheckSession.completed_steps} / {activePaycheckSession.total_steps} Selesai ({activePaycheckSession.progress_percentage}%)
                       </span>
                     </div>
-                    <p className="text-xs text-slateText-secondary truncate mt-0.5">
+                    <p className="text-xs text-luma-smoke truncate mt-0.5">
                       Total Rp {activePaycheckSession.total_amount.toLocaleString("id-ID")} • Selesaikan checklist transfer m-banking & gate Flip
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsPaycheckModalOpen(true)}
-                  className="px-4 py-2 rounded-2xl text-xs font-bold bg-mintRise text-slate-950 hover:brightness-110 transition shrink-0 inline-flex items-center justify-center gap-1.5 shadow-sm cursor-pointer self-end sm:self-center"
+                  className="luma-touch px-4 py-2 rounded-full text-xs font-bold bg-luma-sage text-luma-charcoal hover:brightness-105 transition shrink-0 inline-flex items-center justify-center gap-1.5 cursor-pointer self-end sm:self-center"
                 >
                   <span>Lanjutkan Checklist</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -1478,266 +1437,43 @@ export default function FinanceDashboard() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
-              {/* Net Worth */}
-              <div className="xl:col-span-7 bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-3xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between shadow-xl transition-all">
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider truncate">
-                      Total Kekayaan Bersih
-                    </span>
-                    <span className="text-xs font-mono font-semibold text-zinc-300 px-3 py-1 rounded-full bg-white/[0.05] border border-white/[0.1] shrink-0 whitespace-nowrap">
-                      Seluruh {availableAccountNames.length} Rekening
-                    </span>
-                  </div>
-                  {loading ? (
-                    <div className="my-3">
-                      <Skeleton className="h-10 sm:h-12 w-64 rounded-xl" />
-                    </div>
-                  ) : (
-                    <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white my-3 font-mono truncate">
-                      {formatRupiah(summary.total_balance ?? (summary.income - summary.expense))}{" "}
-                      <span className="text-sm sm:text-base font-normal text-zinc-400 tracking-normal ml-1">
-                        IDR
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {loading ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-4 border-t border-white/[0.08]">
-                    <Skeleton className="h-7 w-28 rounded-full" />
-                    <Skeleton className="h-7 w-28 rounded-full" />
-                    <Skeleton className="h-7 w-28 rounded-full" />
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs pt-4 border-t border-white/[0.08]">
-                    <div className="inline-flex items-center gap-1.5 text-mintRise font-mono font-semibold whitespace-nowrap min-w-0 bg-mintRise/10 border border-mintRise/20 px-3 py-1.5 rounded-full">
-                      <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">{formatRupiah(summary.income)} in</span>
-                    </div>
-                    <div className="inline-flex items-center gap-1.5 text-coralFall font-mono font-semibold whitespace-nowrap min-w-0 bg-coralFall/10 border border-coralFall/20 px-3 py-1.5 rounded-full">
-                      <ArrowDownRight className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">{formatRupiah(summary.expense)} out</span>
-                    </div>
-                    <div className="col-span-2 sm:col-span-1 inline-flex items-center gap-1.5 text-zinc-300 font-mono font-semibold whitespace-nowrap min-w-0 bg-white/[0.05] border border-white/[0.08] px-3 py-1.5 rounded-full">
-                      <span className="truncate">Net: {formatRupiah(summary.income - summary.expense)}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Safe-to-Spend (Opsi A: Standout Inverted Canary Yellow Card) */}
-              <div className="xl:col-span-5 bg-[#FACC15] border border-yellow-400 rounded-3xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between shadow-xl text-slate-950">
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5 min-w-0">
-                      <ShieldCheck className="w-4 h-4 text-slate-950 stroke-[2.5] shrink-0" />
-                      <span className="truncate">Batas Belanja Harian</span>
-                    </span>
-                    {loading ? (
-                      <Skeleton className="w-20 h-6 rounded-full bg-black/20" />
-                    ) : (
-                      <span
-                        className={`text-xs font-mono font-bold px-3 py-1 rounded-full border shrink-0 whitespace-nowrap shadow-xs ${
-                          summary.safe_to_spend?.pace_status === "warning"
-                            ? "bg-black text-amber-300 border-black"
-                            : "bg-black text-emerald-400 border-black"
-                        }`}
-                      >
-                        {summary.safe_to_spend?.pace_status === "warning" ? "🔴 Agak Boros" : "🟢 Pace Aman"}
-                      </span>
-                    )}
-                  </div>
-
-                  {loading ? (
-                    <div className="my-3">
-                      <Skeleton className="h-9 sm:h-10 w-48 rounded-xl bg-black/20" />
-                    </div>
-                  ) : (
-                    <div className="text-3xl sm:text-4xl font-black tracking-tight text-slate-950 my-3 font-mono truncate">
-                      {formatRupiah(summary.safe_to_spend?.safe_daily || 55000)}{" "}
-                      <span className="text-sm sm:text-base font-bold text-slate-900/70 tracking-normal ml-1">
-                        / hari
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {loading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-black/15">
-                    <Skeleton className="h-12 w-full rounded-2xl bg-black/20" />
-                    <Skeleton className="h-12 w-full rounded-2xl bg-black/20" />
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-black/15">
-                    <div className="bg-black/10 border border-black/15 rounded-2xl p-3 min-w-0">
-                      <div className="flex items-center justify-between text-[11px] text-slate-900/80 font-bold gap-1 uppercase tracking-wider">
-                        <span className="truncate">Sisa Kuota {summary.safe_to_spend?.pocket_account || "Belanja"}</span>
-                        {summary.safe_to_spend?.pocket_budget ? (
-                          <span className="font-mono text-xs font-black px-1.5 py-0.5 rounded-md bg-black/15 text-slate-950 shrink-0">
-                            {Math.max(0, Math.round(((summary.safe_to_spend.pocket_remaining || 0) / summary.safe_to_spend.pocket_budget) * 100))}%
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="text-sm sm:text-base font-black font-mono text-slate-950 mt-1 truncate whitespace-nowrap">
-                        {formatRupiah(summary.safe_to_spend?.pocket_remaining || 0)}
-                        {summary.safe_to_spend?.pocket_budget ? (
-                          <span className="text-slate-900/70 font-semibold text-xs font-mono">
-                            {" "}
-                            / {Math.round(summary.safe_to_spend.pocket_budget / 1000)}k
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className="bg-black/10 border border-black/15 rounded-2xl p-3 min-w-0">
-                      <div className="text-[11px] text-slate-900/80 font-bold uppercase tracking-wider">Rentang Waktu</div>
-                      {summary.safe_to_spend?.days_remaining === 0 ? (
-                        <div className="text-sm sm:text-base font-black font-mono text-slate-950 mt-1">
-                          Periode Berakhir
-                        </div>
-                      ) : (
-                        <div className="mt-1">
-                          <div className="text-sm sm:text-base font-black font-mono text-slate-950 leading-tight">
-                            Hari {summary.safe_to_spend?.day_of_cycle || 1} / {summary.safe_to_spend?.cycle_days || 14}
-                          </div>
-                          <div className="text-[11px] font-semibold font-mono text-slate-900/70 mt-0.5">
-                            Sisa {summary.safe_to_spend?.days_remaining || 0} hari
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <StrataAllocationBar
-              cycleType={summary.safe_to_spend?.cycle_type}
-              cycleDays={summary.safe_to_spend?.cycle_days}
-              totalSalary={paycheckConfig?.total_salary || 0}
-              buckets={dynamicStrataBuckets}
-              formatRupiah={formatRupiah}
-              loading={loading}
-            />
-            <AccountGrid summary={summary} customAccounts={customAccounts} formatRupiah={formatRupiah} loading={loading} onAccountDeleted={fetchData} onEditAccount={(acc) => setAccountToEdit(acc)} />
-
-            {/* Quick Goals & Milestone Preview */}
-            {loading ? (
-              <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-4 shadow-sm">
-                <div className="flex justify-between items-center gap-2">
-                  <Skeleton className="w-48 h-5 rounded-full" />
-                  <Skeleton className="w-28 h-4 rounded-full" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 space-y-3">
-                      <div className="flex justify-between items-center gap-2">
-                        <Skeleton className="w-24 h-4 rounded-full" />
-                        <Skeleton className="w-10 h-4 rounded-full" />
-                      </div>
-                      <Skeleton className="w-full h-1.5 rounded-full" />
-                      <div className="flex justify-between">
-                        <Skeleton className="w-16 h-3 rounded-full" />
-                        <Skeleton className="w-16 h-3 rounded-full" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : goals.length > 0 ? (
-              <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-4 shadow-sm">
-                <div className="flex justify-between items-center gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Target className="w-5 h-5 text-amberGold shrink-0" />
-                    <h2 className="text-base font-bold text-white truncate">
-                      Target & Milestone Tabungan
-                    </h2>
-                  </div>
-                  <button
-                    onClick={() => setActiveNav("Target Finansial")}
-                    className="text-xs text-amberGold hover:underline font-semibold shrink-0 whitespace-nowrap inline-flex items-center gap-1 group"
-                  >
-                    <span>Buka Seluruh Target ({goals.length})</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                  {goals.slice(0, 3).map((g) => {
-                    const theme =
-                      g.color === "cyan"
-                        ? { dot: "bg-cyan-400", bar: "bg-gradient-to-r from-cyan-500 to-sky-400", text: "text-cyan-400" }
-                        : g.color === "amber"
-                        ? { dot: "bg-amber-400", bar: "bg-gradient-to-r from-amber-500 to-yellow-400", text: "text-amber-400" }
-                        : { dot: "bg-emerald-400", bar: "bg-gradient-to-r from-emerald-500 to-teal-400", text: "text-emerald-400" };
-
-                    return (
-                      <div
-                        key={g.id}
-                        onClick={() => setActiveNav("Target Finansial")}
-                        className="bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-2xl p-4 space-y-3 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 shadow-sm"
-                      >
-                        <div className="flex justify-between items-center gap-2">
-                          <span className="text-sm font-semibold text-white truncate flex items-center gap-2">
-                            <span className={`w-1.5 h-1.5 rounded-full ${theme.dot} shrink-0`} />
-                            <span className="truncate">{g.name}</span>
-                          </span>
-                          <span className={`text-xs font-mono font-bold ${theme.text} shrink-0`}>
-                            {g.percentage}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-white/[0.06] rounded-full overflow-hidden">
-                          <div
-                            className={`h-full ${theme.bar} rounded-full transition-all duration-500`}
-                            style={{ width: `${Math.min(100, Math.max(3, g.percentage))}%` }}
-                          />
-                        </div>
-                        <div className="flex justify-between text-[11px] font-mono text-zinc-400">
-                          <span>{formatRupiah(g.current_amount)}</span>
-                          <span>Target: {formatRupiah(g.target_amount)}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-
-            <MandiriEnvelopes
-              mandiriExpenses={mandiriExpenses}
-              formatRupiah={formatRupiah}
+            {/* Luma unified hero: Total Saldo + Safe-to-Spend in one calm card */}
+            <LumaHeroCard
+              totalBalance={summary.total_balance ?? (summary.income - summary.expense)}
+              income={summary.income}
+              expense={summary.expense}
+              accountCount={availableAccountNames.length}
+              safeDaily={summary.safe_to_spend?.safe_daily || 55000}
+              pocketAccount={summary.safe_to_spend?.pocket_account || "Belanja"}
+              pocketRemaining={summary.safe_to_spend?.pocket_remaining || 0}
+              pocketBudget={summary.safe_to_spend?.pocket_budget ?? null}
+              dayOfCycle={summary.safe_to_spend?.day_of_cycle || 1}
               cycleDays={summary.safe_to_spend?.cycle_days || 14}
-              pocketAccount={summary.safe_to_spend?.pocket_account || (customAccounts[0]?.name || "Saku Belanja")}
-              pocketBudget={summary.safe_to_spend?.pocket_budget}
-              loading={loading}
-            />
-            <JagoPockets
+              daysRemaining={summary.safe_to_spend?.days_remaining || 0}
+              paceStatus={summary.safe_to_spend?.pace_status || "on_track"}
+              periodEnded={(summary.safe_to_spend?.days_remaining ?? 1) === 0}
               formatRupiah={formatRupiah}
-              refreshSignal={jagoRefreshSignal}
-              onToast={showToast}
+              loading={loading}
+              onAddTransaction={() => setIsModalOpen(true)}
+              onOpenPaycheck={() => setIsPaycheckModalOpen(true)}
             />
-            <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-slateText-primary truncate">Transaksi Terakhir</h2>
-                <button
-                  onClick={() => setActiveNav("Buku Transaksi")}
-                  className="text-xs text-amberGold hover:underline font-medium shrink-0 whitespace-nowrap inline-flex items-center gap-1 group"
-                >
-                  <span>Buka Buku Transaksi Lengkap ({transactions.length})</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              </div>
-              <TransactionTable
-                transactions={transactions.slice(0, 5)}
-                formatRupiah={formatRupiah}
-                onEdit={(tx) => setTxToEdit(tx)}
-                onDelete={(tx) => setTxToDelete(tx)}
-                loading={loading}
-              />
-            </div>
+            <LumaAccountStrip
+              accounts={(summary.accounts || []).map((a) => ({ name: a.account, balance: a.balance }))}
+              formatRupiah={formatRupiah}
+              loading={loading}
+              onOpenAccounts={() => setActiveNav("Akun & Kategori")}
+            />
+
+            <LumaRecentTransactions
+              transactions={transactions.slice(0, 5)}
+              totalCount={transactions.length}
+              formatRupiah={formatRupiah}
+              loading={loading}
+              onOpenLedger={() => setActiveNav("Buku Transaksi")}
+              onEdit={(tx) => setTxToEdit(tx)}
+              onDelete={(tx) => setTxToDelete(tx)}
+            />
           </div>
         )}
 

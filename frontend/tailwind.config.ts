@@ -10,6 +10,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /* Luma Design System (Dark Glass v2.0) — warm organic palette */
+        luma: {
+          charcoal: "rgb(var(--luma-charcoal-rgb) / <alpha-value>)",
+          coal: "rgb(var(--luma-coal-rgb) / <alpha-value>)",
+          ivory: "rgb(var(--luma-ivory-rgb) / <alpha-value>)",
+          ember: "rgb(var(--luma-ember-rgb) / <alpha-value>)",
+          smoke: "rgb(var(--luma-smoke-rgb) / <alpha-value>)",
+          smokeline: "rgb(var(--luma-smokeline-rgb) / <alpha-value>)",
+          sage: "rgb(var(--luma-sage-rgb) / <alpha-value>)",
+          coral: "rgb(var(--luma-coral-rgb) / <alpha-value>)",
+          gold: "rgb(var(--luma-gold-rgb) / <alpha-value>)",
+        },
         obsidian: {
           bg: "rgb(var(--obsidian-bg-rgb) / <alpha-value>)",
           panel: "rgb(var(--obsidian-panel-rgb) / <alpha-value>)",
@@ -43,6 +55,23 @@ const config: Config = {
       },
       borderWidth: {
         hairline: "1px",
+      },
+      borderRadius: {
+        luma: "24px",
+        "luma-lg": "28px",
+      },
+      boxShadow: {
+        "luma-glass": "0 8px 32px rgba(0, 0, 0, 0.35)",
+        "luma-ember": "0 0 60px rgba(240, 138, 75, 0.22)",
+      },
+      keyframes: {
+        fadeIn: {
+          from: { opacity: "0", transform: "translateY(4px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        fadeIn: "fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both",
       },
       spacing: {
         "8.5": "2.125rem",
