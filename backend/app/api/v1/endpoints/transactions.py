@@ -226,6 +226,8 @@ def execute_paycheck_split(
 
     created_txs = []
     for item in allocations_plan:
+        if item["amount"] <= 0:
+            continue
         tx = Transaction(
             user_id=current_user.id,
             type="income",
@@ -271,7 +273,24 @@ def update_transaction(
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
     
-    update_data = payload.dict(exclude_unset=True)
+    update_data = payload.model_dump(exclude_unset=True)
+    transfer_types = ("transfer_out", "transfer_in")
+    requested_type = update_data.get("type") or tx.type
+    if tx.type in transfer_types:
+        if requested_type != tx.type:
+            raise HTTPException(status_code=400, detail="Tipe transfer tidak dapat diubah menjadi transaksi biasa")
+        pair = find_paired_transfer(db, tx)
+        if not pair:
+            raise HTTPException(status_code=400, detail="Pasangan transfer tidak ditemukan; transfer belum dapat diedit")
+        if (update_data.get("account") or tx.account) == pair.account:
+            raise HTTPException(status_code=400, detail="Rekening asal dan tujuan tidak boleh sama")
+        if update_data.get("category") not in (None, "Transfer"):
+            raise HTTPException(status_code=400, detail="Kategori transfer harus tetap Transfer")
+        for field in ("amount", "date"):
+            if update_data.get(field) is not None:
+                setattr(pair, field, update_data[field])
+    elif requested_type in transfer_types:
+        raise HTTPException(status_code=400, detail="Gunakan fitur transfer untuk memindahkan saldo antar rekening")
     for field, value in update_data.items():
         if value is not None:
             setattr(tx, field, value)

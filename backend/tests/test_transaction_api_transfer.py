@@ -1,5 +1,6 @@
 import pytest
 from datetime import date
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -12,7 +13,10 @@ from app.models.account import Account
 from app.models.paycheck import PaycheckConfig, PaycheckBucket
 from app.api.deps import get_current_user
 from app.bot.bot import handle_batal
-from main import app
+from app.api.v1.endpoints.transactions import router
+
+app = FastAPI()
+app.include_router(router, prefix="/api/v1/transactions")
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 

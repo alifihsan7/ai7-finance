@@ -24,7 +24,8 @@ export function EditTransactionModal({
   accountOptions,
   categoryOptions,
 }: EditTransactionModalProps) {
-  const [type, setType] = useState<"income" | "expense">("expense");
+  const [type, setType] = useState<Transaction["type"]>("expense");
+  const isTransfer = type === "transfer_in" || type === "transfer_out";
   const [amount, setAmount] = useState<string>("");
   const [account, setAccount] = useState<string>("");
   const [category, setCategory] = useState<string>("");
@@ -42,7 +43,7 @@ export function EditTransactionModal({
 
   useEffect(() => {
     if (transaction) {
-      setType(transaction.type === "income" ? "income" : "expense");
+      setType(transaction.type);
       setAmount(transaction.amount.toString());
       setAccount(transaction.account);
       setCategory(transaction.category);
@@ -79,7 +80,8 @@ export function EditTransactionModal({
       });
 
       if (!res.ok) {
-        throw new Error("Gagal memperbarui transaksi");
+        const data = await res.json().catch(() => null);
+        throw new Error(typeof data?.detail === "string" ? data.detail : "Gagal memperbarui transaksi");
       }
 
       onSuccess();
@@ -114,7 +116,7 @@ export function EditTransactionModal({
           <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2">
             Tipe Transaksi
           </label>
-          <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-2xl border border-white/[0.08]">
+          {isTransfer ? <p className="text-sm text-luma-smoke">{type === "transfer_in" ? "Transfer masuk" : "Transfer keluar"}. Nominal dan tanggal akan diperbarui pada kedua sisi transfer.</p> : <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-2xl border border-white/[0.08]">
             <button
               type="button"
               onClick={() => setType("expense")}
@@ -137,7 +139,7 @@ export function EditTransactionModal({
             >
               Pemasukan
             </button>
-          </div>
+          </div>}
         </div>
 
         <div>
@@ -185,6 +187,7 @@ export function EditTransactionModal({
             value={category}
             onChange={setCategory}
             options={effectiveCategoryOptions}
+            disabled={isTransfer}
           />
         </div>
 

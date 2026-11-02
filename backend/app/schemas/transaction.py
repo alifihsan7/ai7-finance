@@ -22,6 +22,8 @@ class TransactionUpdate(BaseModel):
     date: Optional[dt_date] = None
 
 class TransactionOut(TransactionBase):
+    # Older paycheck splits can contain zero allocations; new writes still require > 0.
+    amount: int = Field(..., ge=0, le=9_000_000_000_000_000)
     id: int
     raw_text: Optional[str] = None
     created_at: dt_datetime

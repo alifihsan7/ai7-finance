@@ -64,6 +64,7 @@ import { OnboardingWizardModal } from "@/components/OnboardingWizardModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserProfileModal } from "@/components/UserProfileModal";
 import { authFetch, getAuthToken, setStoredUser, setAuthToken, UserProfile } from "@/lib/api";
+import { DashboardLoadError, loadDashboardData } from "@/lib/dashboardData";
 import { getCategoryColorDef } from "@/lib/categoryColors";
 
 interface MonthlySummary {
@@ -195,6 +196,7 @@ export default function FinanceDashboard() {
     });
   };
   const mainContentRef = useRef<HTMLElement>(null);
+  const dashboardRequestRef = useRef(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaycheckModalOpen, setIsPaycheckModalOpen] = useState(false);
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
@@ -461,6 +463,7 @@ export default function FinanceDashboard() {
   }, []);
 
   const fetchData = async () => {
+    const requestId = ++dashboardRequestRef.current;
     setOverviewError(null);
     const token = getAuthToken();
     if (!token) {
@@ -492,107 +495,41 @@ export default function FinanceDashboard() {
     try {
       setLoading(true);
 
-      const periodParams = new URLSearchParams();
-      periodParams.append("period_type", selectedPeriod.type);
-      if (selectedPeriod.start) periodParams.append("start", selectedPeriod.start);
-      if (selectedPeriod.end) periodParams.append("end", selectedPeriod.end);
-      if (selectedPeriod.month) periodParams.append("month", selectedPeriod.month);
-
-      const txParams = new URLSearchParams();
-      txParams.append("limit", "100");
-      if (selectedPeriod.start) txParams.append("start_date", selectedPeriod.start);
-      if (selectedPeriod.end) txParams.append("end_date", selectedPeriod.end);
-
-      const [txRes, sumRes, subRes, accRes, goalRes, sessRes, paycheckCfgRes, catRes] = await Promise.all([
-        authFetch(`/api/v1/transactions?${txParams.toString()}`),
-        authFetch(`/api/v1/analytics/summary?${periodParams.toString()}`),
-        authFetch("/api/v1/subscriptions"),
-        authFetch("/api/v1/accounts"),
-        authFetch("/api/v1/goals"),
-        authFetch("/api/v1/paycheck/session/active"),
-        authFetch("/api/v1/paycheck/config"),
-        authFetch("/api/v1/categories"),
-      ]);
-
-      if (!txRes.ok || !sumRes.ok) {
-        if (txRes.status === 401 || sumRes.status === 401) {
-          setIsAuthModalOpen(true);
-        }
-        throw new Error("Saldo dan transaksi belum tersedia. Periksa koneksi, lalu coba lagi.");
-      }
-
-      if (txRes.ok) {
-        const txData = await txRes.json();
-        if (Array.isArray(txData)) {
-          setTransactions(txData);
-        }
-      }
-
-      if (sumRes.ok) {
-        const sumData = await sumRes.json();
-        setSummary(sumData);
-        if (!selectedPeriod.start && sumData.start_date) {
+      const data = await loadDashboardData(authFetch, selectedPeriod);
+      if (requestId !== dashboardRequestRef.current) return;
+      setOverviewError(null);
+      if (Array.isArray(data.transactions)) setTransactions(data.transactions);
+      if (data.summary) {
+        setSummary(data.summary);
+        if (!selectedPeriod.start && data.summary.start_date) {
           setSelectedPeriod({
-            id: `cycle_${sumData.start_date}`,
-            type: sumData.period_type || "cycle",
-            label: sumData.period_label || "Siklus Aktif",
-            start: sumData.start_date,
-            end: sumData.end_date,
+            id: `cycle_${data.summary.start_date}`,
+            type: data.summary.period_type || "cycle",
+            label: data.summary.period_label || "Siklus Aktif",
+            start: data.summary.start_date,
+            end: data.summary.end_date,
             is_current: true,
           });
         }
       }
 
-      if (subRes.ok) {
-        const subData = await subRes.json();
-        setSubsData(subData);
-      }
-
-      if (accRes.ok) {
-        const accData = await accRes.json();
-        if (Array.isArray(accData)) {
-          setCustomAccounts(accData);
-        }
-      }
-
-      if (goalRes.ok) {
-        const goalData = await goalRes.json();
-        if (Array.isArray(goalData)) {
-          setGoals(goalData);
-        }
-      }
-
-      if (sessRes.ok) {
-        const sessData = await sessRes.json();
-        if (sessData && sessData.id && sessData.status === "in_progress") {
-          setActivePaycheckSession(sessData);
-        } else {
-          setActivePaycheckSession(null);
-        }
-      } else {
-        setActivePaycheckSession(null);
-      }
-
-      if (paycheckCfgRes.ok) {
-        const pData = await paycheckCfgRes.json();
-        if (pData?.config) setPaycheckConfig(pData.config);
-        if (Array.isArray(pData?.buckets)) setPaycheckBuckets(pData.buckets);
-      }
-
-      if (catRes.ok) {
-        const catData = await catRes.json();
-        if (Array.isArray(catData)) {
-          setCategories(catData);
-        }
-      }
+      if (data.subscriptions) setSubsData(data.subscriptions);
+      if (Array.isArray(data.accounts)) setCustomAccounts(data.accounts);
+      if (Array.isArray(data.goals)) setGoals(data.goals);
+      setActivePaycheckSession(data.session?.id && data.session.status === "in_progress" ? data.session : null);
+      if (data.paycheck?.config) setPaycheckConfig(data.paycheck.config);
+      if (Array.isArray(data.paycheck?.buckets)) setPaycheckBuckets(data.paycheck.buckets);
+      if (Array.isArray(data.categories)) setCategories(data.categories);
 
       // Refresh Bank Jago pockets after any ledger-affecting fetch.
       setJagoRefreshSignal((prev) => prev + 1);
     } catch (err) {
+      if (requestId !== dashboardRequestRef.current) return;
+      if (err instanceof DashboardLoadError && err.status === 401) setIsAuthModalOpen(true);
       setOverviewError(err instanceof Error ? err.message : "Koneksi terputus. Coba muat ulang ringkasan.");
       console.error("Fetch error:", err);
     } finally {
-      setLoading(false);
+      if (requestId === dashboardRequestRef.current) setLoading(false);
     }
   };
 

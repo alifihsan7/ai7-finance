@@ -5,106 +5,96 @@
 :root {
   color-scheme: dark;
 
-  /* Luma Design System (Dark Glass v2.0) — warm organic tokens.
-     Contrast verified: Ivory@Charcoal 14.12:1 AAA, Smoke-txt@Charcoal 7.57:1 AAA,
-     Ember@Charcoal 6.40:1 AA (accents only), Sage/Coral/Gold @Charcoal all AAA. */
-  --luma-charcoal-rgb: 34 34 34;
-  --luma-coal-rgb: 43 40 37;
-  --luma-ivory-rgb: 244 241 236;
-  --luma-ember-rgb: 240 138 75;
-  --luma-smoke-rgb: 185 178 167;
-  --luma-smokeline-rgb: 59 57 56;
-  --luma-sage-rgb: 214 233 184;
-  --luma-coral-rgb: 255 181 157;
+  /* Ink & Silver; RGB and hex tokens serve shared and legacy components. */
+  --luma-charcoal-rgb: 21 21 23;
+  --luma-coal-rgb: 35 35 38;
+  --luma-ivory-rgb: 243 243 245;
+  --luma-ember-rgb: 212 213 220;
+  --luma-smoke-rgb: 189 189 197;
+  --luma-smokeline-rgb: 65 65 69;
+  --luma-sage-rgb: 171 213 189;
+  --luma-coral-rgb: 233 167 159;
   --luma-gold-rgb: 237 215 116;
 
-  --luma-charcoal: #222222;
-  --luma-coal: #2B2825;
-  --luma-ivory: #F4F1EC;
-  --luma-ember: #F08A4B;
-  --luma-smoke: #B9B2A7;
-  --luma-smokeline: #3B3938;
-  --luma-sage: #D6E9B8;
-  --luma-coral: #FFB59D;
+  --luma-charcoal: #151517;
+  --luma-coal: #232326;
+  --luma-ivory: #f3f3f5;
+  --luma-ember: #d4d5dc;
+  --luma-smoke: #bdbdc5;
+  --luma-smokeline: #414145;
+  --luma-sage: #abd5bd;
+  --luma-panel-surface: #232326;
+  --luma-sidebar-surface: #0e0e10;
+  --luma-balance-surface: #37373e;
+  --luma-coral: #e9a79f;
   --luma-gold: #EDD774;
 
-  /* RGB channels for Tailwind opacity modifier support (e.g. bg-obsidian-panel/90)
-     Luma Dark Glass v2.0: legacy obsidian/slate channels REMAPPED to warm charcoal scale.
-     Canvas #222222 · Coal #2B2825 · Well #2A2726 · Hover #35302C · Hairlines #3B3938/#4A4643
-     Ivory #F4F1EC · Smoke #B9B2A7 · Muted sage-gray #A5B7AA. Light mode (.light) overrides below are untouched. */
-  --obsidian-bg-rgb: 34 34 34;
-  --obsidian-panel-rgb: 43 40 37;
-  --obsidian-card-rgb: 42 39 38;
-  --obsidian-hover-rgb: 53 48 44;
-  --obsidian-border-rgb: 59 57 56;
-  --obsidian-border-strong-rgb: 74 70 67;
-  --slate-primary-rgb: 244 241 236;
-  --slate-secondary-rgb: 185 178 167;
-  --slate-muted-rgb: 165 183 170;
-  /* Legacy accent channels REMAPPED to Luma Dark Glass v2.0 warmth.
-     canary #FACC15 -> Warm Gold #EDD774 · mint #2ED8B6 -> Sage #D6E9B8
-     harsh coral #FF6B4A -> Soft Coral #FFB59D · cyan #38BDF8 -> Warm Gold
-     generic purple #A78BFA -> Ember #F08A4B (anti-slop: no AI purple/blue). */
-  --amber-gold-rgb: 237 215 116;
-  --mint-rise-rgb: 214 233 184;
-  --coral-fall-rgb: 255 181 157;
-  --cyan-hub-rgb: 237 215 116;
-  --purple-lock-rgb: 240 138 75;
+  --obsidian-bg-rgb: 21 21 23;
+  --obsidian-panel-rgb: 35 35 38;
+  --obsidian-card-rgb: 29 29 32;
+  --obsidian-hover-rgb: 47 47 53;
+  --obsidian-border-rgb: 65 65 69;
+  --obsidian-border-strong-rgb: 102 102 112;
+  --slate-primary-rgb: 243 243 245;
+  --slate-secondary-rgb: 189 189 197;
+  --slate-muted-rgb: 174 174 184;
+  --amber-gold-rgb: 212 213 220;
+  --mint-rise-rgb: 171 213 189;
+  --coral-fall-rgb: 233 167 159;
+  --cyan-hub-rgb: 189 189 197;
+  --purple-lock-rgb: 212 213 220;
 
-  /* Standard CSS variables for direct var() usage
-     Luma Dark Glass v2.0: same warm-charcoal remap as RGB channels above. */
-  --obsidian-bg: #222222;
-  --obsidian-panel: #2B2825;
-  --obsidian-card: #2A2726;
-  --obsidian-hover: #35302C;
-  --obsidian-border: #3B3938;
-  --obsidian-border-strong: #4A4643;
-  --slate-primary: #F4F1EC;
-  --slate-secondary: #B9B2A7;
-  --slate-muted: #A5B7AA;
-  /* Legacy hex vars remapped to Luma warmth (same mapping as RGB channels above). */
-  --amber-gold: #EDD774;
-  --mint-rise: #D6E9B8;
-  --coral-fall: #FFB59D;
-  --cyan-hub: #EDD774;
-  --purple-lock: #F08A4B;
+  --obsidian-bg: #151517;
+  --obsidian-panel: #232326;
+  --obsidian-card: #1d1d20;
+  --obsidian-hover: #2f2f35;
+  --obsidian-border: #414145;
+  --obsidian-border-strong: #666670;
+  --slate-primary: #f3f3f5;
+  --slate-secondary: #bdbdc5;
+  --slate-muted: #aeaeb8;
+  --amber-gold: #d4d5dc;
+  --mint-rise: #abd5bd;
+  --coral-fall: #e9a79f;
+  --cyan-hub: #bdbdc5;
+  --purple-lock: #d4d5dc;
 }
 
-/* High-Fidelity Light Mode Theme (Fintech Precision: Slate / Linear / Mercury aesthetic) */
+/* Light counterpart of Ink & Silver. */
 .light {
   color-scheme: light;
 
   /* RGB channels for Light Mode */
-  --obsidian-bg-rgb: 248 250 252;
-  --obsidian-panel-rgb: 255 255 255;
-  --obsidian-card-rgb: 255 255 255;
-  --obsidian-hover-rgb: 241 245 249;
-  --obsidian-border-rgb: 226 232 240;
-  --obsidian-border-strong-rgb: 203 213 225;
-  --slate-primary-rgb: 15 23 42;
-  --slate-secondary-rgb: 71 85 105;
-  --slate-muted-rgb: 100 116 139;
-  --amber-gold-rgb: 156 73 27;
-  --mint-rise-rgb: 5 150 105;
-  --coral-fall-rgb: 220 38 38;
-  --cyan-hub-rgb: 2 132 199;
-  --purple-lock-rgb: 124 58 237;
+  --obsidian-bg-rgb: 243 243 245;
+  --obsidian-panel-rgb: 253 253 254;
+  --obsidian-card-rgb: 253 253 254;
+  --obsidian-hover-rgb: 229 229 234;
+  --obsidian-border-rgb: 209 209 218;
+  --obsidian-border-strong-rgb: 144 144 159;
+  --slate-primary-rgb: 36 36 43;
+  --slate-secondary-rgb: 95 95 109;
+  --slate-muted-rgb: 95 95 109;
+  --amber-gold-rgb: 71 71 85;
+  --mint-rise-rgb: 50 103 76;
+  --coral-fall-rgb: 154 68 57;
+  --cyan-hub-rgb: 95 95 109;
+  --purple-lock-rgb: 71 71 85;
 
   /* Standard CSS variables for Light Mode */
-  --obsidian-bg: #F8FAFC;
-  --obsidian-panel: #FFFFFF;
-  --obsidian-card: #FFFFFF;
-  --obsidian-hover: #F1F5F9;
-  --obsidian-border: #E2E8F0;
-  --obsidian-border-strong: #CBD5E1;
-  --slate-primary: #0F172A;
-  --slate-secondary: #475569;
-  --slate-muted: #64748B;
-  --amber-gold: #9C491B;
-  --mint-rise: #059669;
-  --coral-fall: #DC2626;
-  --cyan-hub: #0284C7;
-  --purple-lock: #7C3AED;
+  --obsidian-bg: #f3f3f5;
+  --obsidian-panel: #fdfdfe;
+  --obsidian-card: #fdfdfe;
+  --obsidian-hover: #e5e5ea;
+  --obsidian-border: #d1d1da;
+  --obsidian-border-strong: #90909f;
+  --slate-primary: #24242b;
+  --slate-secondary: #5f5f6d;
+  --slate-muted: #5f5f6d;
+  --amber-gold: #474755;
+  --mint-rise: #32674c;
+  --coral-fall: #9a4439;
+  --cyan-hub: #5f5f6d;
+  --purple-lock: #474755;
 }
 
 body {
@@ -169,7 +159,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 /* Selection highlight */
 ::selection {
-  background-color: rgba(245, 158, 11, 0.25);
+  background-color: rgb(var(--luma-sage-rgb) / .25);
   color: var(--slate-primary);
 }
 
@@ -290,11 +280,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   }
 }
 
-/* =========================================================================
-   LUMA DESIGN SYSTEM (Dark Glass v2.0) UTILITIES
-   Smoked glass surfaces, ember glow, generous radii, 44px touch targets.
-   No purple/blue gradients, no cheap glassmorphism, no excess radius.
-   ========================================================================= */
+/* Shared surfaces and 44px touch targets. */
 
 @layer components {
   .luma-glass {
@@ -314,7 +300,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   }
 
   .luma-ember-glow {
-    background: radial-gradient(circle, rgba(240, 138, 75, 0.32) 0%, transparent 70%);
+    background: radial-gradient(circle, rgb(var(--luma-ember-rgb) / .32) 0%, transparent 70%);
     filter: blur(36px);
     pointer-events: none;
   }
@@ -323,43 +309,41 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     min-height: 44px;
   }
 
-  /* Luma form wells — dark inset inputs inside modal bodies.
-     Smoke #B9B2A7 @ #33302F = 6.23:1 (AA); labels + values use Ivory
-     (11.62:1 AAA) via the rules below. Placeholders keep Smoke (AA decorative). */
   .luma-form-scope :where(input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]), textarea, select) {
-    background-color: #33302F;
+    background-color: var(--obsidian-card);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
-    color: #F4F1EC;
+    color: var(--luma-ivory);
   }
   .luma-form-scope input::placeholder,
   .luma-form-scope textarea::placeholder {
-    color: #B9B2A7;
+    color: var(--luma-smoke);
     opacity: 1;
   }
   .luma-form-scope label {
-    color: #F4F1EC;
+    color: var(--luma-ivory);
   }
 }
 
 /* Dashboard composition: one primary balance card and two quieter side panels. */
-.luma-app { background: #343333; height: 100dvh; }
+.luma-app { background: var(--luma-charcoal); height: 100dvh; }
 .luma-main {
-  background: #343333;
+  background: var(--luma-charcoal);
   min-width: 0;
 }
-.luma-topbar { background: #343333; border-color: rgba(255,255,255,.06); backdrop-filter: none; }
+.luma-topbar { background: var(--luma-charcoal); border-color: var(--luma-smokeline); backdrop-filter: none; }
 .luma-topbar-inner { flex-wrap: wrap; }
 .luma-period-controls { flex: 1 1 220px; max-width: 100%; }
 .luma-period-selector { flex: 1 1 auto; max-width: 100%; }
 .luma-period-popup { width: min(24rem, calc(100vw - 4rem)); }
 .luma-period-popup button { min-height: 44px; }
 .luma-toolbar { margin-left: auto; }
-.luma-sidebar { background: #1a1a1a; border: 1px solid rgba(255,255,255,.06); }
+.luma-sidebar { background: var(--luma-sidebar-surface); border: 1px solid var(--luma-smokeline); }
 .luma-sidebar nav button { border-radius: 12px; font-size: 12px; padding-left: 12px; padding-right: 12px; }
-.luma-sidebar nav button svg { color: var(--luma-ivory); }
+.luma-sidebar nav button svg { color: inherit; }
+.luma-sidebar nav button[aria-current] { color: var(--luma-ember); background: var(--luma-coal); border-color: var(--luma-smokeline); }
 .luma-sidebar nav button:not([aria-current]) { background: transparent; }
-.luma-sidebar nav button:not([aria-current]):hover { background: rgba(145,130,115,.12); }
+.luma-sidebar nav button:not([aria-current]):hover { background: var(--luma-coal); }
 .luma-sidebar nav button:focus-visible { outline: 2px solid var(--luma-ember); outline-offset: 2px; }
 .luma-page-content { max-width: none; }
 .luma-guest-banner { padding: 12px 16px; background: rgba(255,255,255,.04); border-radius: 16px; }
@@ -368,14 +352,13 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-balance-panel {
   position: relative; isolation: isolate; overflow: hidden; min-width: 0;
   padding: 26px; border-radius: 28px; border: 1px solid rgba(255,255,255,.12);
-  background: radial-gradient(ellipse at 90% 95%, rgba(167, 88, 39, .60), transparent 67%),
-    linear-gradient(135deg, #514b50, #514741 62%, #403a35);
+  background: linear-gradient(135deg, #393940, #29292f);
   display: flex; flex-direction: column; justify-content: space-between; min-height: 362px;
   box-shadow: 0 14px 36px rgba(0,0,0,.06);
 }
 .luma-balance-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .luma-balance-panel > * { position: relative; z-index: 1; }
-.luma-panel-label { font-size: 13px; font-weight: 400; color: #eee4dd; }
+.luma-panel-label { font-size: 13px; font-weight: 400; color: var(--luma-ivory); }
 .luma-icon-button { display: inline-flex; align-items: center; justify-content: center; width: 44px; min-height: 44px; color: #f4f1ec; border-radius: 12px; }
 .luma-icon-button:hover { background: rgba(255,255,255,.1); }
 .luma-balance-body { padding: 18px 0 25px; }
@@ -388,7 +371,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-action-secondary:hover { background: rgba(255,255,255,.16); }
 .luma-balance-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 18px; margin: 0 -12px -12px; border-radius: 20px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.09); backdrop-filter: blur(20px); }
 .luma-balance-stats > div { min-width: 0; }
-.luma-balance-stats span { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #f0e3d9; }
+.luma-balance-stats span { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--luma-ivory); }
 .luma-balance-stats strong { display: block; margin-top: 5px; font-size: clamp(15px,1.5vw,21px); font-weight: 500; letter-spacing: -.025em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; color: #fff; }
 .luma-overview-side { display: grid; grid-template-rows: 1fr 1fr; gap: 16px; min-width: 0; }
 .luma-matte { background: var(--luma-panel-surface, #3b3835); border: 1px solid rgba(255,255,255,.07); border-radius: 20px; }
@@ -402,7 +385,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-flow-track, .luma-quota-track { height: 5px; background: rgba(255,255,255,.07); border-radius: 8px; overflow: hidden; }
 .luma-flow-track > div, .luma-quota-track > div { height: 100%; border-radius: inherit; }
 .luma-flow-income { background: var(--luma-sage); }
-.luma-flow-expense { background: var(--luma-ember); }
+.luma-flow-expense { background: var(--luma-coral); }
 .luma-flow-net { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 17px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.09); font-size: 11px; color: var(--luma-smoke); }
 .luma-daily-panel .luma-section-heading { margin-bottom: 10px; }
 .luma-daily-amount { font-size: 27px; font-weight: 500; letter-spacing: -.035em; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
@@ -425,14 +408,22 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-recent li > div:first-child { border: 0; border-radius: 12px; background: rgba(0,0,0,.14); width: 38px; height: 38px; }
 .luma-recent .font-mono { font-family: inherit; }
 .luma-recent .font-bold, .luma-recent .font-semibold { font-weight: 500; }
-.light { --luma-charcoal-rgb: 244 243 240; --luma-coal-rgb: 255 255 252; --luma-ivory-rgb: 39 38 35; --luma-smoke-rgb: 105 98 91; --luma-smokeline-rgb: 217 213 208; --luma-sage-rgb: 52 107 72; --luma-coral-rgb: 157 79 53; --luma-gold-rgb: 137 103 28; --luma-smoke: #69625b; --luma-ivory: #272623; --luma-sage: #346b48; --luma-charcoal: #f4f3f0; }
-.light { --luma-panel-surface: #fcfbf8; --luma-ember-rgb: 156 73 27; --luma-ember: #9c491b; }
-.light .luma-app, .light .luma-main { background: #f1efeb; }
-.light .luma-sidebar { background: #e5e1db; border-color: rgba(60,40,20,.08); }
-.light .luma-topbar { background: rgba(244,243,240,.9); }
-.light .luma-glass, .light .luma-recent { background: var(--luma-panel-surface); border-color: rgba(60,40,20,.08); }
+.light {
+  --luma-charcoal-rgb: 243 243 245; --luma-coal-rgb: 229 229 234;
+  --luma-ivory-rgb: 36 36 43; --luma-smoke-rgb: 95 95 109;
+  --luma-smokeline-rgb: 209 209 218; --luma-sage-rgb: 50 103 76;
+  --luma-ember-rgb: 71 71 85; --luma-coral-rgb: 154 68 57; --luma-gold-rgb: 124 98 30;
+  --luma-charcoal: #f3f3f5; --luma-coal: #e5e5ea; --luma-ivory: #24242b;
+  --luma-smoke: #5f5f6d; --luma-smokeline: #d1d1da;
+  --luma-sage: #32674c; --luma-ember: #474755; --luma-coral: #9a4439; --luma-gold: #7c621e;
+  --luma-panel-surface: #fdfdfe; --luma-sidebar-surface: #e5e5ea; --luma-balance-surface: #dcdce3;
+}
+.light .luma-app, .light .luma-main { background: var(--luma-charcoal); }
+.light .luma-sidebar { background: var(--luma-sidebar-surface); border-color: var(--luma-smokeline); }
+.light .luma-topbar { background: var(--luma-charcoal); }
+.light .luma-glass, .light .luma-recent { background: var(--luma-panel-surface); border-color: var(--luma-smokeline); }
 .light .luma-balance-body > p:not(.luma-balance-number) { color: #f4f1ec; }
-.light .luma-balance-panel { background: linear-gradient(135deg, #e5dbd1, #d7b69e); isolation: auto; }
+.light .luma-balance-panel { background: var(--luma-balance-surface); isolation: auto; }
 .light .luma-balance-panel .luma-panel-label,
 .light .luma-balance-panel .luma-balance-number,
 .light .luma-balance-panel .luma-balance-body > p,
@@ -441,11 +432,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .light .luma-balance-stats strong,
 .light .luma-balance-stats span,
 .light .luma-guest-inset,
-.light .luma-balance-panel .luma-icon-button { color: #493a30; }
+.light .luma-balance-panel .luma-icon-button { color: var(--luma-ivory); }
 .light .luma-balance-stats, .light .luma-guest-inset { background: rgba(255,255,255,.3); backdrop-filter: none; }
-.light .luma-balance-panel .luma-action-primary { background: #292724; color: #f4f1ec; }
-.light .luma-balance-panel .luma-action-secondary { color: #493a30; border-color: #8b7260; }
-.light .luma-flow-track, .light .luma-quota-track, .light .luma-recent li { background: rgba(60,40,20,.06); }
+.light .luma-balance-panel .luma-action-primary { background: #24242b; color: #f3f3f5; }
+.light .luma-balance-panel .luma-action-secondary { color: var(--luma-ivory); border-color: #8b8b9b; }
+.light .luma-flow-track, .light .luma-quota-track, .light .luma-recent li { background: rgba(36,36,43,.06); }
 .light .luma-recent .luma-glass { background: transparent; }
 .luma-guest-panel { min-height: 360px; }
 .luma-guest-panel h2 { margin: 24px 0 16px; font-size: clamp(26px, 3vw, 38px); line-height: 1.2; letter-spacing: -.035em; font-weight: 500; color: #fff; }
