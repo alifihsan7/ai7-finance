@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bot,
   CreditCard,
@@ -24,6 +24,7 @@ interface JagoPocketsProps {
   refreshSignal?: number;
   onToast?: (msg: string) => void;
   onDataLoaded?: (data: JagoPocketsSummaryResponse) => void;
+  showActions?: boolean;
 }
 
 const POCKET_ORDER = ["utama", "kuota", "visa", "claude", "gym"] as const;
@@ -75,7 +76,9 @@ function statusFor(tone: ReturnType<typeof getPocketStatus>["tone"]): {
   };
 }
 
-export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLoaded }: JagoPocketsProps) {
+export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLoaded, showActions = true }: JagoPocketsProps) {
+  const onDataLoadedRef = useRef(onDataLoaded);
+  useEffect(() => { onDataLoadedRef.current = onDataLoaded; }, [onDataLoaded]);
   const [data, setData] = useState<JagoPocketsSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -88,14 +91,14 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
     try {
       const res = await getJagoPockets();
       setData(res);
-      onDataLoaded?.(res);
+      onDataLoadedRef.current?.(res);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Gagal memuat sub-kantong operasional";
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [onDataLoaded]);
+  }, []);
 
   useEffect(() => {
     fetchPockets();
@@ -107,7 +110,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
     try {
       const res = await syncJagoPocketCommitments();
       setData(res);
-      onDataLoaded?.(res);
+      onDataLoadedRef.current?.(res);
       setError(null);
       onToast?.("Komitmen sub-kantong tersinkron dengan Langganan");
     } catch (err) {
@@ -120,10 +123,12 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
 
   const handleEditSuccess = (updated: JagoPocketsSummaryResponse) => {
     setData(updated);
-    onDataLoaded?.(updated);
+    onDataLoadedRef.current?.(updated);
     setError(null);
     onToast?.("Plafon sub-kantong operasional berhasil diperbarui");
   };
+
+  const pockets = useMemo(() => data ? sortPockets(data.pockets ?? data.items ?? []) : [], [data]);
 
   if (loading) {
     return (
@@ -133,10 +138,10 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
             <Skeleton className="w-56 h-5 rounded-full" />
             <Skeleton className="w-80 h-3.5 rounded-full mt-1.5" />
           </div>
-          <div className="flex items-center gap-2">
+          {showActions && <div className="flex items-center gap-2">
             <Skeleton className="w-32 h-11 rounded-2xl" />
             <Skeleton className="w-28 h-11 rounded-2xl" />
-          </div>
+          </div>}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3.5 sm:gap-4">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -164,7 +169,6 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
     );
   }
 
-  const pockets = data ? sortPockets(data.pockets ?? data.items ?? []) : [];
   const totalTarget = data?.total_target_amount ?? 0;
   const totalSpent = data?.total_spent_amount ?? 0;
   const totalRemaining = data?.total_remaining_amount ?? 0;
@@ -185,7 +189,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
             Sub-kantong operasional dengan alokasi otomatis — saldo {formatRupiah(totalBalance)}, terpakai {formatRupiah(totalSpent)}, sisa {formatRupiah(totalRemaining)}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        {showActions && <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={handleSync}
@@ -205,7 +209,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
             <Pencil className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span>Edit Target Sub-Kantong</span>
           </button>
-        </div>
+        </div>}
       </div>
 
       {error && (

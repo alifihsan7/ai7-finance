@@ -22,11 +22,13 @@ export function CustomModal({
   maxWidth = "md",
 }: CustomModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        onCloseRef.current();
       }
       if (e.key === "Tab" && isOpen && dialogRef.current) {
         const controls = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
@@ -48,7 +50,7 @@ export function CustomModal({
       window.removeEventListener("keydown", handleKeyDown);
       if (isOpen) previousFocus?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

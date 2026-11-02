@@ -2259,19 +2259,12 @@ export default function FinanceDashboard() {
             {/* Sub-tab 2: Kantong */}
             {settingsSubTab === "kantong" && (
               <div className="space-y-4 animate-fadeIn">
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                    Sub-Kantong Operasional
-                  </h2>
-                  <p className="text-xs text-zinc-400 mt-0.5">
-                    Konfigurasi alokasi sub-kantong operasional, sinkronisasi autodebet, dan plafon target pengeluaran.
-                  </p>
-                </div>
                 <OperationalPockets
                   formatRupiah={formatRupiah}
                   refreshSignal={jagoRefreshSignal}
                   onToast={showToast}
-                  onDataLoaded={(data) => setJagoPocketsData(data)}
+                  onDataLoaded={setJagoPocketsData}
+                  showActions={false}
                 />
               </div>
             )}
