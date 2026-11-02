@@ -16,33 +16,10 @@ interface StrataAllocationBarProps {
   loading?: boolean;
 }
 
-const ACCOUNT_COLORS: Record<string, { bar: string; border: string; text: string }> = {
-  "Kebutuhan Pokok": { bar: "bg-amberGold", border: "border-amberGold", text: "text-amberGold" },
-  "Tagihan & Rutin": { bar: "bg-purple-500", border: "border-purple-500", text: "text-purple-400" },
-  "Tabungan & Investasi": { bar: "bg-teal-500", border: "border-teal-500", text: "text-teal-400" },
-  "Dana Darurat": { bar: "bg-cyanHub", border: "border-cyanHub", text: "text-cyanHub" },
-  "Mandiri": { bar: "bg-amberGold", border: "border-amberGold", text: "text-amberGold" },
-  "Bank Jago": { bar: "bg-purple-500", border: "border-purple-500", text: "text-purple-400" },
-  "Jago": { bar: "bg-purple-500", border: "border-purple-500", text: "text-purple-400" },
-  "Bibit": { bar: "bg-teal-500", border: "border-teal-500", text: "text-teal-400" },
-  "BRI 1": { bar: "bg-cyanHub", border: "border-cyanHub", text: "text-cyanHub" },
-  "BRI 2": { bar: "bg-coralFall", border: "border-coralFall", text: "text-coralFall" },
-};
-
-const COLOR_PALETTE = [
-  { bar: "bg-amberGold", border: "border-amberGold", text: "text-amberGold" },
-  { bar: "bg-purple-500", border: "border-purple-500", text: "text-purple-400" },
-  { bar: "bg-teal-500", border: "border-teal-500", text: "text-teal-400" },
-  { bar: "bg-cyanHub", border: "border-cyanHub", text: "text-cyanHub" },
-  { bar: "bg-blue-500", border: "border-blue-500", text: "text-blue-400" },
-  { bar: "bg-emerald-500", border: "border-emerald-500", text: "text-emerald-400" },
-  { bar: "bg-coralFall", border: "border-coralFall", text: "text-coralFall" },
-];
-
-function getBucketColor(account: string, idx: number) {
-  if (ACCOUNT_COLORS[account]) return ACCOUNT_COLORS[account];
-  return COLOR_PALETTE[idx % COLOR_PALETTE.length];
-}
+/* Luma Dark Glass v2.0 allocation palette — warm solids, no gradients.
+   Bar labels always Charcoal (#222) for contrast:
+   Charcoal@Sage 12.28, @Gold 11.04, @Coral 9.36, @Ember 6.40 (AA, bold micro-label). */
+const LUMA_SEGMENTS = ["#D6E9B8", "#F08A4B", "#EDD774", "#FFB59D", "#F4F1EC"];
 
 const DEFAULT_BUCKETS: BucketAllocationItem[] = [
   { account: "Rekening Utama", percentage: 50.0, purpose: "Belanja & Operasional" },
@@ -60,18 +37,18 @@ export function StrataAllocationBar({
 }: StrataAllocationBarProps) {
   if (loading) {
     return (
-      <div className="space-y-4">
+      <section aria-label="Distribusi alokasi anggaran" className="luma-glass p-6 sm:p-7 space-y-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <Skeleton className="w-48 h-5 rounded-md" />
             <Skeleton className="w-72 h-3.5 rounded-md mt-1.5" />
           </div>
-          <Skeleton className="w-36 h-6 rounded-md" />
+          <Skeleton className="w-36 h-6 rounded-full" />
         </div>
-        <Skeleton className="w-full h-7 rounded-full" />
+        <Skeleton className="w-full h-9 rounded-full" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-1">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] space-y-2">
+            <div key={i} className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] space-y-2">
               <div className="flex items-center gap-1.5">
                 <Skeleton className="w-2 h-2 rounded-full" />
                 <Skeleton className="w-16 h-3 rounded-md" />
@@ -81,7 +58,7 @@ export function StrataAllocationBar({
             </div>
           ))}
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -100,25 +77,31 @@ export function StrataAllocationBar({
   const activeBuckets = buckets && buckets.length > 0 ? buckets : DEFAULT_BUCKETS;
 
   return (
-    <div className="space-y-4">
+    <section aria-label="Distribusi alokasi anggaran" className="luma-glass p-6 sm:p-7 space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-white">Distribusi Alokasi Anggaran</h2>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
+          <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
+            Distribusi Alokasi Anggaran
+          </h2>
+          <p className="text-xs sm:text-sm text-luma-smoke mt-0.5 tabular-nums">
             {effectiveSalary > 0
               ? `Alokasi anggaran ${formatRupiah(effectiveSalary)} / ${cycleDays} hari dipecah ke ${activeBuckets.length} pos rekening`
               : `Proporsi alokasi dipecah ke ${activeBuckets.length} pos rekening sesuai rasio alur gajian`}
           </p>
         </div>
-        <span className="text-xs font-mono font-semibold text-amberGold px-3 py-1 rounded-full bg-amberGold/15 border border-amberGold/30 shrink-0 self-start sm:self-center">
+        <span className="text-xs font-mono font-semibold text-luma-gold px-3 py-1.5 rounded-full bg-luma-gold/10 border border-luma-gold/30 shrink-0 self-start sm:self-center whitespace-nowrap">
           {formulaLabel}
         </span>
       </div>
 
-      {/* Horizontal Stacked Bar */}
-      <div className="flex gap-1 h-7 rounded-full overflow-hidden p-1 bg-obsidian-card border border-white/[0.08] shadow-inner">
+      {/* Horizontal Stacked Bar — Luma warm solids */}
+      <div
+        className="flex gap-1 min-h-[44px] rounded-full overflow-hidden p-1.5 bg-black/25 border border-white/[0.1]"
+        role="img"
+        aria-label={`Proporsi alokasi: ${activeBuckets.map((b) => `${b.account} ${b.percentage.toFixed(1)} persen`).join(", ")}`}
+      >
         {activeBuckets.map((b, idx) => {
-          const color = getBucketColor(b.account, idx);
+          const seg = LUMA_SEGMENTS[idx % LUMA_SEGMENTS.length];
           const isFirst = idx === 0;
           const isLast = idx === activeBuckets.length - 1;
           const showText = b.percentage >= 4;
@@ -126,12 +109,12 @@ export function StrataAllocationBar({
           return (
             <div
               key={b.account}
-              style={{ flex: b.percentage }}
-              className={`${color.bar} ${isFirst ? "rounded-l-full" : ""} ${isLast ? "rounded-r-full" : ""} transition-all hover:brightness-110 flex items-center justify-center text-xs font-mono font-bold shadow-xs`}
+              style={{ flex: b.percentage, backgroundColor: seg }}
+              className={`${isFirst ? "rounded-l-full" : ""} ${isLast ? "rounded-r-full" : ""} transition-all hover:brightness-110 flex items-center justify-center`}
               title={`${b.account}: ${b.percentage.toFixed(1)}%`}
             >
               {showText ? (
-                <span className={`text-[10px] leading-none select-none font-bold ${b.account === "Mandiri" ? "text-slate-950 font-black" : "text-white drop-shadow-xs"}`}>
+                <span className="text-[11px] leading-none select-none font-black font-mono text-luma-charcoal px-1 whitespace-nowrap">
                   {b.percentage < 10 ? b.percentage.toFixed(1) : Math.round(b.percentage)}%
                 </span>
               ) : null}
@@ -140,10 +123,10 @@ export function StrataAllocationBar({
         })}
       </div>
 
-      {/* Account Cards Breakdown */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 pt-1">
+      {/* Pos Breakdown — smoked mini-wells */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3 pt-1">
         {activeBuckets.map((b, idx) => {
-          const color = getBucketColor(b.account, idx);
+          const seg = LUMA_SEGMENTS[idx % LUMA_SEGMENTS.length];
           const allocatedAmt = Math.round((b.percentage / 100) * effectiveSalary);
           const shortPurpose = b.purpose
             ? b.purpose.split("(")[0].trim()
@@ -152,23 +135,29 @@ export function StrataAllocationBar({
           return (
             <div
               key={b.account}
-              className={`border-l-2 ${color.border} pl-3 py-0.5 min-w-0`}
+              className="rounded-2xl bg-white/[0.04] border border-white/[0.08] p-3.5 min-w-0"
             >
-              <div className="text-white font-semibold text-xs sm:text-sm break-words leading-snug">
-                {b.account}{" "}
-                <span className="text-zinc-400 font-mono text-[11px] sm:text-xs font-normal whitespace-nowrap">
-                  ({b.percentage.toFixed(1)}%)
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span
+                  aria-hidden="true"
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: seg }}
+                />
+                <span className="text-luma-ivory font-semibold text-xs sm:text-sm break-words leading-snug">
+                  {b.account}
                 </span>
               </div>
-              <div className="text-zinc-400 font-mono text-[11px] sm:text-xs mt-1 break-words leading-relaxed">
-                {effectiveSalary > 0
-                  ? `${formatRupiah(allocatedAmt)} • ${shortPurpose}`
-                  : `${b.percentage.toFixed(1)}% • ${shortPurpose}`}
+              <div className="text-luma-smoke font-mono text-[11px] sm:text-xs mt-1.5 tabular-nums break-words leading-relaxed">
+                {b.percentage.toFixed(1)}%
+                {effectiveSalary > 0 ? ` · ${formatRupiah(allocatedAmt)}` : ""}
+              </div>
+              <div className="text-luma-smoke/80 text-[11px] mt-0.5 break-words leading-snug">
+                {shortPurpose}
               </div>
             </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }

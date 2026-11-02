@@ -32,11 +32,11 @@ export function TransactionTable({
   const showActions = Boolean(onEdit || onDelete);
 
   return (
-    <div className="border border-white/[0.08] rounded-3xl overflow-hidden bg-obsidian-card shadow-sm">
+    <div className="luma-glass !rounded-3xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[700px] text-left text-sm border-collapse">
+        <table className="w-full min-w-[700px] text-left text-sm border-collapse tabular-nums">
           <thead>
-            <tr className="border-b border-white/[0.08] bg-obsidian-panel text-zinc-400 font-semibold text-xs uppercase tracking-wider">
+            <tr className="border-b border-white/[0.08] bg-black/20 text-luma-smoke font-semibold text-xs uppercase tracking-wider">
               <th className="py-4 px-4 sm:px-6 whitespace-nowrap w-28">Tanggal</th>
               <th className="py-4 px-4 sm:px-6 min-w-[200px]">Keterangan</th>
               <th className="py-4 px-4 sm:px-6 whitespace-nowrap w-44">Kategori</th>
@@ -73,7 +73,7 @@ export function TransactionTable({
               ))
             ) : transactions.length === 0 ? (
               <tr>
-                <td colSpan={showActions ? 6 : 5} className="py-12 text-center text-zinc-400">
+                <td colSpan={showActions ? 6 : 5} className="py-12 text-center text-luma-smoke">
                   Tidak ada transaksi yang cocok dengan filter pencarian.
                 </td>
               </tr>
@@ -86,51 +86,55 @@ export function TransactionTable({
                 const isTransfer = isTransferIn || isTransferOut;
 
                 return (
-                  <tr key={tx.id} className="hover:bg-white/[0.03] transition group">
-                    <td className="py-4 px-4 sm:px-6 text-zinc-400 font-mono whitespace-nowrap text-xs sm:text-sm">
+                  <tr key={tx.id} className="hover:bg-white/[0.04] transition group">
+                    <td className="py-4 px-4 sm:px-6 text-luma-smoke font-mono whitespace-nowrap text-xs sm:text-sm">
                       {tx.date}
                     </td>
-                    <td className="py-4 px-4 sm:px-6 text-white font-medium min-w-[200px] leading-snug">
+                    <td className="py-4 px-4 sm:px-6 text-luma-ivory font-medium min-w-[200px] leading-snug break-words">
                       {tx.description}
                     </td>
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                       <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-mono font-medium border whitespace-nowrap ${
                           isTransfer
-                            ? "bg-cyanHub/10 border-cyanHub/30 text-cyanHub"
+                            ? "bg-luma-gold/10 border-luma-gold/30 text-luma-gold"
                             : getCategoryBadgeClasses(tx.category)
                         }`}
                       >
                         {tx.category}
                       </span>
                     </td>
-                    <td className="py-4 px-4 sm:px-6 text-zinc-400 font-mono text-xs sm:text-sm whitespace-nowrap">
+                    <td className="py-4 px-4 sm:px-6 text-luma-smoke font-mono text-xs sm:text-sm whitespace-nowrap">
                       {tx.account}
                     </td>
                     <td
-                      className={`py-4 px-4 sm:px-6 text-right font-mono font-black whitespace-nowrap text-sm sm:text-base ${
-                        isPositive ? "text-mintRise" : isTransferOut ? "text-cyanHub" : "text-coralFall"
+                      className={`py-4 px-4 sm:px-6 text-right font-mono font-bold whitespace-nowrap text-sm sm:text-base tabular-nums ${
+                        isPositive ? "text-luma-sage" : isTransferOut ? "text-luma-gold" : "text-luma-coral"
                       }`}
                     >
                       {isPositive ? "+" : "-"} {formatRupiah(tx.amount)}
                     </td>
                     {showActions && (
                       <td className="py-4 px-4 sm:px-6 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1.5 opacity-80 group-hover:opacity-100 transition">
+                        <div className="flex items-center justify-center gap-1 opacity-80 group-hover:opacity-100 transition">
                           {onEdit && (
                             <button
+                              type="button"
                               onClick={() => onEdit(tx)}
                               title="Edit Transaksi"
-                              className="p-1.5 rounded-full text-zinc-400 hover:text-amberGold hover:bg-amberGold/10 border border-transparent hover:border-amberGold/20 transition cursor-pointer"
+                              aria-label={`Edit transaksi ${tx.description}`}
+                              className="luma-touch min-w-[44px] inline-flex items-center justify-center rounded-full text-luma-smoke hover:text-luma-gold hover:bg-luma-gold/10 border border-transparent hover:border-luma-gold/25 transition cursor-pointer"
                             >
                               <Edit2 size={15} />
                             </button>
                           )}
                           {onDelete && (
                             <button
+                              type="button"
                               onClick={() => onDelete(tx)}
                               title="Hapus Transaksi"
-                              className="p-1.5 rounded-full text-zinc-400 hover:text-coralFall hover:bg-coralFall/10 border border-transparent hover:border-coralFall/20 transition cursor-pointer"
+                              aria-label={`Hapus transaksi ${tx.description}`}
+                              className="luma-touch min-w-[44px] inline-flex items-center justify-center rounded-full text-luma-smoke hover:text-luma-coral hover:bg-luma-coral/10 border border-transparent hover:border-luma-coral/25 transition cursor-pointer"
                             >
                               <Trash2 size={15} />
                             </button>

@@ -42,39 +42,39 @@ const COLOR_THEMES: Record<
   }
 > = {
   emerald: {
-    dot: "bg-emerald-400",
-    badgeBg: "bg-emerald-500/10",
-    badgeText: "text-emerald-400",
-    badgeBorder: "border-emerald-500/20",
-    barBg: "bg-emerald-500",
+    dot: "bg-luma-sage",
+    badgeBg: "bg-luma-sage/10",
+    badgeText: "text-luma-sage",
+    badgeBorder: "border-luma-sage/30",
+    barBg: "bg-luma-sage",
   },
   cyan: {
-    dot: "bg-cyan-400",
-    badgeBg: "bg-cyan-500/10",
-    badgeText: "text-cyan-400",
-    badgeBorder: "border-cyan-500/20",
-    barBg: "bg-cyan-500",
+    dot: "bg-luma-gold",
+    badgeBg: "bg-luma-gold/10",
+    badgeText: "text-luma-gold",
+    badgeBorder: "border-luma-gold/30",
+    barBg: "bg-luma-gold",
   },
   amber: {
-    dot: "bg-amber-400",
-    badgeBg: "bg-amber-500/10",
-    badgeText: "text-amber-400",
-    badgeBorder: "border-amber-500/20",
-    barBg: "bg-amber-500",
+    dot: "bg-luma-ember",
+    badgeBg: "bg-luma-ember/10",
+    badgeText: "text-luma-ember",
+    badgeBorder: "border-luma-ember/30",
+    barBg: "bg-luma-ember",
   },
   purple: {
-    dot: "bg-purple-400",
-    badgeBg: "bg-purple-500/10",
-    badgeText: "text-purple-400",
-    badgeBorder: "border-purple-500/20",
-    barBg: "bg-purple-500",
+    dot: "bg-luma-ember",
+    badgeBg: "bg-luma-ember/10",
+    badgeText: "text-luma-ember",
+    badgeBorder: "border-luma-ember/30",
+    barBg: "bg-luma-ember",
   },
   rose: {
-    dot: "bg-rose-400",
-    badgeBg: "bg-rose-500/10",
-    badgeText: "text-rose-400",
-    badgeBorder: "border-rose-500/20",
-    barBg: "bg-rose-500",
+    dot: "bg-luma-coral",
+    badgeBg: "bg-luma-coral/10",
+    badgeText: "text-luma-coral",
+    badgeBorder: "border-luma-coral/30",
+    barBg: "bg-luma-coral",
   },
 };
 
@@ -106,42 +106,42 @@ function formatDateIndo(dateStr: string | null): string {
 function renderGoalIcon(icon: string, name: string, category: string) {
   const lower = (name + " " + category).toLowerCase();
   if (lower.includes("dingin") || lower.includes("tabungan") || icon === "🛡️") {
-    return <ShieldCheck className="w-5 h-5 text-emerald-400" />;
+    return <ShieldCheck className="w-5 h-5 text-luma-sage" />;
   }
   if (lower.includes("investasi") || lower.includes("bibit") || lower.includes("reksadana") || icon === "📈") {
-    return <TrendingUp className="w-5 h-5 text-cyan-400" />;
+    return <TrendingUp className="w-5 h-5 text-luma-gold" />;
   }
   if (lower.includes("darurat") || icon === "🚨") {
-    return <AlertTriangle className="w-5 h-5 text-amber-400" />;
+    return <AlertTriangle className="w-5 h-5 text-luma-gold" />;
   }
   if (lower.includes("laptop") || lower.includes("gadget") || icon === "💻") {
-    return <Laptop className="w-5 h-5 text-purple-400" />;
+    return <Laptop className="w-5 h-5 text-luma-ember" />;
   }
   if (icon === "✨") {
-    return <Sparkles className="w-5 h-5 text-purple-400" />;
+    return <Sparkles className="w-5 h-5 text-luma-ember" />;
   }
   if (icon === "✈️") {
-    return <Plane className="w-5 h-5 text-cyan-400" />;
+    return <Plane className="w-5 h-5 text-luma-gold" />;
   }
   if (icon === "🚗") {
-    return <Car className="w-5 h-5 text-amber-400" />;
+    return <Car className="w-5 h-5 text-luma-ember" />;
   }
   if (icon === "🏠") {
-    return <Home className="w-5 h-5 text-emerald-400" />;
+    return <Home className="w-5 h-5 text-luma-sage" />;
   }
   if (icon === "🪙") {
-    return <Coins className="w-5 h-5 text-amberGold" />;
+    return <Coins className="w-5 h-5 text-luma-gold" />;
   }
   if (icon === "🎓") {
-    return <GraduationCap className="w-5 h-5 text-purple-400" />;
+    return <GraduationCap className="w-5 h-5 text-luma-ember" />;
   }
   if (icon === "❤️") {
-    return <Heart className="w-5 h-5 text-rose-400" />;
+    return <Heart className="w-5 h-5 text-luma-coral" />;
   }
   if (icon && icon.length <= 4 && !icon.startsWith("http") && icon !== "🎯") {
     return <span className="text-xl leading-none select-none">{icon}</span>;
   }
-  return <Target className="w-5 h-5 text-amberGold" />;
+  return <Target className="w-5 h-5 text-luma-ember" />;
 }
 
 export function GoalsView({
@@ -158,69 +158,69 @@ export function GoalsView({
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      {/* Top Metrics Cards */}
+      {/* Top Metrics Cards — Luma smoked glass */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
-          <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider truncate">
+        <div className="luma-glass !rounded-3xl p-5 sm:p-6 space-y-2.5">
+          <div className="text-xs font-semibold text-luma-smoke uppercase tracking-wider truncate">
             Total Target Finansial
           </div>
           {loading ? (
             <Skeleton className="h-8 w-36 rounded-full" />
           ) : (
-            <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight truncate">
+            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-luma-ivory tracking-tight truncate tabular-nums">
               {formatRupiah(totalTarget)}
             </div>
           )}
-          <div className="text-xs text-zinc-400 font-mono">
+          <div className="text-xs text-luma-smoke font-mono">
             Akumulasi seluruh milestone
           </div>
         </div>
 
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
-          <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider truncate">
+        <div className="luma-glass !rounded-3xl p-5 sm:p-6 space-y-2.5">
+          <div className="text-xs font-semibold text-luma-smoke uppercase tracking-wider truncate">
             Total Terkumpul
           </div>
           {loading ? (
             <Skeleton className="h-8 w-36 rounded-full" />
           ) : (
-            <div className="text-2xl sm:text-3xl font-black font-mono text-mintRise tracking-tight truncate">
+            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-luma-sage tracking-tight truncate tabular-nums">
               {formatRupiah(totalCurrent)}
             </div>
           )}
-          <div className="text-xs text-zinc-400 font-mono">
+          <div className="text-xs text-luma-smoke font-mono">
             Progres all-time tersinkronisasi
           </div>
         </div>
 
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
-          <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider truncate">
+        <div className="luma-glass !rounded-3xl p-5 sm:p-6 space-y-2.5">
+          <div className="text-xs font-semibold text-luma-smoke uppercase tracking-wider truncate">
             Rata-rata Capaian
           </div>
           {loading ? (
             <Skeleton className="h-8 w-24 rounded-full" />
           ) : (
-            <div className="text-2xl sm:text-3xl font-black font-mono text-amberGold tracking-tight truncate">
+            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-luma-gold tracking-tight truncate tabular-nums">
               {overallPercentage}%
             </div>
           )}
-          <div className="text-xs text-zinc-400 font-mono truncate">
+          <div className="text-xs text-luma-smoke font-mono truncate tabular-nums">
             Sisa {formatRupiah(Math.max(0, totalTarget - totalCurrent))}
           </div>
         </div>
 
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2.5 shadow-sm">
-          <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider truncate">
+        <div className="luma-glass !rounded-3xl p-5 sm:p-6 space-y-2.5">
+          <div className="text-xs font-semibold text-luma-smoke uppercase tracking-wider truncate">
             Status Sasaran
           </div>
           {loading ? (
             <Skeleton className="h-8 w-28 rounded-full" />
           ) : (
-            <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight truncate">
+            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-luma-ivory tracking-tight truncate tabular-nums">
               {goals.filter((g) => g.remaining_amount === 0).length} / {goals.length}{" "}
-              <span className="text-xs font-normal text-zinc-400 font-sans">Tercapai</span>
+              <span className="text-xs font-normal text-luma-smoke font-sans">Tercapai</span>
             </div>
           )}
-          <div className="text-xs text-zinc-400 font-mono">
+          <div className="text-xs text-luma-smoke font-mono">
             {goals.filter((g) => g.remaining_amount > 0).length} target masih berjalan
           </div>
         </div>
@@ -229,11 +229,11 @@ export function GoalsView({
       {/* Action Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-1">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2.5">
-            <Target className="w-5 h-5 text-amberGold" />
-            Milestone Tracker Tabungan & Investasi
+          <h2 className="text-lg sm:text-xl font-bold text-luma-ivory tracking-tight flex items-center gap-2.5">
+            <Target className="w-5 h-5 text-luma-ember" aria-hidden="true" />
+            Milestone Tracker Tabungan &amp; Investasi
           </h2>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-luma-smoke mt-1">
             Pantau akumulasi target dana dingin, portofolio aset, dan alokasi tabungan masa depan
           </p>
         </div>
@@ -241,24 +241,24 @@ export function GoalsView({
         <button
           type="button"
           onClick={onOpenAddModal}
-          className="flex items-center gap-2 px-4 py-2.5 bg-amberGold text-slate-950 font-bold rounded-xl hover:bg-yellow-300 transition shadow-sm text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
+          className="luma-touch flex items-center gap-2 px-5 py-2.5 bg-luma-ivory text-luma-charcoal font-bold rounded-full hover:brightness-95 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Tambah Target</span>
         </button>
       </div>
 
-      {/* Milestone Cards Grid */}
+      {/* Milestone Cards Grid — Luma smoked glass, Ember/Sage/Gold/Coral bars */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-7 lg:gap-8">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-obsidian-card border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-6 shadow-xl"
+              className="luma-glass p-6 sm:p-7 space-y-6"
             >
               <div className="flex items-start justify-between gap-3.5">
                 <div className="flex items-center gap-3.5">
-                  <Skeleton className="w-12 h-12 rounded-2xl" />
+                  <Skeleton className="w-12 h-12 rounded-full" />
                   <div className="space-y-2">
                     <Skeleton className="w-32 h-5 rounded-full" />
                     <Skeleton className="w-20 h-3 rounded-full" />
@@ -281,19 +281,19 @@ export function GoalsView({
           ))}
         </div>
       ) : goals.length === 0 ? (
-        <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-12 text-center space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-amberGold/10 border border-amberGold/20 flex items-center justify-center mx-auto text-amberGold">
+        <div className="luma-glass p-12 text-center space-y-4">
+          <div className="w-14 h-14 rounded-full bg-luma-ember/10 border border-luma-ember/30 flex items-center justify-center mx-auto text-luma-ember">
             <Target className="w-7 h-7" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">Belum Ada Target Finansial</h3>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-md mx-auto">
+            <h3 className="text-base font-bold text-luma-ivory">Belum Ada Target Finansial</h3>
+            <p className="text-xs sm:text-sm text-luma-smoke mt-1 max-w-md mx-auto">
               Mulai tetapkan target tabungan masa depan atau portofolio investasi lo untuk memantau capaian finansial siklus.
             </p>
           </div>
           <button
             onClick={onOpenAddModal}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-amberGold text-slate-950 font-bold rounded-2xl hover:bg-amber-300 transition text-sm shadow-sm whitespace-nowrap cursor-pointer"
+            className="luma-touch inline-flex items-center gap-2 px-5 py-2.5 bg-luma-ivory text-luma-charcoal font-bold rounded-full hover:brightness-95 transition text-sm whitespace-nowrap cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Buat Target Pertama</span>
@@ -308,54 +308,58 @@ export function GoalsView({
             return (
               <div
                 key={goal.id}
-                className="group relative bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 shadow-md hover:shadow-lg overflow-hidden"
+                className="luma-glass group relative p-6 sm:p-7 flex flex-col justify-between transition-all duration-200 overflow-hidden"
               >
-                <div className="space-y-6 relative z-1">
+                <div className="space-y-6 relative z-[1]">
                   {/* Top Header: Icon + Category Badge + Account + Actions */}
                   <div className="flex items-start justify-between gap-3.5">
                     <div className="flex items-center gap-3.5 min-w-0">
-                      {/* Icon container */}
-                      <div className="w-12 h-12 rounded-2xl bg-obsidian-panel border border-white/[0.08] flex items-center justify-center shrink-0 shadow-sm">
+                      {/* Circular icon well */}
+                      <div className="w-12 h-12 rounded-full bg-[#2B2825] border border-white/[0.1] flex items-center justify-center shrink-0">
                         {renderGoalIcon(goal.icon, goal.name, goal.category)}
                       </div>
 
                       <div className="min-w-0 space-y-1">
                         {/* Ghost badges with glowing status dot */}
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-medium text-zinc-300">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-medium text-luma-smoke">
                             <span className={`w-1.5 h-1.5 rounded-full ${theme.dot}`} />
                             {goal.category}
                           </span>
 
                           {goal.linked_account ? (
-                            <span className="text-[11px] font-mono text-zinc-400 bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 rounded-full truncate">
+                            <span className="text-[11px] font-mono text-luma-smoke bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 rounded-full truncate">
                               Rek. {goal.linked_account}
                             </span>
                           ) : (
-                            <span className="text-[11px] font-mono text-zinc-400 bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 rounded-full">
+                            <span className="text-[11px] font-mono text-luma-smoke bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 rounded-full">
                               Manual
                             </span>
                           )}
                         </div>
 
-                        <h3 className="font-bold text-base sm:text-lg text-white line-clamp-2 tracking-tight leading-snug">
+                        <h3 className="font-bold text-base sm:text-lg text-luma-ivory line-clamp-2 tracking-tight leading-snug">
                           {goal.name}
                         </h3>
                       </div>
                     </div>
 
-                    {/* Actions: Clean subtle buttons */}
+                    {/* Actions: thumb-friendly 44px pill buttons */}
                     <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
                       <button
+                        type="button"
                         onClick={() => onEdit(goal)}
-                        className="p-1.5 text-zinc-400 hover:text-white hover:bg-white/[0.06] rounded-full transition-colors border border-transparent hover:border-white/[0.08] cursor-pointer"
+                        aria-label={`Ubah target ${goal.name}`}
+                        className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.06] rounded-full transition-colors border border-transparent hover:border-white/[0.08] cursor-pointer"
                         title="Ubah Target"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
+                        type="button"
                         onClick={() => onDelete(goal.id)}
-                        className="p-1.5 text-zinc-400 hover:text-coralFall hover:bg-coralFall/10 rounded-full transition-colors border border-transparent hover:border-coralFall/20 cursor-pointer"
+                        aria-label={`Hapus target ${goal.name}`}
+                        className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-smoke hover:text-luma-coral hover:bg-luma-coral/10 rounded-full transition-colors border border-transparent hover:border-luma-coral/25 cursor-pointer"
                         title="Hapus Target"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -363,79 +367,86 @@ export function GoalsView({
                     </div>
                   </div>
 
-                  {/* Amounts & Percentage Display */}
+                  {/* Amounts & Percentage Display — tabular numerals, mono percent */}
                   <div className="space-y-2 pt-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <div className="flex items-baseline gap-1 text-2xl sm:text-3xl font-black font-mono text-white tracking-tight">
-                        <span className="text-sm font-sans font-normal text-zinc-400">Rp</span>
+                      <div className="flex items-baseline gap-1 text-2xl sm:text-3xl font-extrabold font-mono text-luma-ivory tracking-tight tabular-nums">
+                        <span className="text-sm font-sans font-normal text-luma-smoke">Rp</span>
                         <span>{formatNumber(goal.current_amount)}</span>
                       </div>
                       <div
-                        className={`text-xs font-mono font-bold px-3 py-1 rounded-full border ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}
+                        className={`text-xs font-mono font-bold px-3 py-1 rounded-full border tabular-nums ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}
                       >
                         {goal.percentage >= 100 ? "100%" : `${Number(goal.percentage).toFixed(1)}%`}
                       </div>
                     </div>
-                    <div className="flex justify-between items-center text-xs font-mono text-zinc-400">
+                    <div className="flex justify-between items-center text-xs font-mono text-luma-smoke tabular-nums">
                       <span>Target: {formatRupiah(goal.target_amount)}</span>
                     </div>
                   </div>
 
-                  {/* Sleek Minimal Progress Bar */}
+                  {/* Luma progress bar */}
                   <div className="space-y-2 pt-1">
-                    <div className="h-2 w-full bg-white/[0.06] rounded-full overflow-hidden p-[1px] border border-white/[0.08]">
+                    <div
+                      className="h-2 w-full bg-black/25 rounded-full overflow-hidden border border-white/[0.08]"
+                      role="progressbar"
+                      aria-valuenow={Math.round(Number(goal.percentage) || 0)}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`Progres ${goal.name}`}
+                    >
                       <div
                         className={`h-full ${theme.barBg} transition-all duration-700 rounded-full`}
                         style={{ width: `${Math.min(100, Math.max(3, goal.percentage))}%` }}
                       />
                     </div>
-                    <div className="flex justify-between items-center text-xs font-mono text-zinc-400">
+                    <div className="flex justify-between items-center text-xs font-mono text-luma-smoke tabular-nums">
                       <span>{isCompleted ? "Tercapai 100%" : `${Number(goal.percentage).toFixed(1)}% terkumpul`}</span>
                       <span>{isCompleted ? "Selesai" : `Sisa ${formatRupiah(goal.remaining_amount)}`}</span>
                     </div>
                   </div>
 
                   {/* Clean Projections Separator */}
-                  <div className="border-t border-white/[0.08] pt-4.5 space-y-2 text-xs">
+                  <div className="border-t border-white/[0.08] pt-4 space-y-2 text-xs">
                     {isCompleted ? (
-                      <div className="flex items-center gap-2 text-mintRise font-medium">
+                      <div className="flex items-center gap-2 text-luma-sage font-medium">
                         <CheckCircle2 className="w-4 h-4 shrink-0" />
                         <span>Target finansial ini telah tercapai 100%.</span>
                       </div>
                     ) : goal.estimated_cycles !== null ? (
-                      <div className="flex items-start justify-between gap-2 text-zinc-300">
+                      <div className="flex items-start justify-between gap-2 text-luma-smoke">
                         <div className="flex items-center gap-2 min-w-0">
-                          <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                          <span className="text-white font-medium truncate">
+                          <Clock className="w-3.5 h-3.5 text-luma-smoke shrink-0" />
+                          <span className="text-luma-ivory font-medium truncate tabular-nums">
                             ~{goal.estimated_cycles} siklus lagi{" "}
-                            <span className="text-zinc-400 font-normal">
+                            <span className="text-luma-smoke font-normal">
                               (~{Number(goal.estimated_months).toFixed(1)} bln)
                             </span>
                           </span>
                         </div>
                         {goal.estimated_finish_date && (
-                          <div className="text-xs font-mono text-zinc-400 shrink-0 whitespace-nowrap">
-                            <span>Est: </span><span className="text-zinc-200">{formatDateIndo(goal.estimated_finish_date)}</span>
+                          <div className="text-xs font-mono text-luma-smoke shrink-0 whitespace-nowrap tabular-nums">
+                            <span>Est: </span><span className="text-luma-ivory">{formatDateIndo(goal.estimated_finish_date)}</span>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="text-zinc-400 text-xs">
+                      <div className="text-luma-smoke text-xs">
                         Konsisten sisihkan dana rutin untuk melihat perkiraan tuntas.
                       </div>
                     )}
 
                     {goal.target_date && (
-                      <div className="flex items-center gap-2 text-xs text-zinc-400 pt-0.5">
-                        <Calendar className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                        <span>Deadline: <span className="font-mono text-zinc-300">{formatDateIndo(goal.target_date)}</span></span>
+                      <div className="flex items-center gap-2 text-xs text-luma-smoke pt-0.5">
+                        <Calendar className="w-3.5 h-3.5 text-luma-smoke shrink-0" />
+                        <span>Deadline: <span className="font-mono text-luma-ivory tabular-nums">{formatDateIndo(goal.target_date)}</span></span>
                       </div>
                     )}
                   </div>
 
                   {/* Clean Notes */}
                   {goal.notes && (
-                    <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed pt-3 border-t border-white/[0.08] text-pretty">
+                    <p className="text-xs text-luma-smoke line-clamp-2 leading-relaxed pt-3 border-t border-white/[0.08] text-pretty">
                       {goal.notes}
                     </p>
                   )}

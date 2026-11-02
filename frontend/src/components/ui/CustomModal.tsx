@@ -7,18 +7,20 @@ interface CustomModalProps {
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
-  accent?: "amber" | "cyan" | "mint" | "coral";
+  accent?: "amber" | "cyan" | "mint" | "coral" | "ember" | "sage" | "gold";
   children: React.ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl";
 }
 
+/* Luma Dark Glass v2.0 modal shell — smoked charcoal, rounded-3xl, ember focus.
+   Legacy accent keys remapped: amber->gold, cyan->gold, mint->sage, coral->coral. */
 export function CustomModal({
   isOpen,
   onClose,
   title,
   subtitle,
   icon,
-  accent = "amber",
+  accent = "ember",
   children,
   maxWidth = "md",
 }: CustomModalProps) {
@@ -47,70 +49,96 @@ export function CustomModal({
     xl: "max-w-2xl",
   };
 
-  const accentStyles = {
+  const accentStyles: Record<string, { bar: string; icon: string; ring: string }> = {
     amber: {
-      bar: "bg-gradient-to-r from-amberGold/80 via-amberGold to-transparent",
-      icon: "bg-amberGold/15 border-amberGold/30 text-amberGold",
+      bar: "bg-luma-gold",
+      icon: "bg-luma-gold/10 border-luma-gold/30 text-luma-gold",
+      ring: "focus-visible:ring-luma-gold/70",
     },
     cyan: {
-      bar: "bg-gradient-to-r from-cyanHub/80 via-cyanHub to-transparent",
-      icon: "bg-cyanHub/15 border-cyanHub/30 text-cyanHub",
+      bar: "bg-luma-gold",
+      icon: "bg-luma-gold/10 border-luma-gold/30 text-luma-gold",
+      ring: "focus-visible:ring-luma-gold/70",
     },
     mint: {
-      bar: "bg-gradient-to-r from-mintRise/80 via-mintRise to-transparent",
-      icon: "bg-mintRise/15 border-mintRise/30 text-mintRise",
+      bar: "bg-luma-sage",
+      icon: "bg-luma-sage/10 border-luma-sage/30 text-luma-sage",
+      ring: "focus-visible:ring-luma-sage/70",
     },
     coral: {
-      bar: "bg-gradient-to-r from-coralFall/80 via-coralFall to-transparent",
-      icon: "bg-coralFall/15 border-coralFall/30 text-coralFall",
+      bar: "bg-luma-coral",
+      icon: "bg-luma-coral/10 border-luma-coral/30 text-luma-coral",
+      ring: "focus-visible:ring-luma-coral/70",
+    },
+    ember: {
+      bar: "bg-luma-ember",
+      icon: "bg-luma-ember/10 border-luma-ember/30 text-luma-ember",
+      ring: "focus-visible:ring-luma-ember/70",
+    },
+    sage: {
+      bar: "bg-luma-sage",
+      icon: "bg-luma-sage/10 border-luma-sage/30 text-luma-sage",
+      ring: "focus-visible:ring-luma-sage/70",
+    },
+    gold: {
+      bar: "bg-luma-gold",
+      icon: "bg-luma-gold/10 border-luma-gold/30 text-luma-gold",
+      ring: "focus-visible:ring-luma-gold/70",
     },
   };
 
-  const currentAccent = accentStyles[accent] || accentStyles.amber;
+  const currentAccent = accentStyles[accent] || accentStyles.ember;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200"
+      aria-label={title}
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fadeIn"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className={`relative bg-obsidian-card border border-white/[0.12] rounded-3xl w-full shadow-2xl flex flex-col max-h-[90vh] my-auto animate-in zoom-in-95 duration-200 ${maxWidthStyles[maxWidth]}`}
+        className={`relative rounded-3xl w-full shadow-luma-glass flex flex-col max-h-[90vh] my-auto animate-fadeIn ${maxWidthStyles[maxWidth]}`}
+        style={{
+          background: "rgba(43, 40, 37, 0.92)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
+        }}
       >
-        {/* Subtle Accent Glow Line at Top */}
+        {/* Warm ember accent line at top */}
         <div className="absolute top-0 left-6 right-6 h-[2px] rounded-full pointer-events-none overflow-hidden z-20">
           <div className={`w-full h-full ${currentAccent.bar}`} />
         </div>
 
-        {/* Close Button — 44x44 WCAG AAA touch target */}
+        {/* Close Button — 44x44 touch target */}
         <button
           type="button"
           onClick={onClose}
           aria-label="Tutup dialog"
-          className="absolute top-3 sm:top-4 right-3 sm:right-4 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slateText-muted hover:text-white hover:bg-white/[0.08] active:bg-white/[0.14] active:scale-95 border border-transparent hover:border-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amberGold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-card transition-all duration-150 z-20 touch-manipulation"
+          className="absolute top-3 sm:top-4 right-3 sm:right-4 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.08] active:bg-white/[0.14] active:scale-95 border border-transparent hover:border-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luma-ember/70 transition-all duration-150 z-20 touch-manipulation cursor-pointer"
         >
           <X className="w-5 h-5" aria-hidden="true" />
         </button>
 
         {/* Modal Header (Fixed at top of modal) */}
-        <div className="p-5 sm:p-6 pb-4 border-b border-obsidian-border/50 shrink-0">
+        <div className="p-5 sm:p-6 pb-4 border-b border-white/[0.08] shrink-0">
           <div className="flex items-start gap-3.5 pr-12 sm:pr-14">
             {icon && (
               <div
-                className={`p-2.5 rounded-xl border shrink-0 ${currentAccent.icon}`}
+                className={`p-2.5 rounded-2xl border shrink-0 ${currentAccent.icon}`}
               >
                 {icon}
               </div>
             )}
             <div>
-              <h3 className="font-bold text-base sm:text-lg text-slateText-primary leading-tight">
+              <h3 className="font-bold text-base sm:text-lg text-luma-ivory leading-tight tracking-tight">
                 {title}
               </h3>
               {subtitle && (
-                <p className="text-xs text-slateText-secondary mt-1 leading-relaxed">
+                <p className="text-xs text-luma-smoke mt-1 leading-relaxed">
                   {subtitle}
                 </p>
               )}
@@ -118,8 +146,8 @@ export function CustomModal({
           </div>
         </div>
 
-        {/* Modal Scrollable Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto scrollbar-thin">
+        {/* Modal Scrollable Body — Luma form wells live here */}
+        <div className="p-5 sm:p-6 overflow-y-auto luma-form-scope">
           {children}
         </div>
       </div>

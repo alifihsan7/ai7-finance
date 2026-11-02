@@ -82,27 +82,27 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
   };
 
   return (
-    <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-6 shadow-sm">
+    <section aria-label={`Laju belanja siklus ${cycleDays} hari`} className="luma-glass p-6 sm:p-7 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-amberGold" />
-            <h2 className="text-base sm:text-lg font-bold text-white">
-              Burn-Rate Trajectory (Siklus {cycleDays} Hari)
+            <Activity className="w-5 h-5 text-luma-ember" aria-hidden="true" />
+            <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
+              Laju Belanja Siklus ({cycleDays} Hari)
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-luma-smoke mt-0.5 tabular-nums">
             Monitoring akumulasi belanja {pocketAccount} harian vs batas ideal anggaran {formatRupiah(maxBudget)}
           </p>
         </div>
 
         <div className="flex items-center gap-3 text-xs font-mono">
-          <span className="flex items-center gap-1.5 text-zinc-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-amberGold inline-block"></span>
+          <span className="flex items-center gap-1.5 text-luma-smoke">
+            <span className="w-2.5 h-2.5 rounded-full bg-luma-ember inline-block" aria-hidden="true"></span>
             Kumulatif Riil
           </span>
-          <span className="flex items-center gap-1.5 text-zinc-400">
-            <span className="w-2.5 h-0.5 bg-zinc-600 inline-block"></span>
+          <span className="flex items-center gap-1.5 text-luma-smoke">
+            <span className="w-2.5 h-0.5 bg-luma-smoke inline-block" aria-hidden="true"></span>
             Batas Target Ideal
           </span>
         </div>
@@ -121,49 +121,49 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
                 key={b.day}
                 className={`flex flex-col items-center group relative rounded-xl p-1 transition-all ${
                   isToday
-                    ? "bg-amberGold/10 border border-amberGold/30"
-                    : "hover:bg-obsidian-hover border border-transparent"
+                    ? "bg-luma-ember/10 border border-luma-ember/40"
+                    : "hover:bg-white/[0.04] border border-transparent"
                 }`}
               >
-                <div className={`opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${getTooltipAlignClass(b.day, chartData.length)} w-48 sm:w-52 p-3 bg-obsidian-card/95 backdrop-blur-md border border-white/[0.12] rounded-2xl shadow-2xl text-[11px] font-mono space-y-2 transition-opacity`}>
+                <div className={`opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${getTooltipAlignClass(b.day, chartData.length)} w-48 sm:w-52 p-3 bg-[#2B2825]/95 backdrop-blur-md border border-white/[0.12] rounded-2xl shadow-2xl text-[11px] font-mono space-y-2 transition-opacity`}>
                   <div className="flex items-center justify-between border-b border-white/[0.08] pb-1.5">
-                    <span className="font-bold text-white">Hari ke-{b.day}</span>
-                    <span className="text-[10px] text-zinc-400 font-medium">({formatTooltipDate(b.date)})</span>
+                    <span className="font-bold text-luma-ivory">Hari ke-{b.day}</span>
+                    <span className="text-[10px] text-luma-smoke font-medium">({formatTooltipDate(b.date)})</span>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 tabular-nums">
                     <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Hari Ini:</span>
-                      <span className={`font-semibold ${b.spent > idealDailyRate * 1.25 ? "text-coralFall font-bold" : "text-white"}`}>
+                      <span className="text-luma-smoke">Hari Ini:</span>
+                      <span className={`font-semibold ${b.spent > idealDailyRate * 1.25 ? "text-luma-coral font-bold" : "text-luma-ivory"}`}>
                         {formatRupiah(b.spent)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Kumulatif:</span>
-                      <span className={`font-bold ${b.cumulative_spent > b.ideal_pace ? "text-amberGold" : "text-mintRise"}`}>
+                      <span className="text-luma-smoke">Kumulatif:</span>
+                      <span className={`font-bold ${b.cumulative_spent > b.ideal_pace ? "text-luma-gold" : "text-luma-sage"}`}>
                         {formatRupiah(b.cumulative_spent)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Target Ideal:</span>
-                      <span className="text-zinc-300 font-medium">
+                      <span className="text-luma-smoke">Target Ideal:</span>
+                      <span className="text-luma-ivory font-medium">
                         {formatRupiah(b.ideal_pace)}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="w-full h-28 sm:h-32 bg-obsidian-card rounded-lg flex items-end relative overflow-hidden">
+                <div className="w-full h-28 sm:h-32 bg-black/25 rounded-xl flex items-end relative overflow-hidden border border-white/[0.06]">
                   <div
                     style={{ bottom: `${idealHeight}%` }}
-                    className="absolute left-0 right-0 border-b border-dashed border-zinc-600 z-10"
+                    className="absolute left-0 right-0 border-b border-dashed border-luma-smoke/60 z-10"
                   ></div>
                   {isPastOrToday && (
                     <div
                       style={{ height: `${actualHeight}%` }}
-                      className={`w-full transition-all duration-500 rounded-b-lg ${
+                      className={`w-full transition-all duration-500 rounded-b-xl ${
                         actualHeight > idealHeight
-                          ? "bg-coralFall/80 group-hover:bg-coralFall"
-                          : "bg-amberGold/80 group-hover:bg-amberGold"
+                          ? "bg-luma-coral/80 group-hover:bg-luma-coral"
+                          : "bg-luma-ember/80 group-hover:bg-luma-ember"
                       }`}
                     ></div>
                   )}
@@ -171,13 +171,13 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
 
                 <div className="mt-1.5 text-center">
                   <span
-                    className={`text-[10px] sm:text-[11px] font-mono font-medium block ${
-                      isToday ? "text-amberGold font-bold" : "text-zinc-400"
+                    className={`text-[10px] sm:text-[11px] font-mono font-medium block tabular-nums ${
+                      isToday ? "text-luma-ember font-bold" : "text-luma-smoke"
                     }`}
                   >
                     D{b.day}
                   </span>
-                  <span className="text-[8px] sm:text-[9px] text-zinc-400 block font-mono">
+                  <span className="text-[8px] sm:text-[9px] text-luma-smoke block font-mono">
                     {b.date.slice(8)}
                   </span>
                 </div>
@@ -187,14 +187,14 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/[0.08] text-xs font-mono text-zinc-400">
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/[0.08] text-xs font-mono text-luma-smoke tabular-nums">
         <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
           <span>Kecepatan Target:</span>
-          <strong className="text-white">{formatRupiah(idealDailyRate)} / hari</strong>
+          <strong className="text-luma-ivory">{formatRupiah(idealDailyRate)} / hari</strong>
         </div>
         <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
           <span>Kumulatif Target Hari Ini:</span>
-          <strong className="text-white">
+          <strong className="text-luma-ivory">
             {formatRupiah(summary.safe_to_spend?.ideal_pace_today || 0)}
           </strong>
         </div>
@@ -204,14 +204,14 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
             className={
               (summary.safe_to_spend?.pocket_spent || 0) >
               (summary.safe_to_spend?.ideal_pace_today || 0)
-                ? "text-coralFall font-bold"
-                : "text-mintRise font-bold"
+                ? "text-luma-coral font-bold"
+                : "text-luma-sage font-bold"
             }
           >
             {formatRupiah(summary.safe_to_spend?.pocket_spent || 0)}
           </strong>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

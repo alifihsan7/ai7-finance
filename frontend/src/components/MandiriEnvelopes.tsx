@@ -1,4 +1,5 @@
 import React from "react";
+import { Wallet } from "lucide-react";
 import { Skeleton } from "./ui/Skeleton";
 
 interface MandiriEnvelopesProps {
@@ -14,6 +15,8 @@ interface MandiriEnvelopesProps {
   pocketBudget?: number;
   loading?: boolean;
 }
+
+const ENVELOPE_ICONS = ["Makan Harian", "Jajan & Kopi", "Laundry", "Galon & Air"];
 
 export function MandiriEnvelopes({
   mandiriExpenses,
@@ -53,7 +56,7 @@ export function MandiriEnvelopes({
 
   if (loading) {
     return (
-      <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-5 shadow-sm">
+      <section aria-label="Amplop belanja" className="luma-glass p-6 sm:p-7 space-y-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <Skeleton className="w-56 h-5 rounded-full" />
@@ -65,7 +68,7 @@ export function MandiriEnvelopes({
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 space-y-4"
+              className="rounded-2xl bg-white/[0.04] border border-white/[0.08] p-4 sm:p-5 space-y-4"
             >
               <div className="flex justify-between items-center gap-2">
                 <Skeleton className="w-24 h-4 rounded-full" />
@@ -83,22 +86,25 @@ export function MandiriEnvelopes({
             </div>
           ))}
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-5 shadow-sm">
+    <section aria-label={`Amplop belanja ${pocketAccount}`} className="luma-glass p-6 sm:p-7 space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-white">
-            Amplop Belanja {pocketAccount} {totalPlafond > 0 ? `(Plafon ${formatRupiah(totalPlafond)})` : "(Monitoring Saku Harian)"}
+          <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
+            Amplop Belanja {pocketAccount}{" "}
+            <span className="font-mono font-semibold text-luma-smoke text-sm">
+              {totalPlafond > 0 ? `(Plafon ${formatRupiah(totalPlafond)})` : "(Monitoring Saku Harian)"}
+            </span>
           </h2>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-luma-smoke mt-0.5">
             Monitoring limit pos belanja harian agar pengeluaran terkontrol sampai siklus berikutnya
           </p>
         </div>
-        <span className="text-xs text-amberGold font-mono font-semibold px-3 py-1 rounded-full bg-amberGold/15 border border-amberGold/30 shrink-0 self-start sm:self-center">
+        <span className="text-xs text-luma-gold font-mono font-semibold px-3 py-1.5 rounded-full bg-luma-gold/10 border border-luma-gold/30 shrink-0 self-start sm:self-center whitespace-nowrap">
           Reset Tiap {cycleDays} Hari
         </span>
       </div>
@@ -107,31 +113,38 @@ export function MandiriEnvelopes({
         {envelopes.map((env) => {
           const rem = env.limit > 0 ? env.limit - env.spent : 0;
           const pct = env.limit > 0 ? Math.min(100, Math.round((env.spent / env.limit) * 100)) : 0;
+          const barClass = pct >= 100 || pct >= 90
+            ? "bg-luma-coral"
+            : pct >= 75
+            ? "bg-luma-gold"
+            : "bg-luma-sage";
+          const isIcon = ENVELOPE_ICONS.includes(env.title);
 
           return (
             <div
               key={env.title}
-              className="bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-2xl p-4 sm:p-5 space-y-3.5 flex flex-col justify-between transition-all duration-200 shadow-sm hover:shadow-md"
+              className="rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.16] p-4 sm:p-5 space-y-3.5 flex flex-col justify-between transition-all duration-200"
             >
               <div className="space-y-3">
                 <div className="flex justify-between items-center gap-2">
-                  <div className="relative group/env min-w-0 flex-1">
-                    <span className="text-white font-semibold text-sm truncate block cursor-default">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span
+                      aria-hidden="true"
+                      className="w-8 h-8 rounded-full bg-[#2B2825] border border-white/[0.1] flex items-center justify-center shrink-0"
+                    >
+                      <Wallet className={`w-3.5 h-3.5 ${isIcon ? "text-luma-ember" : "text-luma-smoke"}`} />
+                    </span>
+                    <span className="text-luma-ivory font-semibold text-sm break-words leading-snug flex-1">
                       {env.title}
                     </span>
-                    {/* Tooltip Hover Amplop */}
-                    <div className="pointer-events-none absolute left-0 top-full mt-1 z-40 hidden group-hover/env:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-obsidian-card/95 backdrop-blur-md border border-obsidian-border text-slateText-primary text-xs shadow-2xl w-max max-w-[260px] animate-in fade-in zoom-in-95 duration-150">
-                      <div className="w-1.5 h-1.5 rounded-full bg-amberGold shrink-0" />
-                      <span className="font-semibold text-slateText-primary">{env.title}</span>
-                    </div>
                   </div>
                   <span
-                    className={`text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full border shrink-0 ${
+                    className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-full border shrink-0 tabular-nums ${
                       pct >= 90
-                        ? "bg-coralFall/10 border-coralFall/30 text-coralFall"
+                        ? "bg-luma-coral/10 border-luma-coral/30 text-luma-coral"
                         : pct >= 75
-                        ? "bg-amberGold/10 border-amberGold/30 text-amberGold"
-                        : "bg-white/[0.06] border-white/[0.08] text-zinc-300"
+                        ? "bg-luma-gold/10 border-luma-gold/30 text-luma-gold"
+                        : "bg-white/[0.06] border-white/[0.08] text-luma-smoke"
                     }`}
                   >
                     {pct}%
@@ -139,30 +152,35 @@ export function MandiriEnvelopes({
                 </div>
 
                 <div>
-                  <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight">
+                  <div className="text-xl sm:text-2xl font-extrabold font-mono text-luma-ivory tracking-tight tabular-nums break-words">
                     {formatRupiah(rem)}
                   </div>
-                  <div className="text-xs text-zinc-400 mt-0.5">Sisa saldo pos</div>
+                  <div className="text-xs text-luma-smoke mt-0.5">Sisa saldo pos</div>
                 </div>
 
-                <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                <div
+                  className="h-1.5 bg-black/25 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={pct}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`Pemakaian ${env.title} ${pct} persen`}
+                >
                   <div
                     style={{ width: `${pct}%` }}
-                    className={`h-full transition-all duration-500 rounded-full ${
-                      pct >= 90 ? "bg-coralFall" : pct >= 75 ? "bg-amberGold" : "bg-mintRise"
-                    }`}
+                    className={`h-full transition-all duration-500 rounded-full ${barClass}`}
                   ></div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-zinc-400 font-mono pt-3 border-t border-white/[0.08] gap-2">
+              <div className="flex items-center justify-between text-xs text-luma-smoke font-mono pt-3 border-t border-white/[0.08] gap-2 tabular-nums">
                 <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-zinc-400 text-[11px]">Limit:</span>
-                  <span className="font-semibold text-zinc-300 text-[11px] whitespace-nowrap">{formatRupiah(env.limit)}</span>
+                  <span className="text-[11px]">Limit:</span>
+                  <span className="font-semibold text-luma-ivory text-[11px] whitespace-nowrap">{formatRupiah(env.limit)}</span>
                 </div>
                 <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-zinc-400 text-[11px]">Pakai:</span>
-                  <span className={`font-semibold text-[11px] whitespace-nowrap ${pct >= 90 ? "text-coralFall font-bold" : "text-zinc-300"}`}>
+                  <span className="text-[11px]">Pakai:</span>
+                  <span className={`font-semibold text-[11px] whitespace-nowrap ${pct >= 90 ? "text-luma-coral font-bold" : "text-luma-ivory"}`}>
                     {formatRupiah(env.spent)}
                   </span>
                 </div>
@@ -171,6 +189,6 @@ export function MandiriEnvelopes({
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }

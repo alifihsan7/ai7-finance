@@ -26,14 +26,15 @@ import {
   Receipt,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
-import { LumaHeroCard } from "@/components/LumaHeroCard";
+import { LumaHeroGrid } from "@/components/LumaHeroGrid";
 import { LumaAccountStrip } from "@/components/LumaAccountStrip";
 import { LumaRecentTransactions } from "@/components/LumaRecentTransactions";
 import { AccountGrid } from "@/components/AccountGrid";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { MandiriEnvelopes } from "@/components/MandiriEnvelopes";
 import { JagoPockets } from "@/components/JagoPockets";
-import { Transaction } from "@/components/TransactionTable";
+import { Transaction, TransactionTable } from "@/components/TransactionTable";
+import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionLedgerView } from "@/components/TransactionLedgerView";
 import { SubscriptionsView, SubscriptionItem, SubscriptionsData } from "@/components/SubscriptionsView";
 import { GoalsView } from "@/components/GoalsView";
@@ -1437,8 +1438,8 @@ export default function FinanceDashboard() {
               </div>
             )}
 
-            {/* Luma unified hero: Total Saldo + Safe-to-Spend in one calm card */}
-            <LumaHeroCard
+            {/* 1+2. Hero Grid — Net Worth (7) & Safe-to-Spend Ember (5), struktur awal */}
+            <LumaHeroGrid
               totalBalance={summary.total_balance ?? (summary.income - summary.expense)}
               income={summary.income}
               expense={summary.expense}
@@ -1458,6 +1459,181 @@ export default function FinanceDashboard() {
               onOpenPaycheck={() => setIsPaycheckModalOpen(true)}
             />
 
+            {/* 3. Formula Strata Allocation Bar (50/30/20) */}
+            <StrataAllocationBar
+              cycleType={summary.safe_to_spend?.cycle_type}
+              cycleDays={summary.safe_to_spend?.cycle_days}
+              totalSalary={paycheckConfig?.total_salary || 0}
+              buckets={dynamicStrataBuckets}
+              formatRupiah={formatRupiah}
+              loading={loading}
+            />
+
+            {/* 4. Grid Rekening Kas (AccountGrid) */}
+            <section aria-label="Rekening kas" className="space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
+                  Rekening Kas
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setActiveNav("Akun & Kategori")}
+                  className="luma-touch inline-flex items-center px-2 text-xs text-luma-ember hover:underline font-semibold shrink-0 whitespace-nowrap cursor-pointer"
+                >
+                  Kelola Akun
+                </button>
+              </div>
+              <AccountGrid
+                summary={summary}
+                customAccounts={customAccounts}
+                formatRupiah={formatRupiah}
+                loading={loading}
+                onAccountDeleted={fetchData}
+                onEditAccount={(acc) => setAccountToEdit(acc)}
+              />
+            </section>
+
+            {/* 5. Quick Goals & Milestone Preview (Target Tabungan) */}
+            {loading ? (
+              <section aria-label="Target tabungan" className="luma-glass p-6 sm:p-7 space-y-4">
+                <div className="flex justify-between items-center gap-2">
+                  <div className="h-5 w-48 rounded-full bg-white/[0.06] animate-pulse" />
+                  <div className="h-4 w-28 rounded-full bg-white/[0.06] animate-pulse" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="rounded-2xl bg-white/[0.04] border border-white/[0.08] p-4 space-y-3">
+                      <div className="flex justify-between items-center gap-2">
+                        <div className="h-4 w-24 rounded-full bg-white/[0.06] animate-pulse" />
+                        <div className="h-4 w-10 rounded-full bg-white/[0.06] animate-pulse" />
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-white/[0.06] animate-pulse" />
+                      <div className="flex justify-between">
+                        <div className="h-3 w-16 rounded-full bg-white/[0.06] animate-pulse" />
+                        <div className="h-3 w-16 rounded-full bg-white/[0.06] animate-pulse" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : goals.length > 0 ? (
+              <section aria-label="Target tabungan" className="luma-glass p-6 sm:p-7 space-y-4">
+                <div className="flex justify-between items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Target className="w-5 h-5 text-luma-ember shrink-0" aria-hidden="true" />
+                    <h2 className="text-base font-bold text-luma-ivory tracking-tight truncate">
+                      Target &amp; Milestone Tabungan
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveNav("Target Finansial")}
+                    className="luma-touch inline-flex items-center gap-1 px-2 text-xs text-luma-ember hover:underline font-semibold shrink-0 whitespace-nowrap cursor-pointer"
+                  >
+                    <span>Buka Seluruh Target ({goals.length})</span>
+                    <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                  {goals.slice(0, 3).map((g, gi) => {
+                    const pct = Math.min(100, Math.max(0, Number(g.percentage) || 0));
+                    const barClass = gi % 3 === 0
+                      ? "bg-luma-ember"
+                      : gi % 3 === 1
+                      ? "bg-luma-sage"
+                      : "bg-luma-gold";
+                    const pctClass = gi % 3 === 0
+                      ? "text-luma-ember"
+                      : gi % 3 === 1
+                      ? "text-luma-sage"
+                      : "text-luma-gold";
+
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => setActiveNav("Target Finansial")}
+                        className="rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.16] p-4 space-y-3 cursor-pointer transition-all duration-200 text-left"
+                      >
+                        <div className="flex justify-between items-center gap-2">
+                          <span className="text-sm font-semibold text-luma-ivory truncate flex items-center gap-2 min-w-0">
+                            <span className={`w-1.5 h-1.5 rounded-full ${barClass} shrink-0`} aria-hidden="true" />
+                            <span className="truncate">{g.name}</span>
+                          </span>
+                          <span className={`text-xs font-mono font-bold shrink-0 tabular-nums ${pctClass}`}>
+                            {pct}%
+                          </span>
+                        </div>
+                        <div
+                          className="h-1.5 w-full bg-black/25 rounded-full overflow-hidden"
+                          role="progressbar"
+                          aria-valuenow={pct}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label={`Progres ${g.name} ${pct} persen`}
+                        >
+                          <div
+                            className={`h-full ${barClass} rounded-full transition-all duration-500`}
+                            style={{ width: `${Math.max(3, pct)}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-[11px] font-mono text-luma-smoke tabular-nums">
+                          <span className="truncate">{formatRupiah(g.current_amount)}</span>
+                          <span className="shrink-0">Target: {formatRupiah(g.target_amount)}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
+
+            {/* 6. Amplop Kas Mandiri */}
+            <MandiriEnvelopes
+              mandiriExpenses={mandiriExpenses}
+              formatRupiah={formatRupiah}
+              cycleDays={summary.safe_to_spend?.cycle_days || 14}
+              pocketAccount={summary.safe_to_spend?.pocket_account || (customAccounts[0]?.name || "Saku Belanja")}
+              pocketBudget={summary.safe_to_spend?.pocket_budget}
+              loading={loading}
+            />
+
+            {/* 7. Sub-Kantong Jago */}
+            <JagoPockets
+              formatRupiah={formatRupiah}
+              refreshSignal={jagoRefreshSignal}
+              onToast={showToast}
+            />
+
+            {/* 8. Grafik Burn Rate */}
+            <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
+
+            {/* 9. Tabel Transaksi Terakhir */}
+            <section aria-label="Transaksi terakhir" className="space-y-4">
+              <div className="flex justify-between items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight truncate">
+                  Transaksi Terakhir
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setActiveNav("Buku Transaksi")}
+                  className="luma-touch inline-flex items-center gap-1 px-2 text-xs text-luma-ember hover:underline font-semibold shrink-0 whitespace-nowrap cursor-pointer"
+                >
+                  <span>Buka Buku Transaksi Lengkap ({transactions.length})</span>
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              </div>
+              <TransactionTable
+                transactions={transactions.slice(0, 5)}
+                formatRupiah={formatRupiah}
+                onEdit={(tx) => setTxToEdit(tx)}
+                onDelete={(tx) => setTxToDelete(tx)}
+                loading={loading}
+              />
+            </section>
+
+            {/* Ringkasan strip + recent — navigasi cepat ke Akun & Buku */}
             <LumaAccountStrip
               accounts={(summary.accounts || []).map((a) => ({ name: a.account, balance: a.balance }))}
               formatRupiah={formatRupiah}

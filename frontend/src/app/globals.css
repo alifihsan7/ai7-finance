@@ -28,37 +28,46 @@
   --luma-coral: #FFB59D;
   --luma-gold: #EDD774;
 
-  /* RGB channels for Tailwind opacity modifier support (e.g. bg-obsidian-panel/90) */
-  --obsidian-bg-rgb: 9 10 13;
-  --obsidian-panel-rgb: 17 18 23;
-  --obsidian-card-rgb: 22 23 31;
-  --obsidian-hover-rgb: 30 32 43;
-  --obsidian-border-rgb: 36 38 48;
-  --obsidian-border-strong-rgb: 52 55 70;
-  --slate-primary-rgb: 255 255 255;
-  --slate-secondary-rgb: 212 212 216;
-  --slate-muted-rgb: 161 161 170;
-  --amber-gold-rgb: 250 204 21;
-  --mint-rise-rgb: 46 216 182;
-  --coral-fall-rgb: 255 107 74;
-  --cyan-hub-rgb: 56 189 248;
-  --purple-lock-rgb: 167 139 250;
+  /* RGB channels for Tailwind opacity modifier support (e.g. bg-obsidian-panel/90)
+     Luma Dark Glass v2.0: legacy obsidian/slate channels REMAPPED to warm charcoal scale.
+     Canvas #222222 · Coal #2B2825 · Well #2A2726 · Hover #35302C · Hairlines #3B3938/#4A4643
+     Ivory #F4F1EC · Smoke #B9B2A7 · Muted sage-gray #A5B7AA. Light mode (.light) overrides below are untouched. */
+  --obsidian-bg-rgb: 34 34 34;
+  --obsidian-panel-rgb: 43 40 37;
+  --obsidian-card-rgb: 42 39 38;
+  --obsidian-hover-rgb: 53 48 44;
+  --obsidian-border-rgb: 59 57 56;
+  --obsidian-border-strong-rgb: 74 70 67;
+  --slate-primary-rgb: 244 241 236;
+  --slate-secondary-rgb: 185 178 167;
+  --slate-muted-rgb: 165 183 170;
+  /* Legacy accent channels REMAPPED to Luma Dark Glass v2.0 warmth.
+     canary #FACC15 -> Warm Gold #EDD774 · mint #2ED8B6 -> Sage #D6E9B8
+     harsh coral #FF6B4A -> Soft Coral #FFB59D · cyan #38BDF8 -> Warm Gold
+     generic purple #A78BFA -> Ember #F08A4B (anti-slop: no AI purple/blue). */
+  --amber-gold-rgb: 237 215 116;
+  --mint-rise-rgb: 214 233 184;
+  --coral-fall-rgb: 255 181 157;
+  --cyan-hub-rgb: 237 215 116;
+  --purple-lock-rgb: 240 138 75;
 
-  /* Standard CSS variables for direct var() usage */
-  --obsidian-bg: #090A0D;
-  --obsidian-panel: #111217;
-  --obsidian-card: #16171F;
-  --obsidian-hover: #1E202B;
-  --obsidian-border: #242630;
-  --obsidian-border-strong: #343746;
-  --slate-primary: #FFFFFF;
-  --slate-secondary: #D4D4D8;
-  --slate-muted: #A1A1AA;
-  --amber-gold: #FACC15;
-  --mint-rise: #2ED8B6;
-  --coral-fall: #FF6B4A;
-  --cyan-hub: #38BDF8;
-  --purple-lock: #A78BFA;
+  /* Standard CSS variables for direct var() usage
+     Luma Dark Glass v2.0: same warm-charcoal remap as RGB channels above. */
+  --obsidian-bg: #222222;
+  --obsidian-panel: #2B2825;
+  --obsidian-card: #2A2726;
+  --obsidian-hover: #35302C;
+  --obsidian-border: #3B3938;
+  --obsidian-border-strong: #4A4643;
+  --slate-primary: #F4F1EC;
+  --slate-secondary: #B9B2A7;
+  --slate-muted: #A5B7AA;
+  /* Legacy hex vars remapped to Luma warmth (same mapping as RGB channels above). */
+  --amber-gold: #EDD774;
+  --mint-rise: #D6E9B8;
+  --coral-fall: #FFB59D;
+  --cyan-hub: #EDD774;
+  --purple-lock: #F08A4B;
 }
 
 /* High-Fidelity Light Mode Theme (Fintech Precision: Slate / Linear / Mercury aesthetic) */
@@ -314,6 +323,26 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
   .luma-touch {
     min-height: 44px;
+  }
+
+  /* Luma form wells — dark inset inputs inside modal bodies.
+     Smoke #B9B2A7 @ #33302F = 6.23:1 (AA); labels + values use Ivory
+     (11.62:1 AAA) via the rules below. Placeholders keep Smoke (AA decorative). */
+  .luma-form-scope input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+  .luma-form-scope textarea,
+  .luma-form-scope select {
+    background-color: #33302F;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    color: #F4F1EC;
+  }
+  .luma-form-scope input::placeholder,
+  .luma-form-scope textarea::placeholder {
+    color: #B9B2A7;
+    opacity: 1;
+  }
+  .luma-form-scope label {
+    color: #F4F1EC;
   }
 }
 
