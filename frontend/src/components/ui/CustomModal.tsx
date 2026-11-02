@@ -12,15 +12,12 @@ interface CustomModalProps {
   maxWidth?: "sm" | "md" | "lg" | "xl";
 }
 
-/* Luma Dark Glass v2.0 modal shell — smoked charcoal, rounded-3xl, ember focus.
-   Legacy accent keys remapped: amber->gold, cyan->gold, mint->sage, coral->coral. */
 export function CustomModal({
   isOpen,
   onClose,
   title,
   subtitle,
   icon,
-  accent = "ember",
   children,
   maxWidth = "md",
 }: CustomModalProps) {
@@ -62,46 +59,6 @@ export function CustomModal({
     xl: "max-w-2xl",
   };
 
-  const accentStyles: Record<string, { bar: string; icon: string; ring: string }> = {
-    amber: {
-      bar: "bg-luma-gold",
-      icon: "bg-luma-gold/10 border-luma-gold/30 text-luma-gold",
-      ring: "focus-visible:ring-luma-gold/70",
-    },
-    cyan: {
-      bar: "bg-luma-gold",
-      icon: "bg-luma-gold/10 border-luma-gold/30 text-luma-gold",
-      ring: "focus-visible:ring-luma-gold/70",
-    },
-    mint: {
-      bar: "bg-luma-sage",
-      icon: "bg-luma-sage/10 border-luma-sage/30 text-luma-sage",
-      ring: "focus-visible:ring-luma-sage/70",
-    },
-    coral: {
-      bar: "bg-luma-coral",
-      icon: "bg-luma-coral/10 border-luma-coral/30 text-luma-coral",
-      ring: "focus-visible:ring-luma-coral/70",
-    },
-    ember: {
-      bar: "bg-luma-ember",
-      icon: "bg-luma-ember/10 border-luma-ember/30 text-luma-ember",
-      ring: "focus-visible:ring-luma-ember/70",
-    },
-    sage: {
-      bar: "bg-luma-sage",
-      icon: "bg-luma-sage/10 border-luma-sage/30 text-luma-sage",
-      ring: "focus-visible:ring-luma-sage/70",
-    },
-    gold: {
-      bar: "bg-luma-gold",
-      icon: "bg-luma-gold/10 border-luma-gold/30 text-luma-gold",
-      ring: "focus-visible:ring-luma-gold/70",
-    },
-  };
-
-  const currentAccent = accentStyles[accent] || accentStyles.ember;
-
   return (
     <div
       role="dialog"
@@ -116,11 +73,6 @@ export function CustomModal({
         ref={dialogRef}
         className={`luma-dialog-panel relative rounded-3xl w-full shadow-luma-glass flex flex-col max-h-[90dvh] my-auto ${maxWidthStyles[maxWidth]}`}
       >
-        {/* Warm ember accent line at top */}
-        <div className="absolute top-0 left-6 right-6 h-[2px] rounded-full pointer-events-none overflow-hidden z-20">
-          <div className={`w-full h-full ${currentAccent.bar}`} />
-        </div>
-
         {/* Close Button — 44x44 touch target */}
         <button
           type="button"
@@ -136,13 +88,13 @@ export function CustomModal({
           <div className="flex items-start gap-3.5 pr-12 sm:pr-14">
             {icon && (
               <div
-                className={`p-2.5 rounded-2xl border shrink-0 ${currentAccent.icon}`}
+                className="ai7-dialog-icon p-2.5 rounded-xl border shrink-0"
               >
                 {icon}
               </div>
             )}
             <div>
-              <h3 className="font-bold text-base sm:text-lg text-luma-ivory leading-tight tracking-tight">
+              <h3 className="font-medium text-base sm:text-lg text-luma-ivory leading-tight tracking-tight">
                 {title}
               </h3>
               {subtitle && (

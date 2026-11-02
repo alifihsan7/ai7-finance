@@ -32,11 +32,11 @@ export function TransactionTable({
   const showActions = Boolean(onEdit || onDelete);
 
   return (
-    <div className="luma-glass !rounded-3xl overflow-hidden">
+    <div className="ai7-ledger-table luma-glass overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[700px] text-left text-sm border-collapse tabular-nums">
           <thead>
-            <tr className="border-b border-white/[0.08] bg-black/20 text-luma-smoke font-semibold text-xs uppercase tracking-wider">
+            <tr className="border-b border-white/[0.08] text-luma-smoke font-medium text-xs">
               <th className="py-4 px-4 sm:px-6 whitespace-nowrap w-28">Tanggal</th>
               <th className="py-4 px-4 sm:px-6 min-w-[200px]">Keterangan</th>
               <th className="py-4 px-4 sm:px-6 whitespace-nowrap w-44">Kategori</th>

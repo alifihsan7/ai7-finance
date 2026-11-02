@@ -332,7 +332,7 @@ export function CategoryGrid({
   }, [deletingCat, categories]);
 
   return (
-    <section className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-5 sm:p-7 space-y-5 shadow-sm">
+    <section className="ai7-section bg-obsidian-panel border border-white/[0.08] rounded-3xl p-5 sm:p-7 space-y-5">
       {/* Header Flex Row */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -349,10 +349,11 @@ export function CategoryGrid({
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end">
           {/* Filter Pills */}
-          <div className="flex items-center gap-1 p-1 bg-obsidian-card rounded-full border border-white/[0.08] text-xs font-mono">
+          <div className="ai7-filters flex items-center gap-1 p-1 text-xs" role="group" aria-label="Jenis kategori">
             <button
               type="button"
               onClick={() => setFilterTab("all")}
+              aria-pressed={filterTab === "all"}
               className={`px-3 py-1 rounded-full transition cursor-pointer min-h-[32px] ${
                 filterTab === "all"
                   ? "bg-amberGold text-slate-950 font-bold shadow-xs"
@@ -364,6 +365,7 @@ export function CategoryGrid({
             <button
               type="button"
               onClick={() => setFilterTab("expense")}
+              aria-pressed={filterTab === "expense"}
               className={`px-3 py-1 rounded-full transition cursor-pointer min-h-[32px] ${
                 filterTab === "expense"
                   ? "bg-amberGold text-slate-950 font-bold shadow-xs"
@@ -375,6 +377,7 @@ export function CategoryGrid({
             <button
               type="button"
               onClick={() => setFilterTab("income")}
+              aria-pressed={filterTab === "income"}
               className={`px-3 py-1 rounded-full transition cursor-pointer min-h-[32px] ${
                 filterTab === "income"
                   ? "bg-amberGold text-slate-950 font-bold shadow-xs"
@@ -403,7 +406,7 @@ export function CategoryGrid({
 
       {/* Loading Skeletons */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
+        <div className="ai7-category-grid">
           {[...Array(8)].map((_, i) => (
             <div
               key={i}
@@ -439,7 +442,7 @@ export function CategoryGrid({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
+        <div className="ai7-category-grid">
           {filteredList.map((c) => {
             const colorDef = getCategoryColorDef(c.color);
             const isExpense = c.type === "expense";
@@ -448,7 +451,7 @@ export function CategoryGrid({
             return (
               <div
                 key={c.id}
-                className="bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] rounded-2xl p-4 sm:p-5 space-y-3 transition-all duration-200 shadow-xs flex flex-col justify-between group"
+                className="ai7-category-card bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 space-y-3 flex flex-col justify-between group"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">

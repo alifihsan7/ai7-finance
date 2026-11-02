@@ -26,7 +26,6 @@ export function CustomSelect({
   placeholder = "Pilih opsi...",
   disabled = false,
   className = "",
-  accent = "amber",
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -148,15 +147,12 @@ export function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={handleToggle}
-        className={`w-full bg-obsidian-panel border rounded-2xl px-3.5 py-2.5 min-h-[44px] text-left text-xs sm:text-sm flex items-center justify-between gap-2 transition-all select-none cursor-pointer ${
+        aria-expanded={isOpen}
+        className={`ai7-select-trigger w-full border px-3.5 py-2.5 min-h-[44px] text-left text-sm flex items-center justify-between gap-2 select-none cursor-pointer ${
           disabled
             ? "opacity-50 cursor-not-allowed border-white/[0.06]"
             : isOpen
-            ? accent === "mint"
-              ? "border-mintRise ring-1 ring-mintRise/30 text-slateText-primary"
-              : accent === "cyan"
-              ? "border-cyanHub ring-1 ring-cyanHub/30 text-slateText-primary"
-              : "border-amberGold ring-1 ring-amberGold/30 text-slateText-primary"
+            ? "border-luma-ember text-slateText-primary"
             : "border-white/[0.08] hover:border-white/[0.18] text-slateText-primary"
         }`}
       >
@@ -169,15 +165,7 @@ export function CustomSelect({
           </span>
         </span>
         <ChevronDown
-          className={`w-4 h-4 text-slateText-muted shrink-0 transition-transform duration-200 ${
-            isOpen
-              ? accent === "mint"
-                ? "rotate-180 text-mintRise"
-                : accent === "cyan"
-                ? "rotate-180 text-cyanHub"
-                : "rotate-180 text-amberGold"
-              : ""
-          }`}
+          className={`w-4 h-4 text-slateText-muted shrink-0 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -196,7 +184,7 @@ export function CustomSelect({
               maxHeight: coords.maxHeight,
               zIndex: 99999,
             }}
-            className="bg-obsidian-card border border-white/[0.12] rounded-2xl shadow-2xl py-1.5 overflow-y-auto scrollbar-thin animate-in fade-in zoom-in-95 duration-150"
+            className="ai7-select-menu border rounded-xl py-1.5 overflow-y-auto scrollbar-thin"
           >
             {options.map((opt) => {
               const isSelected = opt.value === value;

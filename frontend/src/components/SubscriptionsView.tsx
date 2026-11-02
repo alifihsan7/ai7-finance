@@ -45,7 +45,7 @@ export function SubscriptionsView({
   loading,
 }: SubscriptionsViewProps) {
   return (
-    <div className="space-y-8">
+    <div className="ai7-subscriptions space-y-8">
       {/* Top Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2 shadow-sm">

@@ -16,7 +16,6 @@ export function CurrencyInput({
   onChange,
   placeholder = "0",
   required = false,
-  accent = "amber",
   quickAmounts,
   className = "",
   autoFocus = false,
@@ -34,39 +33,14 @@ export function CurrencyInput({
     onChange(rawVal);
   };
 
-  const accentStyles = {
-    amber: {
-      badge: "text-amberGold bg-amberGold/10 border-amberGold/30",
-      focus: "focus-within:border-amberGold focus-within:ring-1 focus-within:ring-amberGold/30",
-      btn: "border-obsidian-border hover:border-amberGold/50 text-slateText-secondary hover:text-amberGold",
-    },
-    cyan: {
-      badge: "text-cyanHub bg-cyanHub/10 border-cyanHub/30",
-      focus: "focus-within:border-cyanHub focus-within:ring-1 focus-within:ring-cyanHub/30",
-      btn: "border-obsidian-border hover:border-cyanHub/50 text-slateText-secondary hover:text-cyanHub",
-    },
-    mint: {
-      badge: "text-mintRise bg-mintRise/10 border-mintRise/30",
-      focus: "focus-within:border-mintRise focus-within:ring-1 focus-within:ring-mintRise/30",
-      btn: "border-obsidian-border hover:border-mintRise/50 text-slateText-secondary hover:text-mintRise",
-    },
-    coral: {
-      badge: "text-coralFall bg-coralFall/10 border-coralFall/30",
-      focus: "focus-within:border-coralFall focus-within:ring-1 focus-within:ring-coralFall/30",
-      btn: "border-obsidian-border hover:border-coralFall/50 text-slateText-secondary hover:text-coralFall",
-    },
-  };
-
-  const currentAccent = accentStyles[accent] || accentStyles.amber;
-
   return (
     <div className={`space-y-2 ${className}`}>
       <div
-        className={`relative flex items-stretch min-h-[44px] rounded-2xl overflow-hidden border border-white/[0.08] bg-obsidian-panel transition-all ${currentAccent.focus}`}
+        className="ai7-currency-field relative flex items-stretch min-h-[44px] overflow-hidden border bg-obsidian-panel"
       >
         {/* Rp Prefix Badge */}
         <div
-          className={`px-3.5 sm:px-4 py-2.5 flex items-center justify-center font-mono font-bold text-xs sm:text-sm border-r select-none tracking-wider ${currentAccent.badge}`}
+          className="ai7-currency-prefix px-3.5 sm:px-4 py-2.5 flex items-center justify-center text-sm border-r select-none"
         >
           Rp
         </div>
@@ -97,7 +71,7 @@ export function CurrencyInput({
                 key={amt}
                 type="button"
                 onClick={() => onChange(amt.toString())}
-                className={`min-h-[44px] py-2 px-2.5 rounded-xl bg-obsidian-panel border text-xs sm:text-sm font-mono font-medium transition-all text-center flex items-center justify-center cursor-pointer ${currentAccent.btn}`}
+                className="ai7-amount-preset min-h-[44px] py-2 px-2.5 rounded-xl border text-xs sm:text-sm font-medium text-center flex items-center justify-center cursor-pointer"
               >
                 +{label}
               </button>

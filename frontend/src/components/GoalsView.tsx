@@ -308,14 +308,14 @@ export function GoalsView({
             return (
               <div
                 key={goal.id}
-                className="luma-glass group relative p-6 sm:p-7 flex flex-col justify-between transition-all duration-200 overflow-hidden"
+                className="ai7-goal-card luma-glass group relative p-6 sm:p-7 flex flex-col justify-between overflow-hidden"
               >
                 <div className="space-y-6 relative z-[1]">
                   {/* Top Header: Icon + Category Badge + Account + Actions */}
                   <div className="flex items-start justify-between gap-3.5">
                     <div className="flex items-center gap-3.5 min-w-0">
                       {/* Circular icon well */}
-                      <div className="w-12 h-12 rounded-full bg-[#2B2825] border border-white/[0.1] flex items-center justify-center shrink-0">
+                      <div className="ai7-account-icon w-12 h-12 rounded-xl border flex items-center justify-center shrink-0">
                         {renderGoalIcon(goal.icon, goal.name, goal.category)}
                       </div>
 

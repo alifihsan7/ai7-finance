@@ -32,16 +32,10 @@ interface AccountGridProps {
   onEditAccount?: (acc: AccountItem) => void;
 }
 
-/* Luma icon wells — circular dark icon on a tinted smoked ring. */
-const COLOR_MAP: Record<string, { text: string; ring: string }> = {
-  amberGold: { text: "text-luma-gold", ring: "bg-luma-gold/10 border-luma-gold/30" },
-  cyanHub: { text: "text-luma-gold", ring: "bg-luma-gold/10 border-luma-gold/30" },
-  teal: { text: "text-luma-sage", ring: "bg-luma-sage/10 border-luma-sage/30" },
-  purpleLock: { text: "text-luma-coral", ring: "bg-luma-coral/10 border-luma-coral/30" },
-  blue: { text: "text-luma-ivory", ring: "bg-white/[0.06] border-white/[0.12]" },
-  coralFall: { text: "text-luma-coral", ring: "bg-luma-coral/10 border-luma-coral/30" },
-  ember: { text: "text-luma-ember", ring: "bg-luma-ember/10 border-luma-ember/30" },
-  sage: { text: "text-luma-sage", ring: "bg-luma-sage/10 border-luma-sage/30" },
+const ACCOUNT_COLOR_DOTS: Record<string, string> = {
+  amberGold: "bg-amber-500", cyanHub: "bg-cyan-500", teal: "bg-teal-500",
+  purpleLock: "bg-purple-500", blue: "bg-blue-600", coralFall: "bg-rose-500",
+  ember: "bg-luma-ember", sage: "bg-luma-sage",
 };
 
 export function AccountGrid({ summary, customAccounts = [], formatRupiah, loading, onAccountDeleted, onEditAccount }: AccountGridProps) {
@@ -172,11 +166,11 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4">
+      <div className="ai7-account-grid">
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className="luma-glass !rounded-3xl p-5 flex flex-col justify-between space-y-4"
+            className="ai7-account-card luma-glass p-5 flex flex-col justify-between space-y-4"
           >
             <div>
               <div className="flex justify-between items-center gap-2">
@@ -202,11 +196,10 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4">
+    <div className="ai7-account-grid">
       {allDisplayAccounts.map((acc) => {
         const hasPlafon = acc.allocated > 0;
         const pctUsed = hasPlafon ? Math.min(100, Math.round((acc.spent / acc.allocated) * 100)) : 0;
-        const scheme = COLOR_MAP[acc.colorKey] || COLOR_MAP.ember;
         const isInvest = (acc.type || "").toLowerCase() === "investasi"
           || acc.name.toLowerCase().includes("invest")
           || acc.name.toLowerCase().includes("bibit");
@@ -214,16 +207,17 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
         return (
           <div
             key={acc.name}
-            className="luma-glass !rounded-3xl p-5 hover:border-white/[0.18] transition-all duration-200 flex flex-col justify-between"
+            className="ai7-account-card luma-glass p-5 flex flex-col justify-between"
           >
             <div className="min-w-0">
               <div className="flex justify-between items-center gap-2">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <span
                     aria-hidden="true"
-                    className={`w-9 h-9 rounded-full border flex items-center justify-center shrink-0 ${scheme.ring}`}
+                    className="ai7-account-icon relative w-9 h-9 rounded-xl border flex items-center justify-center shrink-0"
                   >
-                    <CreditCard className={`w-4 h-4 ${scheme.text}`} />
+                    <CreditCard className="w-4 h-4" />
+                    <span className={`absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full ${ACCOUNT_COLOR_DOTS[acc.colorKey] || "bg-luma-ember"}`} />
                   </span>
                   <span className="text-luma-ivory font-bold text-sm sm:text-base break-words leading-snug flex-1">
                     {acc.name}
