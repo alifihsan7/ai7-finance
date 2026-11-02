@@ -5,6 +5,7 @@ import {
   Dumbbell,
   Landmark,
   Pencil,
+  Plus,
   RefreshCw,
   Smartphone,
   Wallet,
@@ -18,8 +19,13 @@ import {
 } from "@/lib/api";
 import { EditJagoPocketsModal } from "./EditJagoPocketsModal";
 import { getPocketStatus } from "@/lib/pocketStatus";
+import { AddPocketModal } from "./AddPocketModal";
+import { CustomSelect } from "./ui/CustomSelect";
+import type { AccountItem } from "./AccountGrid";
 
 interface JagoPocketsProps {
+  accountId?: number;
+  accountName?: string;
   formatRupiah: (val: number) => string;
   refreshSignal?: number;
   onToast?: (msg: string) => void;
@@ -76,7 +82,7 @@ function statusFor(tone: ReturnType<typeof getPocketStatus>["tone"]): {
   };
 }
 
-export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLoaded, showActions = true }: JagoPocketsProps) {
+export function JagoPockets({ accountId, accountName, formatRupiah, refreshSignal = 0, onToast, onDataLoaded, showActions = true }: JagoPocketsProps) {
   const onDataLoadedRef = useRef(onDataLoaded);
   useEffect(() => { onDataLoadedRef.current = onDataLoaded; }, [onDataLoaded]);
   const [data, setData] = useState<JagoPocketsSummaryResponse | null>(null);
@@ -84,35 +90,42 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const requestVersion = useRef(0);
 
   const fetchPockets = useCallback(async () => {
+    const version = ++requestVersion.current;
     setLoading(true);
     setError(null);
+    setData(null);
     try {
-      const res = await getJagoPockets();
+      const res = await getJagoPockets(accountId);
+      if (version !== requestVersion.current) return;
       setData(res);
       onDataLoadedRef.current?.(res);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Gagal memuat sub-kantong operasional";
+      if (version !== requestVersion.current) return;
+      const msg = err instanceof Error ? err.message : "Gagal memuat kantong rekening";
       setError(msg);
     } finally {
-      setLoading(false);
+      if (version === requestVersion.current) setLoading(false);
     }
-  }, []);
+  }, [accountId]);
 
   useEffect(() => {
     fetchPockets();
+    return () => { requestVersion.current += 1; };
   }, [fetchPockets, refreshSignal]);
 
   const handleSync = async () => {
     if (syncing) return;
+    const version = requestVersion.current;
     setSyncing(true);
     try {
-      const res = await syncJagoPocketCommitments();
-      setData(res);
-      onDataLoadedRef.current?.(res);
-      setError(null);
-      onToast?.("Komitmen sub-kantong tersinkron dengan Langganan");
+      await syncJagoPocketCommitments();
+      if (version !== requestVersion.current) return;
+      await fetchPockets();
+      onToast?.("Komitmen kantong tersinkron dengan tagihan");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Gagal menyelaraskan komitmen";
       onToast?.(msg);
@@ -125,15 +138,17 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
     setData(updated);
     onDataLoadedRef.current?.(updated);
     setError(null);
-    onToast?.("Plafon sub-kantong operasional berhasil diperbarui");
+    onToast?.("Plafon kantong berhasil diperbarui");
   };
 
   const pockets = useMemo(() => data ? sortPockets(data.pockets ?? data.items ?? []) : [], [data]);
+  const parentName = accountName || data?.account_name || pockets[0]?.account_name || undefined;
+  const title = parentName ? `Kantong ${parentName}` : "Kantong rekening";
 
   if (loading) {
     return (
-      <section aria-label="Sub-kantong operasional" className="luma-glass p-6 sm:p-7 space-y-5">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <section aria-label={title} className="luma-glass p-6 sm:p-7 space-y-5" aria-busy="true">
+        <div className="flex flex-col items-start gap-4">
           <div>
             <Skeleton className="w-56 h-5 rounded-full" />
             <Skeleton className="w-80 h-3.5 rounded-full mt-1.5" />
@@ -175,22 +190,21 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
   const totalBalance = data?.total_jago_balance ?? 0;
 
   return (
-    <section aria-label="Sub-kantong operasional" className="luma-glass p-6 sm:p-7 space-y-5">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <section aria-label={title} className="luma-glass p-6 sm:p-7 space-y-5">
+      <div className="flex flex-col items-start gap-4">
         <div>
           <h2 className="ai7-type-section text-luma-ivory tracking-tight flex items-center gap-2">
             <Landmark className="w-5 h-5 text-luma-ember shrink-0" aria-hidden="true" />
             <span>
-              Sub-kantong operasional{" "}
-              {totalTarget > 0 ? `(Plafon ${formatRupiah(totalTarget)})` : "(Belum Ada Plafon)"}
+              {title}
             </span>
           </h2>
           <p className="text-xs sm:text-sm text-luma-smoke mt-0.5 tabular-nums">
-            Sub-kantong operasional dengan alokasi otomatis — saldo {formatRupiah(totalBalance)}, terpakai {formatRupiah(totalSpent)}, sisa {formatRupiah(totalRemaining)}
+            Saldo rekening {formatRupiah(totalBalance)} · Plafon kantong {formatRupiah(totalTarget)} · Terpakai {formatRupiah(totalSpent)} · Sisa alokasi {formatRupiah(totalRemaining)}
           </p>
         </div>
-        {showActions && <div className="flex items-center gap-2 shrink-0">
-          <button
+        {showActions && <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {(accountId === undefined || pockets.some(pocket => ["kuota", "claude", "gym"].includes(pocket.slug))) && <button
             type="button"
             onClick={handleSync}
             disabled={syncing}
@@ -199,16 +213,20 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
           >
             <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${syncing ? "animate-spin" : ""}`} aria-hidden="true" />
             <span>{syncing ? "Menyelaraskan..." : "Sync komitmen"}</span>
-          </button>
+          </button>}
           <button
             type="button"
             onClick={() => setIsEditOpen(true)}
-            title="Ubah plafon target tiap sub-kantong operasional"
-            className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-semibold bg-luma-ivory text-luma-charcoal hover:brightness-95 active:scale-95 transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
+            disabled={!!error || pockets.length === 0}
+            title="Ubah plafon kantong rekening ini"
+            className="luma-touch min-w-[44px] px-4 py-2.5 text-xs font-medium bg-white/[0.06] text-luma-ivory border border-luma-smokeline hover:bg-white/[0.1] transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Pencil className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            <span>Edit target sub-kantong</span>
+            <span>Edit plafon</span>
           </button>
+          {accountId !== undefined && <button type="button" onClick={() => setIsAddOpen(true)} disabled={!!error} className="luma-touch px-4 py-2.5 bg-luma-ivory text-luma-charcoal inline-flex items-center gap-2">
+            <Plus className="w-4 h-4" aria-hidden="true" />Tambah kantong
+          </button>}
         </div>}
       </div>
 
@@ -227,7 +245,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
 
       {pockets.length === 0 && !error ? (
         <div className="p-6 rounded-2xl bg-white/[0.04] border border-luma-smokeline text-center text-sm text-luma-smoke">
-          Belum ada sub-kantong operasional aktif. Tekan Sync komitmen untuk menginisialisasi sub-kantong bawaan.
+          Belum ada kantong aktif. Tambahkan kantong untuk membagi alokasi rekening ini.
         </div>
       ) : (
         <div className="ai7-pocket-grid grid gap-3.5 sm:gap-4">
@@ -313,15 +331,34 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
       )}
 
       <EditJagoPocketsModal
+        accountId={accountId}
+        accountName={parentName}
         isOpen={isEditOpen}
         pockets={pockets}
         formatRupiah={formatRupiah}
         onClose={() => setIsEditOpen(false)}
         onSuccess={handleEditSuccess}
       />
+      {isAddOpen && accountId !== undefined && <AddPocketModal accountId={accountId} accountName={parentName || "Rekening"} onClose={() => setIsAddOpen(false)} onCreated={() => {
+        void fetchPockets();
+        onToast?.("Kantong berhasil ditambahkan");
+      }} />}
     </section>
   );
 }
 
 export const OperationalPockets = JagoPockets;
+export function AccountPockets({ accounts, ...props }: Omit<JagoPocketsProps, "accountId" | "accountName"> & { accounts: AccountItem[] }) {
+  const [selectedId, setSelectedId] = useState<number>();
+  const available = accounts.filter(account => typeof account.id === "number");
+  const selected = available.find(account => account.id === selectedId) || available[0];
+  if (!selected) return <p className="luma-data-state text-luma-smoke">Tambahkan rekening terlebih dahulu sebelum membuat kantong.</p>;
+  return <div className="space-y-4">
+    <fieldset className="max-w-sm">
+      <legend className="text-xs text-luma-smoke font-medium mb-2">Rekening induk</legend>
+      <CustomSelect value={String(selected.id)} onChange={value => setSelectedId(Number(value))} options={available.map(account => ({ value: String(account.id), label: account.name }))} />
+    </fieldset>
+    <JagoPockets key={selected.id} {...props} accountId={selected.id} accountName={selected.name} />
+  </div>;
+}
 export default JagoPockets;

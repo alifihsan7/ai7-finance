@@ -9,6 +9,8 @@ import {
 } from "@/lib/api";
 
 interface EditJagoPocketsModalProps {
+  accountId?: number;
+  accountName?: string;
   isOpen: boolean;
   pockets: JagoPocketItem[];
   formatRupiah: (val: number) => string;
@@ -17,6 +19,8 @@ interface EditJagoPocketsModalProps {
 }
 
 export function EditJagoPocketsModal({
+  accountId,
+  accountName,
   isOpen,
   pockets,
   formatRupiah,
@@ -67,7 +71,7 @@ export function EditJagoPocketsModal({
 
     setLoading(true);
     try {
-      const updated = await updateJagoPockets(payload);
+      const updated = await updateJagoPockets(payload, accountId);
       onSuccess(updated);
       onClose();
     } catch (err: unknown) {
@@ -82,8 +86,8 @@ export function EditJagoPocketsModal({
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit target sub-kantong"
-      subtitle="Perbarui plafon alokasi tiap sub-kantong operasional"
+      title="Edit plafon kantong"
+      subtitle={accountName ? `Atur alokasi kantong dalam ${accountName}` : "Perbarui plafon alokasi kantong rekening"}
       icon={<Landmark className="w-5 h-5 text-amberGold" />}
       accent="amber"
       maxWidth="lg"

@@ -28,7 +28,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   WalletCards,
-  Pencil,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { LumaOverview } from "@/components/LumaOverview";
@@ -37,8 +36,7 @@ import { LumaRecentTransactions } from "@/components/LumaRecentTransactions";
 import { AccountGrid } from "@/components/AccountGrid";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { SmartBudgetEnvelopes } from "@/components/MandiriEnvelopes";
-import { JagoPockets, OperationalPockets } from "@/components/JagoPockets";
-import { EditJagoPocketsModal } from "@/components/EditJagoPocketsModal";
+import { JagoPockets, AccountPockets } from "@/components/JagoPockets";
 import { Transaction } from "@/components/TransactionTable";
 import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionLedgerView } from "@/components/TransactionLedgerView";
@@ -73,8 +71,6 @@ import {
   setStoredUser,
   setAuthToken,
   UserProfile,
-  getJagoPockets,
-  syncJagoPocketCommitments,
   JagoPocketsSummaryResponse,
 } from "@/lib/api";
 import { DashboardLoadError, loadDashboardData } from "@/lib/dashboardData";
@@ -497,52 +493,8 @@ export default function FinanceDashboard() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [jagoRefreshSignal, setJagoRefreshSignal] = useState(0);
   const [jagoPocketsData, setJagoPocketsData] = useState<JagoPocketsSummaryResponse | null>(null);
-  const [isEditPocketModalOpen, setIsEditPocketModalOpen] = useState(false);
-  const [isSyncingPockets, setIsSyncingPockets] = useState(false);
 
-  const fetchJagoPocketsData = useCallback(async () => {
-    try {
-      const res = await getJagoPockets();
-      setJagoPocketsData(res);
-    } catch {
-      // non-blocking fallback
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchJagoPocketsData();
-  }, [fetchJagoPocketsData, jagoRefreshSignal]);
-
-  const handleSyncPockets = async () => {
-    if (isSyncingPockets) return;
-    setIsSyncingPockets(true);
-    try {
-      const res = await syncJagoPocketCommitments();
-      setJagoPocketsData(res);
-      setJagoRefreshSignal((prev) => prev + 1);
-      showToast("Komitmen sub-kantong operasional tersinkron dengan Langganan");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Gagal menyelaraskan komitmen kantong";
-      showToast(msg);
-    } finally {
-      setIsSyncingPockets(false);
-    }
-  };
-
-  const handleOpenEditPockets = async () => {
-    if (!jagoPocketsData) {
-      try {
-        const res = await getJagoPockets();
-        setJagoPocketsData(res);
-      } catch (err) {
-        showToast(err instanceof Error ? err.message : "Gagal memuat sub-kantong operasional");
-        return;
-      }
-    }
-    setIsEditPocketModalOpen(true);
-  };
-
-  const pocketsCount = (jagoPocketsData?.pockets ?? jagoPocketsData?.items)?.length ?? 5;
+  const pocketsCount = (jagoPocketsData?.pockets ?? jagoPocketsData?.items)?.length ?? 0;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1547,7 +1499,7 @@ export default function FinanceDashboard() {
               {activeNav === "Laporan" && "Arus kas, pengeluaran per kategori, dan perbandingan laju belanja periode."}
               {activeNav === "Pengaturan" && (
                 settingsSubTab === "kantong"
-                  ? "Konfigurasi alokasi sub-kantong operasional, sinkronisasi autodebet, dan plafon target pengeluaran."
+                  ? "Pilih rekening induk, tambah kantong, dan atur plafon alokasinya."
                   : "Pengelolaan rekening simpanan fisik, pos kategori transaksi, preferensi tema, dan profil pengguna."
               )}
             </p>
@@ -1802,6 +1754,7 @@ export default function FinanceDashboard() {
 
             {/* 7. Sub-Kantong Operasional */}
             <JagoPockets
+              accountId={(customAccounts.find(account => account.name === summary.safe_to_spend?.pocket_account) || customAccounts.find(account => account.type === "operasional") || customAccounts[0])?.id}
               formatRupiah={formatRupiah}
               refreshSignal={jagoRefreshSignal}
               onToast={showToast}
@@ -1866,6 +1819,7 @@ export default function FinanceDashboard() {
             />
 
             <JagoPockets
+              accountId={(customAccounts.find(account => account.name === summary.safe_to_spend?.pocket_account) || customAccounts.find(account => account.type === "operasional") || customAccounts[0])?.id}
               formatRupiah={formatRupiah}
               refreshSignal={jagoRefreshSignal}
               onToast={showToast}
@@ -2209,29 +2163,6 @@ export default function FinanceDashboard() {
                 </div>
               )}
 
-              {settingsSubTab === "kantong" && (
-                <div className="flex items-center gap-2 justify-end flex-wrap sm:flex-nowrap">
-                  <button
-                    type="button"
-                    onClick={handleSyncPockets}
-                    disabled={isSyncingPockets}
-                    title="Selaraskan target kantong dengan Langganan aktif"
-                    className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-white/[0.06] text-luma-ivory border border-luma-smokeline hover:bg-white/[0.1] hover:border-white/[0.2] transition inline-flex items-center justify-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${isSyncingPockets ? "animate-spin" : ""}`} />
-                    <span>{isSyncingPockets ? "Menyelaraskan..." : "Sync komitmen"}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleOpenEditPockets}
-                    title="Ubah plafon target tiap sub-kantong operasional"
-                    className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
-                  >
-                    <Pencil className="w-3.5 h-3.5 shrink-0" />
-                    <span>Edit target sub-kantong</span>
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* Sub-tab 1: Rekening */}
@@ -2259,12 +2190,12 @@ export default function FinanceDashboard() {
             {/* Sub-tab 2: Kantong */}
             {settingsSubTab === "kantong" && (
               <div className="space-y-4 animate-fadeIn">
-                <OperationalPockets
+                <AccountPockets
+                  accounts={customAccounts}
                   formatRupiah={formatRupiah}
                   refreshSignal={jagoRefreshSignal}
                   onToast={showToast}
                   onDataLoaded={setJagoPocketsData}
-                  showActions={false}
                 />
               </div>
             )}
@@ -2672,18 +2603,6 @@ export default function FinanceDashboard() {
         categoryOptions={SUB_CATEGORY_OPTIONS}
       />
 
-      {/* Edit Jago Pockets Modal */}
-      <EditJagoPocketsModal
-        isOpen={isEditPocketModalOpen}
-        pockets={jagoPocketsData?.pockets ?? jagoPocketsData?.items ?? []}
-        formatRupiah={formatRupiah}
-        onClose={() => setIsEditPocketModalOpen(false)}
-        onSuccess={(updated) => {
-          setJagoPocketsData(updated);
-          setJagoRefreshSignal((prev) => prev + 1);
-          showToast("Plafon sub-kantong operasional berhasil diperbarui");
-        }}
-      />
 
       {/* Add Goal Modal */}
       <AddGoalModal
