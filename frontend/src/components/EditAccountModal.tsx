@@ -13,13 +13,13 @@ interface EditAccountModalProps {
 }
 
 const TYPE_OPTIONS = [
-  { value: "operasional", label: "Operasional / Saku Harian", description: "Pos belanja konsumtif & kebutuhan aktif" },
-  { value: "tagihan", label: "Tagihan & Autodebet", description: "Listrik, wifi, kuota, gym, langganan berkala" },
-  { value: "gajian", label: "Gajian / Pemasukan Utama", description: "Rekening penampung payroll / uang saku" },
-  { value: "tabungan", label: "Tabungan / Dana Dingin", description: "Simpanan jangka menengah" },
-  { value: "investasi", label: "Investasi Portofolio", description: "Reksadana, saham, emas" },
-  { value: "darurat", label: "Dana Darurat", description: "Cadangan proteksi darurat" },
-  { value: "ewallet", label: "E-Wallet / Dompet Digital", description: "GoPay, OVO, ShopeePay, DANA" },
+  { value: "operasional", label: "Operasional / saku harian", description: "Pos belanja konsumtif & kebutuhan aktif" },
+  { value: "tagihan", label: "Tagihan & autodebet", description: "Listrik, wifi, kuota, gym, langganan berkala" },
+  { value: "gajian", label: "Gajian / pemasukan utama", description: "Rekening penampung payroll / uang saku" },
+  { value: "tabungan", label: "Tabungan / dana dingin", description: "Simpanan jangka menengah" },
+  { value: "investasi", label: "Investasi portofolio", description: "Reksadana, saham, emas" },
+  { value: "darurat", label: "Dana darurat", description: "Cadangan proteksi darurat" },
+  { value: "ewallet", label: "E-wallet / dompet digital", description: "GoPay, OVO, ShopeePay, DANA" },
 ];
 
 const COLOR_OPTIONS = [
@@ -94,7 +94,7 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit Rekening / Akun"
+      title="Edit rekening / akun"
       subtitle={`Perbarui parameter rekening ${account.name}`}
       icon={<Wallet className="w-5 h-5 text-amberGold" />}
       accent="amber"
@@ -108,8 +108,8 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
         )}
 
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Nama Rekening / Akun *
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+            Nama rekening / akun *
           </label>
           <input
             type="text"
@@ -117,10 +117,10 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
             placeholder="Misal: BCA, SeaBank, Rekening Utama"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
           {name.trim() !== account.name && (
-            <p className="text-[11px] text-amberGold/80 mt-1">
+            <p className="text-xs text-amberGold/80 mt-1">
               Catatan: Mengubah nama rekening akan otomatis memperbarui seluruh riwayat transaksi dan alokasi yang terkait.
             </p>
           )}
@@ -128,7 +128,7 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-30">
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
               Tipe / Kategori Pos
             </label>
             <CustomSelect
@@ -138,7 +138,7 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
               Warna / Aksen
             </label>
             <CustomSelect
@@ -150,7 +150,7 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
             Label / Deskripsi Ringkas
           </label>
           <input
@@ -158,11 +158,11 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
             placeholder="Misal: Saku Belanja, Tabungan Dingin, Cadangan Pokok"
             value={tag}
             onChange={(e) => setTag(e.target.value)}
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
-        <div className="pt-3 flex justify-end gap-3 border-t border-white/[0.08] mt-5">
+        <div className="pt-3 flex justify-end gap-3 border-t border-luma-smokeline mt-5">
           <button
             type="button"
             onClick={onClose}
@@ -173,14 +173,14 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 bg-amberGold text-slate-950 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm hover:bg-amber-300 transition shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 bg-amberGold text-slate-950 px-5 py-2.5 rounded-2xl font-semibold text-xs sm:text-sm hover:bg-amber-300 transition shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {loading ? (
               <span>Menyimpan...</span>
             ) : (
               <>
                 <Check className="w-4 h-4 stroke-[2.5]" />
-                <span>Simpan Perubahan</span>
+                <span>Simpan perubahan</span>
               </>
             )}
           </button>

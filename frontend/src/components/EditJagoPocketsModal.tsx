@@ -9,6 +9,8 @@ import {
 } from "@/lib/api";
 
 interface EditJagoPocketsModalProps {
+  accountId?: number;
+  accountName?: string;
   isOpen: boolean;
   pockets: JagoPocketItem[];
   formatRupiah: (val: number) => string;
@@ -17,6 +19,8 @@ interface EditJagoPocketsModalProps {
 }
 
 export function EditJagoPocketsModal({
+  accountId,
+  accountName,
   isOpen,
   pockets,
   formatRupiah,
@@ -67,7 +71,7 @@ export function EditJagoPocketsModal({
 
     setLoading(true);
     try {
-      const updated = await updateJagoPockets(payload);
+      const updated = await updateJagoPockets(payload, accountId);
       onSuccess(updated);
       onClose();
     } catch (err: unknown) {
@@ -82,8 +86,8 @@ export function EditJagoPocketsModal({
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit Target Sub-Kantong"
-      subtitle="Perbarui plafon alokasi tiap sub-kantong operasional"
+      title="Edit plafon kantong"
+      subtitle={accountName ? `Atur alokasi kantong dalam ${accountName}` : "Perbarui plafon alokasi kantong rekening"}
       icon={<Landmark className="w-5 h-5 text-amberGold" />}
       accent="amber"
       maxWidth="lg"
@@ -99,16 +103,16 @@ export function EditJagoPocketsModal({
           {pockets.map((pocket) => (
             <div
               key={pocket.slug}
-              className="bg-obsidian-panel border border-white/[0.08] rounded-2xl p-4 space-y-2.5"
+              className="bg-obsidian-panel border border-luma-smokeline rounded-2xl p-4 space-y-2.5"
             >
               <div className="flex items-center justify-between gap-2">
                 <label
                   htmlFor={`jago-target-${pocket.slug}`}
-                  className="text-xs font-semibold text-zinc-300 uppercase tracking-wider"
+                  className="text-xs font-semibold text-zinc-300 "
                 >
                   {pocket.name}
                 </label>
-                <span className="text-[11px] font-mono text-zinc-400 tabular-nums">
+                <span className="text-xs font-sans text-zinc-400 tabular-nums">
                   Terpakai: {formatRupiah(pocket.spent_amount ?? 0)}
                 </span>
               </div>
@@ -124,30 +128,30 @@ export function EditJagoPocketsModal({
           ))}
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-1 text-xs font-mono">
+        <div className="flex items-center justify-between gap-2 px-1 text-xs font-sans">
           <span className="text-zinc-400">Total plafon draf</span>
-          <span className="font-bold text-white tabular-nums">{formatRupiah(totalDraft)}</span>
+          <span className="font-semibold text-white tabular-nums">{formatRupiah(totalDraft)}</span>
         </div>
 
-        <div className="flex justify-end gap-3 pt-3 border-t border-white/[0.08] mt-5">
+        <div className="flex justify-end gap-3 pt-3 border-t border-luma-smokeline mt-5">
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            className="min-h-[44px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-luma-smokeline hover:border-white/[0.16] transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="min-h-[44px] px-6 py-2.5 rounded-2xl text-xs sm:text-sm bg-amberGold text-slate-950 font-bold hover:bg-amber-300 transition flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amberGold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-card"
+            className="min-h-[44px] px-6 py-2.5 rounded-2xl text-xs sm:text-sm bg-amberGold text-slate-950 font-semibold hover:bg-amber-300 transition flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amberGold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-card"
           >
             {loading ? (
               "Menyimpan..."
             ) : (
               <>
                 <CheckCircle2 className="w-4 h-4 stroke-[2.5]" aria-hidden="true" />
-                Simpan Perubahan
+                Simpan perubahan
               </>
             )}
           </button>

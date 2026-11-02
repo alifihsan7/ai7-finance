@@ -170,7 +170,7 @@ export function AddTransactionModal({
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Catat Transaksi Baru"
+      title="Catat transaksi baru"
       subtitle="Catat transaksi untuk otomatis memperbarui saldo rekening & kantong anggaran"
       icon={<Plus className="w-5 h-5" />}
       accent={formType === "expense" ? "coral" : "mint"}
@@ -178,13 +178,13 @@ export function AddTransactionModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Type toggle */}
-        <div className="grid grid-cols-2 gap-2 bg-obsidian-panel p-1 rounded-2xl border border-white/[0.08]">
+        <div className="grid grid-cols-2 gap-2 bg-obsidian-panel p-1 rounded-2xl border border-luma-smokeline">
           <button
             type="button"
             onClick={() => setFormType("expense")}
             className={`min-h-[44px] py-2 px-3 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer flex items-center justify-center ${
               formType === "expense"
-                ? "bg-coralFall text-slate-950 font-bold shadow-xs"
+                ? "bg-coralFall text-slate-950 font-semibold shadow-xs"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -195,7 +195,7 @@ export function AddTransactionModal({
             onClick={() => setFormType("income")}
             className={`min-h-[44px] py-2 px-3 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer flex items-center justify-center ${
               formType === "income"
-                ? "bg-mintRise text-slate-950 font-bold shadow-xs"
+                ? "bg-mintRise text-slate-950 font-semibold shadow-xs"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -205,8 +205,8 @@ export function AddTransactionModal({
 
         {/* Amount */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Nominal Transaksi
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+            Nominal transaksi
           </label>
           <CurrencyInput
             value={formAmount}
@@ -224,7 +224,7 @@ export function AddTransactionModal({
 
         {/* Description */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
             Keterangan
           </label>
           <input
@@ -233,15 +233,15 @@ export function AddTransactionModal({
             placeholder="Contoh: Nasi Padang + Es Teh"
             value={formDesc}
             onChange={(e) => setFormDesc(e.target.value)}
-            className="w-full min-h-[44px] bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
+            className="w-full min-h-[44px] bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
           />
         </div>
 
         {/* Account and Category */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-20">
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-              Akun Rekening
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+              Akun rekening
             </label>
             <CustomSelect
               value={formAccount}
@@ -250,7 +250,7 @@ export function AddTransactionModal({
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
               Kategori
             </label>
             <CustomSelect
@@ -263,15 +263,15 @@ export function AddTransactionModal({
 
         {/* Date */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Tanggal Transaksi
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+            Tanggal transaksi
           </label>
           <input
             type="date"
             required
             value={formDate}
             onChange={(e) => setFormDate(e.target.value)}
-            className="w-full min-h-[44px] bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
+            className="w-full min-h-[44px] bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
@@ -283,19 +283,19 @@ export function AddTransactionModal({
         )}
 
         {/* Actions */}
-        <div className="pt-3 flex justify-end gap-3 border-t border-white/[0.08] mt-5">
+        <div className="pt-3 flex justify-end gap-3 border-t border-luma-smokeline mt-5">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="min-h-[44px] px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="min-h-[44px] px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-luma-smokeline hover:border-white/[0.16] rounded-2xl transition cursor-pointer inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`min-h-[44px] px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`min-h-[44px] px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
               formType === "expense" ? "bg-coralFall" : "bg-mintRise"
             }`}
           >
@@ -305,7 +305,7 @@ export function AddTransactionModal({
                 <span>Menyimpan...</span>
               </>
             ) : (
-              "Simpan Transaksi"
+              "Simpan transaksi"
             )}
           </button>
         </div>

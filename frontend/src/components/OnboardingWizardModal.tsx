@@ -314,11 +314,11 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                     ? "bg-amberGold/10 border-amberGold/40 text-amberGold"
                     : isDone
                     ? "bg-mintRise/10 border-mintRise/30 text-mintRise"
-                    : "bg-obsidian-panel border-white/[0.08] text-zinc-400"
+                    : "bg-obsidian-panel border-luma-smokeline text-zinc-400"
                 }`}
               >
                 <div
-                  className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold ${
+                  className={`w-5 h-5 rounded-lg flex items-center justify-center text-xs font-semibold ${
                     isActive
                       ? "bg-amberGold text-slate-950"
                       : isDone
@@ -329,7 +329,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                   {isDone ? <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" /> : s.num}
                 </div>
                 <div className="hidden sm:block min-w-0">
-                  <p className="text-[11px] font-medium leading-none truncate">{s.label}</p>
+                  <p className="text-xs font-medium leading-none truncate">{s.label}</p>
                 </div>
               </div>
             );
@@ -346,12 +346,12 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
         {/* STEP 1: INITIAL ACCOUNTS */}
         {step === 1 && (
           <div className="space-y-4 animate-fadeIn">
-            <div className="bg-obsidian-card p-4 rounded-2xl border border-white/[0.08]">
+            <div className="bg-obsidian-card p-4 rounded-2xl border border-luma-smokeline">
               <h4 className="text-xs font-semibold text-white mb-1 flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-amberGold" />
-                Daftar Rekening & Saldo Awal Saat Ini
+                Daftar Rekening & Saldo awal Saat Ini
               </h4>
-              <p className="text-[11px] text-zinc-400">
+              <p className="text-xs text-zinc-400">
                 Masukkan saldo yang Anda miliki saat ini. Saldo ini akan menjadi saldo modal awal di pembukuan.
               </p>
             </div>
@@ -360,13 +360,13 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
               {accounts.map((acc, idx) => (
                 <div
                   key={idx}
-                  className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  className="p-3.5 rounded-2xl bg-obsidian-card border border-luma-smokeline flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="w-2.5 h-2.5 rounded-full bg-amberGold shrink-0" />
                     <div>
                       <p className="text-xs font-semibold text-white truncate">{acc.name}</p>
-                      <p className="text-[10px] text-zinc-400 capitalize">{acc.type} • {acc.tag}</p>
+                      <p className="text-xs text-zinc-400 capitalize">{acc.type} • {acc.tag}</p>
                     </div>
                   </div>
 
@@ -384,7 +384,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                         type="button"
                         onClick={() => handleRemoveAccount(idx)}
                         className="p-2 text-zinc-400 hover:text-coralFall rounded-xl hover:bg-coralFall/10 transition cursor-pointer"
-                        title="Hapus Rekening"
+                        title="Hapus rekening"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -395,13 +395,13 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
             </div>
 
             {/* Quick add custom account */}
-            <div className="p-3.5 rounded-2xl bg-obsidian-panel border border-dashed border-white/[0.12] flex flex-col sm:flex-row gap-2.5 items-center">
+            <div className="p-3.5 rounded-2xl bg-obsidian-panel border border-dashed border-luma-smokeline flex flex-col sm:flex-row gap-2.5 items-center">
               <input
                 type="text"
                 value={newAccName}
                 onChange={(e) => setNewAccName(e.target.value)}
                 placeholder="+ Tambah rekening lain (misal: BCA, Seabank)"
-                className="flex-1 bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3 py-2 text-xs focus:outline-none focus:border-amberGold"
+                className="flex-1 bg-obsidian-card border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl px-3 py-2 text-xs focus:outline-none focus:border-amberGold"
               />
               <div className="w-full sm:w-[150px]">
                 <CustomSelect
@@ -413,7 +413,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                     { value: "gajian", label: "Gajian" },
                     { value: "tabungan", label: "Tabungan" },
                     { value: "investasi", label: "Investasi" },
-                    { value: "darurat", label: "Dana Darurat" },
+                    { value: "darurat", label: "Dana darurat" },
                     { value: "ewallet", label: "E-Wallet" },
                   ]}
                   accent="amber"
@@ -430,8 +430,8 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
             </div>
 
             <div className="flex items-center justify-between text-xs text-zinc-400 px-1 pt-1">
-              <span>Total Saldo Modal Awal:</span>
-              <span className="font-semibold text-mintRise font-mono text-sm">{formatRp(totalInitialBalance)}</span>
+              <span>Total saldo Modal Awal:</span>
+              <span className="font-semibold text-mintRise font-sans text-sm">{formatRp(totalInitialBalance)}</span>
             </div>
           </div>
         )}
@@ -439,12 +439,12 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
         {/* STEP 2: BUDGET CYCLE */}
         {step === 2 && (
           <div className="space-y-4 animate-fadeIn">
-            <div className="bg-obsidian-card p-4 rounded-2xl border border-white/[0.08]">
+            <div className="bg-obsidian-card p-4 rounded-2xl border border-luma-smokeline">
               <h4 className="text-xs font-semibold text-white mb-1 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-cyanHub" />
                 Pilih Durasi Siklus Anggaran & Saku Harian
               </h4>
-              <p className="text-[11px] text-zinc-400">
+              <p className="text-xs text-zinc-400">
                 Pacing burn-rate dan Safe-to-Spend harian Anda akan dihitung secara otomatis berdasarkan ritme siklus ini.
               </p>
             </div>
@@ -476,11 +476,11 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                       className={`p-3 rounded-2xl border text-left transition cursor-pointer ${
                         isSel
                           ? "bg-cyanHub/15 border-cyanHub/50 text-cyanHub shadow-xs"
-                          : "bg-obsidian-card border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/[0.16]"
+                          : "bg-obsidian-card border-luma-smokeline text-zinc-400 hover:text-white hover:border-white/[0.16]"
                       }`}
                     >
                       <p className="text-xs font-semibold">{item.label}</p>
-                      <p className="text-[10px] text-zinc-400 mt-0.5 leading-snug">{item.desc}</p>
+                      <p className="text-xs text-zinc-400 mt-0.5 leading-snug">{item.desc}</p>
                     </button>
                   );
                 })}
@@ -493,7 +493,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                   <label className="block text-xs font-medium text-white">
                     Gajian Setiap Tanggal Berapa?
                   </label>
-                  <span className="text-xs font-mono text-cyanHub font-semibold px-2.5 py-0.5 rounded-full bg-cyanHub/10 border border-cyanHub/20">
+                  <span className="text-xs font-sans text-cyanHub font-semibold px-2.5 py-0.5 rounded-full bg-cyanHub/10 border border-cyanHub/20">
                     Tanggal {paycheckDay}
                   </span>
                 </div>
@@ -520,17 +520,17 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                       setPaycheckDay(d);
                       setStartDateStr(getMonthlyDateStart(d));
                     }}
-                    className="w-16 bg-obsidian-panel border border-white/[0.08] text-white rounded-2xl px-2.5 py-1.5 text-xs text-center font-mono focus:outline-none focus:border-cyanHub"
+                    className="w-16 bg-obsidian-panel border border-luma-smokeline text-white rounded-2xl px-2.5 py-1.5 text-xs text-center font-sans focus:outline-none focus:border-cyanHub"
                   />
                 </div>
-                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                <p className="text-xs text-zinc-400 leading-relaxed">
                   Siklus anggaran bulanan Anda akan otomatis berjalan dari setiap tanggal {paycheckDay} hingga H-1 tanggal {paycheckDay} bulan berikutnya.
                 </p>
               </div>
             )}
 
             {cycleType === "custom" && (
-              <div className="p-4 rounded-2xl bg-obsidian-card border border-white/[0.08] space-y-1.5 animate-fadeIn">
+              <div className="p-4 rounded-2xl bg-obsidian-card border border-luma-smokeline space-y-1.5 animate-fadeIn">
                 <label className="block text-xs font-medium text-zinc-300">
                   Jumlah Hari Per Siklus
                 </label>
@@ -540,7 +540,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                   max={90}
                   value={customDays}
                   onChange={(e) => setCustomDays(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub font-mono"
+                  className="w-full bg-obsidian-panel border border-luma-smokeline text-white rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub font-sans"
                 />
               </div>
             )}
@@ -559,7 +559,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                   }))}
                   accent="cyan"
                 />
-                <p className="text-[10px] text-zinc-400 mt-1">
+                <p className="text-xs text-zinc-400 mt-1">
                   Rekening ini yang dihitung burn-rate dan pengeluaran harian makanan/jajan.
                 </p>
               </div>
@@ -572,9 +572,9 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                   type="date"
                   value={startDateStr}
                   onChange={(e) => setStartDateStr(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub"
+                  className="w-full bg-obsidian-panel border border-luma-smokeline text-white rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub"
                 />
-                <p className="text-[10px] text-zinc-400 mt-1">
+                <p className="text-xs text-zinc-400 mt-1">
                   Tanggal mulai siklus anggaran Anda saat ini.
                 </p>
               </div>
@@ -585,12 +585,12 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
         {/* STEP 3: PAYCHECK DISTRIBUTION & GATE */}
         {step === 3 && (
           <div className="space-y-4 animate-fadeIn">
-            <div className="bg-obsidian-card p-4 rounded-2xl border border-white/[0.08]">
+            <div className="bg-obsidian-card p-4 rounded-2xl border border-luma-smokeline">
               <h4 className="text-xs font-semibold text-white mb-1 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-mintRise" />
                 Alur Distribusi Gajian & Gerbang Flip Bebas Admin
               </h4>
-              <p className="text-[11px] text-zinc-400">
+              <p className="text-xs text-zinc-400">
                 Atur rekening penampung gaji utama dan apakah ingin mengaktifkan jembatan perantara bebas biaya transfer.
               </p>
             </div>
@@ -635,11 +635,11 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                 {buckets.map((b, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-2xl bg-obsidian-card border border-white/[0.08] flex items-center justify-between text-xs"
+                    className="p-3 rounded-2xl bg-obsidian-card border border-luma-smokeline flex items-center justify-between text-xs"
                   >
                     <div className="min-w-0 pr-2">
                       <p className="font-semibold text-white truncate">{b.account}</p>
-                      <p className="text-[10px] text-zinc-400 truncate">{b.purpose}</p>
+                      <p className="text-xs text-zinc-400 truncate">{b.purpose}</p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <input
@@ -656,7 +656,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                             return c;
                           });
                         }}
-                        className="w-16 bg-obsidian-panel border border-white/[0.08] text-white rounded-xl px-2 py-1 text-xs text-right font-mono"
+                        className="w-16 bg-obsidian-panel border border-luma-smokeline text-white rounded-xl px-2 py-1 text-xs text-right font-sans"
                       />
                       <span className="text-zinc-400 text-xs">%</span>
                     </div>
@@ -674,34 +674,34 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
               <div className="w-12 h-12 rounded-2xl bg-mintRise/20 text-mintRise flex items-center justify-center mx-auto mb-2">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h4 className="text-sm font-bold text-mintRise">Konfigurasi Siap Diterapkan!</h4>
+              <h4 className="text-sm font-semibold text-mintRise">Konfigurasi Siap Diterapkan!</h4>
               <p className="text-xs text-zinc-300 max-w-sm mx-auto">
                 Profil finansial pribadi Anda akan diisolasi secara mandiri dalam database.
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] space-y-1">
-                <span className="text-[10px] text-zinc-400 font-medium">Siklus Anggaran</span>
+              <div className="p-3.5 rounded-2xl bg-obsidian-card border border-luma-smokeline space-y-1">
+                <span className="text-xs text-zinc-400 font-medium">Siklus Anggaran</span>
                 <p className="font-semibold text-white">
                   {getEffectiveCycleDays()} Hari ({getCycleTypeLabel()})
                 </p>
-                <p className="text-[10px] text-cyanHub">
+                <p className="text-xs text-cyanHub">
                   Mulai {startDateStr ? new Date(startDateStr).toLocaleDateString("id-ID", { day: "numeric", month: "short" }) : "Hari ini"}{getEstimatedEndDate() ? ` s.d. ${getEstimatedEndDate()}` : ""}
                 </p>
-                <p className="text-[10px] text-zinc-400">Saku: {pocketAccount}</p>
+                <p className="text-xs text-zinc-400">Saku: {pocketAccount}</p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] space-y-1">
-                <span className="text-[10px] text-zinc-400 font-medium">Rekening & Saldo Awal</span>
-                <p className="font-semibold text-mintRise font-mono">
+              <div className="p-3.5 rounded-2xl bg-obsidian-card border border-luma-smokeline space-y-1">
+                <span className="text-xs text-zinc-400 font-medium">Rekening & Saldo awal</span>
+                <p className="font-semibold text-mintRise font-sans">
                   {formatRp(totalInitialBalance)}
                 </p>
-                <p className="text-[10px] text-zinc-400">{accounts.length} Akun Terdaftar</p>
+                <p className="text-xs text-zinc-400">{accounts.length} Akun Terdaftar</p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] space-y-1 col-span-2">
-                <span className="text-[10px] text-zinc-400 font-medium">Alur Gajian & Gate</span>
+              <div className="p-3.5 rounded-2xl bg-obsidian-card border border-luma-smokeline space-y-1 col-span-2">
+                <span className="text-xs text-zinc-400 font-medium">Alur Gajian & Gate</span>
                 <p className="font-medium text-white">
                   Sumber: <span className="text-amberGold">{sourceAccount}</span> • Gerbang:{" "}
                   <span className="text-mintRise">{useGate ? "Flip (Hemat Admin)" : "Direct"}</span>
@@ -712,12 +712,12 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
         )}
 
         {/* Navigation Buttons */}
-        <div className="flex items-center justify-between pt-3 border-t border-white/[0.08]">
+        <div className="flex items-center justify-between pt-3 border-t border-luma-smokeline">
           {step > 1 ? (
             <button
               type="button"
               onClick={() => { setError(null); setStep((prev) => (Math.max(1, prev - 1) as 1 | 2 | 3 | 4)); }}
-              className="px-4 py-2.5 rounded-2xl bg-obsidian-card hover:bg-white/[0.06] border border-white/[0.08] text-zinc-300 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+              className="px-4 py-2.5 rounded-2xl bg-obsidian-card hover:bg-white/[0.06] border border-luma-smokeline text-zinc-300 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Kembali
@@ -730,7 +730,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
             <button
               type="button"
               onClick={() => { setError(null); setStep((prev) => (Math.min(4, prev + 1) as 1 | 2 | 3 | 4)); }}
-              className="px-5 py-2.5 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+              className="px-5 py-2.5 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
             >
               Lanjutkan
               <ArrowRight className="w-3.5 h-3.5" />
@@ -740,7 +740,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
               type="button"
               disabled={loading}
               onClick={handleFinishOnboarding}
-              className="px-6 py-2.5 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 text-xs font-bold flex items-center gap-2 shadow-sm transition cursor-pointer disabled:opacity-50"
+              className="px-6 py-2.5 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 text-xs font-semibold flex items-center gap-2 shadow-sm transition cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center gap-2">

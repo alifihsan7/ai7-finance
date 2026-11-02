@@ -22,11 +22,13 @@ export function CustomModal({
   maxWidth = "md",
 }: CustomModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        onCloseRef.current();
       }
       if (e.key === "Tab" && isOpen && dialogRef.current) {
         const controls = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
@@ -48,7 +50,7 @@ export function CustomModal({
       window.removeEventListener("keydown", handleKeyDown);
       if (isOpen) previousFocus?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -84,7 +86,7 @@ export function CustomModal({
         </button>
 
         {/* Modal Header (Fixed at top of modal) */}
-        <div className="p-5 sm:p-6 pb-4 border-b border-white/[0.08] shrink-0">
+        <div className="p-5 sm:p-6 pb-4 border-b border-luma-smokeline shrink-0">
           <div className="flex items-start gap-3.5 pr-12 sm:pr-14">
             {icon && (
               <div
@@ -94,7 +96,7 @@ export function CustomModal({
               </div>
             )}
             <div>
-              <h3 className="font-medium text-base sm:text-lg text-luma-ivory leading-tight tracking-tight">
+              <h3 className="ai7-type-card text-luma-ivory tracking-tight">
                 {title}
               </h3>
               {subtitle && (

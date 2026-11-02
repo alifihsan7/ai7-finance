@@ -87,7 +87,7 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
         <div>
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-luma-ember" aria-hidden="true" />
-            <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
+            <h2 className="ai7-type-section text-luma-ivory tracking-tight">
               Laju Belanja Siklus ({cycleDays} Hari)
             </h2>
           </div>
@@ -96,7 +96,7 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-mono">
+        <div className="flex items-center gap-3 text-xs font-sans">
           <span className="flex items-center gap-1.5 text-luma-smoke">
             <span className="w-2.5 h-2.5 rounded-full bg-luma-ember inline-block" aria-hidden="true"></span>
             Kumulatif Riil
@@ -109,7 +109,7 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
       </div>
 
       <div className="overflow-visible relative pb-2">
-        <div className={`grid ${getGridColsClass(chartData.length)} gap-1.5 sm:gap-2 pt-4 border-t border-white/[0.08] w-full`}>
+        <div className={`grid ${getGridColsClass(chartData.length)} gap-1.5 sm:gap-2 pt-4 border-t border-luma-smokeline w-full`}>
           {chartData.map((b) => {
             const isToday = b.day === dayOfCycle;
             const isPastOrToday = b.day <= dayOfCycle;
@@ -125,21 +125,21 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
                     : "hover:bg-white/[0.04] border border-transparent"
                 }`}
               >
-                <div className={`opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${getTooltipAlignClass(b.day, chartData.length)} w-48 sm:w-52 p-3 bg-[#2B2825]/95 backdrop-blur-md border border-white/[0.12] rounded-2xl shadow-2xl text-[11px] font-mono space-y-2 transition-opacity`}>
-                  <div className="flex items-center justify-between border-b border-white/[0.08] pb-1.5">
-                    <span className="font-bold text-luma-ivory">Hari ke-{b.day}</span>
-                    <span className="text-[10px] text-luma-smoke font-medium">({formatTooltipDate(b.date)})</span>
+                <div className={`opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${getTooltipAlignClass(b.day, chartData.length)} w-48 sm:w-52 p-3 bg-[#2B2825]/95 backdrop-blur-md border border-luma-smokeline rounded-2xl shadow-2xl text-xs font-sans space-y-2 transition-opacity`}>
+                  <div className="flex items-center justify-between border-b border-luma-smokeline pb-1.5">
+                    <span className="font-semibold text-luma-ivory">Hari ke-{b.day}</span>
+                    <span className="text-xs text-luma-smoke font-medium">({formatTooltipDate(b.date)})</span>
                   </div>
                   <div className="space-y-1.5 tabular-nums">
                     <div className="flex items-center justify-between">
                       <span className="text-luma-smoke">Hari Ini:</span>
-                      <span className={`font-semibold ${b.spent > idealDailyRate * 1.25 ? "text-luma-coral font-bold" : "text-luma-ivory"}`}>
+                      <span className={`font-semibold ${b.spent > idealDailyRate * 1.25 ? "text-luma-coral font-semibold" : "text-luma-ivory"}`}>
                         {formatRupiah(b.spent)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-luma-smoke">Kumulatif:</span>
-                      <span className={`font-bold ${b.cumulative_spent > b.ideal_pace ? "text-luma-gold" : "text-luma-sage"}`}>
+                      <span className={`font-semibold ${b.cumulative_spent > b.ideal_pace ? "text-luma-gold" : "text-luma-sage"}`}>
                         {formatRupiah(b.cumulative_spent)}
                       </span>
                     </div>
@@ -152,7 +152,7 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
                   </div>
                 </div>
 
-                <div className="w-full h-28 sm:h-32 bg-black/25 rounded-xl flex items-end relative overflow-hidden border border-white/[0.06]">
+                <div className="w-full h-28 sm:h-32 bg-black/25 rounded-xl flex items-end relative overflow-hidden border border-luma-smokeline">
                   <div
                     style={{ bottom: `${idealHeight}%` }}
                     className="absolute left-0 right-0 border-b border-dashed border-luma-smoke/60 z-10"
@@ -171,13 +171,13 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
 
                 <div className="mt-1.5 text-center">
                   <span
-                    className={`text-[10px] sm:text-[11px] font-mono font-medium block tabular-nums ${
-                      isToday ? "text-luma-ember font-bold" : "text-luma-smoke"
+                    className={`text-xs sm:text-xs font-sans font-medium block tabular-nums ${
+                      isToday ? "text-luma-ember font-semibold" : "text-luma-smoke"
                     }`}
                   >
                     D{b.day}
                   </span>
-                  <span className="text-[8px] sm:text-[9px] text-luma-smoke block font-mono">
+                  <span className="text-[8px] sm:text-xs text-luma-smoke block font-sans">
                     {b.date.slice(8)}
                   </span>
                 </div>
@@ -187,7 +187,7 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/[0.08] text-xs font-mono text-luma-smoke tabular-nums">
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-luma-smokeline text-xs font-sans text-luma-smoke tabular-nums">
         <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
           <span>Kecepatan Target:</span>
           <strong className="text-luma-ivory">{formatRupiah(idealDailyRate)} / hari</strong>
@@ -204,8 +204,8 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
             className={
               (summary.safe_to_spend?.pocket_spent || 0) >
               (summary.safe_to_spend?.ideal_pace_today || 0)
-                ? "text-luma-coral font-bold"
-                : "text-luma-sage font-bold"
+                ? "text-luma-coral font-semibold"
+                : "text-luma-sage font-semibold"
             }
           >
             {formatRupiah(summary.safe_to_spend?.pocket_spent || 0)}

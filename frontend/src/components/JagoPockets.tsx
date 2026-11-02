@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bot,
   CreditCard,
   Dumbbell,
   Landmark,
   Pencil,
+  Plus,
   RefreshCw,
   Smartphone,
   Wallet,
@@ -18,12 +19,18 @@ import {
 } from "@/lib/api";
 import { EditJagoPocketsModal } from "./EditJagoPocketsModal";
 import { getPocketStatus } from "@/lib/pocketStatus";
+import { AddPocketModal } from "./AddPocketModal";
+import { CustomSelect } from "./ui/CustomSelect";
+import type { AccountItem } from "./AccountGrid";
 
 interface JagoPocketsProps {
+  accountId?: number;
+  accountName?: string;
   formatRupiah: (val: number) => string;
   refreshSignal?: number;
   onToast?: (msg: string) => void;
   onDataLoaded?: (data: JagoPocketsSummaryResponse) => void;
+  showActions?: boolean;
 }
 
 const POCKET_ORDER = ["utama", "kuota", "visa", "claude", "gym"] as const;
@@ -67,7 +74,7 @@ function statusFor(tone: ReturnType<typeof getPocketStatus>["tone"]): {
   }
   if (tone === "neutral") return {
     bar: "bg-luma-smoke",
-    badge: "bg-white/[0.06] border-white/[0.12] text-luma-smoke",
+    badge: "bg-white/[0.06] border-luma-smokeline text-luma-smoke",
   };
   return {
     bar: "bg-luma-sage",
@@ -75,41 +82,50 @@ function statusFor(tone: ReturnType<typeof getPocketStatus>["tone"]): {
   };
 }
 
-export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLoaded }: JagoPocketsProps) {
+export function JagoPockets({ accountId, accountName, formatRupiah, refreshSignal = 0, onToast, onDataLoaded, showActions = true }: JagoPocketsProps) {
+  const onDataLoadedRef = useRef(onDataLoaded);
+  useEffect(() => { onDataLoadedRef.current = onDataLoaded; }, [onDataLoaded]);
   const [data, setData] = useState<JagoPocketsSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const requestVersion = useRef(0);
 
   const fetchPockets = useCallback(async () => {
+    const version = ++requestVersion.current;
     setLoading(true);
     setError(null);
+    setData(null);
     try {
-      const res = await getJagoPockets();
+      const res = await getJagoPockets(accountId);
+      if (version !== requestVersion.current) return;
       setData(res);
-      onDataLoaded?.(res);
+      onDataLoadedRef.current?.(res);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Gagal memuat sub-kantong operasional";
+      if (version !== requestVersion.current) return;
+      const msg = err instanceof Error ? err.message : "Gagal memuat kantong rekening";
       setError(msg);
     } finally {
-      setLoading(false);
+      if (version === requestVersion.current) setLoading(false);
     }
-  }, [onDataLoaded]);
+  }, [accountId]);
 
   useEffect(() => {
     fetchPockets();
+    return () => { requestVersion.current += 1; };
   }, [fetchPockets, refreshSignal]);
 
   const handleSync = async () => {
     if (syncing) return;
+    const version = requestVersion.current;
     setSyncing(true);
     try {
-      const res = await syncJagoPocketCommitments();
-      setData(res);
-      onDataLoaded?.(res);
-      setError(null);
-      onToast?.("Komitmen sub-kantong tersinkron dengan Tagihan");
+      await syncJagoPocketCommitments();
+      if (version !== requestVersion.current) return;
+      await fetchPockets();
+      onToast?.("Komitmen kantong tersinkron dengan tagihan");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Gagal menyelaraskan komitmen";
       onToast?.(msg);
@@ -120,29 +136,33 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
 
   const handleEditSuccess = (updated: JagoPocketsSummaryResponse) => {
     setData(updated);
-    onDataLoaded?.(updated);
+    onDataLoadedRef.current?.(updated);
     setError(null);
-    onToast?.("Plafon sub-kantong operasional berhasil diperbarui");
+    onToast?.("Plafon kantong berhasil diperbarui");
   };
+
+  const pockets = useMemo(() => data ? sortPockets(data.pockets ?? data.items ?? []) : [], [data]);
+  const parentName = accountName || data?.account_name || pockets[0]?.account_name || undefined;
+  const title = parentName ? `Kantong ${parentName}` : "Kantong rekening";
 
   if (loading) {
     return (
-      <section aria-label="Sub-Kantong Operasional" className="luma-glass p-6 sm:p-7 space-y-5">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <section aria-label={title} className="luma-glass p-6 sm:p-7 space-y-5" aria-busy="true">
+        <div className="flex flex-col items-start gap-4">
           <div>
             <Skeleton className="w-56 h-5 rounded-full" />
             <Skeleton className="w-80 h-3.5 rounded-full mt-1.5" />
           </div>
-          <div className="flex items-center gap-2">
+          {showActions && <div className="flex items-center gap-2">
             <Skeleton className="w-32 h-11 rounded-2xl" />
             <Skeleton className="w-28 h-11 rounded-2xl" />
-          </div>
+          </div>}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3.5 sm:gap-4">
+        <div className="ai7-pocket-grid grid gap-3.5 sm:gap-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
-              className="rounded-2xl bg-white/[0.04] border border-white/[0.08] p-4 sm:p-5 space-y-4"
+              className="rounded-2xl bg-white/[0.04] border border-luma-smokeline p-4 sm:p-5 space-y-4"
             >
               <div className="flex justify-between items-center gap-2">
                 <Skeleton className="w-24 h-4 rounded-full" />
@@ -153,7 +173,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
                 <Skeleton className="w-16 h-3 rounded-full mt-1.5" />
               </div>
               <Skeleton className="w-full h-1.5 rounded-full" />
-              <div className="flex justify-between items-center pt-2 border-t border-white/[0.08]">
+              <div className="flex justify-between items-center pt-2 border-t border-luma-smokeline">
                 <Skeleton className="w-16 h-3 rounded-full" />
                 <Skeleton className="w-16 h-3 rounded-full" />
               </div>
@@ -164,48 +184,50 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
     );
   }
 
-  const pockets = data ? sortPockets(data.pockets ?? data.items ?? []) : [];
   const totalTarget = data?.total_target_amount ?? 0;
   const totalSpent = data?.total_spent_amount ?? 0;
   const totalRemaining = data?.total_remaining_amount ?? 0;
   const totalBalance = data?.total_jago_balance ?? 0;
 
   return (
-    <section aria-label="Sub-Kantong Operasional" className="luma-glass p-6 sm:p-7 space-y-5">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <section aria-label={title} className="luma-glass p-6 sm:p-7 space-y-5">
+      <div className="flex flex-col items-start gap-4">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight flex items-center gap-2">
+          <h2 className="ai7-type-section text-luma-ivory tracking-tight flex items-center gap-2">
             <Landmark className="w-5 h-5 text-luma-ember shrink-0" aria-hidden="true" />
             <span>
-              Sub-Kantong Operasional{" "}
-              {totalTarget > 0 ? `(Plafon ${formatRupiah(totalTarget)})` : "(Belum Ada Plafon)"}
+              {title}
             </span>
           </h2>
           <p className="text-xs sm:text-sm text-luma-smoke mt-0.5 tabular-nums">
-            Sub-kantong operasional dengan alokasi otomatis — saldo {formatRupiah(totalBalance)}, terpakai {formatRupiah(totalSpent)}, sisa {formatRupiah(totalRemaining)}
+            Saldo rekening {formatRupiah(totalBalance)} · Plafon kantong {formatRupiah(totalTarget)} · Terpakai {formatRupiah(totalSpent)} · Sisa alokasi {formatRupiah(totalRemaining)}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
+        {showActions && <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {(accountId === undefined || pockets.some(pocket => ["kuota", "claude", "gym"].includes(pocket.slug))) && <button
             type="button"
             onClick={handleSync}
             disabled={syncing}
             title="Selaraskan target kantong dengan Tagihan aktif"
-            className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-semibold bg-white/[0.06] text-luma-ivory border border-white/[0.12] hover:bg-white/[0.1] hover:border-white/[0.2] active:scale-95 transition inline-flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-semibold bg-white/[0.06] text-luma-ivory border border-luma-smokeline hover:bg-white/[0.1] hover:border-white/[0.2] active:scale-95 transition inline-flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${syncing ? "animate-spin" : ""}`} aria-hidden="true" />
-            <span>{syncing ? "Menyelaraskan..." : "Sync Komitmen"}</span>
-          </button>
+            <span>{syncing ? "Menyelaraskan..." : "Sync komitmen"}</span>
+          </button>}
           <button
             type="button"
             onClick={() => setIsEditOpen(true)}
-            title="Ubah plafon target tiap sub-kantong operasional"
-            className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-bold bg-luma-ivory text-luma-charcoal hover:brightness-95 active:scale-95 transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
+            disabled={!!error || pockets.length === 0}
+            title="Ubah plafon kantong rekening ini"
+            className="luma-touch min-w-[44px] px-4 py-2.5 text-xs font-medium bg-white/[0.06] text-luma-ivory border border-luma-smokeline hover:bg-white/[0.1] transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Pencil className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            <span>Edit Target Sub-Kantong</span>
+            <span>Edit plafon</span>
           </button>
-        </div>
+          {accountId !== undefined && <button type="button" onClick={() => setIsAddOpen(true)} disabled={!!error} className="luma-touch px-4 py-2.5 bg-luma-ivory text-luma-charcoal inline-flex items-center gap-2">
+            <Plus className="w-4 h-4" aria-hidden="true" />Tambah kantong
+          </button>}
+        </div>}
       </div>
 
       {error && (
@@ -214,7 +236,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
           <button
             type="button"
             onClick={fetchPockets}
-            className="luma-touch min-w-[44px] px-4 py-2 rounded-full text-xs font-bold bg-luma-coral/15 border border-luma-coral/40 hover:bg-luma-coral/25 active:scale-95 transition shrink-0 cursor-pointer"
+            className="luma-touch min-w-[44px] px-4 py-2 rounded-full text-xs font-semibold bg-luma-coral/15 border border-luma-coral/40 hover:bg-luma-coral/25 active:scale-95 transition shrink-0 cursor-pointer"
           >
             Coba Lagi
           </button>
@@ -222,11 +244,11 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
       )}
 
       {pockets.length === 0 && !error ? (
-        <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-center text-sm text-luma-smoke">
-          Belum ada sub-kantong operasional aktif. Tekan Sync Komitmen untuk menginisialisasi sub-kantong bawaan.
+        <div className="p-6 rounded-2xl bg-white/[0.04] border border-luma-smokeline text-center text-sm text-luma-smoke">
+          Belum ada kantong aktif. Tambahkan kantong untuk membagi alokasi rekening ini.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3.5 sm:gap-4">
+        <div className="ai7-pocket-grid grid gap-3.5 sm:gap-4">
           {pockets.map((pocket) => {
             const target = pocket.target_amount ?? 0;
             const spent = pocket.spent_amount ?? 0;
@@ -236,14 +258,14 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
             const status = statusFor(state.tone);
             const meta = POCKET_META[pocket.slug] ?? {
               icon: Wallet,
-              accent: "text-luma-smoke bg-white/[0.06] border-white/[0.1]",
+              accent: "text-luma-smoke bg-white/[0.06] border-luma-smokeline",
             };
             const Icon = meta.icon;
 
             return (
               <div
                 key={pocket.slug}
-                className="rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.16] p-4 sm:p-5 space-y-3.5 flex flex-col justify-between transition-all duration-200"
+                className="rounded-2xl bg-white/[0.04] border border-luma-smokeline hover:border-white/[0.16] p-4 sm:p-5 space-y-3.5 flex flex-col justify-between transition-all duration-200"
               >
                 <div className="space-y-3">
                   <div className="flex justify-between items-center gap-2">
@@ -256,14 +278,14 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
                       <span className="text-luma-ivory font-semibold text-sm block break-words leading-snug">{pocket.name}</span>
                     </div>
                     <span
-                      className={`text-[11px] px-2 py-1 rounded-lg border max-w-full ${status.badge}`}
+                      className={`text-xs px-2 py-1 rounded-badge border max-w-full ${status.badge}`}
                     >
                       {state.label}
                     </span>
                   </div>
 
                   <div>
-                    <div className="text-xl sm:text-2xl font-extrabold font-mono text-luma-ivory tracking-tight tabular-nums break-words">
+                    <div className="ai7-type-metric text-luma-ivory tracking-tight tabular-nums break-words">
                       {formatRupiah(remaining)}
                     </div>
                     <div className="text-xs text-luma-smoke mt-0.5">Sisa saldo kantong</div>
@@ -284,18 +306,18 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
                   </div> : <p className="text-xs text-luma-smoke">Plafon belum diatur. Persentase pemakaian belum tersedia.</p>}
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-luma-smoke font-mono pt-3 border-t border-white/[0.08] gap-2 tabular-nums">
-                  <div className="flex items-center gap-1 min-w-0">
-                    <span className="text-[11px]">Plafon:</span>
-                    <span className="font-semibold text-luma-ivory text-[11px] whitespace-nowrap">
+                <div className="grid text-xs text-luma-smoke font-sans pt-3 border-t border-luma-smokeline gap-2 tabular-nums">
+                  <div className="flex flex-wrap items-center justify-between gap-1 min-w-0">
+                    <span className="text-xs">Plafon:</span>
+                    <span className="font-semibold text-luma-ivory text-xs break-all">
                       {formatRupiah(target)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 min-w-0">
-                    <span className="text-[11px]">Pakai:</span>
+                  <div className="flex flex-wrap items-center justify-between gap-1 min-w-0">
+                    <span className="text-xs">Pakai:</span>
                     <span
-                      className={`font-semibold text-[11px] whitespace-nowrap ${
-                        state.tone === "danger" ? "text-luma-coral font-bold" : "text-luma-ivory"
+                      className={`font-semibold text-xs break-all ${
+                        state.tone === "danger" ? "text-luma-coral font-semibold" : "text-luma-ivory"
                       }`}
                     >
                       {formatRupiah(spent)}
@@ -309,15 +331,34 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
       )}
 
       <EditJagoPocketsModal
+        accountId={accountId}
+        accountName={parentName}
         isOpen={isEditOpen}
         pockets={pockets}
         formatRupiah={formatRupiah}
         onClose={() => setIsEditOpen(false)}
         onSuccess={handleEditSuccess}
       />
+      {isAddOpen && accountId !== undefined && <AddPocketModal accountId={accountId} accountName={parentName || "Rekening"} onClose={() => setIsAddOpen(false)} onCreated={() => {
+        void fetchPockets();
+        onToast?.("Kantong berhasil ditambahkan");
+      }} />}
     </section>
   );
 }
 
 export const OperationalPockets = JagoPockets;
+export function AccountPockets({ accounts, ...props }: Omit<JagoPocketsProps, "accountId" | "accountName"> & { accounts: AccountItem[] }) {
+  const [selectedId, setSelectedId] = useState<number>();
+  const available = accounts.filter(account => typeof account.id === "number");
+  const selected = available.find(account => account.id === selectedId) || available[0];
+  if (!selected) return <p className="luma-data-state text-luma-smoke">Tambahkan rekening terlebih dahulu sebelum membuat kantong.</p>;
+  return <div className="space-y-4">
+    <fieldset className="max-w-sm">
+      <legend className="text-xs text-luma-smoke font-medium mb-2">Rekening induk</legend>
+      <CustomSelect value={String(selected.id)} onChange={value => setSelectedId(Number(value))} options={available.map(account => ({ value: String(account.id), label: account.name }))} />
+    </fieldset>
+    <JagoPockets key={selected.id} {...props} accountId={selected.id} accountName={selected.name} />
+  </div>;
+}
 export default JagoPockets;

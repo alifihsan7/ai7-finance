@@ -43,43 +43,43 @@ export function getAccountRoleBadge(type?: string): { label: string; className: 
   switch (t) {
     case "gajian":
       return {
-        label: "GAJIAN",
+        label: "Gajian",
         className: "bg-mintRise/15 text-mintRise border-mintRise/30",
       };
     case "operasional":
       return {
-        label: "OPERASIONAL",
+        label: "Operasional",
         className: "bg-amberGold/15 text-amberGold border-amberGold/30",
       };
     case "tagihan":
       return {
-        label: "TAGIHAN",
+        label: "Tagihan",
         className: "bg-coralFall/15 text-coralFall border-coralFall/30",
       };
     case "darurat":
       return {
-        label: "DANA DARURAT",
+        label: "Dana darurat",
         className: "bg-cyanHub/15 text-cyanHub border-cyanHub/30",
       };
     case "tabungan":
       return {
-        label: "TABUNGAN",
+        label: "Tabungan",
         className: "bg-purpleLock/15 text-purpleLock border-purpleLock/30",
       };
     case "investasi":
       return {
-        label: "INVESTASI",
+        label: "Investasi",
         className: "bg-purpleLock/15 text-purpleLock border-purpleLock/30",
       };
     case "ewallet":
       return {
-        label: "E-WALLET",
+        label: "E-wallet",
         className: "bg-cyanHub/15 text-cyanHub border-cyanHub/30",
       };
     default:
       return {
-        label: (type || "AKUN").toUpperCase(),
-        className: "bg-white/[0.06] text-luma-smoke border-white/[0.08]",
+        label: type || "Akun",
+        className: "bg-white/[0.06] text-luma-smoke border-luma-smokeline",
       };
   }
 }
@@ -264,7 +264,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 <Skeleton className="w-20 h-3 rounded-full mt-1.5" />
               </div>
             </div>
-            <div className="pt-3 border-t border-white/[0.08]">
+            <div className="pt-3 border-t border-luma-smokeline">
               <Skeleton className="w-full h-1.5 rounded-full" />
             </div>
           </div>
@@ -288,7 +288,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
             className="ai7-account-card luma-glass p-5 flex flex-col justify-between"
           >
             <div className="min-w-0">
-              <div className="flex justify-between items-center gap-2">
+              <div className="ai7-account-header grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <span
                     aria-hidden="true"
@@ -297,22 +297,12 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                     <CreditCard className="w-4 h-4" />
                     <span className={`absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full ${ACCOUNT_COLOR_DOTS[acc.colorKey] || "bg-luma-ember"}`} />
                   </span>
-                  <span className="text-luma-ivory font-bold text-sm sm:text-base break-words leading-snug flex-1">
+                  <span className="text-luma-ivory font-semibold text-sm sm:text-base min-w-0 [overflow-wrap:anywhere] leading-snug flex-1">
                     {acc.name}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                  {acc.isPocket && (
-                    <span className="text-[10px] sm:text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.05] text-luma-smoke border border-white/[0.08] whitespace-nowrap">
-                      {acc.cycleBadge}
-                    </span>
-                  )}
-                  <span
-                    className={`text-[10px] sm:text-[11px] font-mono font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap ${acc.roleBadge.className}`}
-                  >
-                    {acc.roleBadge.label}
-                  </span>
+                <div className="flex items-center gap-1 shrink-0 justify-end">
                   {acc.id && onEditAccount && (
                     <button
                       type="button"
@@ -354,25 +344,36 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 </div>
               </div>
 
+              <div className="ai7-account-badges flex flex-wrap items-center gap-2 mt-3">
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-badge border ${acc.roleBadge.className}`}>
+                  {acc.roleBadge.label}
+                </span>
+                {acc.isPocket && (
+                  <span className="text-xs font-medium px-2 py-1 rounded-badge bg-white/[0.05] text-luma-smoke border border-luma-smokeline">
+                    {acc.cycleBadge}
+                  </span>
+                )}
+              </div>
+
               {/* Tag / Deskripsi — full wrap, never clipped */}
               <div className="text-xs text-luma-smoke mt-2 w-full break-words leading-relaxed">
                 {acc.tag}
               </div>
 
               <div className="mt-4">
-                <div className="text-[11px] text-luma-smoke font-semibold uppercase tracking-[0.1em]">
-                  Saldo Rekening
+                <div className="text-xs text-luma-smoke font-semibold ">
+                  Saldo rekening
                 </div>
-                <div className="text-xl sm:text-2xl font-extrabold font-mono text-luma-ivory mt-1 tracking-tight break-words tabular-nums">
+                <div className="ai7-type-metric text-luma-ivory mt-1 tracking-tight break-words tabular-nums">
                   {formatRupiah(acc.balance)}
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-white/[0.08]">
+            <div className="mt-4 pt-3 border-t border-luma-smokeline">
               {isInvest ? (
                 <div className="space-y-1.5">
-                  <div className="flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5 text-[11px] text-luma-sage font-mono">
+                  <div className="flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5 text-xs text-luma-sage font-sans">
                     <span className="whitespace-nowrap">Target Portofolio</span>
                     <span className="whitespace-nowrap font-semibold tabular-nums">+{formatRupiah(acc.allocated)}/siklus</span>
                   </div>
@@ -382,7 +383,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 </div>
               ) : hasPlafon ? (
                 <div className="space-y-1.5">
-                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[11px] font-mono">
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-xs font-sans">
                     <span className="text-luma-smoke whitespace-nowrap">
                       Terpakai{" "}
                       <strong
@@ -421,9 +422,11 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between text-xs text-luma-smoke font-mono py-1">
+                <div className="flex items-center justify-between text-xs text-luma-smoke font-sans py-1">
                   <span>Status</span>
-                  <span className="text-luma-sage shrink-0 whitespace-nowrap font-semibold">Aman · Aktif</span>
+                  <span className={`shrink-0 font-semibold ${acc.balance < 0 ? "text-luma-coral" : "text-luma-smoke"}`}>
+                    {acc.balance < 0 ? "Saldo negatif" : acc.balance === 0 ? "Saldo kosong" : "Aktif"}
+                  </span>
                 </div>
               )}
             </div>
@@ -438,7 +441,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-luma-coral">
                 <AlertTriangle className="w-5 h-5" />
-                <h3 className="font-semibold text-sm text-luma-ivory">Hapus Rekening?</h3>
+                <h3 className="ai7-type-card text-luma-ivory">Hapus rekening?</h3>
               </div>
               <button
                 type="button"
@@ -451,7 +454,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
             </div>
 
             <p className="text-xs text-luma-smoke leading-relaxed">
-              Apakah Anda yakin ingin menghapus rekening <strong className="text-luma-gold font-mono">{confirmDelete.name}</strong>?
+              Apakah Anda yakin ingin menghapus rekening <strong className="text-luma-gold font-sans">{confirmDelete.name}</strong>?
               Seluruh riwayat transaksi yang tercatat pada rekening ini akan ikut dihapus. Minimal Anda harus menyisakan 1 rekening aktif.
             </p>
 
@@ -466,7 +469,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 type="button"
                 disabled={isDeleting}
                 onClick={() => { setConfirmDelete(null); setDeleteError(null); }}
-                className="luma-touch px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-luma-smoke hover:text-luma-ivory text-xs font-semibold border border-white/[0.1] transition"
+                className="luma-touch px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-luma-smoke hover:text-luma-ivory text-xs font-semibold border border-luma-smokeline transition"
               >
                 Batal
               </button>
@@ -474,9 +477,9 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 type="button"
                 disabled={isDeleting}
                 onClick={handleDeleteAccount}
-                className="luma-touch px-4 py-2 rounded-full bg-luma-coral hover:brightness-110 text-luma-charcoal text-xs font-bold transition inline-flex items-center gap-1.5 disabled:opacity-50"
+                className="luma-touch px-4 py-2 rounded-full bg-luma-coral hover:brightness-110 text-luma-charcoal text-xs font-semibold transition inline-flex items-center gap-1.5 disabled:opacity-50"
               >
-                {isDeleting ? "Menghapus..." : "Ya, Hapus Rekening"}
+                {isDeleting ? "Menghapus..." : "Ya, hapus rekening"}
               </button>
             </div>
           </div>

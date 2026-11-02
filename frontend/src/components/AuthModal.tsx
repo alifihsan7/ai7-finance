@@ -241,13 +241,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
     >
       <div className="space-y-4">
         {/* Mode Switcher Tabs */}
-        <div className="flex items-center bg-obsidian-panel p-1 rounded-2xl border border-white/[0.08]">
+        <div className="flex items-center bg-obsidian-panel p-1 rounded-2xl border border-luma-smokeline">
           <button
             type="button"
             onClick={() => { setMode("login"); setError(null); }}
             className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-xl transition cursor-pointer ${
               mode === "login"
-                ? "bg-obsidian-card text-amberGold border border-white/[0.08] shadow-xs"
+                ? "bg-obsidian-card text-amberGold border border-luma-smokeline shadow-xs"
                 : "text-zinc-400 hover:text-white border border-transparent"
             }`}
           >
@@ -259,7 +259,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             onClick={() => { setMode("register"); setError(null); }}
             className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-xl transition cursor-pointer ${
               mode === "register"
-                ? "bg-obsidian-card text-amberGold border border-white/[0.08] shadow-xs"
+                ? "bg-obsidian-card text-amberGold border border-luma-smokeline shadow-xs"
                 : "text-zinc-400 hover:text-white border border-transparent"
             }`}
           >
@@ -287,7 +287,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
               <button
                 type="button"
                 onClick={() => setGoogleHelpOpen(!googleHelpOpen)}
-                className="w-full py-2.5 px-4 rounded-2xl bg-obsidian-card hover:bg-white/[0.04] border border-white/[0.08] text-zinc-200 text-xs font-medium flex items-center justify-between transition group cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-2xl bg-obsidian-card hover:bg-white/[0.04] border border-luma-smokeline text-zinc-200 text-xs font-medium flex items-center justify-between transition group cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -310,7 +310,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   </svg>
                   <span>Lanjutkan dengan Google</span>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amberGold/10 border border-amberGold/25 text-amberGold font-mono">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-amberGold/10 border border-amberGold/25 text-amberGold font-sans">
                   Setup OAuth
                 </span>
               </button>
@@ -321,11 +321,11 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                     <Info className="w-3.5 h-3.5" />
                     <span>Langkah Menghubungkan Google OAuth:</span>
                   </div>
-                  <ol className="list-decimal list-inside space-y-1 text-[11px] text-zinc-400 leading-relaxed">
+                  <ol className="list-decimal list-inside space-y-1 text-xs text-zinc-400 leading-relaxed">
                     <li>Buka <b>Google Cloud Console</b> &rarr; APIs & Services &rarr; Credentials.</li>
                     <li>Buat <b>OAuth Client ID</b> (Type: <i>Web application</i>).</li>
                     <li>Tambahkan Authorized Javascript Origins:
-                      <code className="block mt-0.5 p-1 bg-obsidian-card rounded-lg text-mintRise font-mono text-[10px]">
+                      <code className="block mt-0.5 p-1 bg-obsidian-card rounded-lg text-mintRise font-sans text-xs">
                         {typeof window !== "undefined" ? window.location.origin : "http://localhost:8080"}
                       </code>
                     </li>
@@ -338,7 +338,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
           <div className="flex items-center gap-3 pt-1">
             <div className="h-px bg-white/[0.08] flex-1" />
-            <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">
+            <span className="text-xs text-zinc-400 font-semibold">
               atau dengan username & password
             </span>
             <div className="h-px bg-white/[0.08] flex-1" />
@@ -368,7 +368,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   value={loginId}
                   onChange={(e) => setLoginId(e.target.value)}
                   placeholder="username atau email@domain.com"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -386,7 +386,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -396,7 +396,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 px-4 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 font-semibold text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -427,7 +427,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   value={regFullName}
                   onChange={(e) => setRegFullName(e.target.value)}
                   placeholder="Nama Lengkap Anda"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -445,7 +445,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   value={regUsername}
                   onChange={(e) => setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                   placeholder="contoh: user_baru"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -461,7 +461,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 value={regEmail}
                 onChange={(e) => setRegEmail(e.target.value)}
                 placeholder="nama@email.com"
-                className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                className="w-full bg-obsidian-panel border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
               />
             </div>
 
@@ -476,7 +476,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="Min 6 karakter"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -490,7 +490,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   value={regConfirmPassword}
                   onChange={(e) => setRegConfirmPassword(e.target.value)}
                   placeholder="Ulangi password"
-                  className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold transition"
                   required
                 />
               </div>
@@ -500,7 +500,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 px-4 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 font-semibold text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

@@ -120,11 +120,11 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
   return (
     <div className="space-y-6 sm:space-y-8 animate-fadeIn">
       {/* 1. TOP METRICS KPI CARDS (Financial Health Matrix) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="ai7-metric-grid grid gap-4">
         {/* Card 1: Total Pemasukan */}
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-400 font-medium">Total Pemasukan Siklus</span>
+            <span className="text-xs text-zinc-400 font-medium">Total pemasukan Siklus</span>
             <div className="w-8 h-8 rounded-full bg-mintRise/10 border border-mintRise/20 flex items-center justify-center text-mintRise">
               <ArrowDownRight className="w-4 h-4" />
             </div>
@@ -133,25 +133,25 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
             {loading ? (
               <Skeleton className="h-7 w-32 rounded-full" />
             ) : (
-              <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight">
+              <div className="ai7-type-metric text-white tracking-tight">
                 {formatRupiah(summary.income)}
               </div>
             )}
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-mono">
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-sans">
               <span className="w-1.5 h-1.5 rounded-full bg-mintRise"></span>
               <span>100% basis alokasi</span>
             </div>
           </div>
-          <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-zinc-400">
+          <div className="pt-2 border-t border-luma-smokeline flex items-center justify-between text-xs text-zinc-400">
             <span>Periode aktif</span>
-            <span className="font-mono text-zinc-300">{formatDateIndo(summary.start_date)} – {formatDateIndo(summary.end_date)}</span>
+            <span className="font-sans text-zinc-300">{formatDateIndo(summary.start_date)} – {formatDateIndo(summary.end_date)}</span>
           </div>
         </div>
 
         {/* Card 2: Total Pengeluaran */}
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-400 font-medium">Total Pengeluaran</span>
+            <span className="text-xs text-zinc-400 font-medium">Total pengeluaran</span>
             <div className="w-8 h-8 rounded-full bg-coralFall/10 border border-coralFall/20 flex items-center justify-center text-coralFall">
               <ArrowUpRight className="w-4 h-4" />
             </div>
@@ -160,25 +160,25 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
             {loading ? (
               <Skeleton className="h-7 w-32 rounded-full" />
             ) : (
-              <div className="text-xl sm:text-2xl font-black font-mono text-coralFall tracking-tight">
+              <div className="ai7-type-metric text-coralFall tracking-tight">
                 {formatRupiah(summary.expense)}
               </div>
             )}
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-mono">
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-sans">
               <span>Rasio belanja:</span>
               <strong className="text-white">
                 {summary.income > 0 ? ((summary.expense / summary.income) * 100).toFixed(1) : 0}%
               </strong>
             </div>
           </div>
-          <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-zinc-400">
+          <div className="pt-2 border-t border-luma-smokeline flex items-center justify-between text-xs text-zinc-400">
             <span>Rata-rata / hari</span>
-            <span className="font-mono text-zinc-300">{formatRupiah(actualDailyAvg)} / hari</span>
+            <span className="font-sans text-zinc-300">{formatRupiah(actualDailyAvg)} / hari</span>
           </div>
         </div>
 
         {/* Card 3: Net Cashflow / Sisa */}
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-400 font-medium">Net Surplus Dana</span>
             <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${
@@ -193,27 +193,27 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
             {loading ? (
               <Skeleton className="h-7 w-32 rounded-full" />
             ) : (
-              <div className={`text-xl sm:text-2xl font-black font-mono tracking-tight ${
+              <div className={`ai7-type-metric tracking-tight ${
                 summary.net >= 0 ? "text-mintRise" : "text-coralFall"
               }`}>
                 {summary.net < 0 ? `-${formatRupiah(Math.abs(summary.net))}` : formatRupiah(summary.net)}
               </div>
             )}
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-mono">
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-sans">
               <span>Status arus kas:</span>
               <strong className={summary.net >= 0 ? "text-mintRise" : "text-coralFall"}>
                 {summary.net >= 0 ? "Surplus Positif" : "Defisit Terjadi"}
               </strong>
             </div>
           </div>
-          <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-zinc-400">
+          <div className="pt-2 border-t border-luma-smokeline flex items-center justify-between text-xs text-zinc-400">
             <span>Sisa kuota harian</span>
-            <span className="font-mono text-amberGold font-semibold">{formatRupiah(safeDaily)} / hari</span>
+            <span className="font-sans text-amberGold font-semibold">{formatRupiah(safeDaily)} / hari</span>
           </div>
         </div>
 
         {/* Card 4: Savings & Investment Rate */}
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-400 font-medium">Savings & Portfolio Rate</span>
             <div className="w-8 h-8 rounded-full bg-amberGold/10 border border-amberGold/20 flex items-center justify-center text-amberGold">
@@ -224,18 +224,18 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
             {loading ? (
               <Skeleton className="h-7 w-24 rounded-full" />
             ) : (
-              <div className="text-xl sm:text-2xl font-black font-mono text-amberGold tracking-tight">
+              <div className="ai7-type-metric text-amberGold tracking-tight">
                 {summary.savings_rate.toFixed(1)}%
               </div>
             )}
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-mono">
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-sans">
               <span className="w-1.5 h-1.5 rounded-full bg-amberGold"></span>
               {summary.savings_rate >= 20 ? "Target tercapai (≥20%)" : "Di bawah target (target 20%)"}
             </div>
           </div>
-          <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-zinc-400">
+          <div className="pt-2 border-t border-luma-smokeline flex items-center justify-between text-xs text-zinc-400">
             <span>Benchmark sehat</span>
-            <span className="font-mono text-zinc-300">≥ 20% Income</span>
+            <span className="font-sans text-zinc-300">≥ 20% Income</span>
           </div>
         </div>
       </div>
@@ -244,12 +244,12 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
       <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
 
       {/* 3. DAILY SPENDING ACTIVITY & PULSE */}
-      <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-5 shadow-sm">
+      <div className="bg-obsidian-panel border border-luma-smokeline rounded-3xl p-6 sm:p-7 space-y-5 shadow-sm">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-mintRise" />
-              <h3 className="font-bold text-base sm:text-lg text-white">
+              <h3 className="ai7-type-card text-white">
                 Aktivitas Belanja Harian (Daily Spend Pulse)
               </h3>
             </div>
@@ -258,26 +258,26 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
             </p>
           </div>
 
-          <div className="flex items-center gap-3 text-xs font-mono shrink-0">
+          <div className="flex items-center gap-3 text-xs font-sans shrink-0">
             {peakDay.expense > 0 && (
               <span className="px-3 py-1 rounded-full bg-coralFall/10 border border-coralFall/30 text-coralFall">
                 Puncak: {formatDateIndo(peakDay.date)} ({formatRupiah(peakDay.expense)})
               </span>
             )}
-            <span className="px-3 py-1 rounded-full bg-obsidian-card border border-white/[0.08] text-zinc-400">
+            <span className="px-3 py-1 rounded-full bg-obsidian-card border border-luma-smokeline text-zinc-400">
               Ideal: {formatRupiah(idealDailyAvg)}/hari
             </span>
           </div>
         </div>
 
         {summary.daily_trend.length === 0 ? (
-          <div className="text-center py-10 text-xs sm:text-sm text-zinc-400 font-mono">
+          <div className="text-center py-10 text-xs sm:text-sm text-zinc-400 font-sans">
             Belum ada aktivitas transaksi pada rentang periode ini.
           </div>
         ) : (
           <div className="space-y-4">
             {/* Visual Bars Container */}
-            <div className="flex items-end gap-1.5 sm:gap-2 h-36 pt-6 px-1 border-b border-white/[0.08] overflow-visible relative">
+            <div className="flex items-end gap-1.5 sm:gap-2 h-36 pt-6 px-1 border-b border-luma-smokeline overflow-visible relative">
               {summary.daily_trend.map((d, idx) => {
                 const maxVal = Math.max(...summary.daily_trend.map((t) => t.expense), idealDailyAvg, 1);
                 const heightPct = Math.min(100, Math.max(8, Math.round((d.expense / maxVal) * 100)));
@@ -295,20 +295,20 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
                     className="flex-1 flex flex-col items-center group relative h-full justify-end"
                   >
                     {/* Tooltip on hover */}
-                    <div className={`opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${alignClass} w-44 p-3 bg-obsidian-card/95 backdrop-blur-md border border-white/[0.12] rounded-2xl shadow-xl text-[11px] font-mono space-y-1 transition-opacity`}>
-                      <div className="font-bold text-white border-b border-white/[0.08] pb-1">
+                    <div className={`opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${alignClass} w-44 p-3 bg-obsidian-card/95 backdrop-blur-md border border-luma-smokeline rounded-2xl shadow-xl text-xs font-sans space-y-1 transition-opacity`}>
+                      <div className="font-semibold text-white border-b border-luma-smokeline pb-1">
                         {formatDateIndo(d.date)}
                       </div>
                       <div className="flex justify-between text-zinc-400">
                         <span>Pengeluaran:</span>
-                        <span className={`font-semibold ${isOver ? "text-coralFall font-bold" : "text-white"}`}>
+                        <span className={`font-semibold ${isOver ? "text-coralFall font-semibold" : "text-white"}`}>
                           {formatRupiah(d.expense)}
                         </span>
                       </div>
                       {d.income > 0 && (
                         <div className="flex justify-between text-mintRise">
                           <span>Pemasukan:</span>
-                          <span className="font-bold">+{formatRupiah(d.income)}</span>
+                          <span className="font-semibold">+{formatRupiah(d.income)}</span>
                         </div>
                       )}
                     </div>
@@ -318,7 +318,7 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
                       style={{ height: `${heightPct}%` }}
                       className={`w-full rounded-t transition-all duration-300 ${
                         isZero
-                          ? "bg-obsidian-card border border-white/[0.08]"
+                          ? "bg-obsidian-card border border-luma-smokeline"
                           : isOver
                           ? "bg-coralFall/80 group-hover:bg-coralFall"
                           : "bg-amberGold/80 group-hover:bg-amberGold"
@@ -327,7 +327,7 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
 
                     {/* Date label */}
                     <div className="mt-2 text-center select-none">
-                      <span className="text-[9px] sm:text-[10px] font-mono text-zinc-400 block">
+                      <span className="text-xs sm:text-xs font-sans text-zinc-400 block">
                         {d.date.slice(8)}
                       </span>
                     </div>
@@ -336,7 +336,7 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
               })}
             </div>
             
-            <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 pt-1">
+            <div className="flex items-center justify-between text-xs font-sans text-zinc-400 pt-1">
               <span>Awal Siklus ({formatDateIndo(summary.start_date)})</span>
               <span>Akhir Siklus ({formatDateIndo(summary.end_date)})</span>
             </div>
@@ -345,17 +345,17 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
       </div>
 
       {/* 4. SMART FINANCIAL INSIGHTS & PACING ADVISORY */}
-      <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-6 sm:p-7 space-y-4 shadow-sm">
+      <div className="bg-obsidian-panel border border-luma-smokeline rounded-3xl p-6 sm:p-7 space-y-4 shadow-sm">
         <div className="flex items-center gap-2">
           <Lightbulb className="w-5 h-5 text-amberGold" />
-          <h3 className="font-bold text-base sm:text-lg text-white">
+          <h3 className="ai7-type-card text-white">
             Evaluasi & Insight Cerdas Siklus
           </h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Box 1: Pacing Assessment */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-obsidian-card border border-white/[0.08] space-y-2">
+          <div className="p-4 sm:p-5 rounded-2xl bg-obsidian-card border border-luma-smokeline space-y-2">
             <div className="flex items-center gap-2">
               {paceStatus === "ahead" ? (
                 <CheckCircle2 className="w-4 h-4 text-mintRise" />
@@ -364,7 +364,7 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
               ) : (
                 <AlertTriangle className="w-4 h-4 text-coralFall" />
               )}
-              <span className="text-xs font-bold text-white font-mono uppercase tracking-wider">
+              <span className="text-xs font-semibold text-white font-sans ">
                 Status Kecepatan Belanja: {paceStatus.replace("_", " ")}
               </span>
             </div>
@@ -378,10 +378,10 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
           </div>
 
           {/* Box 2: Dominant Category & Efficiency */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-obsidian-card border border-white/[0.08] space-y-2">
+          <div className="p-4 sm:p-5 rounded-2xl bg-obsidian-card border border-luma-smokeline space-y-2">
             <div className="flex items-center gap-2">
               <Flame className="w-4 h-4 text-amberGold" />
-              <span className="text-xs font-bold text-white font-mono uppercase tracking-wider">
+              <span className="text-xs font-semibold text-white font-sans ">
                 Sorotan Beban Anggaran
               </span>
             </div>

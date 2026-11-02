@@ -47,70 +47,70 @@ export function SubscriptionsView({
   return (
     <div className="ai7-subscriptions space-y-8">
       {/* Top Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2 shadow-sm">
-          <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider truncate">
-            Total Komitmen Bulanan
+      <div className="ai7-metric-grid grid gap-4">
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-2 shadow-sm">
+          <div className="text-xs font-semibold text-zinc-400 truncate">
+            Total komitmen bulanan
           </div>
           {loading ? (
             <Skeleton className="h-8 w-36 rounded-full" />
           ) : (
-            <div className="text-2xl font-black font-mono text-amberGold tracking-tight truncate">
+            <div className="ai7-type-metric text-amberGold tracking-tight truncate">
               {formatRupiah(subsData.total_monthly_commitment)}
             </div>
           )}
-          <div className="text-xs text-zinc-400 font-mono">
+          <div className="text-xs text-zinc-400 font-sans">
             Alokasi pos tagihan & autodebet
           </div>
         </div>
 
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2 shadow-sm">
-          <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider truncate">
-            Tagihan Aktif
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-2 shadow-sm">
+          <div className="text-xs font-semibold text-zinc-400 truncate">
+            Tagihan aktif
           </div>
           {loading ? (
             <Skeleton className="h-8 w-24 rounded-full" />
           ) : (
-            <div className="text-2xl font-black font-mono text-mintRise tracking-tight truncate">
+            <div className="ai7-type-metric text-mintRise tracking-tight truncate">
               {subsData.active_count} Layanan
             </div>
           )}
-          <div className="text-xs text-zinc-400 font-mono">
+          <div className="text-xs text-zinc-400 font-sans">
             Autodebet aktif bulanan
           </div>
         </div>
 
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2 shadow-sm">
-          <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider truncate">
-            Jatuh Tempo Pekan Ini
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-2 shadow-sm">
+          <div className="text-xs font-semibold text-zinc-400 truncate">
+            Jatuh tempo pekan ini
           </div>
           {loading ? (
             <Skeleton className="h-8 w-24 rounded-full" />
           ) : (
-            <div className="text-2xl font-black font-mono text-coralFall tracking-tight truncate">
+            <div className="ai7-type-metric text-coralFall tracking-tight truncate">
               {subsData.upcoming_this_week} Tagihan
             </div>
           )}
-          <div className="text-xs text-zinc-400 font-mono">
+          <div className="text-xs text-zinc-400 font-sans">
             Siapkan saldo sebelum autodebet
           </div>
         </div>
 
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 flex flex-col justify-between shadow-sm">
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 flex flex-col justify-between shadow-sm">
           <div>
-            <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider truncate">
-              Perintah Bot Telegram
+            <div className="text-xs font-semibold text-zinc-400 truncate">
+              Perintah bot Telegram
             </div>
-            <div className="text-sm font-mono text-white mt-1 font-bold truncate">
+            <div className="text-sm font-sans text-white mt-1 font-semibold truncate">
               /subs atau /tagihan
             </div>
           </div>
           <button
             onClick={onOpenModal}
-            className="mt-3 px-4 py-2 text-xs font-bold bg-amberGold text-slate-950 hover:bg-yellow-300 rounded-xl transition flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
+            className="mt-3 px-4 py-2 text-xs font-semibold bg-amberGold text-slate-950 hover:bg-yellow-300 rounded-xl transition flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Tambah Tagihan</span>
+            <span>Tambah tagihan</span>
           </button>
         </div>
       </div>
@@ -119,8 +119,8 @@ export function SubscriptionsView({
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h3 className="font-bold text-base sm:text-lg text-white">
-              Daftar Tagihan & Layanan Berkala
+            <h3 className="ai7-type-card text-white">
+              Daftar tagihan & layanan terjadwal
             </h3>
             <p className="text-xs text-zinc-400 mt-0.5">
               Total {subsData.items.length} tagihan dan layanan rutin terdaftar
@@ -129,10 +129,10 @@ export function SubscriptionsView({
           <button
             type="button"
             onClick={onOpenModal}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-amberGold text-slate-950 font-bold rounded-xl hover:bg-yellow-300 transition shadow-sm text-xs shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-amberGold text-slate-950 font-semibold rounded-xl hover:bg-yellow-300 transition shadow-sm text-xs shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Tambah Tagihan</span>
+            <span>Tambah tagihan</span>
           </button>
         </div>
 
@@ -141,7 +141,7 @@ export function SubscriptionsView({
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 space-y-4 shadow-sm"
+                className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 space-y-4 shadow-sm"
               >
                 <div className="flex justify-between items-start">
                   <div className="space-y-1.5">
@@ -151,7 +151,7 @@ export function SubscriptionsView({
                   <Skeleton className="w-12 h-5 rounded-full" />
                 </div>
                 <Skeleton className="w-36 h-6 rounded-full" />
-                <div className="pt-2 border-t border-white/[0.08] flex justify-between">
+                <div className="pt-2 border-t border-luma-smokeline flex justify-between">
                   <Skeleton className="w-24 h-4 rounded-full" />
                   <Skeleton className="w-16 h-4 rounded-full" />
                 </div>
@@ -175,34 +175,34 @@ export function SubscriptionsView({
                     ? "border-coralFall/50 bg-coralFall/5"
                     : isUpcoming || isToday
                     ? "border-amberGold/40 bg-amberGold/5"
-                    : "border-white/[0.08] hover:border-white/[0.16]"
+                    : "border-luma-smokeline hover:border-white/[0.16]"
                 }`}
               >
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-base font-bold text-white truncate">
+                      <span className="text-base font-semibold text-white truncate">
                         {sub.name}
                       </span>
                       {isExact && (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold shrink-0">
-                          Berakhir Spesifik
+                        <span className="text-xs font-sans px-2 py-0.5 rounded-full bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold shrink-0">
+                          Berakhir spesifik
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-zinc-400 font-mono truncate block mt-0.5">{sub.category}</span>
+                    <span className="text-xs text-zinc-400 font-sans truncate block mt-0.5">{sub.category}</span>
                   </div>
                   <span
-                    className={`text-xs font-mono px-2.5 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${
+                    className={`text-xs font-sans px-2.5 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${
                       !sub.is_active
-                        ? "bg-white/[0.04] border-white/[0.08] text-zinc-400"
+                        ? "bg-white/[0.04] border-luma-smokeline text-zinc-400"
                         : isExpired
-                        ? "bg-coralFall/20 border-coralFall/40 text-coralFall font-bold"
+                        ? "bg-coralFall/20 border-coralFall/40 text-coralFall font-semibold"
                         : isToday
-                        ? "bg-coralFall/20 border-coralFall/40 text-coralFall font-bold animate-pulse"
+                        ? "bg-coralFall/20 border-coralFall/40 text-coralFall font-semibold animate-pulse"
                         : isUpcoming
-                        ? "bg-amberGold/20 border-amberGold/40 text-amberGold font-bold"
-                        : "bg-mintRise/10 border-mintRise/30 text-mintRise font-bold"
+                        ? "bg-amberGold/20 border-amberGold/40 text-amberGold font-semibold"
+                        : "bg-mintRise/10 border-mintRise/30 text-mintRise font-semibold"
                     }`}
                   >
                     {!sub.is_active
@@ -216,13 +216,13 @@ export function SubscriptionsView({
                 </div>
 
                 <div>
-                  <div className="text-2xl font-black font-mono text-white tracking-tight truncate">
+                  <div className="ai7-type-metric text-white tracking-tight truncate">
                     {formatRupiah(sub.amount)}
                     <span className="text-xs font-normal text-zinc-400 font-sans">
                       {isExact ? " / periode" : " / bulan"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-mono mt-1 truncate">
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-sans mt-1 truncate">
                     {isExact ? (
                       <>
                         <Clock className="w-3.5 h-3.5 text-amberGold shrink-0" />
@@ -240,12 +240,12 @@ export function SubscriptionsView({
                 </div>
 
                 {sub.notes && (
-                  <div className="text-xs text-zinc-400 bg-obsidian-panel p-2.5 rounded-xl border border-white/[0.08] font-mono">
+                  <div className="text-xs text-zinc-400 bg-obsidian-panel p-2.5 rounded-xl border border-luma-smokeline font-sans">
                     {sub.notes}
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-3 border-t border-white/[0.08] text-xs font-mono">
+                <div className="flex items-center justify-between pt-3 border-t border-luma-smokeline text-xs font-sans">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => onEdit?.(sub)}

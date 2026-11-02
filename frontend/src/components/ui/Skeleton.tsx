@@ -15,7 +15,7 @@ export function Skeleton({ className = "", ...props }: SkeletonProps) {
 
 export function SkeletonCard({ className = "", children }: { className?: string; children?: React.ReactNode }) {
   return (
-    <div className={`p-5 sm:p-6 rounded-3xl bg-obsidian-card border border-white/[0.08] shadow-sm ${className}`}>
+    <div className={`p-5 sm:p-6 rounded-3xl bg-obsidian-card border border-luma-smokeline shadow-sm ${className}`}>
       {children}
     </div>
   );

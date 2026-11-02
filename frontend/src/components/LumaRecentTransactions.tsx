@@ -53,8 +53,8 @@ export function LumaRecentTransactions({
   return (
     <section aria-label="Transaksi terbaru" className="luma-recent space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-medium text-luma-ivory tracking-tight">
-          Transaksi Terbaru
+        <h2 className="ai7-type-card text-luma-ivory tracking-tight">
+          Transaksi terbaru
         </h2>
         <button
           type="button"
@@ -82,7 +82,7 @@ export function LumaRecentTransactions({
           </ul>
         ) : transactions.length === 0 ? (
           <div className="flex flex-col items-center gap-3 px-5 py-12 text-center">
-            <div className="w-12 h-12 rounded-full bg-white/[0.05] border border-white/[0.1] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-white/[0.05] border border-luma-smokeline flex items-center justify-center">
               <Receipt className="w-5 h-5 text-luma-smoke" aria-hidden="true" />
             </div>
             <p className="text-sm text-luma-smoke">Belum ada transaksi pada periode ini.</p>
@@ -105,7 +105,7 @@ export function LumaRecentTransactions({
                 >
                   <div
                     aria-hidden="true"
-                    className="w-11 h-11 rounded-full bg-[#2B2825] border border-white/[0.1] flex items-center justify-center shrink-0"
+                    className="w-11 h-11 rounded-full bg-[#2B2825] border border-luma-smokeline flex items-center justify-center shrink-0"
                   >
                     <TxIcon type={tx.type} />
                   </div>
@@ -113,12 +113,12 @@ export function LumaRecentTransactions({
                     <p className="text-sm font-semibold text-luma-ivory truncate leading-snug">
                       {tx.description}
                     </p>
-                    <p className="text-xs font-mono text-luma-smoke truncate mt-0.5">
+                    <p className="text-xs font-sans text-luma-smoke truncate mt-0.5">
                       {tx.date} · {tx.category} · {tx.account}
                     </p>
                   </div>
                   <div
-                    className={`text-sm sm:text-base font-bold font-mono tabular-nums whitespace-nowrap shrink-0 ${amountClass}`}
+                    className={`text-sm sm:text-base font-semibold font-sans tabular-nums whitespace-nowrap shrink-0 ${amountClass}`}
                   >
                     {isPositive ? "+" : "-"} {formatRupiah(tx.amount)}
                   </div>

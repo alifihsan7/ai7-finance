@@ -150,10 +150,10 @@ export function CustomSelect({
         aria-expanded={isOpen}
         className={`ai7-select-trigger w-full border px-3.5 py-2.5 min-h-[44px] text-left text-sm flex items-center justify-between gap-2 select-none cursor-pointer ${
           disabled
-            ? "opacity-50 cursor-not-allowed border-white/[0.06]"
+            ? "opacity-50 cursor-not-allowed border-luma-smokeline"
             : isOpen
             ? "border-luma-ember text-slateText-primary"
-            : "border-white/[0.08] hover:border-white/[0.18] text-slateText-primary"
+            : "border-luma-smokeline hover:border-white/[0.18] text-slateText-primary"
         }`}
       >
         <span className="min-w-0 flex-1 font-medium flex items-center gap-2 pr-1 overflow-hidden">
@@ -206,7 +206,7 @@ export function CustomSelect({
                     <div className="truncate">
                       <div>{opt.label}</div>
                       {opt.description && (
-                        <div className="text-[11px] text-slateText-muted font-normal">
+                        <div className="text-xs text-slateText-muted font-normal">
                           {opt.description}
                         </div>
                       )}

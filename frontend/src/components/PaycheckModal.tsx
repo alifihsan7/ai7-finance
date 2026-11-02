@@ -436,7 +436,7 @@ export default function PaycheckModal({
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
                 Total Uang Masuk
               </label>
               <CurrencyInput
@@ -449,10 +449,10 @@ export default function PaycheckModal({
             </div>
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-zinc-400 ">
                   Tanggal Siklus Dimulai
                 </label>
-                <span className="text-[10px] text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20">
+                <span className="text-xs text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20">
                   {config.cycle_days || 14} Hari
                 </span>
               </div>
@@ -460,29 +460,29 @@ export default function PaycheckModal({
                 type="date"
                 value={cycleDate}
                 onChange={(e) => setCycleDate(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-2xl bg-obsidian-panel border border-white/[0.08] text-sm text-white focus:outline-none focus:border-mintRise focus:ring-1 focus:ring-mintRise/30 transition [color-scheme:dark]"
+                className="w-full h-11 px-3.5 rounded-2xl bg-obsidian-panel border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise focus:ring-1 focus:ring-mintRise/30 transition [color-scheme:dark]"
               />
-              <span className="text-[11px] text-zinc-400 mt-1.5 block">
+              <span className="text-xs text-zinc-400 mt-1.5 block">
                 Berakhir: <strong className="text-zinc-300">{computeEndDateStr()}</strong>
               </span>
             </div>
           </div>
 
           {/* Allocation Breakdown Table */}
-          <div className="p-5 rounded-3xl bg-obsidian-panel border border-white/[0.08] space-y-3.5 shadow-sm">
-            <div className="flex justify-between items-center pb-3 border-b border-white/[0.08]">
+          <div className="p-5 rounded-3xl bg-obsidian-panel border border-luma-smokeline space-y-3.5 shadow-sm">
+            <div className="flex justify-between items-center pb-3 border-b border-luma-smokeline">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                <span className="text-xs font-semibold text-zinc-400 ">
                   Alokasi Pos (Dapat Disesuaikan)
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-obsidian-card text-zinc-300 border border-white/[0.08]">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-sans font-semibold bg-obsidian-card text-zinc-300 border border-luma-smokeline">
                   {buckets.length} Pos
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => initAmounts(numTotal, buckets)}
-                className="text-[11px] font-medium text-zinc-400 hover:text-mintRise flex items-center gap-1 transition cursor-pointer"
+                className="text-xs font-medium text-zinc-400 hover:text-mintRise flex items-center gap-1 transition cursor-pointer"
                 title="Kembalikan ke formula persentase standar"
               >
                 <RotateCcw className="w-3 h-3" />
@@ -496,7 +496,7 @@ export default function PaycheckModal({
                 return (
                   <div
                     key={b.account}
-                    className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] hover:border-white/[0.16] transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
+                    className="p-3.5 rounded-2xl bg-obsidian-card border border-luma-smokeline hover:border-white/[0.16] transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${getAccountDot(b.account)}`} />
@@ -505,16 +505,16 @@ export default function PaycheckModal({
                           <span className="font-semibold text-sm text-white truncate">
                             {b.account}
                           </span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono text-zinc-400 bg-obsidian-panel border border-white/[0.08]">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-sans text-zinc-400 bg-obsidian-panel border border-luma-smokeline">
                             {b.percentage}%
                           </span>
                           {b.via_gate && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium text-amberGold bg-amberGold/10 border border-amberGold/20">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium text-amberGold bg-amberGold/10 border border-amberGold/20">
                               via {config.gate_name}
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-zinc-400 truncate mt-0.5">
+                        <p className="text-xs text-zinc-400 truncate mt-0.5">
                           {b.purpose}
                         </p>
                       </div>
@@ -537,10 +537,10 @@ export default function PaycheckModal({
             </div>
 
             {/* Total Balance Status Banner */}
-            <div className="pt-3 border-t border-white/[0.08] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div className="pt-3 border-t border-luma-smokeline flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-zinc-400">Total Terbagi:</span>
-                <span className="font-mono font-bold text-sm text-white">
+                <span className="font-sans font-semibold text-sm text-white">
                   Rp {totalAllocated.toLocaleString("id-ID")}
                 </span>
                 <span className="text-xs text-zinc-400">/ Rp {numTotal.toLocaleString("id-ID")}</span>
@@ -565,11 +565,11 @@ export default function PaycheckModal({
           </div>
 
           {/* Action Row */}
-          <div className="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08]">
+          <div className="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-luma-smokeline">
             <button
               type="button"
               onClick={() => setView("customize")}
-              className="text-xs font-semibold text-zinc-300 hover:text-white flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl border border-white/[0.08] hover:border-white/[0.16] transition cursor-pointer"
+              className="text-xs font-semibold text-zinc-300 hover:text-white flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl border border-luma-smokeline hover:border-white/[0.16] transition cursor-pointer"
             >
               <Settings2 className="w-4 h-4 text-zinc-400" />
               <span>Sesuaikan Alur & Routing</span>
@@ -579,7 +579,7 @@ export default function PaycheckModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
+                className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-luma-smokeline hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
               >
                 Batal
               </button>
@@ -587,7 +587,7 @@ export default function PaycheckModal({
                 type="button"
                 onClick={handleStartSession}
                 disabled={loading || balanceDifference !== 0}
-                className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-mintRise text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-5 py-2.5 text-xs sm:text-sm font-semibold bg-mintRise text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span>{loading ? "Menyiapkan..." : "Mulai Checklist Transfer"}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -601,14 +601,14 @@ export default function PaycheckModal({
       {view === "checklist" && activeSession && (
         <div className="space-y-4">
           {/* Progress Header Card */}
-          <div className="p-5 rounded-3xl bg-obsidian-panel border border-white/[0.08] space-y-3 shadow-sm">
+          <div className="p-5 rounded-3xl bg-obsidian-panel border border-luma-smokeline space-y-3 shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                <span className="text-xs font-semibold text-zinc-400 ">
                   Status Distribusi
                 </span>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="font-mono font-extrabold text-lg sm:text-xl text-white">
+                  <span className="font-sans font-semibold text-lg sm:text-xl text-white">
                     Rp {activeSession.total_amount.toLocaleString("id-ID")}
                   </span>
                   <span className="text-xs text-zinc-400">
@@ -617,17 +617,17 @@ export default function PaycheckModal({
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-xs font-semibold font-mono text-mintRise">
+                <span className="text-xs font-semibold font-sans text-mintRise">
                   {activeSession.completed_steps} / {activeSession.total_steps} Selesai
                 </span>
-                <div className="text-[11px] text-zinc-400">
+                <div className="text-xs text-zinc-400">
                   {activeSession.progress_percentage}% terdistribusi
                 </div>
               </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full h-2 rounded-full bg-obsidian-card overflow-hidden p-0.5 border border-white/[0.08]">
+            <div className="w-full h-2 rounded-full bg-obsidian-card overflow-hidden p-0.5 border border-luma-smokeline">
               <div
                 className="h-full rounded-full bg-mintRise transition-all duration-500"
                 style={{ width: `${activeSession.progress_percentage}%` }}
@@ -643,7 +643,7 @@ export default function PaycheckModal({
                   <Check className="w-5 h-5 stroke-[2.5]" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-mintRise">Alokasi Gajian Selesai!</h4>
+                  <h4 className="font-semibold text-sm text-mintRise">Alokasi Gajian Selesai!</h4>
                   <p className="text-xs text-zinc-300 mt-0.5">
                     Seluruh transfer alokasi berhasil dicatat ke saldo rekening.
                   </p>
@@ -652,7 +652,7 @@ export default function PaycheckModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-mintRise text-slate-950 hover:brightness-110 transition shrink-0 cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-mintRise text-slate-950 hover:brightness-110 transition shrink-0 cursor-pointer"
               >
                 Tutup
               </button>
@@ -682,7 +682,7 @@ export default function PaycheckModal({
               return (
                 <div key={phaseNum} className="space-y-2">
                   <div className="flex items-center gap-2 px-1">
-                    <span className={`text-[11px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full border ${phaseColor}`}>
+                    <span className={`text-xs font-semibold px-3 py-0.5 rounded-full border ${phaseColor}`}>
                       {phaseTitle}
                     </span>
                   </div>
@@ -696,8 +696,8 @@ export default function PaycheckModal({
                           onClick={() => !isToggling && handleToggleStep(step.id)}
                           className={`p-3.5 rounded-2xl border transition cursor-pointer select-none flex items-center justify-between gap-3 shadow-xs ${
                             step.is_done
-                              ? "bg-obsidian-panel/60 border-white/[0.04] opacity-80"
-                              : "bg-obsidian-card border-white/[0.08] hover:border-mintRise/40"
+                              ? "bg-obsidian-panel/60 border-luma-smokeline opacity-80"
+                              : "bg-obsidian-card border-luma-smokeline hover:border-mintRise/40"
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
@@ -708,7 +708,7 @@ export default function PaycheckModal({
                                   <Check className="w-4 h-4 stroke-[2.5]" />
                                 </div>
                               ) : (
-                                <div className="w-6 h-6 rounded-lg bg-obsidian-panel border border-white/[0.16] flex items-center justify-center hover:border-mintRise transition">
+                                <div className="w-6 h-6 rounded-lg bg-obsidian-panel border border-luma-smokeline flex items-center justify-center hover:border-mintRise transition">
                                   {isToggling && (
                                     <div className="w-3 h-3 rounded-full border-2 border-mintRise border-t-transparent animate-spin" />
                                   )}
@@ -729,17 +729,17 @@ export default function PaycheckModal({
                                   {step.title}
                                 </span>
                                 {step.badge && (
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-obsidian-panel border border-white/[0.08] text-zinc-300 shrink-0">
+                                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-obsidian-panel border border-luma-smokeline text-zinc-300 shrink-0">
                                     {step.badge}
                                   </span>
                                 )}
                                 {step.is_auto && (
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono text-cyanHub bg-cyanHub/10 border border-cyanHub/20">
+                                  <span className="px-2 py-0.5 rounded-full text-xs font-sans text-cyanHub bg-cyanHub/10 border border-cyanHub/20">
                                     Otomatis
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[11px] text-zinc-400 truncate mt-0.5">
+                              <p className="text-xs text-zinc-400 truncate mt-0.5">
                                 {step.description}
                               </p>
                             </div>
@@ -748,7 +748,7 @@ export default function PaycheckModal({
                           {/* Step amount */}
                           <div className="text-right shrink-0">
                             <span
-                              className={`font-mono font-bold text-sm ${
+                              className={`font-sans font-semibold text-sm ${
                                 step.is_done
                                   ? "text-zinc-400"
                                   : "text-mintRise"
@@ -767,7 +767,7 @@ export default function PaycheckModal({
           </div>
 
           {/* Action Row */}
-          <div className="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08]">
+          <div className="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-luma-smokeline">
             <button
               type="button"
               onClick={handleCancelSession}
@@ -785,7 +785,7 @@ export default function PaycheckModal({
                   type="button"
                   onClick={handleCompleteAll}
                   disabled={loading}
-                  className="px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
+                  className="px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white border border-luma-smokeline hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
                 >
                   Tandai Semua Selesai
                 </button>
@@ -793,7 +793,7 @@ export default function PaycheckModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2 text-xs sm:text-sm font-bold bg-mintRise text-slate-950 hover:brightness-110 rounded-2xl transition cursor-pointer"
+                className="px-5 py-2 text-xs sm:text-sm font-semibold bg-mintRise text-slate-950 hover:brightness-110 rounded-2xl transition cursor-pointer"
               >
                 {isAllCompleted ? "Selesai & Tutup" : "Simpan & Lanjutkan Nanti"}
               </button>
@@ -805,10 +805,10 @@ export default function PaycheckModal({
       {/* -------------------- VIEW 3: CUSTOMIZE PIPELINE & BUCKETS -------------------- */}
       {view === "customize" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-2xl bg-obsidian-card border border-white/[0.08] flex items-center justify-between gap-3 shadow-xs">
+          <div className="p-4 rounded-2xl bg-obsidian-card border border-luma-smokeline flex items-center justify-between gap-3 shadow-xs">
             <div>
               <h4 className="text-xs font-semibold text-white">Konfigurasi Multi-User</h4>
-              <p className="text-[11px] text-zinc-400">
+              <p className="text-xs text-zinc-400">
                 Atur rekening penampung awal (hub), nama jembatan transfer (Flip/BI-Fast), dan pos tujuan.
               </p>
             </div>
@@ -825,20 +825,20 @@ export default function PaycheckModal({
           {/* Config Settings Form */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
                 Rekening Sumber (Hub)
               </label>
               <input
                 type="text"
                 value={customConfig.source_account}
                 onChange={(e) => setCustomConfig({ ...customConfig, source_account: e.target.value })}
-                className="w-full h-10 px-3 rounded-2xl bg-obsidian-panel border border-white/[0.08] text-sm text-white focus:outline-none focus:border-mintRise transition"
+                className="w-full h-10 px-3 rounded-2xl bg-obsidian-panel border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise transition"
                 placeholder="BRI 1 / BCA / Payroll"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
                 Pakai Gate Jembatan?
               </label>
               <CustomSelect
@@ -853,7 +853,7 @@ export default function PaycheckModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
                 Nama Gate Jembatan
               </label>
               <input
@@ -861,20 +861,20 @@ export default function PaycheckModal({
                 value={customConfig.gate_name}
                 onChange={(e) => setCustomConfig({ ...customConfig, gate_name: e.target.value })}
                 disabled={!customConfig.use_gate}
-                className="w-full h-10 px-3 rounded-2xl bg-obsidian-panel border border-white/[0.08] text-sm text-white focus:outline-none focus:border-mintRise transition disabled:opacity-40"
+                className="w-full h-10 px-3 rounded-2xl bg-obsidian-panel border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise transition disabled:opacity-40"
                 placeholder="Flip / OVO / DANA"
               />
             </div>
           </div>
 
           {/* Cycle & Budget Settings */}
-          <div className="p-5 rounded-3xl bg-obsidian-panel border border-white/[0.08] space-y-3 shadow-sm">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">
+          <div className="p-5 rounded-3xl bg-obsidian-panel border border-luma-smokeline space-y-3 shadow-sm">
+            <span className="text-xs font-semibold text-zinc-400 block">
               Pengaturan Siklus Anggaran & Dompet Harian
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
                   Tipe Siklus
                 </label>
                 <CustomSelect
@@ -901,7 +901,7 @@ export default function PaycheckModal({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
                   Durasi Siklus (Hari)
                 </label>
                 <input
@@ -915,13 +915,13 @@ export default function PaycheckModal({
                       cycle_days: Math.max(1, parseInt(e.target.value, 10) || 1),
                     })
                   }
-                  className="w-full h-10 px-3 rounded-2xl bg-obsidian-card border border-white/[0.08] text-sm text-white focus:outline-none focus:border-mintRise transition font-mono"
+                  className="w-full h-10 px-3 rounded-2xl bg-obsidian-card border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise transition font-sans"
                   placeholder="14 / 30 / 7"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
                   Rekening Saku Harian
                 </label>
                 <input
@@ -933,20 +933,20 @@ export default function PaycheckModal({
                       pocket_account: e.target.value,
                     })
                   }
-                  className="w-full h-10 px-3 rounded-2xl bg-obsidian-card border border-white/[0.08] text-sm text-white focus:outline-none focus:border-mintRise transition"
+                  className="w-full h-10 px-3 rounded-2xl bg-obsidian-card border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise transition"
                   placeholder="Rekening Operasional / Rekening Utama / Debit"
                 />
               </div>
             </div>
-            <p className="text-[11px] text-zinc-400 leading-relaxed">
+            <p className="text-xs text-zinc-400 leading-relaxed">
               Durasi siklus menentukan rentang waktu evaluasi Safe-to-Spend, burn rate, dan tanggal snapshot penutupan siklus. Rekening saku adalah akun yang dievaluasi burn rate belanjanya.
             </p>
           </div>
 
           {/* Buckets Editor */}
-          <div className="p-5 rounded-3xl bg-obsidian-panel border border-white/[0.08] space-y-3 shadow-sm">
-            <div className="flex justify-between items-center pb-2 border-b border-white/[0.08]">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+          <div className="p-5 rounded-3xl bg-obsidian-panel border border-luma-smokeline space-y-3 shadow-sm">
+            <div className="flex justify-between items-center pb-2 border-b border-luma-smokeline">
+              <span className="text-xs font-semibold text-zinc-400 ">
                 Daftar Pos Alokasi & Persentase
               </span>
               <button
@@ -974,7 +974,7 @@ export default function PaycheckModal({
               {customBuckets.map((b, idx) => (
                 <div
                   key={idx}
-                  className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between shadow-xs"
+                  className="p-3.5 rounded-2xl bg-obsidian-card border border-luma-smokeline flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between shadow-xs"
                 >
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 flex-1 w-full">
                     <input
@@ -985,7 +985,7 @@ export default function PaycheckModal({
                         copy[idx].account = e.target.value;
                         setCustomBuckets(copy);
                       }}
-                      className="h-8 px-2.5 text-xs rounded-xl bg-obsidian-panel border border-white/[0.08] text-white font-semibold"
+                      className="h-8 px-2.5 text-xs rounded-xl bg-obsidian-panel border border-luma-smokeline text-white font-semibold"
                       placeholder="Nama Akun"
                     />
                     <div className="flex items-center gap-1">
@@ -998,7 +998,7 @@ export default function PaycheckModal({
                           copy[idx].percentage = parseFloat(e.target.value) || 0;
                           setCustomBuckets(copy);
                         }}
-                        className="h-8 w-20 px-2 text-xs rounded-xl bg-obsidian-panel border border-white/[0.08] text-white font-mono"
+                        className="h-8 w-20 px-2 text-xs rounded-xl bg-obsidian-panel border border-luma-smokeline text-white font-sans"
                         placeholder="%"
                       />
                       <span className="text-xs text-zinc-400">%</span>
@@ -1011,13 +1011,13 @@ export default function PaycheckModal({
                         copy[idx].purpose = e.target.value;
                         setCustomBuckets(copy);
                       }}
-                      className="h-8 px-2.5 text-xs rounded-xl bg-obsidian-panel border border-white/[0.08] text-white col-span-2"
+                      className="h-8 px-2.5 text-xs rounded-xl bg-obsidian-panel border border-luma-smokeline text-white col-span-2"
                       placeholder="Tujuan / Keterangan Pos"
                     />
                   </div>
 
                   <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                    <label className="text-[11px] text-zinc-400 flex items-center gap-1 cursor-pointer">
+                    <label className="text-xs text-zinc-400 flex items-center gap-1 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={b.via_gate}
@@ -1026,7 +1026,7 @@ export default function PaycheckModal({
                           copy[idx].via_gate = e.target.checked;
                           setCustomBuckets(copy);
                         }}
-                        className="rounded border-white/[0.12]"
+                        className="rounded border-luma-smokeline"
                       />
                       via Gate
                     </label>
@@ -1050,7 +1050,7 @@ export default function PaycheckModal({
             <div className="pt-2 flex justify-between items-center text-xs">
               <span className="text-zinc-400">Total Persentase:</span>
               <span
-                className={`font-mono font-bold ${
+                className={`font-sans font-semibold ${
                   Math.round(customBuckets.reduce((acc, b) => acc + (b.percentage || 0), 0)) === 100
                     ? "text-mintRise"
                     : "text-amberGold"
@@ -1062,11 +1062,11 @@ export default function PaycheckModal({
           </div>
 
           {/* Action Row */}
-          <div className="pt-3 flex justify-end gap-3 border-t border-white/[0.08]">
+          <div className="pt-3 flex justify-end gap-3 border-t border-luma-smokeline">
             <button
               type="button"
               onClick={() => setView("setup")}
-              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] rounded-2xl transition cursor-pointer"
+              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-luma-smokeline rounded-2xl transition cursor-pointer"
             >
               Batal
             </button>
@@ -1074,7 +1074,7 @@ export default function PaycheckModal({
               type="button"
               onClick={handleSaveCustomize}
               disabled={loading}
-              className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-mintRise text-slate-950 hover:brightness-110 rounded-2xl transition cursor-pointer"
+              className="px-5 py-2.5 text-xs sm:text-sm font-semibold bg-mintRise text-slate-950 hover:brightness-110 rounded-2xl transition cursor-pointer"
             >
               {loading ? "Menyiapkan..." : "Simpan Pengaturan Alur"}
             </button>

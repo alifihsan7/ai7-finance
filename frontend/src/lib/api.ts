@@ -65,6 +65,9 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
 export interface JagoPocketItem {
   id: number;
   user_id: number;
+  account_id?: number | null;
+  account_name?: string | null;
+  role?: string;
   name: string;
   slug: string;
   target_amount: number;
@@ -78,6 +81,8 @@ export interface JagoPocketItem {
 }
 
 export interface JagoPocketsSummaryResponse {
+  account_id?: number | null;
+  account_name?: string | null;
   total_jago_balance: number;
   total_target_amount: number;
   total_spent_amount: number;
@@ -98,7 +103,7 @@ export interface JagoPocketTargetUpdate {
 
 async function parseJagoResponse(res: Response, action: string): Promise<JagoPocketsSummaryResponse> {
   if (!res.ok) {
-    let detail = `Gagal ${action} kantong Bank Jago`;
+    let detail = `Gagal ${action} kantong rekening`;
     try {
       const data = await res.json();
       if (data && typeof data.detail === "string" && data.detail.trim()) {
@@ -112,15 +117,16 @@ async function parseJagoResponse(res: Response, action: string): Promise<JagoPoc
   return (await res.json()) as JagoPocketsSummaryResponse;
 }
 
-export async function getJagoPockets(): Promise<JagoPocketsSummaryResponse> {
-  const res = await authFetch("/api/v1/jago-pockets");
+export async function getJagoPockets(accountId?: number): Promise<JagoPocketsSummaryResponse> {
+  const res = await authFetch(`/api/v1/jago-pockets${accountId ? `?account_id=${accountId}` : ""}`);
   return parseJagoResponse(res, "memuat");
 }
 
 export async function updateJagoPockets(
-  payload: JagoPocketTargetUpdate[]
+  payload: JagoPocketTargetUpdate[],
+  accountId?: number
 ): Promise<JagoPocketsSummaryResponse> {
-  const res = await authFetch("/api/v1/jago-pockets", {
+  const res = await authFetch(`/api/v1/jago-pockets${accountId ? `?account_id=${accountId}` : ""}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -133,4 +139,17 @@ export async function syncJagoPocketCommitments(): Promise<JagoPocketsSummaryRes
     method: "POST",
   });
   return parseJagoResponse(res, "menyelaraskan");
+}
+
+export async function createAccountPocket(payload: { account_id: number; name: string; role: string; target_amount: number }): Promise<JagoPocketItem> {
+  const res = await authFetch("/api/v1/jago-pockets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(typeof body?.detail === "string" ? body.detail : "Gagal menambah kantong. Periksa isian lalu coba lagi.");
+  }
+  return res.json();
 }

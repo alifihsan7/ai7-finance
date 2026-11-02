@@ -100,7 +100,7 @@ export function EditTransactionModal({
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit Transaksi"
+      title="Edit transaksi"
       subtitle={`Ubah data transaksi #${transaction.id}`}
       accent={type === "income" ? "mint" : "coral"}
       maxWidth="md"
@@ -113,10 +113,10 @@ export function EditTransactionModal({
         )}
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2">
-            Tipe Transaksi
+          <label className="block text-xs font-sans text-zinc-400 mb-2">
+            Tipe transaksi
           </label>
-          {isTransfer ? <p className="text-sm text-luma-smoke">{type === "transfer_in" ? "Transfer masuk" : "Transfer keluar"}. Nominal dan tanggal akan diperbarui pada kedua sisi transfer.</p> : <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-2xl border border-white/[0.08]">
+          {isTransfer ? <p className="text-sm text-luma-smoke">{type === "transfer_in" ? "Transfer masuk" : "Transfer keluar"}. Nominal dan tanggal akan diperbarui pada kedua sisi transfer.</p> : <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-2xl border border-luma-smokeline">
             <button
               type="button"
               onClick={() => setType("expense")}
@@ -143,8 +143,8 @@ export function EditTransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
-            Nominal Transaksi
+          <label className="block text-xs font-sans text-zinc-400 mb-1.5">
+            Nominal transaksi
           </label>
           <CurrencyInput
             value={amount}
@@ -156,20 +156,20 @@ export function EditTransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
-            Tanggal Transaksi
+          <label className="block text-xs font-sans text-zinc-400 mb-1.5">
+            Tanggal transaksi
           </label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amberGold transition font-mono"
+            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amberGold transition font-sans"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-sans text-zinc-400 mb-1.5">
             Rekening / Akun
           </label>
           <CustomSelect
@@ -180,7 +180,7 @@ export function EditTransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-sans text-zinc-400 mb-1.5">
             Kategori
           </label>
           <CustomSelect
@@ -192,7 +192,7 @@ export function EditTransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-sans text-zinc-400 mb-1.5">
             Keterangan
           </label>
           <input
@@ -201,7 +201,7 @@ export function EditTransactionModal({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Contoh: Makan siang, bayar wifi..."
             required
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
@@ -209,16 +209,16 @@ export function EditTransactionModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-2.5 bg-obsidian-panel hover:bg-white/[0.06] border border-white/[0.08] text-zinc-400 hover:text-white rounded-2xl text-sm font-semibold transition cursor-pointer"
+            className="flex-1 py-2.5 bg-obsidian-panel hover:bg-white/[0.06] border border-luma-smokeline text-zinc-400 hover:text-white rounded-2xl text-sm font-semibold transition cursor-pointer"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 py-2.5 bg-amberGold hover:bg-amber-300 text-slate-950 font-bold rounded-2xl text-sm transition disabled:opacity-50 shadow-sm cursor-pointer"
+            className="flex-1 py-2.5 bg-amberGold hover:bg-amber-300 text-slate-950 font-semibold rounded-2xl text-sm transition disabled:opacity-50 shadow-sm cursor-pointer"
           >
-            {loading ? "Menyimpan..." : "Simpan Perubahan"}
+            {loading ? "Menyimpan..." : "Simpan perubahan"}
           </button>
         </div>
       </form>
