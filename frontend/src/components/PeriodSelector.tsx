@@ -110,7 +110,7 @@ export function PeriodSelector({
         aria-label={currentPeriod.label || "Pilih periode"}
         title={currentPeriod.label || "Pilih periode"}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full min-w-0 min-h-11 py-2 px-3.5 rounded-xl text-xs font-medium bg-obsidian-card border border-white/[0.08] hover:border-amberGold/50 text-slateText-primary hover:bg-obsidian-hover transition inline-flex items-center gap-2 group"
+        className="w-full min-w-0 min-h-11 py-2 px-3.5 rounded-xl text-xs font-medium bg-obsidian-card border border-luma-smokeline hover:border-amberGold/50 text-slateText-primary hover:bg-obsidian-hover transition inline-flex items-center gap-2 group"
       >
         <Calendar className="w-3.5 h-3.5 text-amberGold shrink-0 group-hover:scale-105 transition-transform" />
         <span className="min-w-0 flex-1 text-left truncate">
@@ -125,9 +125,9 @@ export function PeriodSelector({
 
       {/* Floating Modal Popover */}
       {isOpen && (
-        <div id={popupId} aria-label="Pilih periode" className="luma-period-popup absolute left-0 mt-2 z-[90] bg-obsidian-card border border-white/[0.12] rounded-2xl shadow-2xl p-3.5">
+        <div id={popupId} aria-label="Pilih periode" className="luma-period-popup absolute left-0 mt-2 z-[90] bg-obsidian-card border border-luma-smokeline rounded-2xl shadow-2xl p-3.5">
           {/* Header Type Tabs */}
-          <div className="grid grid-cols-4 gap-1 p-1 bg-obsidian-panel rounded-full border border-white/[0.08] mb-3">
+          <div className="grid grid-cols-4 gap-1 p-1 bg-obsidian-panel rounded-full border border-luma-smokeline mb-3">
             <button
               type="button"
               onClick={() => setActiveTab("cycle")}
@@ -182,7 +182,7 @@ export function PeriodSelector({
           <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
             {activeTab === "cycle" && (
               <>
-                <div className="text-xs font-semibold uppercase tracking-wider text-slateText-muted px-2 py-1">
+                <div className="text-xs font-semibold text-slateText-muted px-2 py-1">
                   Siklus Anggaran Dinamis
                 </div>
                 {periodGroups.cycles.length === 0 ? (
@@ -222,7 +222,7 @@ export function PeriodSelector({
 
             {activeTab === "week" && (
               <>
-                <div className="text-xs font-semibold uppercase tracking-wider text-slateText-muted px-2 py-1">
+                <div className="text-xs font-semibold text-slateText-muted px-2 py-1">
                   Periode Mingguan (7 Hari)
                 </div>
                 {periodGroups.weeks.map((opt) => {
@@ -256,7 +256,7 @@ export function PeriodSelector({
 
             {activeTab === "month" && (
               <>
-                <div className="text-xs font-semibold uppercase tracking-wider text-slateText-muted px-2 py-1">
+                <div className="text-xs font-semibold text-slateText-muted px-2 py-1">
                   Kalender Bulanan
                 </div>
                 {periodGroups.months.map((opt) => {
@@ -290,7 +290,7 @@ export function PeriodSelector({
 
             {activeTab === "custom" && (
               <form onSubmit={handleApplyCustom} className="p-2 space-y-3">
-                <div className="text-xs font-semibold uppercase tracking-wider text-slateText-muted">
+                <div className="text-xs font-semibold text-slateText-muted">
                   Tentukan Rentang Tanggal Bebas
                 </div>
                 <div className="space-y-2">
@@ -302,7 +302,7 @@ export function PeriodSelector({
                       required
                       value={customStart}
                       onChange={(e) => setCustomStart(e.target.value)}
-                      className="w-full bg-obsidian-panel border border-white/[0.08] rounded-xl px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-amberGold"
+                      className="w-full bg-obsidian-panel border border-luma-smokeline rounded-xl px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-amberGold"
                     />
                   </div>
                   <div>
@@ -313,7 +313,7 @@ export function PeriodSelector({
                       required
                       value={customEnd}
                       onChange={(e) => setCustomEnd(e.target.value)}
-                      className="w-full bg-obsidian-panel border border-white/[0.08] rounded-xl px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-amberGold"
+                      className="w-full bg-obsidian-panel border border-luma-smokeline rounded-xl px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-amberGold"
                     />
                   </div>
                 </div>

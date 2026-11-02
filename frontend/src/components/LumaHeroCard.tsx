@@ -26,7 +26,7 @@ interface LumaHeroCardProps {
 
 /**
  * LumaHeroCard — unified calm financial cockpit hero (Luma Dark Glass v2.0).
- * Merges Total Saldo Kas + Batas Belanja Harian into one smoked-glass card
+ * Merges Total saldo Kas + Batas Belanja Harian into one smoked-glass card
  * with a warm ember ambient glow. Ivory primary CTA, 44px touch targets.
  */
 export function LumaHeroCard({
@@ -83,8 +83,8 @@ export function LumaHeroCard({
       <div className="relative">
         {/* Eyebrow + pace badge */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <span className="text-xs font-semibold text-luma-smoke uppercase tracking-[0.12em]">
-            Total Saldo Kas · {accountCount} Rekening
+          <span className="text-xs font-semibold text-luma-smoke ">
+            Total saldo Kas · {accountCount} Rekening
           </span>
           <span
             className={`inline-flex items-center gap-1.5 text-xs font-semibold font-sans px-3 py-1 rounded-full border whitespace-nowrap ${
@@ -114,15 +114,15 @@ export function LumaHeroCard({
             <ArrowDownRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             {formatRupiah(expense)} keluar
           </span>
-          <span className="inline-flex items-center gap-1.5 text-luma-smoke font-sans font-semibold whitespace-nowrap bg-white/[0.05] border border-white/[0.1] px-3 py-1.5 rounded-full">
+          <span className="inline-flex items-center gap-1.5 text-luma-smoke font-sans font-semibold whitespace-nowrap bg-white/[0.05] border border-luma-smokeline px-3 py-1.5 rounded-full">
             Net: {formatRupiah(income - expense)}
           </span>
         </div>
 
         {/* Safe-to-spend strip — integrated, not a second card */}
-        <div className="mt-5 pt-5 border-t border-white/[0.1] grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="rounded-3xl bg-white/[0.04] border border-white/[0.08] p-4 min-w-0">
-            <div className="flex items-center gap-1.5 text-xs text-luma-smoke font-semibold uppercase tracking-[0.1em]">
+        <div className="mt-5 pt-5 border-t border-luma-smokeline grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="rounded-3xl bg-white/[0.04] border border-luma-smokeline p-4 min-w-0">
+            <div className="flex items-center gap-1.5 text-xs text-luma-smoke font-semibold ">
               <Wallet className="w-3.5 h-3.5 text-luma-ember shrink-0" aria-hidden="true" />
               <span className="truncate">Batas Belanja Harian</span>
             </div>
@@ -137,8 +137,8 @@ export function LumaHeroCard({
               {quotaPct !== null ? <span> · {quotaPct}%</span> : null}
             </div>
           </div>
-          <div className="rounded-3xl bg-white/[0.04] border border-white/[0.08] p-4 min-w-0">
-            <div className="text-xs text-luma-smoke font-semibold uppercase tracking-[0.1em]">
+          <div className="rounded-3xl bg-white/[0.04] border border-luma-smokeline p-4 min-w-0">
+            <div className="text-xs text-luma-smoke font-semibold ">
               Rentang Siklus
             </div>
             {periodEnded ? (
@@ -166,12 +166,12 @@ export function LumaHeroCard({
             className="luma-touch flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-full bg-luma-ivory text-luma-charcoal hover:brightness-95 active:scale-[0.98] transition shadow-luma-glass cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.75] shrink-0" aria-hidden="true" />
-            Catat Transaksi
+            Catat transaksi
           </button>
           <button
             type="button"
             onClick={onOpenPaycheck}
-            className="luma-touch flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-full bg-white/[0.06] text-luma-ivory border border-white/[0.12] hover:bg-white/[0.1] hover:border-white/[0.2] active:scale-[0.98] transition cursor-pointer"
+            className="luma-touch flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-full bg-white/[0.06] text-luma-ivory border border-luma-smokeline hover:bg-white/[0.1] hover:border-white/[0.2] active:scale-[0.98] transition cursor-pointer"
           >
             Laporan / Checklist Gajian
             <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />

@@ -123,7 +123,7 @@ const TX_ACCOUNT_OPTIONS = [
   { value: "Rekening Utama", label: "Rekening Utama (Operasional)", color: "bg-blue-500", description: "Pos belanja harian & saku" },
   { value: "Rekening Tagihan", label: "Rekening Tagihan (Subs & Bills)", color: "bg-purple-500", description: "Pos langganan rutin" },
   { value: "Investasi", label: "Investasi (Portofolio)", color: "bg-teal-500", description: "Portofolio tabungan investasi" },
-  { value: "Dana Darurat", label: "Dana Darurat (Cadangan Likuid)", color: "bg-cyan-500", description: "Pos cadangan dana darurat" },
+  { value: "Dana Darurat", label: "Dana darurat (Cadangan Likuid)", color: "bg-cyan-500", description: "Pos cadangan dana darurat" },
   { value: "Cash", label: "Cash (Uang Tunai)", color: "bg-amber-500", description: "Uang tunai fisik" },
 ];
 
@@ -138,7 +138,7 @@ const TX_CATEGORY_OPTIONS = [
   { value: "Kesehatan & Gym", label: "Kesehatan & Gym" },
   { value: "Langganan & Servis", label: "Langganan & Servis" },
   { value: "Keluarga & Sosial", label: "Keluarga & Sosial" },
-  { value: "Dana Darurat", label: "Dana Darurat" },
+  { value: "Dana Darurat", label: "Dana darurat" },
   { value: "Lainnya", label: "Lainnya" },
 ];
 
@@ -1037,7 +1037,7 @@ export default function FinanceDashboard() {
                   title={sidebarCollapsed ? item.name : undefined}
                   className={`luma-touch flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                     isActive
-                      ? "text-luma-ivory bg-white/[0.08] border border-white/[0.1] font-semibold"
+                      ? "text-luma-ivory bg-white/[0.08] border border-luma-smokeline font-semibold"
                       : "text-luma-smoke hover:text-luma-ivory border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
                   }`}
                 >
@@ -1050,7 +1050,7 @@ export default function FinanceDashboard() {
         </div>
 
         {/* Secondary Navigation (Pengaturan) & Slim user footer */}
-        <div className="mt-8 pt-5 border-t border-white/[0.08] space-y-2">
+        <div className="mt-8 pt-5 border-t border-luma-smokeline space-y-2">
           <nav aria-label="Navigasi sekunder" className="flex flex-col space-y-1">
             <button
               type="button"
@@ -1064,7 +1064,7 @@ export default function FinanceDashboard() {
               title={sidebarCollapsed ? "Pengaturan" : undefined}
               className={`luma-touch flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                 activeNav === "Pengaturan"
-                  ? "text-luma-ivory bg-white/[0.08] border border-white/[0.1] font-semibold"
+                  ? "text-luma-ivory bg-white/[0.08] border border-luma-smokeline font-semibold"
                   : "text-luma-smoke hover:text-luma-ivory border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
               }`}
             >
@@ -1084,7 +1084,7 @@ export default function FinanceDashboard() {
                 setIsAuthModalOpen(true);
               }
             }}
-            className="luma-touch w-full p-3 rounded-3xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] transition text-left cursor-pointer group"
+            className="luma-touch w-full p-3 rounded-3xl bg-white/[0.05] hover:bg-white/[0.08] border border-luma-smokeline transition text-left cursor-pointer group"
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-9 h-9 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-semibold text-xs flex items-center justify-center shrink-0">
@@ -1104,7 +1104,7 @@ export default function FinanceDashboard() {
                   Aktif
                 </span>
               ) : (
-                <span className="luma-sidebar-copy inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
+                <span className="luma-sidebar-copy inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-luma-smokeline shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-luma-smoke"></span>
                   Tamu
                 </span>
@@ -1130,16 +1130,16 @@ export default function FinanceDashboard() {
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={fetchData}
-            title="Refresh Data"
+            title="Refresh data"
             aria-label="Refresh data"
-            className="hidden luma-touch min-w-[44px] items-center justify-center text-luma-smoke hover:text-luma-ivory bg-white/[0.05] border border-white/[0.08] rounded-full transition active:scale-95 cursor-pointer"
+            className="hidden luma-touch min-w-[44px] items-center justify-center text-luma-smoke hover:text-luma-ivory bg-white/[0.05] border border-luma-smokeline rounded-full transition active:scale-95 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-luma-ember" : ""}`} />
           </button>
           <ThemeToggle size="sm" />
           <button
             onClick={() => setIsPaycheckModalOpen(true)}
-            title="Gajian Masuk"
+            title="Gajian masuk"
             className="hidden luma-touch px-3 py-1.5 bg-luma-sage/15 text-luma-sage border border-luma-sage/30 font-semibold text-xs rounded-full transition active:scale-95 items-center gap-1 cursor-pointer"
           >
             <ArrowDownLeft className="w-3.5 h-3.5 shrink-0" />
@@ -1163,7 +1163,7 @@ export default function FinanceDashboard() {
             onClick={() => setIsMobileDrawerOpen(true)}
             title="Buka Menu"
             aria-label="Buka menu navigasi"
-            className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-smoke hover:text-luma-ivory bg-white/[0.05] border border-white/[0.08] rounded-full transition active:scale-95 cursor-pointer"
+            className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-smoke hover:text-luma-ivory bg-white/[0.05] border border-luma-smokeline rounded-full transition active:scale-95 cursor-pointer"
           >
             <Menu className="w-4 h-4" />
           </button>
@@ -1183,7 +1183,7 @@ export default function FinanceDashboard() {
           <div className="relative w-[280px] max-w-[85vw] bg-luma-charcoal border-r border-luma-smokeline/60 p-5 flex flex-col justify-between h-full z-10 overflow-y-auto">
             <div>
               {/* Header with Close */}
-              <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+              <div className="flex items-center justify-between pb-4 border-b border-luma-smokeline">
                 <div className="flex items-center gap-2.5">
                   <div>
                     <div className="font-semibold text-base tracking-tight text-luma-ivory leading-none">
@@ -1227,7 +1227,7 @@ export default function FinanceDashboard() {
                       aria-current={isActive ? "page" : undefined}
                       className={`luma-touch min-h-[44px] flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                         isActive
-                          ? "text-luma-ivory bg-white/[0.08] border border-white/[0.1] font-semibold"
+                          ? "text-luma-ivory bg-white/[0.08] border border-luma-smokeline font-semibold"
                           : "text-luma-smoke hover:text-luma-ivory border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
                       }`}
                     >
@@ -1239,9 +1239,9 @@ export default function FinanceDashboard() {
               </nav>
 
               {/* Quick Actions inside Drawer */}
-              <div className="mt-6 pt-4 border-t border-white/[0.08] space-y-2">
-                <span className="text-xs font-semibold text-luma-smoke uppercase tracking-wider block mb-1">
-                  Aksi Cepat
+              <div className="mt-6 pt-4 border-t border-luma-smokeline space-y-2">
+                <span className="text-xs font-semibold text-luma-smoke block mb-1">
+                  Aksi cepat
                 </span>
                 <button
                   onClick={() => {
@@ -1251,13 +1251,13 @@ export default function FinanceDashboard() {
                   className="luma-touch w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold rounded-full bg-luma-gold/15 text-luma-gold border border-luma-gold/30 hover:bg-luma-gold/25 transition"
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0" />
-                  <span>Transfer Antar Rekening</span>
+                  <span>Transfer antar rekening</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleExportCSV}
                   disabled={isExportingCSV}
-                  className="luma-touch w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium rounded-full bg-white/[0.05] border border-white/[0.08] text-luma-ivory hover:bg-white/[0.08] transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="luma-touch w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium rounded-full bg-white/[0.05] border border-luma-smokeline text-luma-ivory hover:bg-white/[0.08] transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isExportingCSV ? (
                     <RefreshCw className="w-4 h-4 shrink-0 animate-spin text-luma-ember" />
@@ -1284,7 +1284,7 @@ export default function FinanceDashboard() {
             </div>
 
             {/* Slim profile footer — single calm line */}
-            <div className="pt-4 border-t border-white/[0.08] text-xs mt-6">
+            <div className="pt-4 border-t border-luma-smokeline text-xs mt-6">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-semibold text-xs flex items-center justify-center shrink-0">
                   {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
@@ -1301,7 +1301,7 @@ export default function FinanceDashboard() {
                     Aktif
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
+                  <span className="inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-luma-smokeline shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-luma-smoke"></span>
                     Tamu
                   </span>
@@ -1350,7 +1350,7 @@ export default function FinanceDashboard() {
         <button
           onClick={() => setIsModalOpen(true)}
           className="luma-touch -mt-5 w-12 h-12 rounded-full bg-luma-ivory text-luma-charcoal shadow-lg shadow-black/25 flex items-center justify-center font-semibold active:scale-90 transition border-2 border-luma-charcoal shrink-0 cursor-pointer"
-          title="Catat Transaksi Baru"
+          title="Catat transaksi baru"
           aria-label="Catat transaksi baru"
         >
           <Plus className="w-6 h-6 stroke-[3]" />
@@ -1421,7 +1421,7 @@ export default function FinanceDashboard() {
                   aria-haspopup="menu"
                   aria-expanded={isExportMenuOpen}
                   aria-label="Utilitas"
-                  className="luma-touch py-2 px-3 sm:px-3.5 text-xs rounded-full font-semibold border border-white/[0.12] bg-white/[0.06] text-luma-ivory hover:bg-white/[0.1] hover:border-white/[0.2] transition inline-flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
+                  className="luma-touch py-2 px-3 sm:px-3.5 text-xs rounded-full font-semibold border border-luma-smokeline bg-white/[0.06] text-luma-ivory hover:bg-white/[0.1] hover:border-white/[0.2] transition inline-flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
                 >
                   <Download className="w-3.5 h-3.5 text-luma-smoke shrink-0" />
                   <span className="font-semibold hidden sm:inline">Utilitas</span>
@@ -1429,7 +1429,7 @@ export default function FinanceDashboard() {
                 </button>
 
                 {isExportMenuOpen && (
-                  <div role="menu" className="absolute right-0 mt-2 w-60 p-2 bg-luma-coal/95 backdrop-blur-md border border-white/[0.12] rounded-3xl shadow-luma-glass z-50 text-xs space-y-1 animate-fadeIn">
+                  <div role="menu" className="absolute right-0 mt-2 w-60 p-2 bg-luma-coal/95 backdrop-blur-md border border-luma-smokeline rounded-3xl shadow-luma-glass z-50 text-xs space-y-1 animate-fadeIn">
                     <button
                       type="button"
                       onClick={() => {
@@ -1442,7 +1442,7 @@ export default function FinanceDashboard() {
                       <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-luma-ember" : "text-luma-smoke"}`} />
                       <div className="text-left">
                         <div className="font-semibold text-xs text-luma-ivory">
-                          Refresh Data
+                          Refresh data
                         </div>
                         <div className="text-xs text-luma-smoke">Saldo & transaksi terkini</div>
                       </div>
@@ -1459,7 +1459,7 @@ export default function FinanceDashboard() {
                       <ArrowDownLeft className="w-4 h-4 shrink-0" />
                       <div className="text-left">
                         <div className="font-semibold text-xs">
-                          Gajian Masuk
+                          Gajian masuk
                         </div>
                         <div className="text-xs text-luma-smoke">Checklist distribusi gajian</div>
                       </div>
@@ -1491,7 +1491,7 @@ export default function FinanceDashboard() {
                         rel="noopener noreferrer"
                         onClick={() => setIsExportMenuOpen(false)}
                         role="menuitem"
-                        className="luma-touch flex items-center gap-2.5 px-3 py-2 rounded-2xl text-luma-sage hover:bg-luma-sage/10 transition border-t border-white/[0.08]"
+                        className="luma-touch flex items-center gap-2.5 px-3 py-2 rounded-2xl text-luma-sage hover:bg-luma-sage/10 transition border-t border-luma-smokeline"
                       >
                         <FileSpreadsheet className="w-4 h-4 shrink-0" />
                         <div className="text-left min-w-0">
@@ -1514,7 +1514,7 @@ export default function FinanceDashboard() {
                 className="luma-touch py-2 px-3 sm:px-4 text-xs font-semibold rounded-full bg-luma-ivory text-luma-charcoal hover:brightness-95 transition inline-flex items-center justify-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                <span className="font-semibold">Catat Transaksi</span>
+                <span className="font-semibold">Catat transaksi</span>
               </button>
             </div>
           </div>
@@ -1527,7 +1527,7 @@ export default function FinanceDashboard() {
               {activeNav === "Ringkasan" && "Ringkasan"}
               {activeNav === "Transaksi" && "Transaksi"}
               {activeNav === "Anggaran" && "Anggaran"}
-              {activeNav === "Rencana" && (planSubTab === "target" ? "Rencana — Target Tabungan" : "Rencana — Tagihan")}
+              {activeNav === "Rencana" && (planSubTab === "target" ? "Rencana — Target tabungan" : "Rencana — Tagihan")}
               {activeNav === "Laporan" && "Laporan"}
               {activeNav === "Pengaturan" && (
                 settingsSubTab === "rekening"
@@ -1562,7 +1562,7 @@ export default function FinanceDashboard() {
               </div>
               <div>
                 <p className="text-xs sm:text-sm font-semibold text-luma-ivory tracking-tight">
-                  Mode Tamu (Belum Masuk)
+                  Mode tamu (belum masuk)
                 </p>
                 <p className="text-xs text-luma-smoke mt-0.5 leading-relaxed">
                   Masuk untuk melihat dan mencatat keuangan Anda.
@@ -1574,7 +1574,7 @@ export default function FinanceDashboard() {
               onClick={() => setIsAuthModalOpen(true)}
               className="luma-touch w-full sm:w-auto px-4 py-2 rounded-full bg-luma-ivory hover:brightness-95 text-luma-charcoal font-semibold text-xs transition shrink-0 cursor-pointer text-center"
             >
-              Masuk / Daftar Sekarang
+              Masuk / daftar sekarang
             </button>
           </div>
         )}
@@ -1594,7 +1594,7 @@ export default function FinanceDashboard() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-sm text-luma-ivory">
-                        Distribusi Gajian Sedang Berjalan
+                        Distribusi gajian sedang berjalan
                       </span>
                       <span className="px-2 py-0.5 rounded-full text-xs font-sans font-semibold bg-luma-sage/15 text-luma-sage border border-luma-sage/30">
                         {activePaycheckSession.completed_steps} / {activePaycheckSession.total_steps} Selesai ({activePaycheckSession.progress_percentage}%)
@@ -1695,7 +1695,7 @@ export default function FinanceDashboard() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="rounded-2xl bg-white/[0.04] border border-white/[0.08] p-4 space-y-3">
+                    <div key={i} className="rounded-2xl bg-white/[0.04] border border-luma-smokeline p-4 space-y-3">
                       <div className="flex justify-between items-center gap-2">
                         <div className="h-4 w-24 rounded-full bg-white/[0.06] animate-pulse" />
                         <div className="h-4 w-10 rounded-full bg-white/[0.06] animate-pulse" />
@@ -1755,7 +1755,7 @@ export default function FinanceDashboard() {
                           setPlanSubTab("target");
                           window.location.hash = "#/plan";
                         }}
-                        className="rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.16] p-4 space-y-3 cursor-pointer transition-all duration-200 text-left"
+                        className="rounded-2xl bg-white/[0.04] border border-luma-smokeline hover:border-white/[0.16] p-4 space-y-3 cursor-pointer transition-all duration-200 text-left"
                       >
                         <div className="flex justify-between items-center gap-2">
                           <span className="text-sm font-semibold text-luma-ivory truncate flex items-center gap-2 min-w-0">
@@ -1880,7 +1880,7 @@ export default function FinanceDashboard() {
                       Kantong Tagihan Rutin &amp; Utilitas
                     </h3>
                     <span className="text-xs font-sans font-semibold px-2.5 py-0.5 rounded-full border bg-coralFall/15 text-coralFall border-coralFall/30">
-                      TAGIHAN
+                      Tagihan
                     </span>
                   </div>
                   <p className="text-xs text-slateText-secondary mt-0.5">
@@ -1925,7 +1925,7 @@ export default function FinanceDashboard() {
                   <div className="flex justify-between items-center gap-2">
                     <span className="font-semibold text-slateText-primary text-sm truncate">Pos Tabungan &amp; Investasi</span>
                     <span className="text-xs font-sans px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-cyanHub shrink-0 whitespace-nowrap">
-                      Pertumbuhan Aset
+                      Pertumbuhan aset
                     </span>
                   </div>
                   {loading ? (
@@ -1979,8 +1979,8 @@ export default function FinanceDashboard() {
         {activeNav === "Rencana" && (
           <div className="space-y-6 animate-fadeIn">
             {/* Sub-tab Navigation */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-white/[0.08]">
-              <div className="inline-flex p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08]" role="tablist" aria-label="Sub navigasi Rencana">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-luma-smokeline">
+              <div className="inline-flex p-1 rounded-2xl bg-white/[0.04] border border-luma-smokeline" role="tablist" aria-label="Sub navigasi Rencana">
                 <button
                   type="button"
                   role="tab"
@@ -1991,12 +1991,12 @@ export default function FinanceDashboard() {
                   }}
                   className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${
                     planSubTab === "target"
-                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      ? "bg-white/[0.1] text-luma-ivory border border-luma-smokeline shadow-xs"
                       : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
                   }`}
                 >
                   <Target className="w-4 h-4 shrink-0 text-luma-ember" />
-                  <span>Target Tabungan</span>
+                  <span>Target tabungan</span>
                   <span className="text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
                     {goals.length}
                   </span>
@@ -2011,7 +2011,7 @@ export default function FinanceDashboard() {
                   }}
                   className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${
                     planSubTab === "tagihan"
-                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      ? "bg-white/[0.1] text-luma-ivory border border-luma-smokeline shadow-xs"
                       : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
                   }`}
                 >
@@ -2032,7 +2032,7 @@ export default function FinanceDashboard() {
                     className="luma-touch min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-luma-ivory text-luma-charcoal font-semibold rounded-full hover:brightness-95 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>Tambah Target</span>
+                    <span>Tambah target</span>
                   </button>
                 ) : (
                   <button
@@ -2041,7 +2041,7 @@ export default function FinanceDashboard() {
                     className="luma-touch min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-amberGold text-slate-950 font-semibold rounded-full hover:bg-yellow-300 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95 shadow-sm"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>Tambah Tagihan</span>
+                    <span>Tambah tagihan</span>
                   </button>
                 )}
               </div>
@@ -2106,8 +2106,8 @@ export default function FinanceDashboard() {
         {activeNav === "Pengaturan" && (
           <div className="space-y-6 animate-fadeIn">
             {/* Sub-tab Navigation */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-white/[0.08]">
-              <div className="inline-flex p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08] overflow-x-auto" role="tablist" aria-label="Sub navigasi Pengaturan">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-luma-smokeline">
+              <div className="inline-flex p-1 rounded-2xl bg-white/[0.04] border border-luma-smokeline overflow-x-auto" role="tablist" aria-label="Sub navigasi Pengaturan">
                 <button
                   type="button"
                   role="tab"
@@ -2118,7 +2118,7 @@ export default function FinanceDashboard() {
                   }}
                   className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer shrink-0 ${
                     settingsSubTab === "rekening"
-                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      ? "bg-white/[0.1] text-luma-ivory border border-luma-smokeline shadow-xs"
                       : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
                   }`}
                 >
@@ -2138,7 +2138,7 @@ export default function FinanceDashboard() {
                   }}
                   className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer shrink-0 ${
                     settingsSubTab === "kantong"
-                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      ? "bg-white/[0.1] text-luma-ivory border border-luma-smokeline shadow-xs"
                       : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
                   }`}
                 >
@@ -2158,7 +2158,7 @@ export default function FinanceDashboard() {
                   }}
                   className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer shrink-0 ${
                     settingsSubTab === "kategori"
-                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      ? "bg-white/[0.1] text-luma-ivory border border-luma-smokeline shadow-xs"
                       : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
                   }`}
                 >
@@ -2178,7 +2178,7 @@ export default function FinanceDashboard() {
                   }}
                   className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer shrink-0 ${
                     settingsSubTab === "profil"
-                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      ? "bg-white/[0.1] text-luma-ivory border border-luma-smokeline shadow-xs"
                       : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
                   }`}
                 >
@@ -2196,7 +2196,7 @@ export default function FinanceDashboard() {
                     className="luma-touch min-h-[44px] py-2 px-3.5 text-xs font-semibold rounded-xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
                   >
                     <ArrowLeftRight className="w-3.5 h-3.5 text-cyanHub shrink-0" />
-                    <span>Transfer Antar Rekening</span>
+                    <span>Transfer antar rekening</span>
                   </button>
                   <button
                     type="button"
@@ -2204,7 +2204,7 @@ export default function FinanceDashboard() {
                     className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                    <span>Tambah Rekening</span>
+                    <span>Tambah rekening</span>
                   </button>
                 </div>
               )}
@@ -2216,10 +2216,10 @@ export default function FinanceDashboard() {
                     onClick={handleSyncPockets}
                     disabled={isSyncingPockets}
                     title="Selaraskan target kantong dengan Langganan aktif"
-                    className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-white/[0.06] text-luma-ivory border border-white/[0.12] hover:bg-white/[0.1] hover:border-white/[0.2] transition inline-flex items-center justify-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-white/[0.06] text-luma-ivory border border-luma-smokeline hover:bg-white/[0.1] hover:border-white/[0.2] transition inline-flex items-center justify-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${isSyncingPockets ? "animate-spin" : ""}`} />
-                    <span>{isSyncingPockets ? "Menyelaraskan..." : "Sync Komitmen"}</span>
+                    <span>{isSyncingPockets ? "Menyelaraskan..." : "Sync komitmen"}</span>
                   </button>
                   <button
                     type="button"
@@ -2228,7 +2228,7 @@ export default function FinanceDashboard() {
                     className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
                   >
                     <Pencil className="w-3.5 h-3.5 shrink-0" />
-                    <span>Edit Target Sub-Kantong</span>
+                    <span>Edit target sub-kantong</span>
                   </button>
                 </div>
               )}
@@ -2289,7 +2289,7 @@ export default function FinanceDashboard() {
             {settingsSubTab === "profil" && (
               <div className="space-y-6 animate-fadeIn">
                 <div className="luma-glass !rounded-3xl p-6 sm:p-7 space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.08]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-luma-smokeline">
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-semibold text-xl flex items-center justify-center shrink-0">
                         {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
@@ -2305,10 +2305,10 @@ export default function FinanceDashboard() {
                           {currentUser ? (
                             <span className="inline-flex items-center gap-1.5 text-xs text-luma-sage font-medium px-2.5 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25">
                               <span className="w-1.5 h-1.5 rounded-full bg-luma-sage"></span>
-                              Akun Terverifikasi
+                              Akun terverifikasi
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+                            <span className="inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-luma-smokeline">
                               <span className="w-1.5 h-1.5 rounded-full bg-luma-smoke"></span>
                               Tamu
                             </span>
@@ -2318,8 +2318,8 @@ export default function FinanceDashboard() {
                               Telegram Terhubung ({currentUser.telegram_chat_id})
                             </span>
                           ) : currentUser ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
-                              Telegram Belum Terhubung
+                            <span className="inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-luma-smokeline">
+                              Telegram belum terhubung
                             </span>
                           ) : null}
                         </div>
@@ -2331,7 +2331,7 @@ export default function FinanceDashboard() {
                         <button
                           type="button"
                           onClick={() => setIsProfileModalOpen(true)}
-                          className="luma-touch min-h-[44px] px-4 py-2 rounded-full bg-white/[0.08] hover:bg-white/[0.12] text-luma-ivory border border-white/[0.12] text-xs font-semibold transition cursor-pointer"
+                          className="luma-touch min-h-[44px] px-4 py-2 rounded-full bg-white/[0.08] hover:bg-white/[0.12] text-luma-ivory border border-luma-smokeline text-xs font-semibold transition cursor-pointer"
                         >
                           Ubah Profil &amp; Telegram
                         </button>
@@ -2341,7 +2341,7 @@ export default function FinanceDashboard() {
                           onClick={() => setIsAuthModalOpen(true)}
                           className="luma-touch min-h-[44px] px-4 py-2 rounded-full bg-luma-ivory hover:brightness-95 text-luma-charcoal text-xs font-semibold transition cursor-pointer"
                         >
-                          Masuk / Daftar
+                          Masuk / daftar
                         </button>
                       )}
                     </div>
@@ -2350,9 +2350,9 @@ export default function FinanceDashboard() {
                   {/* Preferensi Antarmuka */}
                   <div className="space-y-3">
                     <h3 className="ai7-type-card text-luma-ivory tracking-tight">
-                      Preferensi Antarmuka
+                      Preferensi antarmuka
                     </h3>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white/[0.03] border border-luma-smokeline">
                       <div>
                         <div className="text-xs font-semibold text-luma-ivory">Tema Tampilan</div>
                         <div className="text-xs text-luma-smoke mt-0.5">
@@ -2369,7 +2369,7 @@ export default function FinanceDashboard() {
                   {currentUser?.id === 1 && googleSheetUrl && (
                     <div className="space-y-2 pt-2">
                       <h3 className="ai7-type-card text-luma-ivory tracking-tight">
-                        Integrasi Data
+                        Integrasi data
                       </h3>
                       <a
                         href={googleSheetUrl}
@@ -2393,7 +2393,7 @@ export default function FinanceDashboard() {
             )}
 
             {/* Seksi 3: Navigasi CTA ke Transaksi */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-white/[0.08] bg-obsidian-panel/60 backdrop-blur-xs">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-luma-smokeline bg-obsidian-panel/60 backdrop-blur-xs">
               <div className="text-sm text-zinc-400">
                 Ingin melihat seluruh mutasi dan riwayat transaksi kas?
               </div>
@@ -2405,7 +2405,7 @@ export default function FinanceDashboard() {
                 }}
                 className="luma-touch text-xs font-semibold text-amberGold hover:underline flex items-center gap-1.5 cursor-pointer min-h-[44px]"
               >
-                <span>Buka Transaksi</span>
+                <span>Buka transaksi</span>
                 <span aria-hidden="true">→</span>
               </button>
             </div>
@@ -2444,8 +2444,8 @@ export default function FinanceDashboard() {
       >
         <form onSubmit={handleCreateSubscription} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-              Nama Layanan
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+              Nama layanan
             </label>
             <input
               type="text"
@@ -2453,16 +2453,16 @@ export default function FinanceDashboard() {
               placeholder="Contoh: Netflix, Spotify, Gym, ChatGPT"
               value={subName}
               onChange={(e) => setSubName(e.target.value)}
-              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
+              className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
             />
           </div>
 
           {/* Switch Mode Siklus */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-              Metode Perhitungan Jatuh Tempo
+            <label className="block text-xs font-semibold text-zinc-400 mb-2">
+              Metode perhitungan jatuh tempo
             </label>
-            <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-2xl border border-white/[0.08]">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-2xl border border-luma-smokeline">
               <button
                 type="button"
                 onClick={() => setSubBillingType("fixed_day")}
@@ -2492,15 +2492,15 @@ export default function FinanceDashboard() {
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Tgl Berakhir Spesifik (Gym)</span>
+                <span className="truncate">Tgl Berakhir spesifik (Gym)</span>
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                Nominal / Periode
+              <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+                Nominal / periode
               </label>
               <CurrencyInput
                 value={subAmount}
@@ -2514,8 +2514,8 @@ export default function FinanceDashboard() {
 
             {subBillingType === "fixed_day" ? (
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                  Jatuh Tempo (Tgl 1-31)
+                <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+                  Jatuh tempo (tgl 1-31)
                 </label>
                 <input
                   type="number"
@@ -2525,20 +2525,20 @@ export default function FinanceDashboard() {
                   placeholder="Contoh: 25"
                   value={subBillingDay}
                   onChange={(e) => setSubBillingDay(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
                 />
               </div>
             ) : (
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                  Tanggal Berakhir Riil
+                <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+                  Tanggal berakhir riil
                 </label>
                 <input
                   type="date"
                   required
                   value={subExactDueDate}
                   onChange={(e) => setSubExactDueDate(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
                 />
               </div>
             )}
@@ -2546,7 +2546,7 @@ export default function FinanceDashboard() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-20">
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
                 Kategori
               </label>
               <CustomSelect
@@ -2556,8 +2556,8 @@ export default function FinanceDashboard() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                Akun Autodebet
+              <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+                Akun autodebet
               </label>
               <CustomSelect
                 value={subAccount}
@@ -2568,23 +2568,23 @@ export default function FinanceDashboard() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-              Catatan Tambahan (Opsional)
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+              Catatan tambahan (opsional)
             </label>
             <input
               type="text"
               placeholder="Contoh: Share family plan / Kartu debit operasional"
               value={subNotes}
               onChange={(e) => setSubNotes(e.target.value)}
-              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
+              className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
             />
           </div>
 
-          <div className="pt-3 flex justify-end gap-3 border-t border-white/[0.08] mt-5">
+          <div className="pt-3 flex justify-end gap-3 border-t border-luma-smokeline mt-5">
             <button
               type="button"
               onClick={() => setIsSubModalOpen(false)}
-              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
+              className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-luma-smokeline hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
             >
               Batal
             </button>
@@ -2592,7 +2592,7 @@ export default function FinanceDashboard() {
               type="submit"
               className="px-5 py-2.5 text-xs sm:text-sm font-semibold bg-amberGold text-slate-950 hover:bg-amber-300 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer"
             >
-              Simpan Tagihan
+              Simpan tagihan
             </button>
           </div>
         </form>
@@ -2654,11 +2654,11 @@ export default function FinanceDashboard() {
         isOpen={txToDelete !== null}
         onClose={() => setTxToDelete(null)}
         onConfirm={handleConfirmDeleteTransaction}
-        title="Hapus Transaksi?"
+        title="Hapus transaksi?"
         message={`Apakah kamu yakin ingin menghapus transaksi "${txToDelete?.description}" senilai ${
           txToDelete ? formatRupiah(txToDelete.amount) : "Rp 0"
         }? Saldo rekening terkait akan otomatis disesuaikan.`}
-        confirmText="Hapus Transaksi"
+        confirmText="Hapus transaksi"
         loading={deleteLoading}
       />
 
@@ -2707,9 +2707,9 @@ export default function FinanceDashboard() {
         isOpen={goalToDelete !== null}
         onClose={() => setGoalToDelete(null)}
         onConfirm={handleConfirmDeleteGoal}
-        title="Hapus Target Tabungan?"
+        title="Hapus target tabungan?"
         message="Apakah Anda yakin ingin menghapus target tabungan ini? Progres capaian akan dihapus dari dashboard."
-        confirmText="Hapus Target"
+        confirmText="Hapus target"
         loading={deleteLoading}
       />
 

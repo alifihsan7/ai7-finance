@@ -82,7 +82,7 @@ export function EditJagoPocketsModal({
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit Target Sub-Kantong"
+      title="Edit target sub-kantong"
       subtitle="Perbarui plafon alokasi tiap sub-kantong operasional"
       icon={<Landmark className="w-5 h-5 text-amberGold" />}
       accent="amber"
@@ -99,12 +99,12 @@ export function EditJagoPocketsModal({
           {pockets.map((pocket) => (
             <div
               key={pocket.slug}
-              className="bg-obsidian-panel border border-white/[0.08] rounded-2xl p-4 space-y-2.5"
+              className="bg-obsidian-panel border border-luma-smokeline rounded-2xl p-4 space-y-2.5"
             >
               <div className="flex items-center justify-between gap-2">
                 <label
                   htmlFor={`jago-target-${pocket.slug}`}
-                  className="text-xs font-semibold text-zinc-300 uppercase tracking-wider"
+                  className="text-xs font-semibold text-zinc-300 "
                 >
                   {pocket.name}
                 </label>
@@ -129,11 +129,11 @@ export function EditJagoPocketsModal({
           <span className="font-semibold text-white tabular-nums">{formatRupiah(totalDraft)}</span>
         </div>
 
-        <div className="flex justify-end gap-3 pt-3 border-t border-white/[0.08] mt-5">
+        <div className="flex justify-end gap-3 pt-3 border-t border-luma-smokeline mt-5">
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            className="min-h-[44px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-luma-smokeline hover:border-white/[0.16] transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             Batal
           </button>
@@ -147,7 +147,7 @@ export function EditJagoPocketsModal({
             ) : (
               <>
                 <CheckCircle2 className="w-4 h-4 stroke-[2.5]" aria-hidden="true" />
-                Simpan Perubahan
+                Simpan perubahan
               </>
             )}
           </button>

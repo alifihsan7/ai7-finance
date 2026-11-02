@@ -86,7 +86,7 @@ export function CustomModal({
         </button>
 
         {/* Modal Header (Fixed at top of modal) */}
-        <div className="p-5 sm:p-6 pb-4 border-b border-white/[0.08] shrink-0">
+        <div className="p-5 sm:p-6 pb-4 border-b border-luma-smokeline shrink-0">
           <div className="flex items-start gap-3.5 pr-12 sm:pr-14">
             {icon && (
               <div

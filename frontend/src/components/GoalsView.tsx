@@ -159,10 +159,10 @@ export function GoalsView({
   return (
     <div className="space-y-8 sm:space-y-10">
       {/* Top Metrics Cards — Luma smoked glass */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+      <div className="ai7-metric-grid grid gap-4">
         <div className="luma-glass !rounded-3xl p-5 sm:p-6 space-y-2.5">
-          <div className="text-xs font-semibold text-luma-smoke uppercase tracking-wider truncate">
-            Total Target Tabungan
+          <div className="text-xs font-semibold text-luma-smoke truncate">
+            Total target tabungan
           </div>
           {loading ? (
             <Skeleton className="h-8 w-36 rounded-full" />
@@ -177,8 +177,8 @@ export function GoalsView({
         </div>
 
         <div className="luma-glass !rounded-3xl p-5 sm:p-6 space-y-2.5">
-          <div className="text-xs font-semibold text-luma-smoke uppercase tracking-wider truncate">
-            Total Terkumpul
+          <div className="text-xs font-semibold text-luma-smoke truncate">
+            Total terkumpul
           </div>
           {loading ? (
             <Skeleton className="h-8 w-36 rounded-full" />
@@ -193,8 +193,8 @@ export function GoalsView({
         </div>
 
         <div className="luma-glass !rounded-3xl p-5 sm:p-6 space-y-2.5">
-          <div className="text-xs font-semibold text-luma-smoke uppercase tracking-wider truncate">
-            Rata-rata Capaian
+          <div className="text-xs font-semibold text-luma-smoke truncate">
+            Rata-rata capaian
           </div>
           {loading ? (
             <Skeleton className="h-8 w-24 rounded-full" />
@@ -209,8 +209,8 @@ export function GoalsView({
         </div>
 
         <div className="luma-glass !rounded-3xl p-5 sm:p-6 space-y-2.5">
-          <div className="text-xs font-semibold text-luma-smoke uppercase tracking-wider truncate">
-            Status Sasaran
+          <div className="text-xs font-semibold text-luma-smoke truncate">
+            Status sasaran
           </div>
           {loading ? (
             <Skeleton className="h-8 w-28 rounded-full" />
@@ -244,7 +244,7 @@ export function GoalsView({
           className="luma-touch flex items-center gap-2 px-5 py-2.5 bg-luma-ivory text-luma-charcoal font-semibold rounded-full hover:brightness-95 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>Tambah Target</span>
+          <span>Tambah target</span>
         </button>
       </div>
 
@@ -273,7 +273,7 @@ export function GoalsView({
                 </div>
                 <Skeleton className="w-full h-3 rounded-full" />
               </div>
-              <div className="pt-2 border-t border-white/[0.08] flex justify-between">
+              <div className="pt-2 border-t border-luma-smokeline flex justify-between">
                 <Skeleton className="w-20 h-4 rounded-full" />
                 <Skeleton className="w-24 h-4 rounded-full" />
               </div>
@@ -286,7 +286,7 @@ export function GoalsView({
             <Target className="w-7 h-7" />
           </div>
           <div>
-            <h3 className="ai7-type-card text-luma-ivory">Belum Ada Target Tabungan</h3>
+            <h3 className="ai7-type-card text-luma-ivory">Belum ada target tabungan</h3>
             <p className="text-xs sm:text-sm text-luma-smoke mt-1 max-w-md mx-auto">
               Mulai tetapkan target tabungan masa depan atau portofolio investasi Anda untuk memantau capaian finansial siklus.
             </p>
@@ -296,7 +296,7 @@ export function GoalsView({
             className="luma-touch inline-flex items-center gap-2 px-5 py-2.5 bg-luma-ivory text-luma-charcoal font-semibold rounded-full hover:brightness-95 transition text-sm whitespace-nowrap cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Buat Target Pertama</span>
+            <span>Buat target pertama</span>
           </button>
         </div>
       ) : (
@@ -322,17 +322,17 @@ export function GoalsView({
                       <div className="min-w-0 space-y-1">
                         {/* Ghost badges with glowing status dot */}
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs font-medium text-luma-smoke">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-luma-smokeline text-xs font-medium text-luma-smoke">
                             <span className={`w-1.5 h-1.5 rounded-full ${theme.dot}`} />
                             {goal.category}
                           </span>
 
                           {goal.linked_account ? (
-                            <span className="text-xs font-sans text-luma-smoke bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 rounded-full truncate">
+                            <span className="text-xs font-sans text-luma-smoke bg-white/[0.04] border border-luma-smokeline px-2.5 py-0.5 rounded-full truncate">
                               Rek. {goal.linked_account}
                             </span>
                           ) : (
-                            <span className="text-xs font-sans text-luma-smoke bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 rounded-full">
+                            <span className="text-xs font-sans text-luma-smoke bg-white/[0.04] border border-luma-smokeline px-2.5 py-0.5 rounded-full">
                               Manual
                             </span>
                           )}
@@ -360,7 +360,7 @@ export function GoalsView({
                         onClick={() => onDelete(goal.id)}
                         aria-label={`Hapus target ${goal.name}`}
                         className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-smoke hover:text-luma-coral hover:bg-luma-coral/10 rounded-full transition-colors border border-transparent hover:border-luma-coral/25 cursor-pointer"
-                        title="Hapus Target"
+                        title="Hapus target"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -388,7 +388,7 @@ export function GoalsView({
                   {/* Luma progress bar */}
                   <div className="space-y-2 pt-1">
                     <div
-                      className="h-2 w-full bg-black/25 rounded-full overflow-hidden border border-white/[0.08]"
+                      className="h-2 w-full bg-black/25 rounded-full overflow-hidden border border-luma-smokeline"
                       role="progressbar"
                       aria-valuenow={Math.round(Number(goal.percentage) || 0)}
                       aria-valuemin={0}
@@ -407,7 +407,7 @@ export function GoalsView({
                   </div>
 
                   {/* Clean Projections Separator */}
-                  <div className="border-t border-white/[0.08] pt-4 space-y-2 text-xs">
+                  <div className="border-t border-luma-smokeline pt-4 space-y-2 text-xs">
                     {isCompleted ? (
                       <div className="flex items-center gap-2 text-luma-sage font-medium">
                         <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -446,7 +446,7 @@ export function GoalsView({
 
                   {/* Clean Notes */}
                   {goal.notes && (
-                    <p className="text-xs text-luma-smoke line-clamp-2 leading-relaxed pt-3 border-t border-white/[0.08] text-pretty">
+                    <p className="text-xs text-luma-smoke line-clamp-2 leading-relaxed pt-3 border-t border-luma-smokeline text-pretty">
                       {goal.notes}
                     </p>
                   )}

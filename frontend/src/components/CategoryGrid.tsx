@@ -332,7 +332,7 @@ export function CategoryGrid({
   }, [deletingCat, categories]);
 
   return (
-    <section className="ai7-section bg-obsidian-panel border border-white/[0.08] rounded-3xl p-5 sm:p-7 space-y-5">
+    <section className="ai7-section bg-obsidian-panel border border-luma-smokeline rounded-3xl p-5 sm:p-7 space-y-5">
       {/* Header Flex Row */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -399,7 +399,7 @@ export function CategoryGrid({
             title="Tambah kategori transaksi baru"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-            <span className="whitespace-nowrap">Tambah Kategori</span>
+            <span className="whitespace-nowrap">Tambah kategori</span>
           </button>
         </div>
       </div>
@@ -410,7 +410,7 @@ export function CategoryGrid({
           {[...Array(8)].map((_, i) => (
             <div
               key={i}
-              className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 space-y-3"
+              className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-4 sm:p-5 space-y-3"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2.5">
@@ -427,7 +427,7 @@ export function CategoryGrid({
           ))}
         </div>
       ) : filteredList.length === 0 ? (
-        <div className="p-8 sm:p-10 text-center bg-obsidian-card/40 rounded-2xl border border-white/[0.06] text-zinc-400 text-xs sm:text-sm space-y-3">
+        <div className="p-8 sm:p-10 text-center bg-obsidian-card/40 rounded-2xl border border-luma-smokeline text-zinc-400 text-xs sm:text-sm space-y-3">
           <p>Belum ada kategori yang sesuai dengan filter ini.</p>
           <button
             type="button"
@@ -438,7 +438,7 @@ export function CategoryGrid({
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-amberGold text-slate-950 font-semibold text-xs rounded-xl hover:bg-amber-300 transition cursor-pointer min-h-[44px]"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Tambah Kategori Baru</span>
+            <span>Tambah kategori baru</span>
           </button>
         </div>
       ) : (
@@ -451,7 +451,7 @@ export function CategoryGrid({
             return (
               <div
                 key={c.id}
-                className="ai7-category-card bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 space-y-3 flex flex-col justify-between group"
+                className="ai7-category-card bg-obsidian-card border border-luma-smokeline rounded-2xl p-4 sm:p-5 space-y-3 flex flex-col justify-between group"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
@@ -561,7 +561,7 @@ export function CategoryGrid({
             setAddError(null);
           }
         }}
-        title="Tambah Kategori Baru"
+        title="Tambah kategori baru"
         subtitle="Buat pos alokasi transaksi baru untuk pengeluaran atau pemasukan."
         icon={<Plus className="w-5 h-5 text-amberGold" />}
         accent="amber"
@@ -571,7 +571,7 @@ export function CategoryGrid({
           {/* Tipe Selector: Expense vs Income */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-zinc-300">Tipe Kategori</label>
-            <div className="grid grid-cols-2 gap-2 bg-obsidian-card p-1 rounded-xl border border-white/[0.08]">
+            <div className="grid grid-cols-2 gap-2 bg-obsidian-card p-1 rounded-xl border border-luma-smokeline">
               <button
                 type="button"
                 onClick={() => setAddType("expense")}
@@ -599,13 +599,13 @@ export function CategoryGrid({
 
           {/* Nama Kategori */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-300">Nama Kategori</label>
+            <label className="text-xs font-semibold text-zinc-300">Nama kategori</label>
             <input
               type="text"
               value={addName}
               onChange={(e) => setAddName(e.target.value)}
               placeholder="Contoh: Makan Harian, Langganan AI, Hiburan"
-              className="w-full bg-obsidian-card border border-white/[0.08] focus:border-amberGold/60 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-400 outline-none transition"
+              className="w-full bg-obsidian-card border border-luma-smokeline focus:border-amberGold/60 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-400 outline-none transition"
               autoFocus
             />
           </div>
@@ -624,7 +624,7 @@ export function CategoryGrid({
                     className={`flex items-center gap-1.5 p-2 rounded-xl border text-xs font-medium transition cursor-pointer ${
                       isSelected
                         ? "border-amberGold bg-amberGold/15 text-white"
-                        : "border-white/[0.08] bg-obsidian-card text-zinc-400 hover:text-white hover:border-white/[0.2]"
+                        : "border-luma-smokeline bg-obsidian-card text-zinc-400 hover:text-white hover:border-white/[0.2]"
                     }`}
                   >
                     <span className={`w-3 h-3 rounded-full shrink-0 ${col.dotClass}`} />
@@ -642,7 +642,7 @@ export function CategoryGrid({
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-luma-smokeline">
             <button
               type="button"
               onClick={() => setIsAddModalOpen(false)}
@@ -672,7 +672,7 @@ export function CategoryGrid({
             setEditError(null);
           }
         }}
-        title="Edit Kategori"
+        title="Edit kategori"
         subtitle="Perubahan nama otomatis diperbarui ke seluruh riwayat transaksi terkait."
         icon={<Edit2 className="w-5 h-5 text-amberGold" />}
         accent="amber"
@@ -682,7 +682,7 @@ export function CategoryGrid({
           {/* Tipe Selector */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-zinc-300">Tipe Kategori</label>
-            <div className="grid grid-cols-2 gap-2 bg-obsidian-card p-1 rounded-xl border border-white/[0.08]">
+            <div className="grid grid-cols-2 gap-2 bg-obsidian-card p-1 rounded-xl border border-luma-smokeline">
               <button
                 type="button"
                 onClick={() => setEditType("expense")}
@@ -710,13 +710,13 @@ export function CategoryGrid({
 
           {/* Nama Kategori */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-300">Nama Kategori</label>
+            <label className="text-xs font-semibold text-zinc-300">Nama kategori</label>
             <input
               type="text"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               placeholder="Nama kategori"
-              className="w-full bg-obsidian-card border border-white/[0.08] focus:border-amberGold/60 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-400 outline-none transition"
+              className="w-full bg-obsidian-card border border-luma-smokeline focus:border-amberGold/60 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-400 outline-none transition"
             />
           </div>
 
@@ -734,7 +734,7 @@ export function CategoryGrid({
                     className={`flex items-center gap-1.5 p-2 rounded-xl border text-xs font-medium transition cursor-pointer ${
                       isSelected
                         ? "border-amberGold bg-amberGold/15 text-white"
-                        : "border-white/[0.08] bg-obsidian-card text-zinc-400 hover:text-white hover:border-white/[0.2]"
+                        : "border-luma-smokeline bg-obsidian-card text-zinc-400 hover:text-white hover:border-white/[0.2]"
                     }`}
                   >
                     <span className={`w-3 h-3 rounded-full shrink-0 ${col.dotClass}`} />
@@ -752,7 +752,7 @@ export function CategoryGrid({
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-luma-smokeline">
             <button
               type="button"
               onClick={() => setEditingCat(null)}
@@ -767,7 +767,7 @@ export function CategoryGrid({
               className="px-4 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               {editLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              <span>Simpan Perubahan</span>
+              <span>Simpan perubahan</span>
             </button>
           </div>
         </form>
@@ -782,14 +782,14 @@ export function CategoryGrid({
             setDeleteError(null);
           }
         }}
-        title="Hapus Kategori"
+        title="Hapus kategori"
         subtitle="Konfirmasi penghapusan pos alokasi kategori transaksi."
         icon={<Trash2 className="w-5 h-5 text-coralFall" />}
         accent="coral"
         maxWidth="md"
       >
         <div className="space-y-4">
-          <div className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] flex items-center justify-between">
+          <div className="p-3.5 rounded-2xl bg-obsidian-card border border-luma-smokeline flex items-center justify-between">
             <div>
               <div className="text-xs text-zinc-400">Kategori Target</div>
               <div className="text-sm font-semibold text-white mt-0.5">{deletingCat?.name}</div>
@@ -837,7 +837,7 @@ export function CategoryGrid({
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-luma-smokeline">
             <button
               type="button"
               onClick={() => setDeletingCat(null)}
@@ -853,7 +853,7 @@ export function CategoryGrid({
               className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               {deleteLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              <span>Hapus Kategori</span>
+              <span>Hapus kategori</span>
             </button>
           </div>
         </div>

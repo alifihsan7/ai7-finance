@@ -28,10 +28,10 @@ interface AddGoalModalProps {
 }
 
 const CATEGORY_OPTIONS = [
-  { value: "Tabungan", label: "Tabungan / Simpanan", description: "Dana dingin dan tabungan terkunci" },
-  { value: "Investasi", label: "Investasi Portofolio", description: "Reksadana, obligasi, saham, emas" },
-  { value: "Darurat", label: "Dana Darurat", description: "Cadangan likuid untuk situasi genting" },
-  { value: "Wishlist", label: "Wishlist & Impian", description: "Gadget, perlengkapan, hobi" },
+  { value: "Tabungan", label: "Tabungan / simpanan", description: "Dana dingin dan tabungan terkunci" },
+  { value: "Investasi", label: "Investasi portofolio", description: "Reksadana, obligasi, saham, emas" },
+  { value: "Darurat", label: "Dana darurat", description: "Cadangan likuid untuk situasi genting" },
+  { value: "Wishlist", label: "Wishlist & impian", description: "Gadget, perlengkapan, hobi" },
   { value: "Lainnya", label: "Lain-lain", description: "Target finansial kustom" },
 ];
 
@@ -72,7 +72,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
   const [error, setError] = useState<string | null>(null);
 
   const accountOptions = [
-    { value: "", label: "Manual (Tanpa Sinkronisasi Rekening)", description: "Progres diinput/diupdate secara mandiri" },
+    { value: "", label: "Manual (tanpa sinkronisasi rekening)", description: "Progres diinput/diupdate secara mandiri" },
     ...availableAccounts.map((acc) => ({
       value: acc,
       label: `Sinkronisasi Otomatis: ${acc}`,
@@ -141,7 +141,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Buat Target Tabungan Baru"
+      title="Buat target tabungan baru"
       subtitle="Tetapkan milestone tabungan atau investasi untuk dipantau setiap siklus anggaran"
       icon={<Target className="w-5 h-5 text-amberGold" />}
       accent="amber"
@@ -156,8 +156,8 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
 
         {/* Nama Target */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Nama Target / Milestone <span className="text-coralFall">*</span>
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+            Nama target / milestone <span className="text-coralFall">*</span>
           </label>
           <input
             type="text"
@@ -165,14 +165,14 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
             placeholder="Contoh: Dana Dingin BRI 2, Laptop M3 Pro..."
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
+            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
           />
         </div>
 
         {/* Nominal Target */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Nominal Target (Rp) <span className="text-coralFall">*</span>
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+            Nominal target (Rp) <span className="text-coralFall">*</span>
           </label>
           <CurrencyInput
             value={targetAmount}
@@ -187,8 +187,8 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
         {/* 2 Kolom: Rekening & Kategori */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-              Sinkronisasi Rekening
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+              Sinkronisasi rekening
             </label>
             <CustomSelect
               options={accountOptions}
@@ -199,7 +199,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
               Kategori
             </label>
             <CustomSelect
@@ -212,8 +212,8 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
 
         {!linkedAccount && (
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-              Saldo Terkumpul Saat Ini (Rp)
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+              Saldo terkumpul saat ini (Rp)
             </label>
             <CurrencyInput
               value={manualCurrentAmount}
@@ -226,8 +226,8 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
 
         {/* Tema Warna - Grid 5 Kolom Proporsional */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Tema Warna Aksen
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+            Tema warna aksen
           </label>
           <div className="grid grid-cols-5 gap-2 pt-0.5">
             {COLOR_OPTIONS.map((c) => (
@@ -238,7 +238,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
                 className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-2xl border text-xs font-medium transition cursor-pointer ${
                   color === c.value
                     ? "bg-obsidian-card border-amberGold text-white shadow-xs"
-                    : "bg-obsidian-panel border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/[0.16]"
+                    : "bg-obsidian-panel border-luma-smokeline text-zinc-400 hover:text-white hover:border-white/[0.16]"
                 }`}
               >
                 <span className={`w-2.5 h-2.5 rounded-full ${c.dot} shrink-0`} />
@@ -251,8 +251,8 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
 
         {/* Pilih Ikon */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Pilih Ikon
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+            Pilih ikon
           </label>
           <div className="grid grid-cols-6 gap-2 pt-0.5">
             {ICON_OPTIONS.map((item) => {
@@ -267,7 +267,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
                   className={`h-11 rounded-2xl flex items-center justify-center transition cursor-pointer ${
                     isSelected
                       ? "bg-amberGold/15 border-2 border-amberGold text-amberGold shadow-xs scale-105"
-                      : "bg-obsidian-panel border border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/[0.16]"
+                      : "bg-obsidian-panel border border-luma-smokeline text-zinc-400 hover:text-white hover:border-white/[0.16]"
                   }`}
                 >
                   <IconComp className="w-5 h-5" />
@@ -280,37 +280,37 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
         {/* 2 Kolom: Tanggal & Catatan */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-              Target Tanggal (Opsional)
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+              Target tanggal (opsional)
             </label>
             <input
               type="date"
               value={targetDate}
               onChange={(e) => setTargetDate(e.target.value)}
-              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm font-sans text-white focus:outline-none focus:border-amberGold transition"
+              className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm font-sans text-white focus:outline-none focus:border-amberGold transition"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-              Catatan / Rencana (Opsional)
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+              Catatan / rencana (opsional)
             </label>
             <input
               type="text"
               placeholder="Strategi alokasi atau tujuan..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
+              className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
             />
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-3 border-t border-white/[0.08] mt-5">
+        <div className="flex justify-end gap-3 pt-3 border-t border-luma-smokeline mt-5">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] transition cursor-pointer"
+            className="px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-luma-smokeline hover:border-white/[0.16] transition cursor-pointer"
           >
             Batal
           </button>
@@ -322,7 +322,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
             {loading ? "Menyimpan..." : (
               <>
                 <PlusCircle className="w-4 h-4 stroke-[2.5]" />
-                Simpan Target
+                Simpan target
               </>
             )}
           </button>

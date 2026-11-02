@@ -43,43 +43,43 @@ export function getAccountRoleBadge(type?: string): { label: string; className: 
   switch (t) {
     case "gajian":
       return {
-        label: "GAJIAN",
+        label: "Gajian",
         className: "bg-mintRise/15 text-mintRise border-mintRise/30",
       };
     case "operasional":
       return {
-        label: "OPERASIONAL",
+        label: "Operasional",
         className: "bg-amberGold/15 text-amberGold border-amberGold/30",
       };
     case "tagihan":
       return {
-        label: "TAGIHAN",
+        label: "Tagihan",
         className: "bg-coralFall/15 text-coralFall border-coralFall/30",
       };
     case "darurat":
       return {
-        label: "DANA DARURAT",
+        label: "Dana darurat",
         className: "bg-cyanHub/15 text-cyanHub border-cyanHub/30",
       };
     case "tabungan":
       return {
-        label: "TABUNGAN",
+        label: "Tabungan",
         className: "bg-purpleLock/15 text-purpleLock border-purpleLock/30",
       };
     case "investasi":
       return {
-        label: "INVESTASI",
+        label: "Investasi",
         className: "bg-purpleLock/15 text-purpleLock border-purpleLock/30",
       };
     case "ewallet":
       return {
-        label: "E-WALLET",
+        label: "E-wallet",
         className: "bg-cyanHub/15 text-cyanHub border-cyanHub/30",
       };
     default:
       return {
-        label: (type || "AKUN").toUpperCase(),
-        className: "bg-white/[0.06] text-luma-smoke border-white/[0.08]",
+        label: type || "Akun",
+        className: "bg-white/[0.06] text-luma-smoke border-luma-smokeline",
       };
   }
 }
@@ -264,7 +264,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 <Skeleton className="w-20 h-3 rounded-full mt-1.5" />
               </div>
             </div>
-            <div className="pt-3 border-t border-white/[0.08]">
+            <div className="pt-3 border-t border-luma-smokeline">
               <Skeleton className="w-full h-1.5 rounded-full" />
             </div>
           </div>
@@ -304,7 +304,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
 
                 <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                   {acc.isPocket && (
-                    <span className="text-xs sm:text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-white/[0.05] text-luma-smoke border border-white/[0.08] whitespace-nowrap">
+                    <span className="text-xs sm:text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-white/[0.05] text-luma-smoke border border-luma-smokeline whitespace-nowrap">
                       {acc.cycleBadge}
                     </span>
                   )}
@@ -360,7 +360,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
               </div>
 
               <div className="mt-4">
-                <div className="text-xs text-luma-smoke font-semibold uppercase tracking-[0.1em]">
+                <div className="text-xs text-luma-smoke font-semibold ">
                   Saldo Rekening
                 </div>
                 <div className="ai7-type-metric text-luma-ivory mt-1 tracking-tight break-words tabular-nums">
@@ -369,7 +369,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-white/[0.08]">
+            <div className="mt-4 pt-3 border-t border-luma-smokeline">
               {isInvest ? (
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5 text-xs text-luma-sage font-sans">
@@ -438,7 +438,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-luma-coral">
                 <AlertTriangle className="w-5 h-5" />
-                <h3 className="ai7-type-card text-luma-ivory">Hapus Rekening?</h3>
+                <h3 className="ai7-type-card text-luma-ivory">Hapus rekening?</h3>
               </div>
               <button
                 type="button"
@@ -466,7 +466,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 type="button"
                 disabled={isDeleting}
                 onClick={() => { setConfirmDelete(null); setDeleteError(null); }}
-                className="luma-touch px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-luma-smoke hover:text-luma-ivory text-xs font-semibold border border-white/[0.1] transition"
+                className="luma-touch px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-luma-smoke hover:text-luma-ivory text-xs font-semibold border border-luma-smokeline transition"
               >
                 Batal
               </button>
@@ -476,7 +476,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 onClick={handleDeleteAccount}
                 className="luma-touch px-4 py-2 rounded-full bg-luma-coral hover:brightness-110 text-luma-charcoal text-xs font-semibold transition inline-flex items-center gap-1.5 disabled:opacity-50"
               >
-                {isDeleting ? "Menghapus..." : "Ya, Hapus Rekening"}
+                {isDeleting ? "Menghapus..." : "Ya, hapus rekening"}
               </button>
             </div>
           </div>

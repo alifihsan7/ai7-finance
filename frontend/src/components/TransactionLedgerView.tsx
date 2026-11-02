@@ -71,23 +71,23 @@ export function TransactionLedgerView({
     const uniqueCats = Array.from(new Set([...apiCats, ...txCats])).sort();
 
     return [
-      { value: "all", label: "Semua Kategori" },
+      { value: "all", label: "Semua kategori" },
       ...uniqueCats.map((cat) => ({ value: cat, label: cat })),
     ];
   }, [categories, transactions]);
 
   // Type filter options
   const typeOptions: SelectOption[] = [
-    { value: "all", label: "Semua Tipe Transaksi" },
+    { value: "all", label: "Semua tipe transaksi" },
     { value: "expense", label: "Pengeluaran Saja (-)" },
     { value: "income", label: "Pemasukan Saja (+)" },
-    { value: "transfer", label: "Transfer Antar Rekening (⇄)" },
+    { value: "transfer", label: "Transfer antar rekening (⇄)" },
   ];
 
   // Date preset options
   const dateOptions: SelectOption[] = useMemo(() => {
     const opts: SelectOption[] = [
-      { value: "all", label: "Semua Waktu" },
+      { value: "all", label: "Semua waktu" },
     ];
     if (currentCycle?.start_date && currentCycle?.end_date) {
       opts.push({
@@ -106,8 +106,8 @@ export function TransactionLedgerView({
 
   // Sort options
   const sortOptions: SelectOption[] = [
-    { value: "date-desc", label: "Tanggal: Terbaru → Terlama" },
-    { value: "date-asc", label: "Tanggal: Terlama → Terbaru" },
+    { value: "date-desc", label: "Tanggal: terbaru → terlama" },
+    { value: "date-asc", label: "Tanggal: terlama → terbaru" },
     { value: "amount-desc", label: "Nominal: Terbesar → Terkecil" },
     { value: "amount-asc", label: "Nominal: Terkecil → Terbesar" },
   ];
@@ -278,11 +278,11 @@ export function TransactionLedgerView({
   return (
     <div className="space-y-5">
       {/* 1. QUICK-STATS KPI BAR (REAL-TIME AGGREGATES) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="ai7-metric-grid grid gap-4">
         {/* Total Transaksi */}
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between gap-2 text-zinc-400">
-            <span className="text-xs font-medium truncate">Total Transaksi</span>
+            <span className="text-xs font-medium truncate">Total transaksi</span>
             <Receipt className="w-4 h-4 text-amberGold shrink-0" />
           </div>
           <div className="mt-2.5">
@@ -301,9 +301,9 @@ export function TransactionLedgerView({
         </div>
 
         {/* Total Pemasukan */}
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between gap-2 text-zinc-400">
-            <span className="text-xs font-medium truncate">Total Pemasukan</span>
+            <span className="text-xs font-medium truncate">Total pemasukan</span>
             <div className="w-6 h-6 rounded-full bg-mintRise/15 border border-mintRise/30 flex items-center justify-center text-mintRise shrink-0">
               <ArrowDownRight className="w-3.5 h-3.5" />
             </div>
@@ -323,9 +323,9 @@ export function TransactionLedgerView({
         </div>
 
         {/* Total Pengeluaran */}
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between gap-2 text-zinc-400">
-            <span className="text-xs font-medium truncate">Total Pengeluaran</span>
+            <span className="text-xs font-medium truncate">Total pengeluaran</span>
             <div className="w-6 h-6 rounded-full bg-coralFall/15 border border-coralFall/30 flex items-center justify-center text-coralFall shrink-0">
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
@@ -345,9 +345,9 @@ export function TransactionLedgerView({
         </div>
 
         {/* Arus Kas Bersih (Net Flow) */}
-        <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between gap-2 text-zinc-400">
-            <span className="text-xs font-medium truncate">Arus Kas Bersih</span>
+            <span className="text-xs font-medium truncate">Arus kas bersih</span>
             <div className="w-6 h-6 rounded-full bg-cyanHub/15 border border-cyanHub/30 flex items-center justify-center text-cyanHub shrink-0">
               <ArrowLeftRight className="w-3.5 h-3.5" />
             </div>
@@ -373,7 +373,7 @@ export function TransactionLedgerView({
       </div>
 
       {/* 2. FILTER & CONTROL PANEL */}
-      <div className="bg-obsidian-panel border border-white/[0.08] rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
+      <div className="bg-obsidian-panel border border-luma-smokeline rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
         {/* Top Control Bar: Search & Account Pills */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
           {/* Account Tabs */}
@@ -389,7 +389,7 @@ export function TransactionLedgerView({
                 className={`text-xs px-3.5 py-1.5 rounded-full font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                   activeAccount === tab.id
                     ? "text-slate-950 bg-amberGold font-semibold shadow-sm"
-                    : "text-zinc-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08]"
+                    : "text-zinc-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-luma-smokeline"
                 }`}
               >
                 {tab.label}
@@ -409,7 +409,7 @@ export function TransactionLedgerView({
                   setCurrentPage(1);
                 }}
                 placeholder="Cari transaksi, ket, atau akun..."
-                className="w-full bg-obsidian-card border border-white/[0.08] rounded-2xl pl-10 pr-8 py-2 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-amberGold transition font-sans"
+                className="w-full bg-obsidian-card border border-luma-smokeline rounded-2xl pl-10 pr-8 py-2 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-amberGold transition font-sans"
               />
               {searchQuery && (
                 <button
@@ -428,17 +428,17 @@ export function TransactionLedgerView({
               className="px-4 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 font-semibold text-xs sm:text-sm rounded-2xl transition shadow-sm flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span className="hidden sm:inline">Catat Transaksi</span>
+              <span className="hidden sm:inline">Catat transaksi</span>
             </button>
           </div>
         </div>
 
         {/* Bottom Filter Controls: Type, Category, Date, Sort */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-white/[0.08]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-luma-smokeline">
           {/* Filter Tipe Transaksi */}
           <div>
             <label className="block text-xs font-medium text-zinc-400 mb-1">
-              Tipe Transaksi
+              Tipe transaksi
             </label>
             <CustomSelect
               value={typeFilter}
@@ -472,7 +472,7 @@ export function TransactionLedgerView({
           {/* Filter Rentang Tanggal */}
           <div>
             <label className="block text-xs font-medium text-zinc-400 mb-1">
-              Rentang Waktu
+              Rentang waktu
             </label>
             <CustomSelect
               value={dateFilter}
@@ -489,7 +489,7 @@ export function TransactionLedgerView({
           {/* Pengurutan (Sort By) */}
           <div>
             <label className="block text-xs font-medium text-zinc-400 mb-1">
-              Urutkan Berdasarkan
+              Urutkan berdasarkan
             </label>
             <CustomSelect
               value={sortBy}
@@ -506,7 +506,7 @@ export function TransactionLedgerView({
 
         {/* Conditional Custom Date Range Picker */}
         {dateFilter === "custom" && (
-          <div className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] flex flex-wrap items-center gap-3">
+          <div className="p-3.5 rounded-2xl bg-obsidian-card border border-luma-smokeline flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 text-xs text-zinc-300">
               <Calendar className="w-4 h-4 text-amberGold shrink-0" />
               <span className="font-medium">Rentang Tanggal Kustom:</span>
@@ -519,7 +519,7 @@ export function TransactionLedgerView({
                   setCustomStartDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-obsidian-panel border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs text-white font-sans focus:outline-none focus:border-amberGold"
+                className="bg-obsidian-panel border border-luma-smokeline rounded-xl px-3 py-1.5 text-xs text-white font-sans focus:outline-none focus:border-amberGold"
               />
               <span className="text-zinc-400 text-xs">s/d</span>
               <input
@@ -529,7 +529,7 @@ export function TransactionLedgerView({
                   setCustomEndDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-obsidian-panel border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs text-white font-sans focus:outline-none focus:border-amberGold"
+                className="bg-obsidian-panel border border-luma-smokeline rounded-xl px-3 py-1.5 text-xs text-white font-sans focus:outline-none focus:border-amberGold"
               />
             </div>
           </div>
@@ -548,10 +548,10 @@ export function TransactionLedgerView({
             <button
               type="button"
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-zinc-300 hover:text-coralFall hover:bg-coralFall/10 border border-white/[0.08] hover:border-coralFall/30 transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-zinc-300 hover:text-coralFall hover:bg-coralFall/10 border border-luma-smokeline hover:border-coralFall/30 transition cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
-              Reset Semua Filter
+              Reset semua filter
             </button>
           </div>
         )}
@@ -591,13 +591,13 @@ export function TransactionLedgerView({
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-2 rounded-xl border border-white/[0.08] bg-obsidian-card hover:bg-white/[0.06] text-white disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                className="p-2 rounded-xl border border-luma-smokeline bg-obsidian-card hover:bg-white/[0.06] text-white disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                 title="Halaman Sebelumnya"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              <div className="px-3.5 py-1.5 rounded-xl bg-obsidian-card border border-white/[0.08] text-white font-semibold">
+              <div className="px-3.5 py-1.5 rounded-xl bg-obsidian-card border border-luma-smokeline text-white font-semibold">
                 {currentPage} / {totalPages}
               </div>
 
@@ -605,7 +605,7 @@ export function TransactionLedgerView({
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="p-2 rounded-xl border border-white/[0.08] bg-obsidian-card hover:bg-white/[0.06] text-white disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                className="p-2 rounded-xl border border-luma-smokeline bg-obsidian-card hover:bg-white/[0.06] text-white disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                 title="Halaman Berikutnya"
               >
                 <ChevronRight className="w-4 h-4" />

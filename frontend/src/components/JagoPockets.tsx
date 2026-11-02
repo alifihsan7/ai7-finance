@@ -68,7 +68,7 @@ function statusFor(tone: ReturnType<typeof getPocketStatus>["tone"]): {
   }
   if (tone === "neutral") return {
     bar: "bg-luma-smoke",
-    badge: "bg-white/[0.06] border-white/[0.12] text-luma-smoke",
+    badge: "bg-white/[0.06] border-luma-smokeline text-luma-smoke",
   };
   return {
     bar: "bg-luma-sage",
@@ -132,7 +132,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
 
   if (loading) {
     return (
-      <section aria-label="Sub-Kantong Operasional" className="luma-glass p-6 sm:p-7 space-y-5">
+      <section aria-label="Sub-kantong operasional" className="luma-glass p-6 sm:p-7 space-y-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <Skeleton className="w-56 h-5 rounded-full" />
@@ -147,7 +147,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
-              className="rounded-2xl bg-white/[0.04] border border-white/[0.08] p-4 sm:p-5 space-y-4"
+              className="rounded-2xl bg-white/[0.04] border border-luma-smokeline p-4 sm:p-5 space-y-4"
             >
               <div className="flex justify-between items-center gap-2">
                 <Skeleton className="w-24 h-4 rounded-full" />
@@ -158,7 +158,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
                 <Skeleton className="w-16 h-3 rounded-full mt-1.5" />
               </div>
               <Skeleton className="w-full h-1.5 rounded-full" />
-              <div className="flex justify-between items-center pt-2 border-t border-white/[0.08]">
+              <div className="flex justify-between items-center pt-2 border-t border-luma-smokeline">
                 <Skeleton className="w-16 h-3 rounded-full" />
                 <Skeleton className="w-16 h-3 rounded-full" />
               </div>
@@ -175,13 +175,13 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
   const totalBalance = data?.total_jago_balance ?? 0;
 
   return (
-    <section aria-label="Sub-Kantong Operasional" className="luma-glass p-6 sm:p-7 space-y-5">
+    <section aria-label="Sub-kantong operasional" className="luma-glass p-6 sm:p-7 space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h2 className="ai7-type-section text-luma-ivory tracking-tight flex items-center gap-2">
             <Landmark className="w-5 h-5 text-luma-ember shrink-0" aria-hidden="true" />
             <span>
-              Sub-Kantong Operasional{" "}
+              Sub-kantong operasional{" "}
               {totalTarget > 0 ? `(Plafon ${formatRupiah(totalTarget)})` : "(Belum Ada Plafon)"}
             </span>
           </h2>
@@ -195,10 +195,10 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
             onClick={handleSync}
             disabled={syncing}
             title="Selaraskan target kantong dengan Langganan aktif"
-            className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-semibold bg-white/[0.06] text-luma-ivory border border-white/[0.12] hover:bg-white/[0.1] hover:border-white/[0.2] active:scale-95 transition inline-flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-semibold bg-white/[0.06] text-luma-ivory border border-luma-smokeline hover:bg-white/[0.1] hover:border-white/[0.2] active:scale-95 transition inline-flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${syncing ? "animate-spin" : ""}`} aria-hidden="true" />
-            <span>{syncing ? "Menyelaraskan..." : "Sync Komitmen"}</span>
+            <span>{syncing ? "Menyelaraskan..." : "Sync komitmen"}</span>
           </button>
           <button
             type="button"
@@ -207,7 +207,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
             className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-semibold bg-luma-ivory text-luma-charcoal hover:brightness-95 active:scale-95 transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Pencil className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            <span>Edit Target Sub-Kantong</span>
+            <span>Edit target sub-kantong</span>
           </button>
         </div>}
       </div>
@@ -226,8 +226,8 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
       )}
 
       {pockets.length === 0 && !error ? (
-        <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-center text-sm text-luma-smoke">
-          Belum ada sub-kantong operasional aktif. Tekan Sync Komitmen untuk menginisialisasi sub-kantong bawaan.
+        <div className="p-6 rounded-2xl bg-white/[0.04] border border-luma-smokeline text-center text-sm text-luma-smoke">
+          Belum ada sub-kantong operasional aktif. Tekan Sync komitmen untuk menginisialisasi sub-kantong bawaan.
         </div>
       ) : (
         <div className="ai7-pocket-grid grid gap-3.5 sm:gap-4">
@@ -240,14 +240,14 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
             const status = statusFor(state.tone);
             const meta = POCKET_META[pocket.slug] ?? {
               icon: Wallet,
-              accent: "text-luma-smoke bg-white/[0.06] border-white/[0.1]",
+              accent: "text-luma-smoke bg-white/[0.06] border-luma-smokeline",
             };
             const Icon = meta.icon;
 
             return (
               <div
                 key={pocket.slug}
-                className="rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.16] p-4 sm:p-5 space-y-3.5 flex flex-col justify-between transition-all duration-200"
+                className="rounded-2xl bg-white/[0.04] border border-luma-smokeline hover:border-white/[0.16] p-4 sm:p-5 space-y-3.5 flex flex-col justify-between transition-all duration-200"
               >
                 <div className="space-y-3">
                   <div className="flex justify-between items-center gap-2">
@@ -260,7 +260,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
                       <span className="text-luma-ivory font-semibold text-sm block break-words leading-snug">{pocket.name}</span>
                     </div>
                     <span
-                      className={`text-xs px-2 py-1 rounded-lg border max-w-full ${status.badge}`}
+                      className={`text-xs px-2 py-1 rounded-badge border max-w-full ${status.badge}`}
                     >
                       {state.label}
                     </span>
@@ -288,7 +288,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
                   </div> : <p className="text-xs text-luma-smoke">Plafon belum diatur. Persentase pemakaian belum tersedia.</p>}
                 </div>
 
-                <div className="grid text-xs text-luma-smoke font-sans pt-3 border-t border-white/[0.08] gap-2 tabular-nums">
+                <div className="grid text-xs text-luma-smoke font-sans pt-3 border-t border-luma-smokeline gap-2 tabular-nums">
                   <div className="flex flex-wrap items-center justify-between gap-1 min-w-0">
                     <span className="text-xs">Plafon:</span>
                     <span className="font-semibold text-luma-ivory text-xs break-all">

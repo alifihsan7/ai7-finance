@@ -33,7 +33,7 @@ export function ThemeToggle({
   if (!mounted) {
     return (
       <div
-        className={`${sizeClasses} rounded-full bg-obsidian-card border border-white/[0.08] opacity-50 shrink-0 ${className}`}
+        className={`${sizeClasses} rounded-full bg-obsidian-card border border-luma-smokeline opacity-50 shrink-0 ${className}`}
         aria-hidden="true"
       />
     );
@@ -48,7 +48,7 @@ export function ThemeToggle({
       className={`relative ${sizeClasses} rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 group cursor-pointer shrink-0 select-none ${
         isLight
           ? "bg-white hover:bg-slate-100 border border-slate-200 hover:border-slate-300 text-slate-700 hover:text-slate-900 shadow-xs"
-          : "bg-obsidian-card hover:bg-obsidian-hover border border-white/[0.08] hover:border-amberGold/50 text-amberGold shadow-xs"
+          : "bg-obsidian-card hover:bg-obsidian-hover border border-luma-smokeline hover:border-amberGold/50 text-amberGold shadow-xs"
       } ${className}`}
     >
       <div className="relative flex items-center justify-center w-full h-full">

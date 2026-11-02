@@ -313,7 +313,7 @@ export function ManageCategoriesModal({
     >
       <div className="space-y-5">
         {/* TAB SWITCHER: Pengeluaran vs Pemasukan */}
-        <div className="grid grid-cols-2 gap-2 bg-obsidian-panel p-1.5 rounded-2xl border border-white/[0.08]">
+        <div className="grid grid-cols-2 gap-2 bg-obsidian-panel p-1.5 rounded-2xl border border-luma-smokeline">
           <button
             type="button"
             onClick={() => {
@@ -368,12 +368,12 @@ export function ManageCategoriesModal({
         {/* FORM TAMBAH KATEGORI BARU */}
         <form
           onSubmit={handleCreateCategory}
-          className="bg-obsidian-panel/90 border border-white/[0.08] rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-xs"
+          className="bg-obsidian-panel/90 border border-luma-smokeline rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-xs"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
               <Plus className="w-3.5 h-3.5 text-amberGold" />
-              Tambah Kategori {activeTab === "expense" ? "Pengeluaran" : "Pemasukan"}
+              Tambah kategori {activeTab === "expense" ? "Pengeluaran" : "Pemasukan"}
             </span>
             <span className="text-xs text-zinc-400 font-sans">
               Badge: <span className="text-zinc-300">{getCategoryColorDef(newColor).name}</span>
@@ -394,7 +394,7 @@ export function ManageCategoriesModal({
                   ? "Contoh: Jajanan Sore, Skincare, Alat Kantor..."
                   : "Contoh: Gaji Tambahan, Dividen, Freelance..."
               }
-              className="w-full bg-obsidian-card border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-amberGold transition"
+              className="w-full bg-obsidian-card border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-amberGold transition"
             />
           </div>
 
@@ -414,7 +414,7 @@ export function ManageCategoriesModal({
                     className={`py-1.5 px-2 rounded-xl text-xs font-medium border flex items-center justify-center gap-1.5 transition cursor-pointer ${
                       isSelected
                         ? `${c.badgeBg} ${c.badgeBorder} ${c.badgeText} ring-1 ring-amberGold/50 font-semibold shadow-xs`
-                        : "bg-obsidian-card/60 border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/[0.12]"
+                        : "bg-obsidian-card/60 border-luma-smokeline text-zinc-400 hover:text-white hover:border-white/[0.12]"
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${c.dotClass} shrink-0`} />
@@ -449,7 +449,7 @@ export function ManageCategoriesModal({
               ) : (
                 <>
                   <Plus className="w-4 h-4 stroke-[2.5]" />
-                  <span>Tambah Kategori</span>
+                  <span>Tambah kategori</span>
                 </>
               )}
             </button>
@@ -459,7 +459,7 @@ export function ManageCategoriesModal({
         {/* DAFTAR KATEGORI AKTIF */}
         <div className="space-y-2.5">
           <div className="flex items-center justify-between px-1">
-            <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-zinc-400 flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-zinc-400" />
               Daftar Kategori {activeTab === "expense" ? "Pengeluaran" : "Pemasukan"} ({currentList.length})
             </h4>
@@ -480,7 +480,7 @@ export function ManageCategoriesModal({
           {/* Category List Scrollable Container */}
           <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
             {currentList.length === 0 && !loading ? (
-              <div className="p-8 text-center bg-obsidian-panel/50 rounded-2xl border border-white/[0.06] text-zinc-400 text-xs">
+              <div className="p-8 text-center bg-obsidian-panel/50 rounded-2xl border border-luma-smokeline text-zinc-400 text-xs">
                 Belum ada kategori {activeTab === "expense" ? "pengeluaran" : "pemasukan"}. Buat kategori baru di atas.
               </div>
             ) : (
@@ -495,8 +495,8 @@ export function ManageCategoriesModal({
                       key={cat.id}
                       className="p-3 bg-obsidian-panel border border-amberGold/40 rounded-2xl space-y-3 animate-fadeIn"
                     >
-                      <div className="text-xs font-semibold text-amberGold uppercase tracking-wider flex items-center gap-1">
-                        <Edit2 className="w-3 h-3" /> Edit Kategori
+                      <div className="text-xs font-semibold text-amberGold flex items-center gap-1">
+                        <Edit2 className="w-3 h-3" /> Edit kategori
                       </div>
 
                       {/* Edit Name input */}
@@ -504,7 +504,7 @@ export function ManageCategoriesModal({
                         type="text"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="w-full bg-obsidian-card border border-white/[0.12] rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
+                        className="w-full bg-obsidian-card border border-luma-smokeline rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
                         placeholder="Nama kategori"
                         autoFocus
                       />
@@ -521,7 +521,7 @@ export function ManageCategoriesModal({
                               className={`py-1 px-1.5 rounded-lg text-xs font-medium border flex items-center justify-center gap-1 transition cursor-pointer ${
                                 isSel
                                   ? `${c.badgeBg} ${c.badgeBorder} ${c.badgeText} ring-1 ring-amberGold/50 font-semibold`
-                                  : "bg-obsidian-card/70 border-white/[0.06] text-zinc-400 hover:text-white"
+                                  : "bg-obsidian-card/70 border-luma-smokeline text-zinc-400 hover:text-white"
                               }`}
                             >
                               <span className={`w-1.5 h-1.5 rounded-full ${c.dotClass}`} />
@@ -542,7 +542,7 @@ export function ManageCategoriesModal({
                           type="button"
                           onClick={cancelEdit}
                           disabled={editLoading}
-                          className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white border border-white/[0.08] rounded-xl transition cursor-pointer"
+                          className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white border border-luma-smokeline rounded-xl transition cursor-pointer"
                         >
                           Batal
                         </button>
@@ -567,7 +567,7 @@ export function ManageCategoriesModal({
                 return (
                   <div
                     key={cat.id}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-obsidian-panel/80 hover:bg-obsidian-panel border border-white/[0.06] hover:border-white/[0.12] transition group"
+                    className="flex items-center justify-between p-3 rounded-2xl bg-obsidian-panel/80 hover:bg-obsidian-panel border border-luma-smokeline hover:border-white/[0.12] transition group"
                   >
                     {/* Left: Badge, Name, Tx Count */}
                     <div className="flex items-center gap-2.5 min-w-0 pr-2">
@@ -579,7 +579,7 @@ export function ManageCategoriesModal({
                       </span>
 
                       <span
-                        className="text-xs font-sans text-zinc-400 bg-white/[0.03] px-2 py-0.5 rounded-md border border-white/[0.06] shrink-0"
+                        className="text-xs font-sans text-zinc-400 bg-white/[0.03] px-2 py-0.5 rounded-md border border-luma-smokeline shrink-0"
                         title={`${txCount} transaksi tercatat dengan kategori ini`}
                       >
                         {txCount} tx
@@ -591,7 +591,7 @@ export function ManageCategoriesModal({
                       <button
                         type="button"
                         onClick={() => startEdit(cat)}
-                        title="Edit Kategori"
+                        title="Edit kategori"
                         className="p-1.5 rounded-xl text-zinc-400 hover:text-amberGold hover:bg-amberGold/10 border border-transparent hover:border-amberGold/20 transition cursor-pointer"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -600,7 +600,7 @@ export function ManageCategoriesModal({
                       <button
                         type="button"
                         onClick={() => initiateDelete(cat)}
-                        title="Hapus Kategori"
+                        title="Hapus kategori"
                         className="p-1.5 rounded-xl text-zinc-400 hover:text-coralFall hover:bg-coralFall/10 border border-transparent hover:border-coralFall/20 transition cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -614,11 +614,11 @@ export function ManageCategoriesModal({
         </div>
 
         {/* FOOTER ACTION */}
-        <div className="pt-3 border-t border-white/[0.08] flex justify-end">
+        <div className="pt-3 border-t border-luma-smokeline flex justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-zinc-300 hover:text-white bg-obsidian-card hover:bg-obsidian-hover border border-white/[0.08] rounded-2xl transition cursor-pointer"
+            className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-zinc-300 hover:text-white bg-obsidian-card hover:bg-obsidian-hover border border-luma-smokeline rounded-2xl transition cursor-pointer"
           >
             Selesai
           </button>
@@ -628,14 +628,14 @@ export function ManageCategoriesModal({
       {/* CONFIRMATION & FALLBACK REASSIGNMENT SUB-MODAL */}
       {deletingCat && (
         <div className="fixed inset-0 z-60 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-obsidian-card border border-white/[0.12] rounded-3xl p-5 sm:p-6 w-full max-w-md shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+          <div className="bg-obsidian-card border border-luma-smokeline rounded-3xl p-5 sm:p-6 w-full max-w-md shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
             <div className="flex items-start gap-3">
               <div className="p-2.5 rounded-2xl bg-coralFall/15 text-coralFall border border-coralFall/30 shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="ai7-type-card text-white">
-                  Hapus Kategori &quot;{deletingCat.name}&quot;?
+                  Hapus kategori &quot;{deletingCat.name}&quot;?
                 </h3>
                 <p className="text-xs text-zinc-400 mt-0.5">
                   {getTxCount(deletingCat.name) > 0 ? (
@@ -655,7 +655,7 @@ export function ManageCategoriesModal({
 
             {/* If transactions exist, show fallback target selector */}
             {getTxCount(deletingCat.name) > 0 && (
-              <div className="space-y-2 bg-obsidian-panel p-3.5 rounded-2xl border border-white/[0.08]">
+              <div className="space-y-2 bg-obsidian-panel p-3.5 rounded-2xl border border-luma-smokeline">
                 <label className="block text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
                   <ArrowRight className="w-3.5 h-3.5 text-amberGold" />
                   Pindahkan Transaksi ke Kategori:
@@ -683,12 +683,12 @@ export function ManageCategoriesModal({
               </div>
             )}
 
-            <div className="flex justify-end gap-2.5 pt-2 border-t border-white/[0.08]">
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-luma-smokeline">
               <button
                 type="button"
                 onClick={() => setDeletingCat(null)}
                 disabled={isDeleting}
-                className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white border border-white/[0.08] rounded-xl transition cursor-pointer"
+                className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white border border-luma-smokeline rounded-xl transition cursor-pointer"
               >
                 Batal
               </button>
@@ -707,7 +707,7 @@ export function ManageCategoriesModal({
                   <>
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>
-                      {getTxCount(deletingCat.name) > 0 ? "Pindahkan & Hapus" : "Hapus Kategori"}
+                      {getTxCount(deletingCat.name) > 0 ? "Pindahkan & Hapus" : "Hapus kategori"}
                     </span>
                   </>
                 )}

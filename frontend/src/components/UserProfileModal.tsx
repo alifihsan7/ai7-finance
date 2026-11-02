@@ -225,7 +225,7 @@ export function UserProfileModal({
     >
       <div className="space-y-4">
         {/* User Card Header */}
-        <div className="p-4 rounded-2xl bg-obsidian-card border border-white/[0.08] flex items-center justify-between shadow-xs">
+        <div className="p-4 rounded-2xl bg-obsidian-card border border-luma-smokeline flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amberGold/10 border border-amberGold/20 flex items-center justify-center text-amberGold font-semibold text-sm">
               {user.full_name ? user.full_name.charAt(0).toUpperCase() : "U"}
@@ -246,13 +246,13 @@ export function UserProfileModal({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-obsidian-panel border border-white/[0.08]">
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-obsidian-panel border border-luma-smokeline">
           <button
             type="button"
             onClick={() => { setActiveTab("profile"); setMsg(null); }}
             className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-medium transition cursor-pointer flex items-center justify-center gap-2 ${
               activeTab === "profile"
-                ? "bg-obsidian-card text-amberGold border border-white/[0.08] shadow-sm font-semibold"
+                ? "bg-obsidian-card text-amberGold border border-luma-smokeline shadow-sm font-semibold"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -264,7 +264,7 @@ export function UserProfileModal({
             onClick={() => { setActiveTab("telegram"); setMsg(null); }}
             className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-medium transition cursor-pointer flex items-center justify-center gap-2 ${
               activeTab === "telegram"
-                ? "bg-obsidian-card text-cyanHub border border-white/[0.08] shadow-sm font-semibold"
+                ? "bg-obsidian-card text-cyanHub border border-luma-smokeline shadow-sm font-semibold"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -305,7 +305,7 @@ export function UserProfileModal({
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-obsidian-panel border border-white/[0.08] text-white rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold"
+                className="w-full bg-obsidian-panel border border-luma-smokeline text-white rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold"
                 required
               />
             </div>
@@ -319,7 +319,7 @@ export function UserProfileModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@email.com"
-                className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold"
+                className="w-full bg-obsidian-panel border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold"
               />
             </div>
 
@@ -332,7 +332,7 @@ export function UserProfileModal({
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-obsidian-panel border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold"
+                className="w-full bg-obsidian-panel border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amberGold"
               />
             </div>
 
@@ -348,7 +348,7 @@ export function UserProfileModal({
                     Menyimpan...
                   </span>
                 ) : (
-                  "Simpan Perubahan Profil"
+                  "Simpan perubahan Profil"
                 )}
               </button>
             </div>
@@ -387,7 +387,7 @@ export function UserProfileModal({
                       type="button"
                       disabled={isDeletingAccount}
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="px-3 py-1.5 rounded-xl bg-obsidian-card hover:bg-white/[0.06] text-zinc-300 text-xs font-medium border border-white/[0.08] transition cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-obsidian-card hover:bg-white/[0.06] text-zinc-300 text-xs font-medium border border-luma-smokeline transition cursor-pointer"
                     >
                       Batal
                     </button>
@@ -410,7 +410,7 @@ export function UserProfileModal({
         {activeTab === "telegram" && (
           <div className="space-y-4">
             {/* Active Telegram Status Banner */}
-            <div className="p-4 rounded-2xl bg-obsidian-card border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="p-4 rounded-2xl bg-obsidian-card border border-luma-smokeline flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
               <div className="flex items-center gap-2.5">
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
                   isConnected ? "bg-mintRise/15 border border-mintRise/30 text-mintRise" : "bg-amberGold/15 border border-amberGold/30 text-amberGold"
@@ -468,7 +468,7 @@ export function UserProfileModal({
                   className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col gap-1 ${
                     telegramMode === "shared"
                       ? "bg-obsidian-card border-cyanHub/50 shadow-sm"
-                      : "bg-obsidian-panel border-white/[0.08] hover:border-white/[0.16]"
+                      : "bg-obsidian-panel border-luma-smokeline hover:border-white/[0.16]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -493,7 +493,7 @@ export function UserProfileModal({
                   className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col gap-1 ${
                     telegramMode === "custom"
                       ? "bg-obsidian-card border-amberGold/50 shadow-sm"
-                      : "bg-obsidian-panel border-white/[0.08] hover:border-white/[0.16]"
+                      : "bg-obsidian-panel border-luma-smokeline hover:border-white/[0.16]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -516,13 +516,13 @@ export function UserProfileModal({
 
             {/* PANDUAN & FORMULIR MODE 1: SHARED BOT */}
             {telegramMode === "shared" && (
-              <div className="p-5 rounded-3xl bg-obsidian-panel border border-white/[0.08] space-y-3.5 shadow-sm">
+              <div className="p-5 rounded-3xl bg-obsidian-panel border border-luma-smokeline space-y-3.5 shadow-sm">
                 <div className="flex items-center gap-2 text-cyanHub text-xs font-semibold">
                   <ShieldCheck className="w-4 h-4" />
                   Panduan 3 Langkah: Hubungkan ke Shared Bot
                 </div>
 
-                <div className="space-y-2 text-xs text-zinc-300 leading-relaxed bg-obsidian-card p-3.5 rounded-2xl border border-white/[0.08]">
+                <div className="space-y-2 text-xs text-zinc-300 leading-relaxed bg-obsidian-card p-3.5 rounded-2xl border border-luma-smokeline">
                   <div className="flex items-start gap-2.5">
                     <span className="w-5 h-5 rounded-full bg-cyanHub/20 text-cyanHub flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
                       1
@@ -569,7 +569,7 @@ export function UserProfileModal({
                       value={sharedChatId}
                       onChange={(e) => setSharedChatId(e.target.value)}
                       placeholder="Contoh: 987654321"
-                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub font-sans"
+                      className="w-full bg-obsidian-card border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub font-sans"
                       required
                     />
                   </div>
@@ -594,13 +594,13 @@ export function UserProfileModal({
 
             {/* PANDUAN & FORMULIR MODE 2: BRING YOUR OWN BOT (BYOB) */}
             {telegramMode === "custom" && (
-              <div className="p-5 rounded-3xl bg-obsidian-panel border border-white/[0.08] space-y-3.5 shadow-sm">
+              <div className="p-5 rounded-3xl bg-obsidian-panel border border-luma-smokeline space-y-3.5 shadow-sm">
                 <div className="flex items-center gap-2 text-amberGold text-xs font-semibold">
                   <Bot className="w-4 h-4" />
                   Panduan 4 Langkah: Buat & Hubungkan Bot Pribadi (BYOB)
                 </div>
 
-                <div className="space-y-2.5 text-xs text-zinc-300 leading-relaxed bg-obsidian-card p-3.5 rounded-2xl border border-white/[0.08]">
+                <div className="space-y-2.5 text-xs text-zinc-300 leading-relaxed bg-obsidian-card p-3.5 rounded-2xl border border-luma-smokeline">
                   <div className="flex items-start gap-2.5">
                     <span className="w-5 h-5 rounded-full bg-amberGold/20 text-amberGold flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
                       1
@@ -656,7 +656,7 @@ export function UserProfileModal({
                       value={customBotToken}
                       onChange={(e) => setCustomBotToken(e.target.value)}
                       placeholder="Contoh: 7123456789:AAH_XYZ123456789abcdef"
-                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-sans"
+                      className="w-full bg-obsidian-card border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-sans"
                       required
                     />
                   </div>
@@ -670,7 +670,7 @@ export function UserProfileModal({
                       value={customChatId}
                       onChange={(e) => setCustomChatId(e.target.value)}
                       placeholder="Dapatkan dengan ketik /start di bot baru Anda"
-                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-sans"
+                      className="w-full bg-obsidian-card border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-sans"
                     />
                   </div>
 

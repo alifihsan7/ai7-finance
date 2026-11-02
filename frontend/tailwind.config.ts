@@ -57,7 +57,11 @@ const config: Config = {
         hairline: "1px",
       },
       borderRadius: {
-        luma: "24px",
+        xl: "var(--ai7-radius-control)",
+        "2xl": "var(--ai7-radius-panel)",
+        "3xl": "var(--ai7-radius-panel)",
+        badge: "var(--ai7-radius-badge)",
+        luma: "var(--ai7-radius-panel)",
         "luma-lg": "28px",
       },
       boxShadow: {

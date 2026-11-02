@@ -84,7 +84,7 @@ export function SmartBudgetEnvelopes({
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="rounded-2xl bg-white/[0.04] border border-white/[0.08] p-4 sm:p-5 space-y-4"
+              className="rounded-2xl bg-white/[0.04] border border-luma-smokeline p-4 sm:p-5 space-y-4"
             >
               <div className="flex justify-between items-center gap-2">
                 <Skeleton className="w-24 h-4 rounded-full" />
@@ -95,7 +95,7 @@ export function SmartBudgetEnvelopes({
                 <Skeleton className="w-16 h-3 rounded-full mt-1.5" />
               </div>
               <Skeleton className="w-full h-1.5 rounded-full" />
-              <div className="flex justify-between items-center pt-2 border-t border-white/[0.08]">
+              <div className="flex justify-between items-center pt-2 border-t border-luma-smokeline">
                 <Skeleton className="w-16 h-3 rounded-full" />
                 <Skeleton className="w-16 h-3 rounded-full" />
               </div>
@@ -148,14 +148,14 @@ export function SmartBudgetEnvelopes({
           return (
             <div
               key={env.title}
-              className="rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.16] p-4 sm:p-5 space-y-3.5 flex flex-col justify-between transition-all duration-200"
+              className="rounded-2xl bg-white/[0.04] border border-luma-smokeline hover:border-white/[0.16] p-4 sm:p-5 space-y-3.5 flex flex-col justify-between transition-all duration-200"
             >
               <div className="space-y-3">
                 <div className="flex justify-between items-center gap-2">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span
                       aria-hidden="true"
-                      className="w-8 h-8 rounded-full bg-[#2B2825] border border-white/[0.1] flex items-center justify-center shrink-0"
+                      className="w-8 h-8 rounded-full bg-[#2B2825] border border-luma-smokeline flex items-center justify-center shrink-0"
                     >
                       <Wallet className={`w-3.5 h-3.5 ${isIcon ? "text-luma-ember" : "text-luma-smoke"}`} />
                     </span>
@@ -169,7 +169,7 @@ export function SmartBudgetEnvelopes({
                         ? "bg-luma-coral/10 border-luma-coral/30 text-luma-coral"
                         : pct >= 75
                         ? "bg-luma-gold/10 border-luma-gold/30 text-luma-gold"
-                        : "bg-white/[0.06] border-white/[0.08] text-luma-smoke"
+                        : "bg-white/[0.06] border-luma-smokeline text-luma-smoke"
                     }`}
                   >
                     {pct}%
@@ -198,7 +198,7 @@ export function SmartBudgetEnvelopes({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-luma-smoke font-sans pt-3 border-t border-white/[0.08] gap-2 tabular-nums">
+              <div className="flex items-center justify-between text-xs text-luma-smoke font-sans pt-3 border-t border-luma-smokeline gap-2 tabular-nums">
                 <div className="flex items-center gap-1 min-w-0">
                   <span className="text-xs">Limit:</span>
                   <span className="font-semibold text-luma-ivory text-xs whitespace-nowrap">{formatRupiah(env.limit)}</span>

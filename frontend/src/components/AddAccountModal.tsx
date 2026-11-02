@@ -12,13 +12,13 @@ interface AddAccountModalProps {
 }
 
 const TYPE_OPTIONS = [
-  { value: "operasional", label: "Operasional / Saku Harian", description: "Pos belanja konsumtif & kebutuhan aktif" },
-  { value: "tagihan", label: "Tagihan & Autodebet", description: "Listrik, wifi, kuota, gym, langganan berkala" },
-  { value: "gajian", label: "Gajian / Pemasukan Utama", description: "Rekening penampung payroll / uang saku" },
-  { value: "tabungan", label: "Tabungan / Dana Dingin", description: "Simpanan jangka menengah" },
-  { value: "investasi", label: "Investasi Portofolio", description: "Reksadana, saham, emas" },
-  { value: "darurat", label: "Dana Darurat", description: "Cadangan proteksi darurat" },
-  { value: "ewallet", label: "E-Wallet / Dompet Digital", description: "GoPay, OVO, ShopeePay, DANA" },
+  { value: "operasional", label: "Operasional / saku harian", description: "Pos belanja konsumtif & kebutuhan aktif" },
+  { value: "tagihan", label: "Tagihan & autodebet", description: "Listrik, wifi, kuota, gym, langganan berkala" },
+  { value: "gajian", label: "Gajian / pemasukan utama", description: "Rekening penampung payroll / uang saku" },
+  { value: "tabungan", label: "Tabungan / dana dingin", description: "Simpanan jangka menengah" },
+  { value: "investasi", label: "Investasi portofolio", description: "Reksadana, saham, emas" },
+  { value: "darurat", label: "Dana darurat", description: "Cadangan proteksi darurat" },
+  { value: "ewallet", label: "E-wallet / dompet digital", description: "GoPay, OVO, ShopeePay, DANA" },
 ];
 
 const COLOR_OPTIONS = [
@@ -87,7 +87,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Tambah Rekening / Akun Baru"
+      title="Tambah rekening / akun baru"
       subtitle="Daftarkan rekening bank, e-wallet, atau pos investasi baru ke ekosistem AI7 Finance"
       icon={<Wallet className="w-5 h-5" />}
     >
@@ -100,8 +100,8 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
         )}
 
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Nama Rekening / Akun *
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+            Nama rekening / akun *
           </label>
           <input
             type="text"
@@ -109,13 +109,13 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             placeholder="Misal: BCA, SeaBank, GoPay, OVO"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-30">
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
               Tipe / Kategori Pos
             </label>
             <CustomSelect
@@ -125,7 +125,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
               Warna / Aksen
             </label>
             <CustomSelect
@@ -137,7 +137,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
             Label / Deskripsi Ringkas
           </label>
           <input
@@ -145,13 +145,13 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             placeholder="Misal: Saku Tambahan, Tabungan Pribadi, Rekening Bisnis"
             value={tag}
             onChange={(e) => setTag(e.target.value)}
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
+            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Saldo Awal (Opsional)
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+            Saldo awal (opsional)
           </label>
           <CurrencyInput
             value={initialBalance}
@@ -159,11 +159,11 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             placeholder="0"
           />
           <p className="text-xs text-zinc-400 mt-1">
-            Jika diisi lebih dari Rp 0, sistem otomatis mencatat transaksi pemasukan &ldquo;Saldo Awal&rdquo; di buku transaksi.
+            Jika diisi lebih dari Rp 0, sistem otomatis mencatat transaksi pemasukan &ldquo;Saldo awal&rdquo; di buku transaksi.
           </p>
         </div>
 
-        <div className="pt-3 flex justify-end gap-3 border-t border-white/[0.08] mt-5">
+        <div className="pt-3 flex justify-end gap-3 border-t border-luma-smokeline mt-5">
           <button
             type="button"
             onClick={onClose}

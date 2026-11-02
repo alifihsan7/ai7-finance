@@ -39,12 +39,12 @@ export function ConfirmModal({
           {message}
         </p>
 
-        <div className="flex justify-end gap-3 pt-3 border-t border-white/[0.08]">
+        <div className="flex justify-end gap-3 pt-3 border-t border-luma-smokeline">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
+            className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-luma-smokeline hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
           >
             {cancelText}
           </button>

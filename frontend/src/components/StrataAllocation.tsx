@@ -24,7 +24,7 @@ const LUMA_SEGMENTS = ["#D6E9B8", "#F08A4B", "#EDD774", "#FFB59D", "#F4F1EC"];
 const DEFAULT_BUCKETS: BucketAllocationItem[] = [
   { account: "Rekening Utama", percentage: 50.0, purpose: "Belanja & Operasional" },
   { account: "Tabungan", percentage: 30.0, purpose: "Simpanan & Cadangan" },
-  { account: "Investasi", percentage: 20.0, purpose: "Pertumbuhan Aset" },
+  { account: "Investasi", percentage: 20.0, purpose: "Pertumbuhan aset" },
 ];
 
 export function StrataAllocationBar({
@@ -48,7 +48,7 @@ export function StrataAllocationBar({
         <Skeleton className="w-full h-9 rounded-full" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-1">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] space-y-2">
+            <div key={i} className="p-3.5 rounded-2xl bg-white/[0.04] border border-luma-smokeline space-y-2">
               <div className="flex items-center gap-1.5">
                 <Skeleton className="w-2 h-2 rounded-full" />
                 <Skeleton className="w-16 h-3 rounded-md" />
@@ -96,7 +96,7 @@ export function StrataAllocationBar({
 
       {/* Horizontal Stacked Bar — Luma warm solids */}
       <div
-        className="flex gap-1 min-h-[44px] rounded-full overflow-hidden p-1.5 bg-black/25 border border-white/[0.1]"
+        className="flex gap-1 min-h-[44px] rounded-full overflow-hidden p-1.5 bg-black/25 border border-luma-smokeline"
         role="img"
         aria-label={`Proporsi alokasi: ${activeBuckets.map((b) => `${b.account} ${b.percentage.toFixed(1)} persen`).join(", ")}`}
       >
@@ -135,7 +135,7 @@ export function StrataAllocationBar({
           return (
             <div
               key={b.account}
-              className="rounded-2xl bg-white/[0.04] border border-white/[0.08] p-3.5 min-w-0"
+              className="rounded-2xl bg-white/[0.04] border border-luma-smokeline p-3.5 min-w-0"
             >
               <div className="flex items-center gap-1.5 min-w-0">
                 <span

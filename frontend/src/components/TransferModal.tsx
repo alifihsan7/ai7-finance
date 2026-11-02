@@ -88,7 +88,7 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Transfer Antar Rekening"
+      title="Transfer antar rekening"
       subtitle="Pindah saldo tanpa memotong kuota belanja rutin (Safe-to-Spend tetap terjaga)"
       icon={<ArrowLeftRight className="w-5 h-5" />}
       accent="cyan"
@@ -104,7 +104,7 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
         {/* Rekening Asal & Tujuan */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-20">
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
               Dari Rekening
             </label>
             <CustomSelect
@@ -115,7 +115,7 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
               Ke Rekening
             </label>
             <CustomSelect
@@ -128,7 +128,7 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
 
         {/* Nominal with CurrencyInput */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
             Nominal Transfer
           </label>
           <CurrencyInput
@@ -143,7 +143,7 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
 
         {/* Catatan / Keterangan */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
             Keterangan / Catatan (Opsional)
           </label>
           <input
@@ -151,29 +151,29 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Contoh: Top up tabungan dingin"
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-cyanHub transition"
+            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-cyanHub transition"
           />
         </div>
 
         {/* Tanggal */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-            Tanggal Transaksi
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
+            Tanggal transaksi
           </label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-cyanHub transition font-sans"
+            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-cyanHub transition font-sans"
           />
         </div>
 
         {/* Actions Footer */}
-        <div className="pt-3 flex justify-end gap-3 border-t border-white/[0.08] mt-5">
+        <div className="pt-3 flex justify-end gap-3 border-t border-luma-smokeline mt-5">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
+            className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-luma-smokeline hover:border-white/[0.16] rounded-2xl transition cursor-pointer"
           >
             Batal
           </button>
