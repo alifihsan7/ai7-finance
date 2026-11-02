@@ -289,12 +289,12 @@ export function TransactionLedgerView({
             {loading ? (
               <Skeleton className="h-7 w-20 rounded-full" />
             ) : (
-              <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight">
+              <div className="ai7-type-metric text-white tracking-tight">
                 {stats.count}{" "}
                 <span className="text-xs font-normal text-zinc-400">item</span>
               </div>
             )}
-            <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
+            <p className="text-xs text-zinc-400 mt-0.5 truncate">
               {activeFiltersCount > 0 ? "Berdasarkan filter aktif" : "Seluruh catatan kas"}
             </p>
           </div>
@@ -312,11 +312,11 @@ export function TransactionLedgerView({
             {loading ? (
               <Skeleton className="h-7 w-28 rounded-full" />
             ) : (
-              <div className="text-xl sm:text-2xl font-black font-mono text-mintRise tracking-tight truncate">
+              <div className="ai7-type-metric text-mintRise tracking-tight truncate">
                 +{formatRupiah(stats.income)}
               </div>
             )}
-            <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
+            <p className="text-xs text-zinc-400 mt-0.5 truncate">
               Kas masuk & transfer terima
             </p>
           </div>
@@ -334,11 +334,11 @@ export function TransactionLedgerView({
             {loading ? (
               <Skeleton className="h-7 w-28 rounded-full" />
             ) : (
-              <div className="text-xl sm:text-2xl font-black font-mono text-coralFall tracking-tight truncate">
+              <div className="ai7-type-metric text-coralFall tracking-tight truncate">
                 -{formatRupiah(stats.expense)}
               </div>
             )}
-            <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
+            <p className="text-xs text-zinc-400 mt-0.5 truncate">
               Belanja & transfer keluar
             </p>
           </div>
@@ -357,7 +357,7 @@ export function TransactionLedgerView({
               <Skeleton className="h-7 w-28 rounded-full" />
             ) : (
               <div
-                className={`text-xl sm:text-2xl font-black font-mono tracking-tight truncate ${
+                className={`ai7-type-metric tracking-tight truncate ${
                   stats.net >= 0 ? "text-mintRise" : "text-coralFall"
                 }`}
               >
@@ -365,7 +365,7 @@ export function TransactionLedgerView({
                 {formatRupiah(Math.abs(stats.net))}
               </div>
             )}
-            <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
+            <p className="text-xs text-zinc-400 mt-0.5 truncate">
               {stats.net >= 0 ? "Surplus kas terfilter" : "Defisit kas terfilter"}
             </p>
           </div>
@@ -388,7 +388,7 @@ export function TransactionLedgerView({
                 }}
                 className={`text-xs px-3.5 py-1.5 rounded-full font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                   activeAccount === tab.id
-                    ? "text-slate-950 bg-amberGold font-bold shadow-sm"
+                    ? "text-slate-950 bg-amberGold font-semibold shadow-sm"
                     : "text-zinc-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08]"
                 }`}
               >
@@ -409,7 +409,7 @@ export function TransactionLedgerView({
                   setCurrentPage(1);
                 }}
                 placeholder="Cari transaksi, ket, atau akun..."
-                className="w-full bg-obsidian-card border border-white/[0.08] rounded-2xl pl-10 pr-8 py-2 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-amberGold transition font-mono"
+                className="w-full bg-obsidian-card border border-white/[0.08] rounded-2xl pl-10 pr-8 py-2 text-xs sm:text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-amberGold transition font-sans"
               />
               {searchQuery && (
                 <button
@@ -425,7 +425,7 @@ export function TransactionLedgerView({
             <button
               type="button"
               onClick={onOpenAddModal}
-              className="px-4 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 font-bold text-xs sm:text-sm rounded-2xl transition shadow-sm flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
+              className="px-4 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 font-semibold text-xs sm:text-sm rounded-2xl transition shadow-sm flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span className="hidden sm:inline">Catat Transaksi</span>
@@ -437,7 +437,7 @@ export function TransactionLedgerView({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-white/[0.08]">
           {/* Filter Tipe Transaksi */}
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-zinc-400 mb-1">
               Tipe Transaksi
             </label>
             <CustomSelect
@@ -454,7 +454,7 @@ export function TransactionLedgerView({
 
           {/* Filter Kategori */}
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-zinc-400 mb-1">
               Kategori
             </label>
             <CustomSelect
@@ -471,7 +471,7 @@ export function TransactionLedgerView({
 
           {/* Filter Rentang Tanggal */}
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-zinc-400 mb-1">
               Rentang Waktu
             </label>
             <CustomSelect
@@ -488,7 +488,7 @@ export function TransactionLedgerView({
 
           {/* Pengurutan (Sort By) */}
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-zinc-400 mb-1">
               Urutkan Berdasarkan
             </label>
             <CustomSelect
@@ -519,7 +519,7 @@ export function TransactionLedgerView({
                   setCustomStartDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-obsidian-panel border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-amberGold"
+                className="bg-obsidian-panel border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs text-white font-sans focus:outline-none focus:border-amberGold"
               />
               <span className="text-zinc-400 text-xs">s/d</span>
               <input
@@ -529,7 +529,7 @@ export function TransactionLedgerView({
                   setCustomEndDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-obsidian-panel border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-amberGold"
+                className="bg-obsidian-panel border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs text-white font-sans focus:outline-none focus:border-amberGold"
               />
             </div>
           </div>
@@ -542,7 +542,7 @@ export function TransactionLedgerView({
               <Filter className="w-3.5 h-3.5 text-amberGold" />
               <span>
                 Menampilkan hasil dengan{" "}
-                <strong className="text-amberGold font-mono">{activeFiltersCount}</strong> filter aktif
+                <strong className="text-amberGold font-sans">{activeFiltersCount}</strong> filter aktif
               </span>
             </div>
             <button
@@ -569,7 +569,7 @@ export function TransactionLedgerView({
 
         {/* 4. PAGINATION FOOTER */}
         {sortedTransactions.length > pageSize && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 pt-1 text-xs text-zinc-400 font-mono">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 pt-1 text-xs text-zinc-400 font-sans">
             <div>
               Menampilkan{" "}
               <strong className="text-white">
@@ -597,7 +597,7 @@ export function TransactionLedgerView({
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              <div className="px-3.5 py-1.5 rounded-xl bg-obsidian-card border border-white/[0.08] text-white font-bold">
+              <div className="px-3.5 py-1.5 rounded-xl bg-obsidian-card border border-white/[0.08] text-white font-semibold">
                 {currentPage} / {totalPages}
               </div>
 

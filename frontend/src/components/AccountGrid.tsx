@@ -297,19 +297,19 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                     <CreditCard className="w-4 h-4" />
                     <span className={`absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full ${ACCOUNT_COLOR_DOTS[acc.colorKey] || "bg-luma-ember"}`} />
                   </span>
-                  <span className="text-luma-ivory font-bold text-sm sm:text-base break-words leading-snug flex-1">
+                  <span className="text-luma-ivory font-semibold text-sm sm:text-base break-words leading-snug flex-1">
                     {acc.name}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                   {acc.isPocket && (
-                    <span className="text-[10px] sm:text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.05] text-luma-smoke border border-white/[0.08] whitespace-nowrap">
+                    <span className="text-xs sm:text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-white/[0.05] text-luma-smoke border border-white/[0.08] whitespace-nowrap">
                       {acc.cycleBadge}
                     </span>
                   )}
                   <span
-                    className={`text-[10px] sm:text-[11px] font-mono font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap ${acc.roleBadge.className}`}
+                    className={`text-xs sm:text-xs font-sans font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap ${acc.roleBadge.className}`}
                   >
                     {acc.roleBadge.label}
                   </span>
@@ -360,10 +360,10 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
               </div>
 
               <div className="mt-4">
-                <div className="text-[11px] text-luma-smoke font-semibold uppercase tracking-[0.1em]">
+                <div className="text-xs text-luma-smoke font-semibold uppercase tracking-[0.1em]">
                   Saldo Rekening
                 </div>
-                <div className="text-xl sm:text-2xl font-extrabold font-mono text-luma-ivory mt-1 tracking-tight break-words tabular-nums">
+                <div className="ai7-type-metric text-luma-ivory mt-1 tracking-tight break-words tabular-nums">
                   {formatRupiah(acc.balance)}
                 </div>
               </div>
@@ -372,7 +372,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
             <div className="mt-4 pt-3 border-t border-white/[0.08]">
               {isInvest ? (
                 <div className="space-y-1.5">
-                  <div className="flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5 text-[11px] text-luma-sage font-mono">
+                  <div className="flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5 text-xs text-luma-sage font-sans">
                     <span className="whitespace-nowrap">Target Portofolio</span>
                     <span className="whitespace-nowrap font-semibold tabular-nums">+{formatRupiah(acc.allocated)}/siklus</span>
                   </div>
@@ -382,7 +382,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 </div>
               ) : hasPlafon ? (
                 <div className="space-y-1.5">
-                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[11px] font-mono">
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-xs font-sans">
                     <span className="text-luma-smoke whitespace-nowrap">
                       Terpakai{" "}
                       <strong
@@ -421,7 +421,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between text-xs text-luma-smoke font-mono py-1">
+                <div className="flex items-center justify-between text-xs text-luma-smoke font-sans py-1">
                   <span>Status</span>
                   <span className="text-luma-sage shrink-0 whitespace-nowrap font-semibold">Aman · Aktif</span>
                 </div>
@@ -438,7 +438,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-luma-coral">
                 <AlertTriangle className="w-5 h-5" />
-                <h3 className="font-semibold text-sm text-luma-ivory">Hapus Rekening?</h3>
+                <h3 className="ai7-type-card text-luma-ivory">Hapus Rekening?</h3>
               </div>
               <button
                 type="button"
@@ -451,7 +451,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
             </div>
 
             <p className="text-xs text-luma-smoke leading-relaxed">
-              Apakah Anda yakin ingin menghapus rekening <strong className="text-luma-gold font-mono">{confirmDelete.name}</strong>?
+              Apakah Anda yakin ingin menghapus rekening <strong className="text-luma-gold font-sans">{confirmDelete.name}</strong>?
               Seluruh riwayat transaksi yang tercatat pada rekening ini akan ikut dihapus. Minimal Anda harus menyisakan 1 rekening aktif.
             </p>
 
@@ -474,7 +474,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 type="button"
                 disabled={isDeleting}
                 onClick={handleDeleteAccount}
-                className="luma-touch px-4 py-2 rounded-full bg-luma-coral hover:brightness-110 text-luma-charcoal text-xs font-bold transition inline-flex items-center gap-1.5 disabled:opacity-50"
+                className="luma-touch px-4 py-2 rounded-full bg-luma-coral hover:brightness-110 text-luma-charcoal text-xs font-semibold transition inline-flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isDeleting ? "Menghapus..." : "Ya, Hapus Rekening"}
               </button>

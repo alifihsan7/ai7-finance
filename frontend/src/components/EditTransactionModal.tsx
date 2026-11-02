@@ -113,7 +113,7 @@ export function EditTransactionModal({
         )}
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-sans text-zinc-400 uppercase tracking-wider mb-2">
             Tipe Transaksi
           </label>
           {isTransfer ? <p className="text-sm text-luma-smoke">{type === "transfer_in" ? "Transfer masuk" : "Transfer keluar"}. Nominal dan tanggal akan diperbarui pada kedua sisi transfer.</p> : <div className="grid grid-cols-2 gap-2 p-1 bg-obsidian-panel rounded-2xl border border-white/[0.08]">
@@ -143,7 +143,7 @@ export function EditTransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-sans text-zinc-400 uppercase tracking-wider mb-1.5">
             Nominal Transaksi
           </label>
           <CurrencyInput
@@ -156,7 +156,7 @@ export function EditTransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-sans text-zinc-400 uppercase tracking-wider mb-1.5">
             Tanggal Transaksi
           </label>
           <input
@@ -164,12 +164,12 @@ export function EditTransactionModal({
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amberGold transition font-mono"
+            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amberGold transition font-sans"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-sans text-zinc-400 uppercase tracking-wider mb-1.5">
             Rekening / Akun
           </label>
           <CustomSelect
@@ -180,7 +180,7 @@ export function EditTransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-sans text-zinc-400 uppercase tracking-wider mb-1.5">
             Kategori
           </label>
           <CustomSelect
@@ -192,7 +192,7 @@ export function EditTransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-sans text-zinc-400 uppercase tracking-wider mb-1.5">
             Keterangan
           </label>
           <input
@@ -216,7 +216,7 @@ export function EditTransactionModal({
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 py-2.5 bg-amberGold hover:bg-amber-300 text-slate-950 font-bold rounded-2xl text-sm transition disabled:opacity-50 shadow-sm cursor-pointer"
+            className="flex-1 py-2.5 bg-amberGold hover:bg-amber-300 text-slate-950 font-semibold rounded-2xl text-sm transition disabled:opacity-50 shadow-sm cursor-pointer"
           >
             {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>

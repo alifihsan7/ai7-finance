@@ -53,7 +53,7 @@ export function LumaRecentTransactions({
   return (
     <section aria-label="Transaksi terbaru" className="luma-recent space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-medium text-luma-ivory tracking-tight">
+        <h2 className="ai7-type-card text-luma-ivory tracking-tight">
           Transaksi Terbaru
         </h2>
         <button
@@ -113,12 +113,12 @@ export function LumaRecentTransactions({
                     <p className="text-sm font-semibold text-luma-ivory truncate leading-snug">
                       {tx.description}
                     </p>
-                    <p className="text-xs font-mono text-luma-smoke truncate mt-0.5">
+                    <p className="text-xs font-sans text-luma-smoke truncate mt-0.5">
                       {tx.date} · {tx.category} · {tx.account}
                     </p>
                   </div>
                   <div
-                    className={`text-sm sm:text-base font-bold font-mono tabular-nums whitespace-nowrap shrink-0 ${amountClass}`}
+                    className={`text-sm sm:text-base font-semibold font-sans tabular-nums whitespace-nowrap shrink-0 ${amountClass}`}
                   >
                     {isPositive ? "+" : "-"} {formatRupiah(tx.amount)}
                   </div>

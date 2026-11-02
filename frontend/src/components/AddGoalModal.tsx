@@ -287,7 +287,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
               type="date"
               value={targetDate}
               onChange={(e) => setTargetDate(e.target.value)}
-              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-white focus:outline-none focus:border-amberGold transition"
+              className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm font-sans text-white focus:outline-none focus:border-amberGold transition"
             />
           </div>
 
@@ -317,7 +317,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2.5 rounded-2xl text-xs sm:text-sm bg-amberGold text-slate-950 font-bold hover:bg-amber-300 transition flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+            className="px-6 py-2.5 rounded-2xl text-xs sm:text-sm bg-amberGold text-slate-950 font-semibold hover:bg-amber-300 transition flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
           >
             {loading ? "Menyimpan..." : (
               <>

@@ -95,7 +95,7 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
       maxWidth="md"
     >
       {error && (
-        <div className="mb-4 p-3 rounded-2xl bg-coralFall/10 border border-coralFall/30 text-coralFall text-xs font-mono">
+        <div className="mb-4 p-3 rounded-2xl bg-coralFall/10 border border-coralFall/30 text-coralFall text-xs font-sans">
           {error}
         </div>
       )}
@@ -164,7 +164,7 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-cyanHub transition font-mono"
+            className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-cyanHub transition font-sans"
           />
         </div>
 
@@ -180,7 +180,7 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-cyanHub text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 text-xs sm:text-sm font-semibold bg-cyanHub text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>{loading ? "Memproses..." : "Konfirmasi Transfer"}</span>

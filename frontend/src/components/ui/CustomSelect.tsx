@@ -206,7 +206,7 @@ export function CustomSelect({
                     <div className="truncate">
                       <div>{opt.label}</div>
                       {opt.description && (
-                        <div className="text-[11px] text-slateText-muted font-normal">
+                        <div className="text-xs text-slateText-muted font-normal">
                           {opt.description}
                         </div>
                       )}

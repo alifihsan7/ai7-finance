@@ -80,7 +80,7 @@ export function StrataAllocationBar({
     <section aria-label="Distribusi alokasi anggaran" className="luma-glass p-6 sm:p-7 space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
+          <h2 className="ai7-type-section text-luma-ivory tracking-tight">
             Distribusi Alokasi Anggaran
           </h2>
           <p className="text-xs sm:text-sm text-luma-smoke mt-0.5 tabular-nums">
@@ -89,7 +89,7 @@ export function StrataAllocationBar({
               : `Proporsi alokasi dipecah ke ${activeBuckets.length} pos rekening sesuai rasio alur gajian`}
           </p>
         </div>
-        <span className="text-xs font-mono font-semibold text-luma-gold px-3 py-1.5 rounded-full bg-luma-gold/10 border border-luma-gold/30 shrink-0 self-start sm:self-center whitespace-nowrap">
+        <span className="text-xs font-sans font-semibold text-luma-gold px-3 py-1.5 rounded-full bg-luma-gold/10 border border-luma-gold/30 shrink-0 self-start sm:self-center whitespace-nowrap">
           {formulaLabel}
         </span>
       </div>
@@ -114,7 +114,7 @@ export function StrataAllocationBar({
               title={`${b.account}: ${b.percentage.toFixed(1)}%`}
             >
               {showText ? (
-                <span className="text-[11px] leading-none select-none font-black font-mono text-luma-charcoal px-1 whitespace-nowrap">
+                <span className="text-xs leading-none select-none font-semibold font-sans text-luma-charcoal px-1 whitespace-nowrap">
                   {b.percentage < 10 ? b.percentage.toFixed(1) : Math.round(b.percentage)}%
                 </span>
               ) : null}
@@ -147,11 +147,11 @@ export function StrataAllocationBar({
                   {b.account}
                 </span>
               </div>
-              <div className="text-luma-smoke font-mono text-[11px] sm:text-xs mt-1.5 tabular-nums break-words leading-relaxed">
+              <div className="text-luma-smoke font-sans text-xs sm:text-xs mt-1.5 tabular-nums break-words leading-relaxed">
                 {b.percentage.toFixed(1)}%
                 {effectiveSalary > 0 ? ` · ${formatRupiah(allocatedAmt)}` : ""}
               </div>
-              <div className="text-luma-smoke/80 text-[11px] mt-0.5 break-words leading-snug">
+              <div className="text-luma-smoke/80 text-xs mt-0.5 break-words leading-snug">
                 {shortPurpose}
               </div>
             </div>

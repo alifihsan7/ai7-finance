@@ -338,7 +338,7 @@ export function CategoryGrid({
         <div>
           <div className="flex items-center gap-2">
             <Tag className="w-5 h-5 text-amberGold" />
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+            <h2 className="ai7-type-section text-white tracking-tight">
               Kategori Belanja & Pemasukan
             </h2>
           </div>
@@ -356,7 +356,7 @@ export function CategoryGrid({
               aria-pressed={filterTab === "all"}
               className={`px-3 py-1 rounded-full transition cursor-pointer min-h-[32px] ${
                 filterTab === "all"
-                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -368,7 +368,7 @@ export function CategoryGrid({
               aria-pressed={filterTab === "expense"}
               className={`px-3 py-1 rounded-full transition cursor-pointer min-h-[32px] ${
                 filterTab === "expense"
-                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -380,7 +380,7 @@ export function CategoryGrid({
               aria-pressed={filterTab === "income"}
               className={`px-3 py-1 rounded-full transition cursor-pointer min-h-[32px] ${
                 filterTab === "income"
-                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -395,7 +395,7 @@ export function CategoryGrid({
               setAddType(filterTab === "income" ? "income" : "expense");
               setIsAddModalOpen(true);
             }}
-            className="px-3.5 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 font-bold text-xs sm:text-sm rounded-xl transition shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95 min-h-[38px]"
+            className="px-3.5 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 font-semibold text-xs sm:text-sm rounded-xl transition shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95 min-h-[38px]"
             title="Tambah kategori transaksi baru"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
@@ -435,7 +435,7 @@ export function CategoryGrid({
               setAddType(filterTab === "income" ? "income" : "expense");
               setIsAddModalOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-amberGold text-slate-950 font-bold text-xs rounded-xl hover:bg-amber-300 transition cursor-pointer min-h-[44px]"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-amberGold text-slate-950 font-semibold text-xs rounded-xl hover:bg-amber-300 transition cursor-pointer min-h-[44px]"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Tambah Kategori Baru</span>
@@ -466,12 +466,12 @@ export function CategoryGrid({
                         )}
                       </div>
                       <div className="min-w-0">
-                        <span className="font-bold text-sm text-white block truncate" title={c.name}>
+                        <span className="font-semibold text-sm text-white block truncate" title={c.name}>
                           {c.name}
                         </span>
-                        <div className="flex items-center gap-1.5 text-[11px] font-mono text-zinc-400 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-xs font-sans text-zinc-400 mt-0.5">
                           <span
-                            className={`px-1.5 py-0.2 rounded text-[10px] font-semibold ${
+                            className={`px-1.5 py-0.2 rounded text-xs font-semibold ${
                               isExpense
                                 ? "bg-white/[0.06] text-zinc-400"
                                 : "bg-mintRise/15 text-mintRise"
@@ -486,11 +486,11 @@ export function CategoryGrid({
                     </div>
 
                     <div className="text-right shrink-0">
-                      <div className="font-mono font-black text-sm text-white">
+                      <div className="font-sans font-semibold text-sm text-white">
                         {formatRupiah(c.total)}
                       </div>
                       <span
-                        className={`text-[11px] font-mono font-semibold ${
+                        className={`text-xs font-sans font-semibold ${
                           c.percentage > 0 ? colorDef.badgeText : "text-zinc-400"
                         }`}
                       >
@@ -500,7 +500,7 @@ export function CategoryGrid({
                   </div>
 
                   {/* Transaction metadata or subtitle + Tactile In-Card Action Buttons */}
-                  <div className="text-[11px] font-mono text-zinc-400 flex items-center justify-between pt-1">
+                  <div className="text-xs font-sans text-zinc-400 flex items-center justify-between pt-1">
                     <span className="truncate pr-2">
                       {c.count > 0
                         ? `Rata-rata ${formatRupiah(avgSpend)}/tx`
@@ -654,7 +654,7 @@ export function CategoryGrid({
             <button
               type="submit"
               disabled={addLoading || !addName.trim()}
-              className="px-4 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+              className="px-4 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               {addLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               <span>Simpan Kategori</span>
@@ -764,7 +764,7 @@ export function CategoryGrid({
             <button
               type="submit"
               disabled={editLoading || !editName.trim()}
-              className="px-4 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+              className="px-4 py-2 bg-amberGold text-slate-950 hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               {editLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               <span>Simpan Perubahan</span>
@@ -792,10 +792,10 @@ export function CategoryGrid({
           <div className="p-3.5 rounded-2xl bg-obsidian-card border border-white/[0.08] flex items-center justify-between">
             <div>
               <div className="text-xs text-zinc-400">Kategori Target</div>
-              <div className="text-sm font-bold text-white mt-0.5">{deletingCat?.name}</div>
+              <div className="text-sm font-semibold text-white mt-0.5">{deletingCat?.name}</div>
             </div>
             <span
-              className={`px-2 py-0.5 rounded-md text-[11px] font-semibold ${
+              className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
                 deletingCat?.type === "expense"
                   ? "bg-rose-500/15 text-rose-300"
                   : "bg-emerald-500/15 text-emerald-300"
@@ -850,7 +850,7 @@ export function CategoryGrid({
               type="button"
               onClick={handleConfirmDelete}
               disabled={deleteLoading}
-              className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+              className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               {deleteLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               <span>Hapus Kategori</span>

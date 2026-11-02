@@ -1001,7 +1001,7 @@ export default function FinanceDashboard() {
         <div>
           <div className="luma-sidebar-heading flex items-center justify-between gap-1">
             <div className="luma-sidebar-copy">
-              <div className="font-bold text-base tracking-tight text-luma-ivory leading-none whitespace-nowrap">
+              <div className="font-semibold text-base tracking-tight text-luma-ivory leading-none whitespace-nowrap">
                 ai7<span className="text-luma-ember">.</span>finance
               </div>
               <div className="text-xs text-luma-smoke mt-2">
@@ -1087,24 +1087,24 @@ export default function FinanceDashboard() {
             className="luma-touch w-full p-3 rounded-3xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] transition text-left cursor-pointer group"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-bold text-xs flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-semibold text-xs flex items-center justify-center shrink-0">
                 {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
               </div>
               <div className="luma-sidebar-copy min-w-0 flex-1">
                 <p className="text-luma-ivory font-semibold text-xs truncate group-hover:text-luma-ember transition-colors">
                   {currentUser ? currentUser.full_name : "Masuk / Akun"}
                 </p>
-                <p className="text-[10px] text-luma-smoke font-mono truncate">
+                <p className="text-xs text-luma-smoke font-sans truncate">
                   {currentUser ? `@${currentUser.username}` : "Mode Tamu"}
                 </p>
               </div>
               {currentUser ? (
-                <span className="luma-sidebar-copy inline-flex items-center gap-1.5 text-[10px] text-luma-sage font-medium px-2 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25 shrink-0">
+                <span className="luma-sidebar-copy inline-flex items-center gap-1.5 text-xs text-luma-sage font-medium px-2 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-luma-sage"></span>
                   Aktif
                 </span>
               ) : (
-                <span className="luma-sidebar-copy inline-flex items-center gap-1.5 text-[10px] text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
+                <span className="luma-sidebar-copy inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-luma-smoke"></span>
                   Tamu
                 </span>
@@ -1118,10 +1118,10 @@ export default function FinanceDashboard() {
       <header className="luma-mobile-header md:hidden sticky top-0 z-30 w-full bg-luma-charcoal border-b border-luma-smokeline/60 px-3.5 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <div className="min-w-0">
-            <div className="font-bold text-sm tracking-tight text-luma-ivory leading-none truncate">
+            <div className="font-semibold text-sm tracking-tight text-luma-ivory leading-none truncate">
               ai7<span className="text-luma-ember">.</span>finance
             </div>
-            <div className="text-[11px] text-luma-smoke mt-1 truncate">
+            <div className="text-xs text-luma-smoke mt-1 truncate">
               {activeNav}
             </div>
           </div>
@@ -1140,7 +1140,7 @@ export default function FinanceDashboard() {
           <button
             onClick={() => setIsPaycheckModalOpen(true)}
             title="Gajian Masuk"
-            className="hidden luma-touch px-3 py-1.5 bg-luma-sage/15 text-luma-sage border border-luma-sage/30 font-semibold text-[11px] rounded-full transition active:scale-95 items-center gap-1 cursor-pointer"
+            className="hidden luma-touch px-3 py-1.5 bg-luma-sage/15 text-luma-sage border border-luma-sage/30 font-semibold text-xs rounded-full transition active:scale-95 items-center gap-1 cursor-pointer"
           >
             <ArrowDownLeft className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap">Gajian</span>
@@ -1155,7 +1155,7 @@ export default function FinanceDashboard() {
             }}
             title={currentUser ? currentUser.full_name : "Masuk / Akun"}
             aria-label={currentUser ? currentUser.full_name : "Masuk atau kelola akun"}
-            className="luma-touch min-w-[44px] inline-flex items-center justify-center rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-bold text-xs shrink-0 active:scale-95 cursor-pointer"
+            className="luma-touch min-w-[44px] inline-flex items-center justify-center rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-semibold text-xs shrink-0 active:scale-95 cursor-pointer"
           >
             {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
           </button>
@@ -1186,7 +1186,7 @@ export default function FinanceDashboard() {
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
                 <div className="flex items-center gap-2.5">
                   <div>
-                    <div className="font-bold text-base tracking-tight text-luma-ivory leading-none">
+                    <div className="font-semibold text-base tracking-tight text-luma-ivory leading-none">
                       ai7<span className="text-luma-ember">.</span>finance
                     </div>
                   </div>
@@ -1240,7 +1240,7 @@ export default function FinanceDashboard() {
 
               {/* Quick Actions inside Drawer */}
               <div className="mt-6 pt-4 border-t border-white/[0.08] space-y-2">
-                <span className="text-[11px] font-semibold text-luma-smoke uppercase tracking-wider block mb-1">
+                <span className="text-xs font-semibold text-luma-smoke uppercase tracking-wider block mb-1">
                   Aksi Cepat
                 </span>
                 <button
@@ -1286,22 +1286,22 @@ export default function FinanceDashboard() {
             {/* Slim profile footer — single calm line */}
             <div className="pt-4 border-t border-white/[0.08] text-xs mt-6">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-bold text-xs flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-semibold text-xs flex items-center justify-center shrink-0">
                   {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-luma-ivory font-semibold truncate">{currentUser?.full_name || "Pengguna AI7"}</p>
-                  <p className="text-[11px] text-luma-smoke font-mono truncate">
+                  <p className="text-xs text-luma-smoke font-sans truncate">
                     {currentUser?.telegram_chat_id ? `Telegram ID: ${currentUser.telegram_chat_id}` : "Mode Tamu"}
                   </p>
                 </div>
                 {currentUser ? (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-sage font-medium px-2 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25 shrink-0">
+                  <span className="inline-flex items-center gap-1.5 text-xs text-luma-sage font-medium px-2 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25 shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-luma-sage"></span>
                     Aktif
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
+                  <span className="inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-luma-smoke"></span>
                     Tamu
                   </span>
@@ -1327,7 +1327,7 @@ export default function FinanceDashboard() {
           }`}
         >
           <LayoutDashboard className="w-5 h-5 shrink-0" />
-          <span className="text-[10px] mt-1 leading-tight tracking-tight">Ringkasan</span>
+          <span className="text-xs mt-1 leading-tight tracking-tight">Ringkasan</span>
         </button>
 
         <button
@@ -1343,13 +1343,13 @@ export default function FinanceDashboard() {
           }`}
         >
           <Receipt className="w-5 h-5 shrink-0" />
-          <span className="text-[10px] mt-1 leading-tight tracking-tight">Transaksi</span>
+          <span className="text-xs mt-1 leading-tight tracking-tight">Transaksi</span>
         </button>
 
         {/* Center Floating Plus Action */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="luma-touch -mt-5 w-12 h-12 rounded-full bg-luma-ivory text-luma-charcoal shadow-lg shadow-black/25 flex items-center justify-center font-bold active:scale-90 transition border-2 border-luma-charcoal shrink-0 cursor-pointer"
+          className="luma-touch -mt-5 w-12 h-12 rounded-full bg-luma-ivory text-luma-charcoal shadow-lg shadow-black/25 flex items-center justify-center font-semibold active:scale-90 transition border-2 border-luma-charcoal shrink-0 cursor-pointer"
           title="Catat Transaksi Baru"
           aria-label="Catat transaksi baru"
         >
@@ -1369,7 +1369,7 @@ export default function FinanceDashboard() {
           }`}
         >
           <Layers className="w-5 h-5 shrink-0" />
-          <span className="text-[10px] mt-1 leading-tight tracking-tight">Anggaran</span>
+          <span className="text-xs mt-1 leading-tight tracking-tight">Anggaran</span>
         </button>
 
         <button
@@ -1387,7 +1387,7 @@ export default function FinanceDashboard() {
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-luma-ember"></span>
             )}
           </div>
-          <span className="text-[10px] mt-1 leading-tight tracking-tight">
+          <span className="text-xs mt-1 leading-tight tracking-tight">
             {["Rencana", "Laporan", "Pengaturan"].includes(activeNav) ? activeNav : "Menu"}
           </span>
         </button>
@@ -1444,7 +1444,7 @@ export default function FinanceDashboard() {
                         <div className="font-semibold text-xs text-luma-ivory">
                           Refresh Data
                         </div>
-                        <div className="text-[10px] text-luma-smoke">Saldo & transaksi terkini</div>
+                        <div className="text-xs text-luma-smoke">Saldo & transaksi terkini</div>
                       </div>
                     </button>
                     <button
@@ -1461,7 +1461,7 @@ export default function FinanceDashboard() {
                         <div className="font-semibold text-xs">
                           Gajian Masuk
                         </div>
-                        <div className="text-[10px] text-luma-smoke">Checklist distribusi gajian</div>
+                        <div className="text-xs text-luma-smoke">Checklist distribusi gajian</div>
                       </div>
                     </button>
                     <button
@@ -1480,7 +1480,7 @@ export default function FinanceDashboard() {
                         <div className="font-semibold text-xs text-luma-ivory">
                           {isExportingCSV ? "Sedang Mengunduh..." : "Unduh CSV Transaksi"}
                         </div>
-                        <div className="text-[10px] text-luma-smoke">Seluruh histori ledger</div>
+                        <div className="text-xs text-luma-smoke">Seluruh histori ledger</div>
                       </div>
                     </button>
 
@@ -1499,7 +1499,7 @@ export default function FinanceDashboard() {
                             Google Sheets Rapor
                             <ExternalLink className="w-3 h-3 opacity-70" />
                           </div>
-                          <div className="text-[10px] text-luma-smoke">Spreadsheet sinkronisasi</div>
+                          <div className="text-xs text-luma-smoke">Spreadsheet sinkronisasi</div>
                         </div>
                       </a>
                     )}
@@ -1511,10 +1511,10 @@ export default function FinanceDashboard() {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="luma-touch py-2 px-3 sm:px-4 text-xs font-bold rounded-full bg-luma-ivory text-luma-charcoal hover:brightness-95 transition inline-flex items-center justify-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+                className="luma-touch py-2 px-3 sm:px-4 text-xs font-semibold rounded-full bg-luma-ivory text-luma-charcoal hover:brightness-95 transition inline-flex items-center justify-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                <span className="font-bold">Catat Transaksi</span>
+                <span className="font-semibold">Catat Transaksi</span>
               </button>
             </div>
           </div>
@@ -1523,7 +1523,7 @@ export default function FinanceDashboard() {
         <div className="luma-page-content p-3.5 sm:p-5 md:p-6 lg:p-8 xl:p-10 pb-24 md:pb-10 max-w-7xl 2xl:max-w-[1600px] mx-auto w-full space-y-6 sm:space-y-8">
           {/* Page Title & Antislop Copy Header */}
           <div className="mb-2 sm:mb-4">
-            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-luma-ivory">
+            <h1 className="ai7-type-page tracking-tight text-luma-ivory">
               {activeNav === "Ringkasan" && "Ringkasan"}
               {activeNav === "Transaksi" && "Transaksi"}
               {activeNav === "Anggaran" && "Anggaran"}
@@ -1572,7 +1572,7 @@ export default function FinanceDashboard() {
             <button
               type="button"
               onClick={() => setIsAuthModalOpen(true)}
-              className="luma-touch w-full sm:w-auto px-4 py-2 rounded-full bg-luma-ivory hover:brightness-95 text-luma-charcoal font-bold text-xs transition shrink-0 cursor-pointer text-center"
+              className="luma-touch w-full sm:w-auto px-4 py-2 rounded-full bg-luma-ivory hover:brightness-95 text-luma-charcoal font-semibold text-xs transition shrink-0 cursor-pointer text-center"
             >
               Masuk / Daftar Sekarang
             </button>
@@ -1593,10 +1593,10 @@ export default function FinanceDashboard() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-sm text-luma-ivory">
+                      <span className="font-semibold text-sm text-luma-ivory">
                         Distribusi Gajian Sedang Berjalan
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-luma-sage/15 text-luma-sage border border-luma-sage/30">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-sans font-semibold bg-luma-sage/15 text-luma-sage border border-luma-sage/30">
                         {activePaycheckSession.completed_steps} / {activePaycheckSession.total_steps} Selesai ({activePaycheckSession.progress_percentage}%)
                       </span>
                     </div>
@@ -1607,7 +1607,7 @@ export default function FinanceDashboard() {
                 </div>
                 <button
                   onClick={() => setIsPaycheckModalOpen(true)}
-                  className="luma-touch px-4 py-2 rounded-full text-xs font-bold bg-luma-sage text-luma-charcoal hover:brightness-105 transition shrink-0 inline-flex items-center justify-center gap-1.5 cursor-pointer self-end sm:self-center"
+                  className="luma-touch px-4 py-2 rounded-full text-xs font-semibold bg-luma-sage text-luma-charcoal hover:brightness-105 transition shrink-0 inline-flex items-center justify-center gap-1.5 cursor-pointer self-end sm:self-center"
                 >
                   <span>Lanjutkan Checklist</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -1714,7 +1714,7 @@ export default function FinanceDashboard() {
                 <div className="flex justify-between items-center gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <Target className="w-5 h-5 text-luma-ember shrink-0" aria-hidden="true" />
-                    <h2 className="text-base font-bold text-luma-ivory tracking-tight truncate">
+                    <h2 className="ai7-type-section text-luma-ivory tracking-tight truncate">
                       Target &amp; Milestone Tabungan
                     </h2>
                   </div>
@@ -1762,7 +1762,7 @@ export default function FinanceDashboard() {
                             <span className={`w-1.5 h-1.5 rounded-full ${barClass} shrink-0`} aria-hidden="true" />
                             <span className="truncate">{g.name}</span>
                           </span>
-                          <span className={`text-xs font-mono font-bold shrink-0 tabular-nums ${pctClass}`}>
+                          <span className={`text-xs font-sans font-semibold shrink-0 tabular-nums ${pctClass}`}>
                             {pct}%
                           </span>
                         </div>
@@ -1779,7 +1779,7 @@ export default function FinanceDashboard() {
                             style={{ width: `${Math.max(3, pct)}%` }}
                           />
                         </div>
-                        <div className="flex justify-between text-[11px] font-mono text-luma-smoke tabular-nums">
+                        <div className="flex justify-between text-xs font-sans text-luma-smoke tabular-nums">
                           <span className="truncate">{formatRupiah(g.current_amount)}</span>
                           <span className="shrink-0">Target: {formatRupiah(g.target_amount)}</span>
                         </div>
@@ -1876,10 +1876,10 @@ export default function FinanceDashboard() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-base sm:text-lg text-slateText-primary">
+                    <h3 className="ai7-type-card text-slateText-primary">
                       Kantong Tagihan Rutin &amp; Utilitas
                     </h3>
-                    <span className="text-[10px] font-mono font-semibold px-2.5 py-0.5 rounded-full border bg-coralFall/15 text-coralFall border-coralFall/30">
+                    <span className="text-xs font-sans font-semibold px-2.5 py-0.5 rounded-full border bg-coralFall/15 text-coralFall border-coralFall/30">
                       TAGIHAN
                     </span>
                   </div>
@@ -1905,14 +1905,14 @@ export default function FinanceDashboard() {
                 <div className="bg-obsidian-panel border border-obsidian-border rounded-lg p-5 space-y-3">
                   <div className="flex justify-between items-center gap-2">
                     <span className="font-semibold text-slateText-primary text-sm truncate">Komitmen Tagihan Berjalan</span>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-mintRise shrink-0 whitespace-nowrap">
+                    <span className="text-xs font-sans px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-mintRise shrink-0 whitespace-nowrap">
                       Autodebet
                     </span>
                   </div>
                   {loading ? (
                     <Skeleton className="h-7 w-36 rounded-md" />
                   ) : (
-                    <div className="text-xl font-bold font-mono text-slateText-primary">
+                    <div className="ai7-type-metric text-slateText-primary">
                       {formatRupiah(subsData.total_monthly_commitment)} / bln
                     </div>
                   )}
@@ -1924,14 +1924,14 @@ export default function FinanceDashboard() {
                 <div className="bg-obsidian-panel border border-obsidian-border rounded-lg p-5 space-y-3">
                   <div className="flex justify-between items-center gap-2">
                     <span className="font-semibold text-slateText-primary text-sm truncate">Pos Tabungan &amp; Investasi</span>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-cyanHub shrink-0 whitespace-nowrap">
+                    <span className="text-xs font-sans px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-cyanHub shrink-0 whitespace-nowrap">
                       Pertumbuhan Aset
                     </span>
                   </div>
                   {loading ? (
                     <Skeleton className="h-7 w-36 rounded-md" />
                   ) : (
-                    <div className="text-xl font-bold font-mono text-slateText-primary">
+                    <div className="ai7-type-metric text-slateText-primary">
                       {formatRupiah(totalInvestasiReal)}
                     </div>
                   )}
@@ -1944,11 +1944,11 @@ export default function FinanceDashboard() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
-                <div className="text-cyanHub font-bold text-sm">Pos Dana Darurat (Cadangan Likuid)</div>
+                <div className="text-cyanHub font-semibold text-sm">Pos Dana Darurat (Cadangan Likuid)</div>
                 {loading ? (
                   <Skeleton className="h-8 w-40 rounded-md" />
                 ) : (
-                  <div className="text-2xl font-bold font-mono text-slateText-primary">
+                  <div className="ai7-type-metric text-slateText-primary">
                     {formatRupiah(totalDaruratReal)}
                   </div>
                 )}
@@ -1957,11 +1957,11 @@ export default function FinanceDashboard() {
                 </p>
               </div>
               <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 space-y-2">
-                <div className="text-purpleLock font-bold text-sm">Pos Tabungan Terkunci (Tujuan Finansial)</div>
+                <div className="text-purpleLock font-semibold text-sm">Pos Tabungan Terkunci (Tujuan Finansial)</div>
                 {loading ? (
                   <Skeleton className="h-8 w-40 rounded-md" />
                 ) : (
-                  <div className="text-2xl font-bold font-mono text-slateText-primary">
+                  <div className="ai7-type-metric text-slateText-primary">
                     {formatRupiah(totalTabunganReal)}
                   </div>
                 )}
@@ -1997,7 +1997,7 @@ export default function FinanceDashboard() {
                 >
                   <Target className="w-4 h-4 shrink-0 text-luma-ember" />
                   <span>Target Tabungan</span>
-                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
+                  <span className="text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
                     {goals.length}
                   </span>
                 </button>
@@ -2017,7 +2017,7 @@ export default function FinanceDashboard() {
                 >
                   <Bell className="w-4 h-4 shrink-0 text-luma-gold" />
                   <span>Tagihan</span>
-                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
+                  <span className="text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
                     {subsData.items.length}
                   </span>
                 </button>
@@ -2029,7 +2029,7 @@ export default function FinanceDashboard() {
                   <button
                     type="button"
                     onClick={() => setIsAddGoalModalOpen(true)}
-                    className="luma-touch min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-luma-ivory text-luma-charcoal font-bold rounded-full hover:brightness-95 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
+                    className="luma-touch min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-luma-ivory text-luma-charcoal font-semibold rounded-full hover:brightness-95 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Tambah Target</span>
@@ -2038,7 +2038,7 @@ export default function FinanceDashboard() {
                   <button
                     type="button"
                     onClick={() => setIsSubModalOpen(true)}
-                    className="luma-touch min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-amberGold text-slate-950 font-bold rounded-full hover:bg-yellow-300 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95 shadow-sm"
+                    className="luma-touch min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-amberGold text-slate-950 font-semibold rounded-full hover:bg-yellow-300 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95 shadow-sm"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Tambah Tagihan</span>
@@ -2124,7 +2124,7 @@ export default function FinanceDashboard() {
                 >
                   <CreditCard className="w-4 h-4 shrink-0 text-luma-ember" />
                   <span>Rekening</span>
-                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
+                  <span className="text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
                     {customAccounts.length || summary.accounts?.length || 0}
                   </span>
                 </button>
@@ -2144,7 +2144,7 @@ export default function FinanceDashboard() {
                 >
                   <WalletCards className="w-4 h-4 shrink-0 text-luma-gold" />
                   <span>Kantong</span>
-                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
+                  <span className="text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
                     {pocketsCount}
                   </span>
                 </button>
@@ -2164,7 +2164,7 @@ export default function FinanceDashboard() {
                 >
                   <Layers className="w-4 h-4 shrink-0 text-luma-sage" />
                   <span>Kategori</span>
-                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
+                  <span className="text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
                     {categories.length}
                   </span>
                 </button>
@@ -2225,7 +2225,7 @@ export default function FinanceDashboard() {
                     type="button"
                     onClick={handleOpenEditPockets}
                     title="Ubah plafon target tiap sub-kantong operasional"
-                    className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-bold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+                    className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
                   >
                     <Pencil className="w-3.5 h-3.5 shrink-0" />
                     <span>Edit Target Sub-Kantong</span>
@@ -2238,7 +2238,7 @@ export default function FinanceDashboard() {
             {settingsSubTab === "rekening" && (
               <div className="space-y-4 animate-fadeIn">
                 <div>
-                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                  <h2 className="ai7-type-section text-white tracking-tight">
                     Rekening &amp; Dompet Kas
                   </h2>
                   <p className="text-xs text-zinc-400 mt-0.5">
@@ -2291,34 +2291,34 @@ export default function FinanceDashboard() {
                 <div className="luma-glass !rounded-3xl p-6 sm:p-7 space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.08]">
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-bold text-xl flex items-center justify-center shrink-0">
+                      <div className="w-14 h-14 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-semibold text-xl flex items-center justify-center shrink-0">
                         {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
                       </div>
                       <div>
-                        <h2 className="text-lg font-bold text-luma-ivory tracking-tight">
+                        <h2 className="ai7-type-section text-luma-ivory tracking-tight">
                           {currentUser?.full_name || "Pengguna Tamu"}
                         </h2>
-                        <p className="text-xs text-luma-smoke font-mono mt-0.5">
+                        <p className="text-xs text-luma-smoke font-sans mt-0.5">
                           {currentUser ? `@${currentUser.username} • ${currentUser.email || "Email belum disetel"}` : "Mode Tamu (Sesi Lokal)"}
                         </p>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
                           {currentUser ? (
-                            <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-sage font-medium px-2.5 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25">
+                            <span className="inline-flex items-center gap-1.5 text-xs text-luma-sage font-medium px-2.5 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25">
                               <span className="w-1.5 h-1.5 rounded-full bg-luma-sage"></span>
                               Akun Terverifikasi
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-smoke font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+                            <span className="inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
                               <span className="w-1.5 h-1.5 rounded-full bg-luma-smoke"></span>
                               Tamu
                             </span>
                           )}
                           {currentUser?.telegram_chat_id ? (
-                            <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-ember font-medium px-2.5 py-0.5 rounded-full bg-luma-ember/10 border border-luma-ember/25">
+                            <span className="inline-flex items-center gap-1.5 text-xs text-luma-ember font-medium px-2.5 py-0.5 rounded-full bg-luma-ember/10 border border-luma-ember/25">
                               Telegram Terhubung ({currentUser.telegram_chat_id})
                             </span>
                           ) : currentUser ? (
-                            <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-smoke font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+                            <span className="inline-flex items-center gap-1.5 text-xs text-luma-smoke font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
                               Telegram Belum Terhubung
                             </span>
                           ) : null}
@@ -2339,7 +2339,7 @@ export default function FinanceDashboard() {
                         <button
                           type="button"
                           onClick={() => setIsAuthModalOpen(true)}
-                          className="luma-touch min-h-[44px] px-4 py-2 rounded-full bg-luma-ivory hover:brightness-95 text-luma-charcoal text-xs font-bold transition cursor-pointer"
+                          className="luma-touch min-h-[44px] px-4 py-2 rounded-full bg-luma-ivory hover:brightness-95 text-luma-charcoal text-xs font-semibold transition cursor-pointer"
                         >
                           Masuk / Daftar
                         </button>
@@ -2349,13 +2349,13 @@ export default function FinanceDashboard() {
 
                   {/* Preferensi Antarmuka */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-luma-ivory tracking-tight">
+                    <h3 className="ai7-type-card text-luma-ivory tracking-tight">
                       Preferensi Antarmuka
                     </h3>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
                       <div>
                         <div className="text-xs font-semibold text-luma-ivory">Tema Tampilan</div>
-                        <div className="text-[11px] text-luma-smoke mt-0.5">
+                        <div className="text-xs text-luma-smoke mt-0.5">
                           Ganti palet Ink &amp; Silver antara mode Gelap (Dark Glass) dan Terang.
                         </div>
                       </div>
@@ -2368,7 +2368,7 @@ export default function FinanceDashboard() {
                   {/* Admin Google Sheets Link */}
                   {currentUser?.id === 1 && googleSheetUrl && (
                     <div className="space-y-2 pt-2">
-                      <h3 className="text-sm font-semibold text-luma-ivory tracking-tight">
+                      <h3 className="ai7-type-card text-luma-ivory tracking-tight">
                         Integrasi Data
                       </h3>
                       <a
@@ -2381,7 +2381,7 @@ export default function FinanceDashboard() {
                           <FileSpreadsheet className="w-5 h-5 shrink-0" />
                           <div>
                             <div className="text-xs font-semibold">Google Sheets Rapor Keuangan</div>
-                            <div className="text-[11px] text-luma-smoke">Buka spreadsheet cadangan data terintegrasi</div>
+                            <div className="text-xs text-luma-smoke">Buka spreadsheet cadangan data terintegrasi</div>
                           </div>
                         </div>
                         <ExternalLink className="w-4 h-4 opacity-70" />
@@ -2468,7 +2468,7 @@ export default function FinanceDashboard() {
                 onClick={() => setSubBillingType("fixed_day")}
                 className={`py-2 px-2 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
                   subBillingType === "fixed_day"
-                    ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                    ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -2487,7 +2487,7 @@ export default function FinanceDashboard() {
                 }}
                 className={`py-2 px-2 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
                   subBillingType === "exact_date"
-                    ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                    ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -2525,7 +2525,7 @@ export default function FinanceDashboard() {
                   placeholder="Contoh: 25"
                   value={subBillingDay}
                   onChange={(e) => setSubBillingDay(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
                 />
               </div>
             ) : (
@@ -2538,7 +2538,7 @@ export default function FinanceDashboard() {
                   required
                   value={subExactDueDate}
                   onChange={(e) => setSubExactDueDate(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
+                  className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
                 />
               </div>
             )}
@@ -2590,7 +2590,7 @@ export default function FinanceDashboard() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 text-xs sm:text-sm font-bold bg-amberGold text-slate-950 hover:bg-amber-300 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer"
+              className="px-5 py-2.5 text-xs sm:text-sm font-semibold bg-amberGold text-slate-950 hover:bg-amber-300 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer"
             >
               Simpan Tagihan
             </button>

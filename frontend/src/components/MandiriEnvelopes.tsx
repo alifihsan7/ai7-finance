@@ -115,13 +115,13 @@ export function SmartBudgetEnvelopes({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
+            <h2 className="ai7-type-section text-luma-ivory tracking-tight">
               {pocketTitle}{" "}
-              <span className="font-mono font-semibold text-luma-smoke text-sm">
+              <span className="font-sans font-semibold text-luma-smoke text-sm">
                 {totalPlafond > 0 ? `(Plafon ${formatRupiah(totalPlafond)})` : "(Monitoring Saku Harian)"}
               </span>
             </h2>
-            <span className="text-[10px] sm:text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full border bg-amberGold/15 text-amberGold border-amberGold/30">
+            <span className="text-xs sm:text-xs font-sans font-semibold px-2.5 py-0.5 rounded-full border bg-amberGold/15 text-amberGold border-amberGold/30">
               OPERASIONAL
             </span>
           </div>
@@ -129,7 +129,7 @@ export function SmartBudgetEnvelopes({
             Monitoring limit pos belanja harian agar pengeluaran terkontrol sampai siklus berikutnya
           </p>
         </div>
-        <span className="text-xs text-luma-gold font-mono font-semibold px-3 py-1.5 rounded-full bg-luma-gold/10 border border-luma-gold/30 shrink-0 self-start sm:self-center whitespace-nowrap">
+        <span className="text-xs text-luma-gold font-sans font-semibold px-3 py-1.5 rounded-full bg-luma-gold/10 border border-luma-gold/30 shrink-0 self-start sm:self-center whitespace-nowrap">
           Reset Tiap {cycleDays} Hari
         </span>
       </div>
@@ -164,7 +164,7 @@ export function SmartBudgetEnvelopes({
                     </span>
                   </div>
                   <span
-                    className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-full border shrink-0 tabular-nums ${
+                    className={`text-xs font-sans font-semibold px-2.5 py-1 rounded-full border shrink-0 tabular-nums ${
                       pct >= 90
                         ? "bg-luma-coral/10 border-luma-coral/30 text-luma-coral"
                         : pct >= 75
@@ -177,7 +177,7 @@ export function SmartBudgetEnvelopes({
                 </div>
 
                 <div>
-                  <div className="text-xl sm:text-2xl font-extrabold font-mono text-luma-ivory tracking-tight tabular-nums break-words">
+                  <div className="ai7-type-metric text-luma-ivory tracking-tight tabular-nums break-words">
                     {formatRupiah(rem)}
                   </div>
                   <div className="text-xs text-luma-smoke mt-0.5">Sisa saldo pos</div>
@@ -198,14 +198,14 @@ export function SmartBudgetEnvelopes({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-luma-smoke font-mono pt-3 border-t border-white/[0.08] gap-2 tabular-nums">
+              <div className="flex items-center justify-between text-xs text-luma-smoke font-sans pt-3 border-t border-white/[0.08] gap-2 tabular-nums">
                 <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-[11px]">Limit:</span>
-                  <span className="font-semibold text-luma-ivory text-[11px] whitespace-nowrap">{formatRupiah(env.limit)}</span>
+                  <span className="text-xs">Limit:</span>
+                  <span className="font-semibold text-luma-ivory text-xs whitespace-nowrap">{formatRupiah(env.limit)}</span>
                 </div>
                 <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-[11px]">Pakai:</span>
-                  <span className={`font-semibold text-[11px] whitespace-nowrap ${pct >= 90 ? "text-luma-coral font-bold" : "text-luma-ivory"}`}>
+                  <span className="text-xs">Pakai:</span>
+                  <span className={`font-semibold text-xs whitespace-nowrap ${pct >= 90 ? "text-luma-coral font-semibold" : "text-luma-ivory"}`}>
                     {formatRupiah(env.spent)}
                   </span>
                 </div>

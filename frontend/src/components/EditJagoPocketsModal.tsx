@@ -108,7 +108,7 @@ export function EditJagoPocketsModal({
                 >
                   {pocket.name}
                 </label>
-                <span className="text-[11px] font-mono text-zinc-400 tabular-nums">
+                <span className="text-xs font-sans text-zinc-400 tabular-nums">
                   Terpakai: {formatRupiah(pocket.spent_amount ?? 0)}
                 </span>
               </div>
@@ -124,9 +124,9 @@ export function EditJagoPocketsModal({
           ))}
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-1 text-xs font-mono">
+        <div className="flex items-center justify-between gap-2 px-1 text-xs font-sans">
           <span className="text-zinc-400">Total plafon draf</span>
-          <span className="font-bold text-white tabular-nums">{formatRupiah(totalDraft)}</span>
+          <span className="font-semibold text-white tabular-nums">{formatRupiah(totalDraft)}</span>
         </div>
 
         <div className="flex justify-end gap-3 pt-3 border-t border-white/[0.08] mt-5">
@@ -140,7 +140,7 @@ export function EditJagoPocketsModal({
           <button
             type="submit"
             disabled={loading}
-            className="min-h-[44px] px-6 py-2.5 rounded-2xl text-xs sm:text-sm bg-amberGold text-slate-950 font-bold hover:bg-amber-300 transition flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amberGold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-card"
+            className="min-h-[44px] px-6 py-2.5 rounded-2xl text-xs sm:text-sm bg-amberGold text-slate-950 font-semibold hover:bg-amber-300 transition flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amberGold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-card"
           >
             {loading ? (
               "Menyimpan..."

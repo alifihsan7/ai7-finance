@@ -10,7 +10,7 @@ The owner's reference and Luma design system in this conversation supply the dir
 | Sidebar #0e0e10, panels #232326, balance gradient #393940 to #29292f | Separate navigation and supporting information, with a subtle silver sheen marking the primary balance. |
 | Silver #d4d5dc for selected navigation; green #abd5bd for income and coral #e9a79f for expenses | Keep interface accents neutral and reserve semantic color for financial direction and status. |
 | One glass inset within the balance panel | Group income and expense as context for the balance, without blurring every surface. |
-| Existing local Geist sans, regular and medium weights | Keep labels and long rupiah amounts readable, without another font download. Tabular numerals align amounts. |
+| Existing local Geist Sans, weights 400 / 500 / 600 | Keep labels and long rupiah amounts readable, without another font download. Tabular numerals align amounts; interface text and money do not use monospace. |
 | Balance, daily spending, account strip, transaction list | Answer what is available, what can be spent, where it is, and what changed. |
 | 28 px main panel, 20 px supporting panels, 10 px controls | Distinguish containers from controls; avoid making every element a pill. |
 | 8 / 12 / 16 / 24 / 32 px spacing | Keep related amounts close and independent decisions apart. |
@@ -27,3 +27,5 @@ Scope of this iteration: dashboard overview, its navigation chrome and shared di
 The application fills the viewport without an outer frame or content width cap. The sidebar is a separate rounded panel inset 16 px from the screen edges. A 44 px toggle switches between labeled navigation and an icon rail; the browser remembers the choice. Internal panels retain their spacing and radii for readability.
 
 Shared controls use 10 px radii, 44 px minimum targets and neutral silver focus states. Dialogs and supporting cards use 20 px radii without decorative accent strips. Currency prefixes and selectors remain neutral; financial direction, status and user-selected category colors retain their meaning. Account colors remain visible as a small identifying dot. Account cards reflow from a 300 px preferred minimum instead of forcing five cards across a narrow content region; category cards prefer 320 px to fit labels and amounts. Category filters use a selected underline and explicit pressed state. Exact legacy primary-button classes share the same neutral hover treatment across forms and pages.
+
+Typography uses explicit roles: page title 30 px (24 px on phones), section title 18 px/600, card title 16 px/500, body and controls 14 px, metadata 12 px, inputs 16 px, summary metrics 28 px/600 (24 px on phones), primary balance 36 px/500 (28 px on phones). Long metrics wrap instead of hiding digits. New roles replace page-specific font classes; do not restore heavy monospace figures or 9–11 px metadata. Keep line heights at 1.2 for metrics/titles and 1.4–1.5 for supporting text.

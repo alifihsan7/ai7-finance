@@ -143,7 +143,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
             <Skeleton className="w-28 h-11 rounded-2xl" />
           </div>}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3.5 sm:gap-4">
+        <div className="ai7-pocket-grid grid gap-3.5 sm:gap-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
@@ -178,7 +178,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
     <section aria-label="Sub-Kantong Operasional" className="luma-glass p-6 sm:p-7 space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight flex items-center gap-2">
+          <h2 className="ai7-type-section text-luma-ivory tracking-tight flex items-center gap-2">
             <Landmark className="w-5 h-5 text-luma-ember shrink-0" aria-hidden="true" />
             <span>
               Sub-Kantong Operasional{" "}
@@ -204,7 +204,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
             type="button"
             onClick={() => setIsEditOpen(true)}
             title="Ubah plafon target tiap sub-kantong operasional"
-            className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-bold bg-luma-ivory text-luma-charcoal hover:brightness-95 active:scale-95 transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
+            className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-semibold bg-luma-ivory text-luma-charcoal hover:brightness-95 active:scale-95 transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Pencil className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span>Edit Target Sub-Kantong</span>
@@ -218,7 +218,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
           <button
             type="button"
             onClick={fetchPockets}
-            className="luma-touch min-w-[44px] px-4 py-2 rounded-full text-xs font-bold bg-luma-coral/15 border border-luma-coral/40 hover:bg-luma-coral/25 active:scale-95 transition shrink-0 cursor-pointer"
+            className="luma-touch min-w-[44px] px-4 py-2 rounded-full text-xs font-semibold bg-luma-coral/15 border border-luma-coral/40 hover:bg-luma-coral/25 active:scale-95 transition shrink-0 cursor-pointer"
           >
             Coba Lagi
           </button>
@@ -230,7 +230,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
           Belum ada sub-kantong operasional aktif. Tekan Sync Komitmen untuk menginisialisasi sub-kantong bawaan.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3.5 sm:gap-4">
+        <div className="ai7-pocket-grid grid gap-3.5 sm:gap-4">
           {pockets.map((pocket) => {
             const target = pocket.target_amount ?? 0;
             const spent = pocket.spent_amount ?? 0;
@@ -260,14 +260,14 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
                       <span className="text-luma-ivory font-semibold text-sm block break-words leading-snug">{pocket.name}</span>
                     </div>
                     <span
-                      className={`text-[11px] px-2 py-1 rounded-lg border max-w-full ${status.badge}`}
+                      className={`text-xs px-2 py-1 rounded-lg border max-w-full ${status.badge}`}
                     >
                       {state.label}
                     </span>
                   </div>
 
                   <div>
-                    <div className="text-xl sm:text-2xl font-extrabold font-mono text-luma-ivory tracking-tight tabular-nums break-words">
+                    <div className="ai7-type-metric text-luma-ivory tracking-tight tabular-nums break-words">
                       {formatRupiah(remaining)}
                     </div>
                     <div className="text-xs text-luma-smoke mt-0.5">Sisa saldo kantong</div>
@@ -288,18 +288,18 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLo
                   </div> : <p className="text-xs text-luma-smoke">Plafon belum diatur. Persentase pemakaian belum tersedia.</p>}
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-luma-smoke font-mono pt-3 border-t border-white/[0.08] gap-2 tabular-nums">
-                  <div className="flex items-center gap-1 min-w-0">
-                    <span className="text-[11px]">Plafon:</span>
-                    <span className="font-semibold text-luma-ivory text-[11px] whitespace-nowrap">
+                <div className="grid text-xs text-luma-smoke font-sans pt-3 border-t border-white/[0.08] gap-2 tabular-nums">
+                  <div className="flex flex-wrap items-center justify-between gap-1 min-w-0">
+                    <span className="text-xs">Plafon:</span>
+                    <span className="font-semibold text-luma-ivory text-xs break-all">
                       {formatRupiah(target)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 min-w-0">
-                    <span className="text-[11px]">Pakai:</span>
+                  <div className="flex flex-wrap items-center justify-between gap-1 min-w-0">
+                    <span className="text-xs">Pakai:</span>
                     <span
-                      className={`font-semibold text-[11px] whitespace-nowrap ${
-                        state.tone === "danger" ? "text-luma-coral font-bold" : "text-luma-ivory"
+                      className={`font-semibold text-xs break-all ${
+                        state.tone === "danger" ? "text-luma-coral font-semibold" : "text-luma-ivory"
                       }`}
                     >
                       {formatRupiah(spent)}

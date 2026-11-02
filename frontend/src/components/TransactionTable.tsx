@@ -87,7 +87,7 @@ export function TransactionTable({
 
                 return (
                   <tr key={tx.id} className="hover:bg-white/[0.04] transition group">
-                    <td className="py-4 px-4 sm:px-6 text-luma-smoke font-mono whitespace-nowrap text-xs sm:text-sm">
+                    <td className="py-4 px-4 sm:px-6 text-luma-smoke font-sans whitespace-nowrap text-xs sm:text-sm">
                       {tx.date}
                     </td>
                     <td className="py-4 px-4 sm:px-6 text-luma-ivory font-medium min-w-[200px] leading-snug break-words">
@@ -95,7 +95,7 @@ export function TransactionTable({
                     </td>
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-mono font-medium border whitespace-nowrap ${
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-sans font-medium border whitespace-nowrap ${
                           isTransfer
                             ? "bg-luma-gold/10 border-luma-gold/30 text-luma-gold"
                             : getCategoryBadgeClasses(tx.category)
@@ -104,11 +104,11 @@ export function TransactionTable({
                         {tx.category}
                       </span>
                     </td>
-                    <td className="py-4 px-4 sm:px-6 text-luma-smoke font-mono text-xs sm:text-sm whitespace-nowrap">
+                    <td className="py-4 px-4 sm:px-6 text-luma-smoke font-sans text-xs sm:text-sm whitespace-nowrap">
                       {tx.account}
                     </td>
                     <td
-                      className={`py-4 px-4 sm:px-6 text-right font-mono font-bold whitespace-nowrap text-sm sm:text-base tabular-nums ${
+                      className={`ai7-type-amount py-4 px-4 sm:px-6 text-right whitespace-nowrap ${
                         isPositive ? "text-luma-sage" : isTransferOut ? "text-luma-gold" : "text-luma-coral"
                       }`}
                     >

@@ -83,11 +83,11 @@ export function LumaHeroCard({
       <div className="relative">
         {/* Eyebrow + pace badge */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <span className="text-[11px] font-semibold text-luma-smoke uppercase tracking-[0.12em]">
+          <span className="text-xs font-semibold text-luma-smoke uppercase tracking-[0.12em]">
             Total Saldo Kas · {accountCount} Rekening
           </span>
           <span
-            className={`inline-flex items-center gap-1.5 text-xs font-semibold font-mono px-3 py-1 rounded-full border whitespace-nowrap ${
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold font-sans px-3 py-1 rounded-full border whitespace-nowrap ${
               isWarning
                 ? "bg-luma-gold/15 text-luma-gold border-luma-gold/40"
                 : "bg-luma-sage/10 text-luma-sage border-luma-sage/30"
@@ -99,22 +99,22 @@ export function LumaHeroCard({
         </div>
 
         {/* Hero balance — tabular numerals, no truncation surprises */}
-        <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-luma-ivory my-3 font-mono tabular-nums break-words">
+        <div className="text-4xl sm:text-5xl font-semibold tracking-tight text-luma-ivory my-3 font-sans tabular-nums break-words">
           {formatRupiah(totalBalance)}{" "}
           <span className="text-sm sm:text-base font-normal text-luma-smoke tracking-normal">IDR</span>
         </div>
 
         {/* Flow pills */}
         <div className="flex flex-wrap gap-2 text-xs">
-          <span className="inline-flex items-center gap-1.5 text-luma-sage font-mono font-semibold whitespace-nowrap bg-luma-sage/10 border border-luma-sage/25 px-3 py-1.5 rounded-full">
+          <span className="inline-flex items-center gap-1.5 text-luma-sage font-sans font-semibold whitespace-nowrap bg-luma-sage/10 border border-luma-sage/25 px-3 py-1.5 rounded-full">
             <ArrowUpRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             {formatRupiah(income)} masuk
           </span>
-          <span className="inline-flex items-center gap-1.5 text-luma-coral font-mono font-semibold whitespace-nowrap bg-luma-coral/10 border border-luma-coral/25 px-3 py-1.5 rounded-full">
+          <span className="inline-flex items-center gap-1.5 text-luma-coral font-sans font-semibold whitespace-nowrap bg-luma-coral/10 border border-luma-coral/25 px-3 py-1.5 rounded-full">
             <ArrowDownRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             {formatRupiah(expense)} keluar
           </span>
-          <span className="inline-flex items-center gap-1.5 text-luma-smoke font-mono font-semibold whitespace-nowrap bg-white/[0.05] border border-white/[0.1] px-3 py-1.5 rounded-full">
+          <span className="inline-flex items-center gap-1.5 text-luma-smoke font-sans font-semibold whitespace-nowrap bg-white/[0.05] border border-white/[0.1] px-3 py-1.5 rounded-full">
             Net: {formatRupiah(income - expense)}
           </span>
         </div>
@@ -122,15 +122,15 @@ export function LumaHeroCard({
         {/* Safe-to-spend strip — integrated, not a second card */}
         <div className="mt-5 pt-5 border-t border-white/[0.1] grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="rounded-3xl bg-white/[0.04] border border-white/[0.08] p-4 min-w-0">
-            <div className="flex items-center gap-1.5 text-[11px] text-luma-smoke font-semibold uppercase tracking-[0.1em]">
+            <div className="flex items-center gap-1.5 text-xs text-luma-smoke font-semibold uppercase tracking-[0.1em]">
               <Wallet className="w-3.5 h-3.5 text-luma-ember shrink-0" aria-hidden="true" />
               <span className="truncate">Batas Belanja Harian</span>
             </div>
-            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-luma-ivory mt-1.5 tabular-nums">
+            <div className="ai7-type-metric text-luma-ivory mt-1.5 tabular-nums">
               {formatRupiah(safeDaily)}{" "}
               <span className="text-xs font-semibold text-luma-smoke">/ hari</span>
             </div>
-            <div className="text-xs font-mono text-luma-smoke mt-1 truncate">
+            <div className="text-xs font-sans text-luma-smoke mt-1 truncate">
               Sisa kuota {pocketAccount}:{" "}
               <strong className="text-luma-ivory">{formatRupiah(pocketRemaining)}</strong>
               {pocketBudget ? <span> / {Math.round(pocketBudget / 1000)}k</span> : null}
@@ -138,19 +138,19 @@ export function LumaHeroCard({
             </div>
           </div>
           <div className="rounded-3xl bg-white/[0.04] border border-white/[0.08] p-4 min-w-0">
-            <div className="text-[11px] text-luma-smoke font-semibold uppercase tracking-[0.1em]">
+            <div className="text-xs text-luma-smoke font-semibold uppercase tracking-[0.1em]">
               Rentang Siklus
             </div>
             {periodEnded ? (
-              <div className="text-xl font-extrabold font-mono text-luma-gold mt-1.5">
+              <div className="ai7-type-metric text-luma-gold mt-1.5">
                 Periode Berakhir
               </div>
             ) : (
               <div className="mt-1.5">
-                <div className="text-xl font-extrabold font-mono text-luma-ivory tabular-nums">
+                <div className="ai7-type-metric text-luma-ivory tabular-nums">
                   Hari {dayOfCycle} / {cycleDays}
                 </div>
-                <div className="text-xs font-mono text-luma-smoke mt-0.5">
+                <div className="text-xs font-sans text-luma-smoke mt-0.5">
                   Sisa {daysRemaining} hari
                 </div>
               </div>
@@ -163,7 +163,7 @@ export function LumaHeroCard({
           <button
             type="button"
             onClick={onAddTransaction}
-            className="luma-touch flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-bold rounded-full bg-luma-ivory text-luma-charcoal hover:brightness-95 active:scale-[0.98] transition shadow-luma-glass cursor-pointer"
+            className="luma-touch flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-full bg-luma-ivory text-luma-charcoal hover:brightness-95 active:scale-[0.98] transition shadow-luma-glass cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.75] shrink-0" aria-hidden="true" />
             Catat Transaksi

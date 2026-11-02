@@ -227,12 +227,12 @@ export function UserProfileModal({
         {/* User Card Header */}
         <div className="p-4 rounded-2xl bg-obsidian-card border border-white/[0.08] flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amberGold/10 border border-amberGold/20 flex items-center justify-center text-amberGold font-bold text-sm">
+            <div className="w-10 h-10 rounded-2xl bg-amberGold/10 border border-amberGold/20 flex items-center justify-center text-amberGold font-semibold text-sm">
               {user.full_name ? user.full_name.charAt(0).toUpperCase() : "U"}
             </div>
             <div>
               <p className="text-xs font-semibold text-white">{user.full_name}</p>
-              <p className="text-[11px] text-zinc-400 font-mono">@{user.username}{user.email ? ` • ${user.email}` : ""}</p>
+              <p className="text-xs text-zinc-400 font-sans">@{user.username}{user.email ? ` • ${user.email}` : ""}</p>
             </div>
           </div>
           <button
@@ -340,7 +340,7 @@ export function UserProfileModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 px-4 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 font-semibold text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -360,7 +360,7 @@ export function UserProfileModal({
                   <Trash2 className="w-3.5 h-3.5" />
                   Zona Bahaya
                 </h4>
-                <p className="text-[11px] text-zinc-400 mt-0.5">
+                <p className="text-xs text-zinc-400 mt-0.5">
                   Hapus permanen akun Anda beserta seluruh data rekening, transaksi, dan target finansial.
                 </p>
               </div>
@@ -378,7 +378,7 @@ export function UserProfileModal({
                 <div className="p-3.5 rounded-2xl bg-coralFall/10 border border-coralFall/30 space-y-2.5 animate-fadeIn">
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-4 h-4 text-coralFall shrink-0 mt-0.5" />
-                    <div className="text-[11px] text-zinc-200 leading-relaxed">
+                    <div className="text-xs text-zinc-200 leading-relaxed">
                       <strong>Konfirmasi Hapus Akun:</strong> Tindakan ini permanen. Seluruh data keuangan Anda akan dihapus dari server dan Anda akan otomatis keluar.
                     </div>
                   </div>
@@ -395,7 +395,7 @@ export function UserProfileModal({
                       type="button"
                       disabled={isDeletingAccount}
                       onClick={handleDeleteAccount}
-                      className="px-3.5 py-1.5 rounded-xl bg-coralFall hover:brightness-110 text-slate-950 text-xs font-bold shadow-sm transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-xl bg-coralFall hover:brightness-110 text-slate-950 text-xs font-semibold shadow-sm transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                     >
                       {isDeletingAccount ? "Menghapus..." : "Ya, Hapus Akun"}
                     </button>
@@ -423,17 +423,17 @@ export function UserProfileModal({
                       Status Integrasi Bot
                     </span>
                     {isConnected ? (
-                      <span className="px-2.5 py-0.5 rounded-full bg-mintRise/15 border border-mintRise/30 text-mintRise text-[10px] font-medium flex items-center gap-1">
+                      <span className="px-2.5 py-0.5 rounded-full bg-mintRise/15 border border-mintRise/30 text-mintRise text-xs font-medium flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" />
                         Terhubung ({user.telegram_mode === "custom" ? "Bot Sendiri" : "Shared Bot"})
                       </span>
                     ) : (
-                      <span className="px-2.5 py-0.5 rounded-full bg-amberGold/15 border border-amberGold/30 text-amberGold text-[10px] font-medium">
+                      <span className="px-2.5 py-0.5 rounded-full bg-amberGold/15 border border-amberGold/30 text-amberGold text-xs font-medium">
                         Belum Terhubung
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                  <p className="text-xs text-zinc-400 mt-0.5">
                     {user.telegram_mode === "custom" && user.telegram_bot_username
                       ? `Bot aktif: @${user.telegram_bot_username} (ID: ${user.telegram_chat_id || "Auto-detect"})`
                       : user.telegram_chat_id
@@ -448,7 +448,7 @@ export function UserProfileModal({
                   type="button"
                   onClick={handleUnlinkTelegram}
                   disabled={loading}
-                  className="px-3 py-1.5 rounded-xl bg-coralFall/10 hover:bg-coralFall/20 border border-coralFall/25 text-coralFall text-[11px] font-medium flex items-center gap-1.5 transition cursor-pointer shrink-0"
+                  className="px-3 py-1.5 rounded-xl bg-coralFall/10 hover:bg-coralFall/20 border border-coralFall/25 text-coralFall text-xs font-medium flex items-center gap-1.5 transition cursor-pointer shrink-0"
                 >
                   <Unlink className="w-3 h-3" />
                   Putuskan Tautan
@@ -478,7 +478,7 @@ export function UserProfileModal({
                       <Bot className="w-3.5 h-3.5" />
                       1. Shared Bot
                     </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyanHub/10 text-cyanHub border border-cyanHub/20 font-medium">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-cyanHub/10 text-cyanHub border border-cyanHub/20 font-medium">
                       Praktis
                     </span>
                   </div>
@@ -503,7 +503,7 @@ export function UserProfileModal({
                       <Bot className="w-3.5 h-3.5" />
                       2. Bot Sendiri (BYOB)
                     </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amberGold/10 text-amberGold border border-amberGold/20 font-medium">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-amberGold/10 text-amberGold border border-amberGold/20 font-medium">
                       Privat
                     </span>
                   </div>
@@ -524,7 +524,7 @@ export function UserProfileModal({
 
                 <div className="space-y-2 text-xs text-zinc-300 leading-relaxed bg-obsidian-card p-3.5 rounded-2xl border border-white/[0.08]">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-cyanHub/20 text-cyanHub flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-cyanHub/20 text-cyanHub flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
                       1
                     </span>
                     <div>
@@ -541,16 +541,16 @@ export function UserProfileModal({
                   </div>
 
                   <div className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-cyanHub/20 text-cyanHub flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-cyanHub/20 text-cyanHub flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
                       2
                     </span>
                     <div>
-                      Ketik atau klik perintah <code className="text-cyanHub font-mono bg-cyanHub/10 px-1 py-0.5 rounded">/start</code>. Bot akan membalas dengan menampilkan <strong>Chat ID</strong> unik Telegram kamu.
+                      Ketik atau klik perintah <code className="text-cyanHub font-sans bg-cyanHub/10 px-1 py-0.5 rounded">/start</code>. Bot akan membalas dengan menampilkan <strong>Chat ID</strong> unik Telegram kamu.
                     </div>
                   </div>
 
                   <div className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-cyanHub/20 text-cyanHub flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-cyanHub/20 text-cyanHub flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
                       3
                     </span>
                     <div>
@@ -569,7 +569,7 @@ export function UserProfileModal({
                       value={sharedChatId}
                       onChange={(e) => setSharedChatId(e.target.value)}
                       placeholder="Contoh: 987654321"
-                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub font-mono"
+                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-cyanHub font-sans"
                       required
                     />
                   </div>
@@ -577,7 +577,7 @@ export function UserProfileModal({
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-2.5 px-4 rounded-2xl bg-cyanHub hover:brightness-110 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition cursor-pointer"
+                    className="w-full py-2.5 px-4 rounded-2xl bg-cyanHub hover:brightness-110 text-slate-950 font-semibold text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition cursor-pointer"
                   >
                     {loading ? (
                       <span className="flex items-center gap-2">
@@ -602,7 +602,7 @@ export function UserProfileModal({
 
                 <div className="space-y-2.5 text-xs text-zinc-300 leading-relaxed bg-obsidian-card p-3.5 rounded-2xl border border-white/[0.08]">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-amberGold/20 text-amberGold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-amberGold/20 text-amberGold flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
                       1
                     </span>
                     <div>
@@ -619,25 +619,25 @@ export function UserProfileModal({
                   </div>
 
                   <div className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-amberGold/20 text-amberGold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-amberGold/20 text-amberGold flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
                       2
                     </span>
                     <div>
-                      Kirim pesan <code className="text-amberGold font-mono bg-amberGold/10 px-1 py-0.5 rounded">/newbot</code>, lalu beri nama bot (misal: <em>Keuangan Pribadi</em>) dan username bot yang berakhiran <code className="text-amberGold font-mono">bot</code> (misal: <em>keuangan_budi_bot</em>).
+                      Kirim pesan <code className="text-amberGold font-sans bg-amberGold/10 px-1 py-0.5 rounded">/newbot</code>, lalu beri nama bot (misal: <em>Keuangan Pribadi</em>) dan username bot yang berakhiran <code className="text-amberGold font-sans">bot</code> (misal: <em>keuangan_budi_bot</em>).
                     </div>
                   </div>
 
                   <div className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-amberGold/20 text-amberGold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-amberGold/20 text-amberGold flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
                       3
                     </span>
                     <div>
-                      BotFather akan memberikan pesan konfirmasi beserta <strong>HTTP API Token</strong> (panjang sekitar 45 karakter diawali angka, contoh: <code className="text-zinc-400 font-mono">7123456789:AAH...</code>).
+                      BotFather akan memberikan pesan konfirmasi beserta <strong>HTTP API Token</strong> (panjang sekitar 45 karakter diawali angka, contoh: <code className="text-zinc-400 font-sans">7123456789:AAH...</code>).
                     </div>
                   </div>
 
                   <div className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-amberGold/20 text-amberGold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-amberGold/20 text-amberGold flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
                       4
                     </span>
                     <div>
@@ -656,7 +656,7 @@ export function UserProfileModal({
                       value={customBotToken}
                       onChange={(e) => setCustomBotToken(e.target.value)}
                       placeholder="Contoh: 7123456789:AAH_XYZ123456789abcdef"
-                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-mono"
+                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-sans"
                       required
                     />
                   </div>
@@ -670,14 +670,14 @@ export function UserProfileModal({
                       value={customChatId}
                       onChange={(e) => setCustomChatId(e.target.value)}
                       placeholder="Dapatkan dengan ketik /start di bot baru Anda"
-                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-mono"
+                      className="w-full bg-obsidian-card border border-white/[0.08] text-white placeholder-zinc-400 rounded-2xl px-3.5 py-2 text-xs focus:outline-none focus:border-amberGold font-sans"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-2.5 px-4 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition cursor-pointer"
+                    className="w-full py-2.5 px-4 rounded-2xl bg-amberGold hover:bg-amber-300 text-slate-950 font-semibold text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition cursor-pointer"
                   >
                     {loading ? (
                       <span className="flex items-center gap-2">

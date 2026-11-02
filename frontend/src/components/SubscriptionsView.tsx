@@ -55,11 +55,11 @@ export function SubscriptionsView({
           {loading ? (
             <Skeleton className="h-8 w-36 rounded-full" />
           ) : (
-            <div className="text-2xl font-black font-mono text-amberGold tracking-tight truncate">
+            <div className="ai7-type-metric text-amberGold tracking-tight truncate">
               {formatRupiah(subsData.total_monthly_commitment)}
             </div>
           )}
-          <div className="text-xs text-zinc-400 font-mono">
+          <div className="text-xs text-zinc-400 font-sans">
             Alokasi pos tagihan & autodebet
           </div>
         </div>
@@ -71,11 +71,11 @@ export function SubscriptionsView({
           {loading ? (
             <Skeleton className="h-8 w-24 rounded-full" />
           ) : (
-            <div className="text-2xl font-black font-mono text-mintRise tracking-tight truncate">
+            <div className="ai7-type-metric text-mintRise tracking-tight truncate">
               {subsData.active_count} Layanan
             </div>
           )}
-          <div className="text-xs text-zinc-400 font-mono">
+          <div className="text-xs text-zinc-400 font-sans">
             Autodebet aktif bulanan
           </div>
         </div>
@@ -87,11 +87,11 @@ export function SubscriptionsView({
           {loading ? (
             <Skeleton className="h-8 w-24 rounded-full" />
           ) : (
-            <div className="text-2xl font-black font-mono text-coralFall tracking-tight truncate">
+            <div className="ai7-type-metric text-coralFall tracking-tight truncate">
               {subsData.upcoming_this_week} Tagihan
             </div>
           )}
-          <div className="text-xs text-zinc-400 font-mono">
+          <div className="text-xs text-zinc-400 font-sans">
             Siapkan saldo sebelum autodebet
           </div>
         </div>
@@ -101,13 +101,13 @@ export function SubscriptionsView({
             <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider truncate">
               Perintah Bot Telegram
             </div>
-            <div className="text-sm font-mono text-white mt-1 font-bold truncate">
+            <div className="text-sm font-sans text-white mt-1 font-semibold truncate">
               /subs atau /tagihan
             </div>
           </div>
           <button
             onClick={onOpenModal}
-            className="mt-3 px-4 py-2 text-xs font-bold bg-amberGold text-slate-950 hover:bg-yellow-300 rounded-xl transition flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
+            className="mt-3 px-4 py-2 text-xs font-semibold bg-amberGold text-slate-950 hover:bg-yellow-300 rounded-xl transition flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Tambah Tagihan</span>
@@ -119,7 +119,7 @@ export function SubscriptionsView({
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h3 className="font-bold text-base sm:text-lg text-white">
+            <h3 className="ai7-type-card text-white">
               Daftar Layanan & Tagihan Terjadwal
             </h3>
             <p className="text-xs text-zinc-400 mt-0.5">
@@ -129,7 +129,7 @@ export function SubscriptionsView({
           <button
             type="button"
             onClick={onOpenModal}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-amberGold text-slate-950 font-bold rounded-xl hover:bg-yellow-300 transition shadow-sm text-xs shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-amberGold text-slate-950 font-semibold rounded-xl hover:bg-yellow-300 transition shadow-sm text-xs shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Tambah Tagihan</span>
@@ -181,28 +181,28 @@ export function SubscriptionsView({
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-base font-bold text-white truncate">
+                      <span className="text-base font-semibold text-white truncate">
                         {sub.name}
                       </span>
                       {isExact && (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold shrink-0">
+                        <span className="text-xs font-sans px-2 py-0.5 rounded-full bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold shrink-0">
                           Berakhir Spesifik
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-zinc-400 font-mono truncate block mt-0.5">{sub.category}</span>
+                    <span className="text-xs text-zinc-400 font-sans truncate block mt-0.5">{sub.category}</span>
                   </div>
                   <span
-                    className={`text-xs font-mono px-2.5 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${
+                    className={`text-xs font-sans px-2.5 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${
                       !sub.is_active
                         ? "bg-white/[0.04] border-white/[0.08] text-zinc-400"
                         : isExpired
-                        ? "bg-coralFall/20 border-coralFall/40 text-coralFall font-bold"
+                        ? "bg-coralFall/20 border-coralFall/40 text-coralFall font-semibold"
                         : isToday
-                        ? "bg-coralFall/20 border-coralFall/40 text-coralFall font-bold animate-pulse"
+                        ? "bg-coralFall/20 border-coralFall/40 text-coralFall font-semibold animate-pulse"
                         : isUpcoming
-                        ? "bg-amberGold/20 border-amberGold/40 text-amberGold font-bold"
-                        : "bg-mintRise/10 border-mintRise/30 text-mintRise font-bold"
+                        ? "bg-amberGold/20 border-amberGold/40 text-amberGold font-semibold"
+                        : "bg-mintRise/10 border-mintRise/30 text-mintRise font-semibold"
                     }`}
                   >
                     {!sub.is_active
@@ -216,13 +216,13 @@ export function SubscriptionsView({
                 </div>
 
                 <div>
-                  <div className="text-2xl font-black font-mono text-white tracking-tight truncate">
+                  <div className="ai7-type-metric text-white tracking-tight truncate">
                     {formatRupiah(sub.amount)}
                     <span className="text-xs font-normal text-zinc-400 font-sans">
                       {isExact ? " / periode" : " / bulan"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-mono mt-1 truncate">
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-sans mt-1 truncate">
                     {isExact ? (
                       <>
                         <Clock className="w-3.5 h-3.5 text-amberGold shrink-0" />
@@ -240,12 +240,12 @@ export function SubscriptionsView({
                 </div>
 
                 {sub.notes && (
-                  <div className="text-xs text-zinc-400 bg-obsidian-panel p-2.5 rounded-xl border border-white/[0.08] font-mono">
+                  <div className="text-xs text-zinc-400 bg-obsidian-panel p-2.5 rounded-xl border border-white/[0.08] font-sans">
                     {sub.notes}
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-3 border-t border-white/[0.08] text-xs font-mono">
+                <div className="flex items-center justify-between pt-3 border-t border-white/[0.08] text-xs font-sans">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => onEdit?.(sub)}

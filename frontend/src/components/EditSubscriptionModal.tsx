@@ -129,7 +129,7 @@ export function EditSubscriptionModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-left">
         {error && (
-          <div className="p-3 bg-coralFall/10 border border-coralFall/30 rounded-2xl text-coralFall text-xs font-mono">
+          <div className="p-3 bg-coralFall/10 border border-coralFall/30 rounded-2xl text-coralFall text-xs font-sans">
             {error}
           </div>
         )}
@@ -158,7 +158,7 @@ export function EditSubscriptionModal({
               onClick={() => setBillingType("fixed_day")}
               className={`py-2 px-2 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 billingType === "fixed_day"
-                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -177,7 +177,7 @@ export function EditSubscriptionModal({
               }}
               className={`py-2 px-2 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 billingType === "exact_date"
-                  ? "bg-amberGold text-slate-950 font-bold shadow-xs"
+                  ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -214,7 +214,7 @@ export function EditSubscriptionModal({
                 max={31}
                 value={billingDay}
                 onChange={(e) => setBillingDay(e.target.value)}
-                className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
+                className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
               />
             </div>
           ) : (
@@ -227,7 +227,7 @@ export function EditSubscriptionModal({
                   <button
                     type="button"
                     onClick={() => handleAddDays(30)}
-                    className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amberGold/15 text-amberGold hover:bg-amberGold/25 transition inline-flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-sans px-2 py-0.5 rounded-full bg-amberGold/15 text-amberGold hover:bg-amberGold/25 transition inline-flex items-center gap-1 cursor-pointer"
                   >
                     <Sparkles className="w-2.5 h-2.5" />
                     +30 Hari
@@ -239,7 +239,7 @@ export function EditSubscriptionModal({
                 required
                 value={exactDueDate}
                 onChange={(e) => setExactDueDate(e.target.value)}
-                className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
+                className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
               />
             </div>
           )}
@@ -292,7 +292,7 @@ export function EditSubscriptionModal({
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 py-2.5 bg-amberGold hover:bg-amber-300 text-slate-950 font-bold rounded-2xl text-xs sm:text-sm transition disabled:opacity-50 shadow-sm cursor-pointer"
+            className="flex-1 py-2.5 bg-amberGold hover:bg-amber-300 text-slate-950 font-semibold rounded-2xl text-xs sm:text-sm transition disabled:opacity-50 shadow-sm cursor-pointer"
           >
             {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>

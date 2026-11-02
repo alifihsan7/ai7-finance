@@ -44,7 +44,7 @@ export function LumaAccountStrip({ accounts, formatRupiah, loading, onOpenAccoun
   return (
     <section aria-label="Ringkasan rekening kas" className="luma-accounts space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-medium text-luma-ivory tracking-tight">
+        <h2 className="ai7-type-card text-luma-ivory tracking-tight">
           Rekening Kas
         </h2>
         <button
@@ -70,7 +70,7 @@ export function LumaAccountStrip({ accounts, formatRupiah, loading, onOpenAccoun
               </div>
               {acc.type && (
                 <span
-                  className={`text-[9px] font-mono font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 ${getAccountRoleBadge(acc.type).className}`}
+                  className={`text-xs font-sans font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 ${getAccountRoleBadge(acc.type).className}`}
                 >
                   {getAccountRoleBadge(acc.type).label}
                 </span>

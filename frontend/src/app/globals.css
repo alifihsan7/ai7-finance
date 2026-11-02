@@ -334,7 +334,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-period-popup button { min-height: 44px; }
 .luma-toolbar { margin-left: auto; }
 .luma-sidebar { background: var(--luma-sidebar-surface); border: 1px solid var(--luma-smokeline); }
-.luma-sidebar nav button { border-radius: 12px; font-size: 12px; padding-left: 12px; padding-right: 12px; }
+.luma-sidebar nav button { border-radius: 12px; font-size: 14px; padding-left: 12px; padding-right: 12px; }
 .luma-sidebar nav button svg { color: inherit; }
 .luma-sidebar nav button[aria-current] { color: var(--luma-ember); background: var(--luma-coal); border-color: var(--luma-smokeline); }
 .luma-sidebar nav button:not([aria-current]) { background: transparent; }
@@ -353,39 +353,39 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 .luma-balance-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .luma-balance-panel > * { position: relative; z-index: 1; }
-.luma-panel-label { font-size: 13px; font-weight: 400; color: var(--luma-ivory); }
+.luma-panel-label { font-size: 12px; font-weight: 500; color: var(--luma-ivory); }
 .luma-icon-button { display: inline-flex; align-items: center; justify-content: center; width: 44px; min-height: 44px; color: #f4f1ec; border-radius: 12px; }
 .luma-icon-button:hover { background: rgba(255,255,255,.1); }
 .luma-balance-body { padding: 18px 0 25px; }
-.luma-balance-number { font-size: clamp(28px, 3.2vw, 44px); line-height: 1.25; font-weight: 500; letter-spacing: -.045em; font-variant-numeric: tabular-nums; margin: 8px 0; overflow-wrap: anywhere; color: #fff; }
+.luma-balance-number { font-size: var(--ai7-text-balance); line-height: 1.2; font-weight: 500; letter-spacing: -.035em; font-variant-numeric: tabular-nums; margin: 8px 0; overflow-wrap: anywhere; color: #fff; }
 .luma-balance-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
-.luma-action-primary, .luma-action-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 13px; padding: 11px 16px; font-size: 12px; font-weight: 500; transition: background-color .15s; }
+.luma-action-primary, .luma-action-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 13px; padding: 11px 16px; font-size: 14px; font-weight: 500; transition: background-color .15s; }
 .luma-action-primary { color: #222; background: #f4f1ec; }
 .luma-action-primary:hover { background: #fff; }
 .luma-action-secondary { color: #f4f1ec; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.12); }
 .luma-action-secondary:hover { background: rgba(255,255,255,.16); }
 .luma-balance-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 18px; margin: 0 -12px -12px; border-radius: 20px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.09); backdrop-filter: blur(20px); }
 .luma-balance-stats > div { min-width: 0; }
-.luma-balance-stats span { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--luma-ivory); }
-.luma-balance-stats strong { display: block; margin-top: 5px; font-size: clamp(15px,1.5vw,21px); font-weight: 500; letter-spacing: -.025em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; color: #fff; }
+.luma-balance-stats span { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--luma-ivory); }
+.luma-balance-stats strong { display: block; margin-top: 5px; font-size: 20px; font-weight: 500; letter-spacing: -.025em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; color: #fff; }
 .luma-overview-side { display: grid; grid-template-rows: 1fr 1fr; gap: 16px; min-width: 0; }
 .luma-matte { background: var(--luma-panel-surface, #3b3835); border: 1px solid rgba(255,255,255,.07); border-radius: 20px; }
 .luma-flow-panel, .luma-daily-panel { padding: 22px 24px; border-radius: 20px; }
 .luma-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-.luma-section-heading h2 { font-size: 13px; font-weight: 500; }
-.luma-section-heading > span { font-size: 11px; color: var(--luma-smoke); }
-.luma-flow-line { display: grid; grid-template-columns: 40px minmax(20px,1fr) auto; gap: 12px; align-items: center; font-size: 11px; margin-top: 13px; }
+.luma-section-heading h2 { font-size: 16px; font-weight: 500; }
+.luma-section-heading > span { font-size: 12px; color: var(--luma-smoke); }
+.luma-flow-line { display: grid; grid-template-columns: 44px minmax(20px,1fr) auto; gap: 12px; align-items: center; font-size: 12px; margin-top: 13px; }
 .luma-flow-line > span { color: var(--luma-smoke); }
 .luma-flow-line strong { font-variant-numeric: tabular-nums; font-weight: 400; }
 .luma-flow-track, .luma-quota-track { height: 5px; background: rgba(255,255,255,.07); border-radius: 8px; overflow: hidden; }
 .luma-flow-track > div, .luma-quota-track > div { height: 100%; border-radius: inherit; }
 .luma-flow-income { background: var(--luma-sage); }
 .luma-flow-expense { background: var(--luma-coral); }
-.luma-flow-net { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 17px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.09); font-size: 11px; color: var(--luma-smoke); }
+.luma-flow-net { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 17px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.09); font-size: 12px; color: var(--luma-smoke); }
 .luma-daily-panel .luma-section-heading { margin-bottom: 10px; }
-.luma-daily-amount { font-size: 27px; font-weight: 500; letter-spacing: -.035em; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.luma-daily-amount { font-size: var(--ai7-text-metric); line-height: 1.2; font-weight: 600; letter-spacing: -.025em; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .luma-daily-amount > span { font-size: 12px; letter-spacing: 0; color: var(--luma-smoke); margin-left: 7px; font-weight: 400; }
-.luma-daily-caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px 12px; font-size: 11px; color: var(--luma-smoke); margin-top: 9px; }
+.luma-daily-caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px 12px; font-size: 12px; color: var(--luma-smoke); margin-top: 9px; }
 .luma-quota-track { margin-top: 14px; }
 .luma-quota-track > div { background: var(--luma-sage); }
 .luma-overview-details { border-top: 1px solid rgba(255,255,255,.1); padding-top: 6px; }
@@ -401,8 +401,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-recent ul { display: grid; gap: 8px; }
 .luma-recent li { border: 0; background: rgba(255,255,255,.055); border-radius: 18px; padding: 14px 16px; }
 .luma-recent li > div:first-child { border: 0; border-radius: 12px; background: rgba(0,0,0,.14); width: 38px; height: 38px; }
-.luma-recent .font-mono { font-family: inherit; }
-.luma-recent .font-bold, .luma-recent .font-semibold { font-weight: 500; }
+.luma-recent .font-semibold { font-weight: 500; }
 .light {
   --luma-charcoal-rgb: 243 243 245; --luma-coal-rgb: 229 229 234;
   --luma-ivory-rgb: 36 36 43; --luma-smoke-rgb: 95 95 109;
@@ -435,15 +434,15 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .light .luma-recent .luma-glass { background: transparent; }
 .luma-guest-panel { min-height: 360px; }
 .luma-guest-panel h2 { margin: 24px 0 16px; font-size: clamp(26px, 3vw, 38px); line-height: 1.2; letter-spacing: -.035em; font-weight: 500; color: #fff; }
-.luma-guest-panel > p:not(.luma-panel-label) { font-size: 13px; line-height: 1.7; color: #eee4dd; }
+.luma-guest-panel > p:not(.luma-panel-label) { font-size: 14px; line-height: 1.5; color: #eee4dd; }
 .luma-guest-inset { margin-top: 28px; padding: 16px; border-radius: 16px; color: #f4f1ec; background: rgba(255,255,255,.07); backdrop-filter: blur(20px); font-size: 12px; line-height: 1.65; }
 .luma-guest-guide { padding: 28px; }
 .luma-guest-guide h2 { font-size: 14px; font-weight: 500; }
 .luma-guest-guide dl { margin-top: 24px; }
 .luma-guest-guide dl > div + div { padding-top: 20px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,.1); }
-.luma-guest-guide dt { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.luma-guest-guide dt { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
 .luma-guest-guide dd { font-size: 12px; line-height: 1.7; color: var(--luma-smoke); }
-.luma-budget-empty { padding: 14px 0; font-size: 13px; color: var(--luma-smoke); }
+.luma-budget-empty { padding: 14px 0; font-size: 14px; color: var(--luma-smoke); }
 .luma-text-action { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 0; text-decoration: underline; text-underline-offset: 4px; color: var(--luma-ivory); font-size: 12px; }
 .luma-data-state { padding: 28px; border: 1px solid var(--luma-smoke); border-radius: 20px; }
 .luma-data-state h2 { font-size: 18px; font-weight: 500; }
@@ -479,7 +478,6 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   .luma-overview-grid { grid-template-columns: 1fr; }
   .luma-overview-side { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
   .luma-balance-panel { min-height: 310px; }
-  .luma-balance-number { font-size: 40px; }
   .luma-flow-line { grid-template-columns: 35px minmax(12px,1fr); gap: 8px; }
   .luma-flow-line strong { grid-column: 2; }
 }
@@ -487,7 +485,6 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   .luma-topbar > div > div:last-child > button:last-child { display: none; }
   .luma-overview-side { grid-template-columns: 1fr; }
   .luma-balance-panel { padding: 20px; }
-  .luma-balance-number { font-size: clamp(26px,8vw,38px); }
   .luma-balance-stats { gap: 12px; padding: 14px; margin: 0 -6px -6px; }
   .luma-balance-stats strong { font-size: 17px; }
   .luma-flow-line { grid-template-columns: 40px minmax(20px,1fr) auto; }
@@ -525,7 +522,6 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-app button.bg-luma-ivory:hover:not(:disabled),
 .luma-app .luma-action-primary:hover:not(:disabled) { background: var(--ai7-primary-hover); }
 .luma-app button:disabled { opacity: .5; }
-.luma-app h2, .luma-app h3 { font-weight: 500; }
 .luma-dialog-panel { border-radius: 20px; border: 1px solid var(--luma-smokeline); }
 .luma-dialog-panel .ai7-dialog-icon { color: var(--luma-smoke); background: var(--luma-coal); border-color: var(--luma-smokeline); }
 .luma-dialog-panel .ai7-dialog-icon svg { color: inherit; }
@@ -550,15 +546,13 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .ai7-amount-preset:hover { background: var(--luma-coal); color: var(--luma-ivory); }
 .ai7-account-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 16px; }
 .ai7-category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; }
-.ai7-account-card .font-mono, .ai7-category-card .font-mono, .ai7-goal-card .font-mono { font-family: inherit; }
-.ai7-account-card .font-extrabold, .ai7-category-card .font-black { font-weight: 500; }
 .ai7-account-card.luma-glass, .ai7-category-card, .ai7-goal-card.luma-glass, .ai7-section, .ai7-ledger-table.luma-glass { border-radius: 20px; box-shadow: none; border-color: var(--luma-smokeline); }
 .ai7-account-icon { background: var(--luma-coal); border-color: var(--luma-smokeline); color: var(--luma-smoke); }
 .ai7-account-card button, .ai7-goal-card button, .ai7-ledger-table button { border-radius: 10px; }
 .ai7-account-card button[aria-label^="Edit"]:hover, .ai7-ledger-table button[aria-label^="Edit"]:hover { color: var(--luma-ivory); background: var(--luma-coal); border-color: var(--luma-smokeline); }
 .ai7-category-card button[aria-label^="Edit"], .ai7-category-card button[aria-label^="Hapus"] { min-width: 44px; min-height: 44px; }
 .ai7-filters { border-bottom: 1px solid var(--luma-smokeline); }
-.luma-app .ai7-filters button { background: transparent; color: var(--luma-smoke); border: 0; border-radius: 8px 8px 0 0; box-shadow: none; min-height: 44px; font: 500 12px/1.5 var(--font-geist-sans), sans-serif; }
+.luma-app .ai7-filters button { background: transparent; color: var(--luma-smoke); border: 0; border-radius: 8px 8px 0 0; box-shadow: none; min-height: 44px; font: 500 14px/1.4 var(--font-geist-sans), sans-serif; }
 .luma-app .ai7-filters button[aria-pressed="true"], .luma-app .ai7-filters button.bg-amberGold:hover { color: var(--luma-ivory); background: var(--ai7-selected); box-shadow: inset 0 -2px var(--luma-ember); }
 .ai7-filters button:hover { color: var(--luma-ivory); }
 .ai7-ledger-table thead { background: var(--obsidian-card); }
@@ -569,6 +563,27 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 @media(max-width: 600px) {
   .ai7-section > div:first-child > div:last-child { flex-wrap: wrap; justify-content: flex-start; }
   .luma-form-scope input, .luma-form-scope textarea, .ai7-select-trigger { font-size: 16px; }
+}
+
+/* Typography roles: shared sizes, not page-specific overrides. */
+:root {
+  --ai7-font-ui: var(--font-geist-sans), system-ui, sans-serif;
+  --ai7-text-page: 30px; --ai7-text-section: 18px; --ai7-text-card: 16px;
+  --ai7-text-body: 14px; --ai7-text-meta: 12px; --ai7-text-input: 16px;
+  --ai7-text-metric: 28px; --ai7-text-balance: 36px;
+}
+.luma-app { font-family: var(--ai7-font-ui); font-size: var(--ai7-text-body); line-height: 1.5; }
+.ai7-type-page { font: 500 var(--ai7-text-page)/1.2 var(--ai7-font-ui); }
+.ai7-type-section { font: 600 var(--ai7-text-section)/1.4 var(--ai7-font-ui); }
+.ai7-type-card { font: 500 var(--ai7-text-card)/1.4 var(--ai7-font-ui); }
+.ai7-type-metric { font: 600 var(--ai7-text-metric)/1.2 var(--ai7-font-ui); font-variant-numeric: tabular-nums; letter-spacing: -.025em; min-width: 0; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+.ai7-type-amount { font: 500 var(--ai7-text-body)/1.5 var(--ai7-font-ui); font-variant-numeric: tabular-nums; }
+.ai7-pocket-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.luma-app button, .ai7-select-menu button { font-size: var(--ai7-text-body); }
+.ai7-ledger-table td { font-size: var(--ai7-text-body); }
+.luma-dialog-panel .ai7-type-card { font-size: var(--ai7-text-section); }
+@media(max-width: 600px) {
+  :root { --ai7-text-page: 24px; --ai7-text-metric: 24px; --ai7-text-balance: 28px; }
 }
 
 /* Visible keyboard focus for all interactive elements (WCAG 2.4.7) */

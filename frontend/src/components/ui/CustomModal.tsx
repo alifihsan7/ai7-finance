@@ -96,7 +96,7 @@ export function CustomModal({
               </div>
             )}
             <div>
-              <h3 className="font-medium text-base sm:text-lg text-luma-ivory leading-tight tracking-tight">
+              <h3 className="ai7-type-card text-luma-ivory tracking-tight">
                 {title}
               </h3>
               {subtitle && (

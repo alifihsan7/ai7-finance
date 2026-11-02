@@ -158,7 +158,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             onChange={setInitialBalance}
             placeholder="0"
           />
-          <p className="text-[11px] text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-400 mt-1">
             Jika diisi lebih dari Rp 0, sistem otomatis mencatat transaksi pemasukan &ldquo;Saldo Awal&rdquo; di buku transaksi.
           </p>
         </div>
@@ -174,7 +174,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 bg-amberGold text-slate-950 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm hover:bg-amber-300 transition shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 bg-amberGold text-slate-950 px-5 py-2.5 rounded-2xl font-semibold text-xs sm:text-sm hover:bg-amber-300 transition shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {loading ? (
               <span>Menyimpan...</span>

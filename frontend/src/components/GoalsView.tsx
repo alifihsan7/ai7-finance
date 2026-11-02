@@ -167,11 +167,11 @@ export function GoalsView({
           {loading ? (
             <Skeleton className="h-8 w-36 rounded-full" />
           ) : (
-            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-luma-ivory tracking-tight truncate tabular-nums">
+            <div className="ai7-type-metric text-luma-ivory tracking-tight truncate tabular-nums">
               {formatRupiah(totalTarget)}
             </div>
           )}
-          <div className="text-xs text-luma-smoke font-mono">
+          <div className="text-xs text-luma-smoke font-sans">
             Akumulasi seluruh milestone
           </div>
         </div>
@@ -183,11 +183,11 @@ export function GoalsView({
           {loading ? (
             <Skeleton className="h-8 w-36 rounded-full" />
           ) : (
-            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-luma-sage tracking-tight truncate tabular-nums">
+            <div className="ai7-type-metric text-luma-sage tracking-tight truncate tabular-nums">
               {formatRupiah(totalCurrent)}
             </div>
           )}
-          <div className="text-xs text-luma-smoke font-mono">
+          <div className="text-xs text-luma-smoke font-sans">
             Progres all-time tersinkronisasi
           </div>
         </div>
@@ -199,11 +199,11 @@ export function GoalsView({
           {loading ? (
             <Skeleton className="h-8 w-24 rounded-full" />
           ) : (
-            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-luma-gold tracking-tight truncate tabular-nums">
+            <div className="ai7-type-metric text-luma-gold tracking-tight truncate tabular-nums">
               {overallPercentage}%
             </div>
           )}
-          <div className="text-xs text-luma-smoke font-mono truncate tabular-nums">
+          <div className="text-xs text-luma-smoke font-sans truncate tabular-nums">
             Sisa {formatRupiah(Math.max(0, totalTarget - totalCurrent))}
           </div>
         </div>
@@ -215,12 +215,12 @@ export function GoalsView({
           {loading ? (
             <Skeleton className="h-8 w-28 rounded-full" />
           ) : (
-            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-luma-ivory tracking-tight truncate tabular-nums">
+            <div className="ai7-type-metric text-luma-ivory tracking-tight truncate tabular-nums">
               {goals.filter((g) => g.remaining_amount === 0).length} / {goals.length}{" "}
               <span className="text-xs font-normal text-luma-smoke font-sans">Tercapai</span>
             </div>
           )}
-          <div className="text-xs text-luma-smoke font-mono">
+          <div className="text-xs text-luma-smoke font-sans">
             {goals.filter((g) => g.remaining_amount > 0).length} target masih berjalan
           </div>
         </div>
@@ -229,7 +229,7 @@ export function GoalsView({
       {/* Action Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-1">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-luma-ivory tracking-tight flex items-center gap-2.5">
+          <h2 className="ai7-type-section text-luma-ivory tracking-tight flex items-center gap-2.5">
             <Target className="w-5 h-5 text-luma-ember" aria-hidden="true" />
             Milestone Tracker Tabungan &amp; Investasi
           </h2>
@@ -241,7 +241,7 @@ export function GoalsView({
         <button
           type="button"
           onClick={onOpenAddModal}
-          className="luma-touch flex items-center gap-2 px-5 py-2.5 bg-luma-ivory text-luma-charcoal font-bold rounded-full hover:brightness-95 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
+          className="luma-touch flex items-center gap-2 px-5 py-2.5 bg-luma-ivory text-luma-charcoal font-semibold rounded-full hover:brightness-95 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Tambah Target</span>
@@ -286,14 +286,14 @@ export function GoalsView({
             <Target className="w-7 h-7" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-luma-ivory">Belum Ada Target Tabungan</h3>
+            <h3 className="ai7-type-card text-luma-ivory">Belum Ada Target Tabungan</h3>
             <p className="text-xs sm:text-sm text-luma-smoke mt-1 max-w-md mx-auto">
               Mulai tetapkan target tabungan masa depan atau portofolio investasi Anda untuk memantau capaian finansial siklus.
             </p>
           </div>
           <button
             onClick={onOpenAddModal}
-            className="luma-touch inline-flex items-center gap-2 px-5 py-2.5 bg-luma-ivory text-luma-charcoal font-bold rounded-full hover:brightness-95 transition text-sm whitespace-nowrap cursor-pointer"
+            className="luma-touch inline-flex items-center gap-2 px-5 py-2.5 bg-luma-ivory text-luma-charcoal font-semibold rounded-full hover:brightness-95 transition text-sm whitespace-nowrap cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Buat Target Pertama</span>
@@ -322,23 +322,23 @@ export function GoalsView({
                       <div className="min-w-0 space-y-1">
                         {/* Ghost badges with glowing status dot */}
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-medium text-luma-smoke">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs font-medium text-luma-smoke">
                             <span className={`w-1.5 h-1.5 rounded-full ${theme.dot}`} />
                             {goal.category}
                           </span>
 
                           {goal.linked_account ? (
-                            <span className="text-[11px] font-mono text-luma-smoke bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 rounded-full truncate">
+                            <span className="text-xs font-sans text-luma-smoke bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 rounded-full truncate">
                               Rek. {goal.linked_account}
                             </span>
                           ) : (
-                            <span className="text-[11px] font-mono text-luma-smoke bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 rounded-full">
+                            <span className="text-xs font-sans text-luma-smoke bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 rounded-full">
                               Manual
                             </span>
                           )}
                         </div>
 
-                        <h3 className="font-bold text-base sm:text-lg text-luma-ivory line-clamp-2 tracking-tight leading-snug">
+                        <h3 className="ai7-type-card text-luma-ivory line-clamp-2 tracking-tight">
                           {goal.name}
                         </h3>
                       </div>
@@ -370,17 +370,17 @@ export function GoalsView({
                   {/* Amounts & Percentage Display — tabular numerals, mono percent */}
                   <div className="space-y-2 pt-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <div className="flex items-baseline gap-1 text-2xl sm:text-3xl font-extrabold font-mono text-luma-ivory tracking-tight tabular-nums">
+                      <div className="flex items-baseline gap-1 ai7-type-metric text-luma-ivory tracking-tight tabular-nums">
                         <span className="text-sm font-sans font-normal text-luma-smoke">Rp</span>
                         <span>{formatNumber(goal.current_amount)}</span>
                       </div>
                       <div
-                        className={`text-xs font-mono font-bold px-3 py-1 rounded-full border tabular-nums ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}
+                        className={`text-xs font-sans font-semibold px-3 py-1 rounded-full border tabular-nums ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}
                       >
                         {goal.percentage >= 100 ? "100%" : `${Number(goal.percentage).toFixed(1)}%`}
                       </div>
                     </div>
-                    <div className="flex justify-between items-center text-xs font-mono text-luma-smoke tabular-nums">
+                    <div className="flex justify-between items-center text-xs font-sans text-luma-smoke tabular-nums">
                       <span>Target: {formatRupiah(goal.target_amount)}</span>
                     </div>
                   </div>
@@ -400,7 +400,7 @@ export function GoalsView({
                         style={{ width: `${Math.min(100, Math.max(3, goal.percentage))}%` }}
                       />
                     </div>
-                    <div className="flex justify-between items-center text-xs font-mono text-luma-smoke tabular-nums">
+                    <div className="flex justify-between items-center text-xs font-sans text-luma-smoke tabular-nums">
                       <span>{isCompleted ? "Tercapai 100%" : `${Number(goal.percentage).toFixed(1)}% terkumpul`}</span>
                       <span>{isCompleted ? "Selesai" : `Sisa ${formatRupiah(goal.remaining_amount)}`}</span>
                     </div>
@@ -425,7 +425,7 @@ export function GoalsView({
                           </span>
                         </div>
                         {goal.estimated_finish_date && (
-                          <div className="text-xs font-mono text-luma-smoke shrink-0 whitespace-nowrap tabular-nums">
+                          <div className="text-xs font-sans text-luma-smoke shrink-0 whitespace-nowrap tabular-nums">
                             <span>Est: </span><span className="text-luma-ivory">{formatDateIndo(goal.estimated_finish_date)}</span>
                           </div>
                         )}
@@ -439,7 +439,7 @@ export function GoalsView({
                     {goal.target_date && (
                       <div className="flex items-center gap-2 text-xs text-luma-smoke pt-0.5">
                         <Calendar className="w-3.5 h-3.5 text-luma-smoke shrink-0" />
-                        <span>Deadline: <span className="font-mono text-luma-ivory tabular-nums">{formatDateIndo(goal.target_date)}</span></span>
+                        <span>Deadline: <span className="font-sans text-luma-ivory tabular-nums">{formatDateIndo(goal.target_date)}</span></span>
                       </div>
                     )}
                   </div>

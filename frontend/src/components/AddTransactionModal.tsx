@@ -184,7 +184,7 @@ export function AddTransactionModal({
             onClick={() => setFormType("expense")}
             className={`min-h-[44px] py-2 px-3 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer flex items-center justify-center ${
               formType === "expense"
-                ? "bg-coralFall text-slate-950 font-bold shadow-xs"
+                ? "bg-coralFall text-slate-950 font-semibold shadow-xs"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -195,7 +195,7 @@ export function AddTransactionModal({
             onClick={() => setFormType("income")}
             className={`min-h-[44px] py-2 px-3 text-xs sm:text-sm font-semibold rounded-xl transition cursor-pointer flex items-center justify-center ${
               formType === "income"
-                ? "bg-mintRise text-slate-950 font-bold shadow-xs"
+                ? "bg-mintRise text-slate-950 font-semibold shadow-xs"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -271,7 +271,7 @@ export function AddTransactionModal({
             required
             value={formDate}
             onChange={(e) => setFormDate(e.target.value)}
-            className="w-full min-h-[44px] bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amberGold transition"
+            className="w-full min-h-[44px] bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
           />
         </div>
 
@@ -295,7 +295,7 @@ export function AddTransactionModal({
           <button
             type="submit"
             disabled={loading}
-            className={`min-h-[44px] px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`min-h-[44px] px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
               formType === "expense" ? "bg-coralFall" : "bg-mintRise"
             }`}
           >

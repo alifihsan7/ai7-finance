@@ -120,7 +120,7 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
             className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
           {name.trim() !== account.name && (
-            <p className="text-[11px] text-amberGold/80 mt-1">
+            <p className="text-xs text-amberGold/80 mt-1">
               Catatan: Mengubah nama rekening akan otomatis memperbarui seluruh riwayat transaksi dan alokasi yang terkait.
             </p>
           )}
@@ -173,7 +173,7 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 bg-amberGold text-slate-950 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm hover:bg-amber-300 transition shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 bg-amberGold text-slate-950 px-5 py-2.5 rounded-2xl font-semibold text-xs sm:text-sm hover:bg-amber-300 transition shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {loading ? (
               <span>Menyimpan...</span>

@@ -52,7 +52,7 @@ export function ConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className={`px-5 py-2.5 text-xs sm:text-sm font-bold rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 ${
+            className={`px-5 py-2.5 text-xs sm:text-sm font-semibold rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 ${
               danger
                 ? "bg-coralFall text-slate-950 hover:brightness-110"
                 : "bg-amberGold text-slate-950 hover:bg-amber-300"
