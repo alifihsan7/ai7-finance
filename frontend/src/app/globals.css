@@ -361,7 +361,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-sidebar nav button:not([aria-current]) { background: transparent; }
 .luma-sidebar nav button:not([aria-current]):hover { background: rgba(145,130,115,.12); }
 .luma-sidebar nav button:focus-visible { outline: 2px solid var(--luma-ember); outline-offset: 2px; }
-.luma-page-content { max-width: 1250px; }
+.luma-page-content { max-width: none; }
 .luma-guest-banner { padding: 12px 16px; background: rgba(255,255,255,.04); border-radius: 16px; }
 .luma-guest-banner > div > div:first-child { display: none; }
 .luma-overview-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; }
@@ -481,8 +481,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   button:disabled, input:disabled, select:disabled { cursor: not-allowed; }
 }
 @media (min-width: 768px) {
-  .luma-app { margin: 18px; height: calc(100dvh - 36px); border-radius: 30px; border: 1px solid rgba(255,255,255,.07); }
-  .luma-sidebar { margin: 12px 0 12px 12px; height: auto; border-radius: 20px; padding: 20px 12px; }
+  .luma-sidebar { margin: 0; height: auto; border-radius: 0; border-width: 0 1px 0 0; padding: 20px 12px; }
   .luma-topbar { border-bottom: 0; }
 }
 @media (max-width: 920px) {
