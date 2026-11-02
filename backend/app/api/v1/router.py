@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import transactions, analytics, subscriptions, accounts, goals, paycheck, auth, onboarding, bot_webhook, categories
+from app.api.v1.endpoints import transactions, analytics, subscriptions, accounts, goals, paycheck, auth, onboarding, bot_webhook, categories, jago_pockets
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -12,3 +12,4 @@ api_router.include_router(categories.router, prefix="/categories", tags=["catego
 api_router.include_router(goals.router, prefix="/goals", tags=["goals"])
 api_router.include_router(paycheck.router, prefix="/paycheck", tags=["paycheck"])
 api_router.include_router(bot_webhook.router, prefix="/bot", tags=["bot"])
+api_router.include_router(jago_pockets.router, prefix="/jago-pockets", tags=["jago-pockets"])

@@ -14,6 +14,7 @@ import app.models.goal
 import app.models.paycheck
 import app.models.user
 import app.models.category
+import app.models.jago_pocket
 
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)

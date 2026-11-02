@@ -32,6 +32,7 @@ import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { AccountGrid } from "@/components/AccountGrid";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { MandiriEnvelopes } from "@/components/MandiriEnvelopes";
+import { JagoPockets } from "@/components/JagoPockets";
 import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionTable, Transaction } from "@/components/TransactionTable";
 import { TransactionLedgerView } from "@/components/TransactionLedgerView";
@@ -334,6 +335,7 @@ export default function FinanceDashboard() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [jagoRefreshSignal, setJagoRefreshSignal] = useState(0);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -560,6 +562,9 @@ export default function FinanceDashboard() {
           setCategories(catData);
         }
       }
+
+      // Refresh Bank Jago pockets after any ledger-affecting fetch.
+      setJagoRefreshSignal((prev) => prev + 1);
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
@@ -1707,6 +1712,11 @@ export default function FinanceDashboard() {
               pocketBudget={summary.safe_to_spend?.pocket_budget}
               loading={loading}
             />
+            <JagoPockets
+              formatRupiah={formatRupiah}
+              refreshSignal={jagoRefreshSignal}
+              onToast={showToast}
+            />
             <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
 
             <div className="space-y-4">
@@ -1767,6 +1777,12 @@ export default function FinanceDashboard() {
               pocketAccount={summary.safe_to_spend?.pocket_account || (customAccounts[0]?.name || "Saku Belanja")}
               pocketBudget={summary.safe_to_spend?.pocket_budget}
               loading={loading}
+            />
+
+            <JagoPockets
+              formatRupiah={formatRupiah}
+              refreshSignal={jagoRefreshSignal}
+              onToast={showToast}
             />
 
             {/* Pos Jago & Pos BRI */}

@@ -57,3 +57,80 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
     headers,
   });
 }
+
+// ---------------------------------------------------------------------------
+// Bank Jago Pockets (Sub-Pocket Vanguard) — /api/v1/jago-pockets
+// ---------------------------------------------------------------------------
+
+export interface JagoPocketItem {
+  id: number;
+  user_id: number;
+  name: string;
+  slug: string;
+  target_amount: number;
+  spent_amount: number;
+  remaining_amount: number;
+  percentage_spent: number;
+  percentage: number;
+  is_active: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface JagoPocketsSummaryResponse {
+  total_jago_balance: number;
+  total_target_amount: number;
+  total_spent_amount: number;
+  total_remaining_amount: number;
+  cycle_start?: string | null;
+  cycle_end?: string | null;
+  pockets: JagoPocketItem[];
+  items: JagoPocketItem[];
+}
+
+export interface JagoPocketTargetUpdate {
+  id?: number;
+  slug?: string;
+  name?: string;
+  target_amount: number;
+  is_active?: boolean;
+}
+
+async function parseJagoResponse(res: Response, action: string): Promise<JagoPocketsSummaryResponse> {
+  if (!res.ok) {
+    let detail = `Gagal ${action} kantong Bank Jago`;
+    try {
+      const data = await res.json();
+      if (data && typeof data.detail === "string" && data.detail.trim()) {
+        detail = data.detail;
+      }
+    } catch {
+      // Fall through to default message when body is not JSON.
+    }
+    throw new Error(detail);
+  }
+  return (await res.json()) as JagoPocketsSummaryResponse;
+}
+
+export async function getJagoPockets(): Promise<JagoPocketsSummaryResponse> {
+  const res = await authFetch("/api/v1/jago-pockets");
+  return parseJagoResponse(res, "memuat");
+}
+
+export async function updateJagoPockets(
+  payload: JagoPocketTargetUpdate[]
+): Promise<JagoPocketsSummaryResponse> {
+  const res = await authFetch("/api/v1/jago-pockets", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJagoResponse(res, "memperbarui");
+}
+
+export async function syncJagoPocketCommitments(): Promise<JagoPocketsSummaryResponse> {
+  const res = await authFetch("/api/v1/jago-pockets/sync-commitments", {
+    method: "POST",
+  });
+  return parseJagoResponse(res, "menyelaraskan");
+}
