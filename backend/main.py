@@ -19,6 +19,23 @@ import app.models.jago_pocket
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)
 
+def ensure_pocket_schema_compatibility():
+    """Idempotently adds account_id and role columns to jago_pockets if table predates schema update."""
+    from sqlalchemy import inspect, text
+    try:
+        inspector = inspect(engine)
+        if "jago_pockets" in inspector.get_table_names():
+            cols = {c["name"] for c in inspector.get_columns("jago_pockets")}
+            with engine.begin() as conn:
+                if "account_id" not in cols:
+                    conn.execute(text("ALTER TABLE jago_pockets ADD COLUMN account_id INTEGER REFERENCES accounts(id) ON DELETE CASCADE"))
+                if "role" not in cols:
+                    conn.execute(text("ALTER TABLE jago_pockets ADD COLUMN role VARCHAR(30) DEFAULT 'operasional' NOT NULL"))
+    except Exception:
+        pass
+
+ensure_pocket_schema_compatibility()
+
 IS_PROD = os.getenv("ENVIRONMENT", "production").lower() == "production"
 
 app = FastAPI(

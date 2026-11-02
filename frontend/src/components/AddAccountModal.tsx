@@ -12,10 +12,12 @@ interface AddAccountModalProps {
 }
 
 const TYPE_OPTIONS = [
-  { value: "operasional", label: "Operasional / Saku Harian", description: "Pos belanja harian dan kebutuhan aktif" },
-  { value: "tabungan", label: "Tabungan / Simpanan", description: "Dana dingin yang disimpan jangka menengah" },
-  { value: "investasi", label: "Investasi Portofolio", description: "Reksadana, saham, emas, atau aset" },
-  { value: "darurat", label: "Dana Darurat / Hub", description: "Dana cadangan siap pakai kapan pun" },
+  { value: "operasional", label: "Operasional / Saku Harian", description: "Pos belanja konsumtif & kebutuhan aktif" },
+  { value: "tagihan", label: "Tagihan & Autodebet", description: "Listrik, wifi, kuota, gym, langganan berkala" },
+  { value: "gajian", label: "Gajian / Pemasukan Utama", description: "Rekening penampung payroll / uang saku" },
+  { value: "tabungan", label: "Tabungan / Dana Dingin", description: "Simpanan jangka menengah" },
+  { value: "investasi", label: "Investasi Portofolio", description: "Reksadana, saham, emas" },
+  { value: "darurat", label: "Dana Darurat", description: "Cadangan proteksi darurat" },
   { value: "ewallet", label: "E-Wallet / Dompet Digital", description: "GoPay, OVO, ShopeePay, DANA" },
 ];
 

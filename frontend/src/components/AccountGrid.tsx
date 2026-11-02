@@ -35,8 +35,76 @@ interface AccountGridProps {
 const ACCOUNT_COLOR_DOTS: Record<string, string> = {
   amberGold: "bg-amber-500", cyanHub: "bg-cyan-500", teal: "bg-teal-500",
   purpleLock: "bg-purple-500", blue: "bg-blue-600", coralFall: "bg-rose-500",
-  ember: "bg-luma-ember", sage: "bg-luma-sage",
+  ember: "bg-luma-ember", sage: "bg-luma-sage", mintRise: "bg-emerald-500",
 };
+
+export function getAccountRoleBadge(type?: string): { label: string; className: string } {
+  const t = (type || "").toLowerCase().trim();
+  switch (t) {
+    case "gajian":
+      return {
+        label: "GAJIAN",
+        className: "bg-mintRise/15 text-mintRise border-mintRise/30",
+      };
+    case "operasional":
+      return {
+        label: "OPERASIONAL",
+        className: "bg-amberGold/15 text-amberGold border-amberGold/30",
+      };
+    case "tagihan":
+      return {
+        label: "TAGIHAN",
+        className: "bg-coralFall/15 text-coralFall border-coralFall/30",
+      };
+    case "darurat":
+      return {
+        label: "DANA DARURAT",
+        className: "bg-cyanHub/15 text-cyanHub border-cyanHub/30",
+      };
+    case "tabungan":
+      return {
+        label: "TABUNGAN",
+        className: "bg-purpleLock/15 text-purpleLock border-purpleLock/30",
+      };
+    case "investasi":
+      return {
+        label: "INVESTASI",
+        className: "bg-purpleLock/15 text-purpleLock border-purpleLock/30",
+      };
+    case "ewallet":
+      return {
+        label: "E-WALLET",
+        className: "bg-cyanHub/15 text-cyanHub border-cyanHub/30",
+      };
+    default:
+      return {
+        label: (type || "AKUN").toUpperCase(),
+        className: "bg-white/[0.06] text-luma-smoke border-white/[0.08]",
+      };
+  }
+}
+
+export function getDefaultTagForType(type?: string): string {
+  const t = (type || "").toLowerCase().trim();
+  switch (t) {
+    case "operasional":
+      return "Pos Operasional & Saku Harian";
+    case "tagihan":
+      return "Pos Tagihan & Autodebet";
+    case "gajian":
+      return "Rekening Pemasukan Utama";
+    case "tabungan":
+      return "Pos Tabungan & Simpanan";
+    case "investasi":
+      return "Pos Investasi Portofolio";
+    case "darurat":
+      return "Cadangan Proteksi Darurat";
+    case "ewallet":
+      return "Dompet Digital / E-Wallet";
+    default:
+      return "Rekening Kas Aktif";
+  }
+}
 
 export function AccountGrid({ summary, customAccounts = [], formatRupiah, loading, onAccountDeleted, onEditAccount }: AccountGridProps) {
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
@@ -88,49 +156,53 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
     {
       id: undefined,
       name: "Rekening Utama",
-      tag: "Operasional & Belanja",
+      tag: "Pos Operasional & Saku Harian",
       balance: 0,
       spent: 0,
       allocated: 0,
       colorKey: "ember",
-      badge: cycleBadge,
       type: "operasional",
+      isPocket: true,
+      cycleBadge,
       isCustom: false,
     },
     {
       id: undefined,
       name: "Tabungan",
-      tag: "Akun Simpanan",
+      tag: "Pos Tabungan & Simpanan",
       balance: 0,
       spent: 0,
       allocated: 0,
       colorKey: "sage",
-      badge: cycleBadge,
       type: "tabungan",
+      isPocket: false,
+      cycleBadge,
       isCustom: false,
     },
     {
       id: undefined,
       name: "Investasi",
-      tag: "Investasi Portofolio",
+      tag: "Pos Investasi Portofolio",
       balance: 0,
       spent: 0,
       allocated: 0,
       colorKey: "sage",
-      badge: "Portofolio",
       type: "investasi",
+      isPocket: false,
+      cycleBadge,
       isCustom: false,
     },
     {
       id: undefined,
       name: "Dana Darurat",
-      tag: "Cadangan Likuid",
+      tag: "Cadangan Proteksi Darurat",
       balance: 0,
       spent: 0,
       allocated: 0,
       colorKey: "amberGold",
-      badge: "Darurat",
       type: "darurat",
+      isPocket: false,
+      cycleBadge,
       isCustom: false,
     },
   ];
@@ -149,20 +221,26 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
         const colorKey = lumaKeyFor(ca.color);
         const bal = ca.current_balance ?? balanceMap[ca.name] ?? 0;
         const isPocket = ca.name.toLowerCase() === pocketAccountName || (pocketAccountName === "" && ca.name.toLowerCase().includes("mandiri"));
+        const roleBadge = getAccountRoleBadge(ca.type);
         return {
           id: ca.id,
           name: ca.name,
           type: ca.type,
-          tag: ca.tag || (ca.type === "investasi" ? "Pos Investasi" : ca.type === "tabungan" ? "Pos Tabungan" : "Rekening Operasional"),
+          tag: ca.tag || getDefaultTagForType(ca.type),
           balance: bal,
           spent: isPocket ? pocketSpent : (expenseMap[ca.name] ?? 0),
           allocated: isPocket ? pocketBudget : 0,
           colorKey,
-          badge: isPocket ? cycleBadge : (ca.type ? ca.type.toUpperCase() : "AKUN"),
+          roleBadge,
+          isPocket,
+          cycleBadge,
           isCustom: true,
         };
       })
-    : genericDefaultAccounts;
+    : genericDefaultAccounts.map((acc) => ({
+        ...acc,
+        roleBadge: getAccountRoleBadge(acc.type),
+      }));
 
   if (loading) {
     return (
@@ -224,9 +302,16 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-[10px] sm:text-[11px] font-mono font-medium px-2.5 py-1 rounded-full bg-white/[0.06] text-luma-smoke border border-white/[0.08] whitespace-nowrap">
-                    {acc.badge}
+                <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                  {acc.isPocket && (
+                    <span className="text-[10px] sm:text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.05] text-luma-smoke border border-white/[0.08] whitespace-nowrap">
+                      {acc.cycleBadge}
+                    </span>
+                  )}
+                  <span
+                    className={`text-[10px] sm:text-[11px] font-mono font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap ${acc.roleBadge.className}`}
+                  >
+                    {acc.roleBadge.label}
                   </span>
                   {acc.id && onEditAccount && (
                     <button

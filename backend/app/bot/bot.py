@@ -10,7 +10,7 @@ import zoneinfo
 
 logger = logging.getLogger("ai7-finance-bot")
 
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func, case
 
@@ -20,6 +20,7 @@ from app.core.transfer import find_paired_transfer
 from app.db.session import SessionLocal, Base, engine
 from app.models.transaction import Transaction
 from app.models.account import Account
+from app.models.jago_pocket import JagoPocket
 from app.models.paycheck import PaycheckConfig, PaycheckBucket
 from app.models.user import User
 
@@ -36,9 +37,21 @@ def get_user_cycle_info(db: Session, user_id: int) -> dict:
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
     cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "biweekly"
-    pocket_account = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
     anchor_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else None
     paycheck_day = cfg.paycheck_day if cfg and cfg.paycheck_day else (anchor_start.day if anchor_start else 25)
+
+    pocket_account = None
+    if cfg and cfg.pocket_account:
+        pocket_account = cfg.pocket_account
+    else:
+        user_accs = db.query(Account).filter(Account.user_id == user_id).all()
+        op_acc = next((a for a in user_accs if a.type == "operasional" or (a.tag and "saku" in a.tag.lower())), None)
+        if op_acc:
+            pocket_account = op_acc.name
+        elif user_accs:
+            pocket_account = user_accs[0].name
+        else:
+            pocket_account = "Mandiri"
 
     latest_paycheck = db.query(Transaction).filter(
         Transaction.user_id == user_id,
@@ -94,7 +107,7 @@ def get_user_cycle_info(db: Session, user_id: int) -> dict:
         "latest_paycheck": latest_paycheck
     }
 
-def get_mandiri_envelopes(cycle_days: int) -> dict:
+def get_pocket_envelopes(cycle_days: int) -> dict:
     base_ratio = cycle_days / 30.0
     # Plafon dasar (referensi 30 hari / 1 bulan)
     base_limits = {
@@ -104,6 +117,28 @@ def get_mandiri_envelopes(cycle_days: int) -> dict:
         "Galon & Air": 44000,
     }
     return {cat: int(round(limit * base_ratio)) for cat, limit in base_limits.items()}
+
+# Backward compatibility alias
+get_mandiri_envelopes = get_pocket_envelopes
+
+
+def is_matching_pocket_account(acc_name: Optional[str], pocket_account: str) -> bool:
+    if not acc_name:
+        return False
+    a_low = acc_name.strip().lower()
+    p_low = pocket_account.strip().lower()
+    if a_low == p_low:
+        return True
+    if a_low in ["mandiri", "saku", "operasional", "rekening utama"] and p_low in ["mandiri", "saku", "operasional", "rekening utama"]:
+        return True
+    return False
+
+
+def get_pocket_account_variants(pocket_account: str) -> List[str]:
+    variants = {pocket_account.strip().lower()}
+    if pocket_account.strip().lower() in ["mandiri", "saku", "operasional", "rekening utama"]:
+        variants.update(["mandiri", "saku", "operasional", "rekening utama"])
+    return list(variants)
 
 def get_safe_to_spend_snippet(db: Session, user_id: int) -> str:
     c_info = get_user_cycle_info(db, user_id=user_id)
@@ -127,16 +162,43 @@ def get_safe_to_spend_snippet(db: Session, user_id: int) -> str:
     salary = getattr(cfg, "total_salary", None) if cfg else None
     pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (salary or 825000)
 
-    spent_row = db.query(
-        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
-    ).filter(
+    pocket_acc_obj = db.query(Account).filter(Account.user_id == user_id, func.lower(Account.name) == pocket_account.lower()).first()
+    account_pockets = []
+    if pocket_acc_obj:
+        account_pockets = db.query(JagoPocket).filter(
+            JagoPocket.user_id == user_id,
+            JagoPocket.account_id == pocket_acc_obj.id,
+            JagoPocket.is_active == True,
+        ).all()
+    if not account_pockets and any(k in pocket_account.lower() for k in ["jago", "pocket"]):
+        account_pockets = db.query(JagoPocket).filter(
+            JagoPocket.user_id == user_id,
+            JagoPocket.account_id == None,
+            JagoPocket.is_active == True,
+        ).all()
+
+    expenses_on_pocket_acc = db.query(Transaction).filter(
         Transaction.user_id == user_id,
         Transaction.account == pocket_account,
         Transaction.type == "expense",
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
-    ).first()
-    pocket_spent = int(spent_row.spent if spent_row else 0)
+    ).all()
+
+    has_non_operasional_pockets = any(p.role != "operasional" for p in account_pockets)
+    if has_non_operasional_pockets and account_pockets:
+        from app.api.v1.endpoints.jago_pockets import classify_pocket_transaction_for_account
+        pocket_by_slug = {p.slug: p for p in account_pockets}
+        pocket_spent = 0
+        for tx in expenses_on_pocket_acc:
+            matched_slug = classify_pocket_transaction_for_account(tx, account_pockets)
+            matched_p = pocket_by_slug.get(matched_slug)
+            p_role = matched_p.role if matched_p else "operasional"
+            if p_role == "operasional":
+                pocket_spent += int(tx.amount)
+    else:
+        pocket_spent = sum(int(tx.amount) for tx in expenses_on_pocket_acc)
+
     pocket_remaining = max(0, pocket_budget - pocket_spent)
     safe_daily = int(pocket_remaining / days_remaining)
 
@@ -269,8 +331,8 @@ Bot ini terintegrasi langsung dengan Web Dashboard AI7 Finance lo.
 💡 **Cara Input Praktis:**
 • ✍️ **Ketik Teks Bebas:** `nasi padang 25k`, `kopi tuku 22k`, `laundry 35rb`, `isi galon 8k`
 • 📸 **Kirim Foto Struk / QRIS:** Cukup kirim foto struk belanja kasir atau screenshot QRIS
-• 🎙️ **Kirim Voice Note:** Rekam suara lo (misal: *"beli makan siang 28 ribu pakai mandiri"*)
-• 🔄 **Transfer Rekening:** `tf 100k mandiri ke bri 1 tabungan`
+• 🎙️ **Kirim Voice Note:** Rekam suara lo (misal: *"beli makan siang 28 ribu pakai saku"*)
+• 🔄 **Transfer Rekening:** `tf 100k utama ke tabungan`
 
 📌 **Perintah Tersedia:**
 • `/saldo` - Estimasi saldo per rekening & total net worth
@@ -515,7 +577,7 @@ budget: "{pocket_budget}"
 spent: "{pocket_spent}"
 remaining: "{pocket_remaining}"
 updated_at: "{now_wib.strftime('%Y-%m-%d %H:%M:%S WIB')}"
-tags: [finance, cycle-snapshot, mandiri, pacing]
+tags: [finance, cycle-snapshot, operasional, pacing]
 ---
 
 # 🏛️ Laporan Siklus Keuangan: {cycle_start} s/d {cycle_end}
@@ -702,6 +764,10 @@ def normalize_account(raw: str, db: Optional[Session] = None, user_id: Optional[
     if not raw:
         return None
     r = raw.strip().lower()
+    if db and user_id is not None:
+        for acc in db.query(Account).filter(Account.user_id == user_id).all():
+            if acc.name.lower() in r or r in acc.name.lower():
+                return acc.name
     if "mandiri" in r:
         return "Mandiri"
     elif "bibit" in r:
@@ -714,10 +780,12 @@ def normalize_account(raw: str, db: Optional[Session] = None, user_id: Optional[
         return "BRI 2"
     elif "cash" in r or "tunai" in r:
         return "Cash"
-    if db and user_id is not None:
-        for acc in db.query(Account).filter(Account.user_id == user_id).all():
-            if acc.name.lower() in r or r in acc.name.lower():
-                return acc.name
+    elif "utama" in r:
+        return "Rekening Utama"
+    elif "tagihan" in r:
+        return "Rekening Tagihan"
+    elif "tabungan" in r:
+        return "Tabungan"
     return raw.strip().title()
 
 def handle_transfer(chat_id: int, text: str, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
@@ -732,15 +800,15 @@ def handle_transfer(chat_id: int, text: str, db: Session, user: Optional[User] =
 Gunakan format:
 `/transfer [nominal] dari [asal] ke [tujuan] [catatan]`
 atau singkat:
-`tf 100k mandiri ke bri 1 [catatan]`
+`tf 100k utama ke tabungan [catatan]`
 
 💡 **Contoh Praktis:**
-• `/transfer 200k dari mandiri ke bri 1 dana darurat`
-• `tf 150rb mandiri ke jago top up subs`
-• `tf 50k bri 1 ke mandiri tarik tunai`
+• `/transfer 200k dari utama ke tabungan dana darurat`
+• `tf 150rb utama ke tagihan top up subs`
+• `tf 50k tabungan ke utama tarik tunai`
 
 🏦 **Pilihan Rekening:**
-`Mandiri`, `Jago`, `BRI 1`, `BRI 2`, `Cash`
+`Utama`, `Tagihan`, `Tabungan`, `Investasi`, `Cash` (atau sesuai nama rekening di dashboard kamu)
 
 ℹ️ _Transfer antar rekening hanya memindahkan saldo & tidak memotong batas pengeluaran (Safe-to-Spend)._"""
         send_message(chat_id, guide, bot_token=bot_token)
@@ -749,7 +817,7 @@ atau singkat:
     pattern = re.compile(r"^(?:/transfer|transfer|tf)\s+([\d\.\,kKrbRB]+)\s+(?:dari\s+)?([a-zA-Z0-9\s]+?)\s+ke\s+([a-zA-Z0-9\s]+?)(?:\s*[:\-]\s*(.*)|\s+(.*))?$", re.IGNORECASE)
     match = pattern.match(clean)
     if not match:
-        send_message(chat_id, "⚠️ Format transfer tidak dikenali.\n\nContoh:\n`tf 100k mandiri ke bri 1`\natau ketik `/transfer` untuk panduan lengkap.", bot_token=bot_token)
+        send_message(chat_id, "⚠️ Format transfer tidak dikenali.\n\nContoh:\n`tf 100k utama ke tabungan`\natau ketik `/transfer` untuk panduan lengkap.", bot_token=bot_token)
         return
 
     amt_str, from_raw, to_raw, desc1, desc2 = match.groups()
@@ -1020,7 +1088,9 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
     cycle_end = c_info["cycle_end"]
     cycle_days = c_info["cycle_days"]
     cycle_label = c_info["cycle_label"]
-    MANDIRI_ENVELOPES = get_mandiri_envelopes(cycle_days)
+    pocket_account = c_info["pocket_account"]
+    POCKET_ENVELOPES = get_pocket_envelopes(cycle_days)
+    MANDIRI_ENVELOPES = POCKET_ENVELOPES
 
     # If single transaction
     if len(items) == 1:
@@ -1050,11 +1120,12 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
 📝 **Keterangan:** {tx.description}
 🕒 _{time_str} WIB_"""
 
-        if tx.type == "expense" and tx.account == "Mandiri" and tx.category in MANDIRI_ENVELOPES:
-            limit = MANDIRI_ENVELOPES[tx.category]
+        if tx.type == "expense" and is_matching_pocket_account(tx.account, pocket_account) and tx.category in POCKET_ENVELOPES:
+            limit = POCKET_ENVELOPES[tx.category]
+            pocket_variants = get_pocket_account_variants(pocket_account)
             spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
                 Transaction.user_id == user_id,
-                Transaction.account == "Mandiri",
+                func.lower(Transaction.account).in_(pocket_variants),
                 Transaction.type == "expense",
                 Transaction.category == tx.category,
                 Transaction.date >= cycle_start,
@@ -1064,7 +1135,7 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
             rem = limit - spent_int
             pct = round(spent_int / limit * 100, 1) if limit > 0 else 0
             status_icon = "⚠️" if pct > 85 else "📊"
-            reply += f"\n\n{status_icon} **Status Amplop Mandiri ({cycle_label}):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
+            reply += f"\n\n{status_icon} **Status Amplop Belanja Harian ({cycle_label}):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
 
         if tx.type == "expense":
             reply += f"\n\n{get_safe_to_spend_snippet(db, user_id=user_id)}"
@@ -1091,7 +1162,7 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
         db.add(tx)
         created_txs.append(tx)
         total_amount += tx.amount
-        if tx.account == "Mandiri" and tx.type == "expense":
+        if is_matching_pocket_account(tx.account, pocket_account) and tx.type == "expense":
             categories_touched.add(tx.category)
 
     db.commit()
@@ -1106,14 +1177,15 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
     lines.append(f"\n💵 **Total:** {format_rp(total_amount)}")
     lines.append(f"🕒 _{time_str} WIB_")
 
-    # Add envelope updates for all affected Mandiri categories
-    mandiri_status_lines = []
+    # Add envelope updates for all affected pocket categories
+    pocket_status_lines = []
+    pocket_variants = get_pocket_account_variants(pocket_account)
     for cat in categories_touched:
-        if cat in MANDIRI_ENVELOPES:
-            limit = MANDIRI_ENVELOPES[cat]
+        if cat in POCKET_ENVELOPES:
+            limit = POCKET_ENVELOPES[cat]
             spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
                 Transaction.user_id == user_id,
-                Transaction.account == "Mandiri",
+                func.lower(Transaction.account).in_(pocket_variants),
                 Transaction.type == "expense",
                 Transaction.category == cat,
                 Transaction.date >= cycle_start,
@@ -1122,10 +1194,10 @@ def handle_text_message(chat_id: int, text: str, message_id: int, db: Session, u
             spent_int = int(spent or 0)
             rem = limit - spent_int
             pct = round(spent_int / limit * 100, 1) if limit > 0 else 0
-            mandiri_status_lines.append(f"• **{cat}:** {format_rp(spent_int)} / {format_rp(limit)} ({pct}%) ➔ Sisa: {format_rp(rem)}")
+            pocket_status_lines.append(f"• **{cat}:** {format_rp(spent_int)} / {format_rp(limit)} ({pct}%) ➔ Sisa: {format_rp(rem)}")
 
-    if mandiri_status_lines:
-        lines.append(f"\n📊 **Status Amplop Mandiri ({cycle_label}):**\n" + "\n".join(mandiri_status_lines))
+    if pocket_status_lines:
+        lines.append(f"\n📊 **Status Amplop Belanja Harian ({cycle_label}):**\n" + "\n".join(pocket_status_lines))
 
     lines.append(f"\n{get_safe_to_spend_snippet(db, user_id=user_id)}")
 
@@ -1261,7 +1333,9 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
     cycle_end = c_info["cycle_end"]
     cycle_days = c_info["cycle_days"]
     cycle_label = c_info["cycle_label"]
-    MANDIRI_ENVELOPES = get_mandiri_envelopes(cycle_days)
+    pocket_account = c_info["pocket_account"]
+    POCKET_ENVELOPES = get_pocket_envelopes(cycle_days)
+    MANDIRI_ENVELOPES = POCKET_ENVELOPES
 
     tx_list = extraction.get("transactions", [])
     transcription = extraction.get("transcription", "")
@@ -1358,11 +1432,12 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
 📝 **Keterangan:** {tx.description}
 🕒 _{time_str} WIB_"""
 
-        if tx.type == "expense" and tx.account == "Mandiri" and tx.category in MANDIRI_ENVELOPES:
-            limit = MANDIRI_ENVELOPES[tx.category]
+        if tx.type == "expense" and is_matching_pocket_account(tx.account, pocket_account) and tx.category in POCKET_ENVELOPES:
+            limit = POCKET_ENVELOPES[tx.category]
+            pocket_variants = get_pocket_account_variants(pocket_account)
             spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
                 Transaction.user_id == user_id,
-                Transaction.account == "Mandiri",
+                func.lower(Transaction.account).in_(pocket_variants),
                 Transaction.type == "expense",
                 Transaction.category == tx.category,
                 Transaction.date >= cycle_start,
@@ -1372,7 +1447,7 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
             rem = limit - spent_int
             pct = round(spent_int / limit * 100, 1) if limit > 0 else 0
             status_icon = "⚠️" if pct > 85 else "📊"
-            reply += f"\n\n{status_icon} **Status Amplop Mandiri ({cycle_label}):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
+            reply += f"\n\n{status_icon} **Status Amplop Belanja Harian ({cycle_label}):**\n• Kuota Terpakai: {format_rp(spent_int)} / {format_rp(limit)} ({pct}%)\n• Sisa Kuota: **{format_rp(rem)}**"
 
         if tx.type == "expense":
             reply += f"\n\n{get_safe_to_spend_snippet(db, user_id=user_id)}"
@@ -1405,7 +1480,7 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
         db.add(tx)
         created_txs.append(tx)
         total_amount += amt
-        if acc == "Mandiri" and tx_type == "expense":
+        if is_matching_pocket_account(acc, pocket_account) and tx_type == "expense":
             categories_touched.add(cat)
 
     db.commit()
@@ -1424,13 +1499,14 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
     lines.append(f"\n💵 **Total:** {format_rp(total_amount)}")
     lines.append(f"🕒 _{time_str} WIB_")
 
-    mandiri_status_lines = []
+    pocket_status_lines = []
+    pocket_variants = get_pocket_account_variants(pocket_account)
     for cat in categories_touched:
-        if cat in MANDIRI_ENVELOPES:
-            limit = MANDIRI_ENVELOPES[cat]
+        if cat in POCKET_ENVELOPES:
+            limit = POCKET_ENVELOPES[cat]
             spent = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
                 Transaction.user_id == user_id,
-                Transaction.account == "Mandiri",
+                func.lower(Transaction.account).in_(pocket_variants),
                 Transaction.type == "expense",
                 Transaction.category == cat,
                 Transaction.date >= cycle_start,
@@ -1439,10 +1515,10 @@ def handle_media_message(chat_id: int, message: dict, message_id: int, db: Sessi
             spent_int = int(spent or 0)
             rem = limit - spent_int
             pct = round(spent_int / limit * 100, 1) if limit > 0 else 0
-            mandiri_status_lines.append(f"• **{cat}:** {format_rp(spent_int)} / {format_rp(limit)} ({pct}%) ➔ Sisa: {format_rp(rem)}")
+            pocket_status_lines.append(f"• **{cat}:** {format_rp(spent_int)} / {format_rp(limit)} ({pct}%) ➔ Sisa: {format_rp(rem)}")
 
-    if mandiri_status_lines:
-        lines.append(f"\n📊 **Status Amplop Mandiri ({cycle_label}):**\n" + "\n".join(mandiri_status_lines))
+    if pocket_status_lines:
+        lines.append(f"\n📊 **Status Amplop Belanja Harian ({cycle_label}):**\n" + "\n".join(pocket_status_lines))
 
     lines.append(f"\n{get_safe_to_spend_snippet(db, user_id=user_id)}")
 

@@ -13,10 +13,12 @@ interface EditAccountModalProps {
 }
 
 const TYPE_OPTIONS = [
-  { value: "operasional", label: "Operasional / Saku Harian", description: "Pos belanja harian dan kebutuhan aktif" },
-  { value: "tabungan", label: "Tabungan / Simpanan", description: "Dana dingin yang disimpan jangka menengah" },
-  { value: "investasi", label: "Investasi Portofolio", description: "Reksadana, saham, emas, atau aset" },
-  { value: "darurat", label: "Dana Darurat / Hub", description: "Dana cadangan siap pakai kapan pun" },
+  { value: "operasional", label: "Operasional / Saku Harian", description: "Pos belanja konsumtif & kebutuhan aktif" },
+  { value: "tagihan", label: "Tagihan & Autodebet", description: "Listrik, wifi, kuota, gym, langganan berkala" },
+  { value: "gajian", label: "Gajian / Pemasukan Utama", description: "Rekening penampung payroll / uang saku" },
+  { value: "tabungan", label: "Tabungan / Dana Dingin", description: "Simpanan jangka menengah" },
+  { value: "investasi", label: "Investasi Portofolio", description: "Reksadana, saham, emas" },
+  { value: "darurat", label: "Dana Darurat", description: "Cadangan proteksi darurat" },
   { value: "ewallet", label: "E-Wallet / Dompet Digital", description: "GoPay, OVO, ShopeePay, DANA" },
 ];
 
@@ -112,7 +114,7 @@ export function EditAccountModal({ account, isOpen, onClose, onSuccess }: EditAc
           <input
             type="text"
             required
-            placeholder="Misal: BCA, SeaBank, Mandiri Utama"
+            placeholder="Misal: BCA, SeaBank, Rekening Utama"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"

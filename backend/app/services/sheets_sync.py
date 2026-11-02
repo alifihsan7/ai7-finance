@@ -116,7 +116,7 @@ def sync_cycle_snapshot(
         day_of_cycle = (today_wib - cycle_start_date).days + 1
         days_remaining = max(1, total_days - day_of_cycle + 1)
 
-    mandiri_spent_row = db.query(
+    pocket_spent_row = db.query(
         func.coalesce(func.sum(Transaction.amount), 0).label("spent")
     ).filter(
         Transaction.user_id == user_id,
@@ -125,7 +125,7 @@ def sync_cycle_snapshot(
         Transaction.date >= cycle_start_date,
         Transaction.date <= cycle_end_date
     ).first()
-    pocket_spent = int(mandiri_spent_row.spent if mandiri_spent_row else 0)
+    pocket_spent = int(pocket_spent_row.spent if pocket_spent_row else 0)
     pocket_budget = int(getattr(cfg, "total_salary", 0) * 0.55) if cfg and getattr(cfg, "total_salary", None) else 825000
     if cfg and cfg.id:
         bucket_match = db.query(PaycheckBucket).join(

@@ -1,17 +1,19 @@
-from typing import List
+from typing import List, Optional
 from datetime import datetime, date
 import zoneinfo
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
 
 from app.db.session import get_db
 from app.models.account import Account
+from app.models.jago_pocket import JagoPocket
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.models.paycheck import PaycheckConfig, PaycheckBucket
-from app.schemas.account import AccountCreate, AccountResponse, AccountUpdate
+from app.schemas.account import AccountCreate, AccountResponse, AccountUpdate, PocketBreakdownItem
+from app.schemas.jago_pocket import JagoPocketsSummaryResponse
 from app.api.deps import get_current_user
 from app.core.config import settings
 
@@ -20,7 +22,7 @@ WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 
 DEFAULT_ACCOUNTS = [
     {"name": "Rekening Utama", "type": "operasional", "tag": "Saku Operasional", "color": "amberGold", "initial_balance": 0},
-    {"name": "Rekening Tagihan", "type": "operasional", "tag": "Subs & Tagihan", "color": "purpleLock", "initial_balance": 0},
+    {"name": "Rekening Tagihan", "type": "tagihan", "tag": "Subs & Tagihan", "color": "purpleLock", "initial_balance": 0},
     {"name": "Investasi", "type": "investasi", "tag": "Portofolio Aset", "color": "teal", "initial_balance": 0},
     {"name": "Dana Darurat", "type": "darurat", "tag": "Cadangan Likuid", "color": "cyanHub", "initial_balance": 0},
     {"name": "Cash", "type": "operasional", "tag": "Uang Tunai Fisik", "color": "amberGold", "initial_balance": 0},
@@ -43,6 +45,7 @@ def ensure_default_accounts(db: Session, user_id: int):
 
 @router.get("", response_model=List[AccountResponse])
 def get_accounts(
+    type: Optional[str] = Query(None, description="Filter akun berdasarkan tipe/role finansial"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -62,10 +65,46 @@ def get_accounts(
 
     balance_map = {r.account: int(r.balance or 0) for r in acc_rows}
 
-    accounts = db.query(Account).filter(Account.user_id == current_user.id).order_by(Account.id.asc()).all()
+    query = db.query(Account).filter(Account.user_id == current_user.id)
+    if type and type.strip().lower() != "all":
+        query = query.filter(func.lower(Account.type) == type.strip().lower())
+    accounts = query.order_by(Account.id.asc()).all()
+
+    all_user_pockets = db.query(JagoPocket).filter(
+        JagoPocket.user_id == current_user.id,
+        JagoPocket.is_active == True,
+    ).all()
+
+    pocket_by_account: dict[int, list[JagoPocket]] = {}
+    for p in all_user_pockets:
+        if p.account_id:
+            pocket_by_account.setdefault(p.account_id, []).append(p)
+
     results = []
     for acc in accounts:
         curr_bal = balance_map.get(acc.name, 0)
+        acc_pockets = pocket_by_account.get(acc.id, [])
+        if not acc_pockets and any(k in acc.name.lower() for k in ["jago", "pocket"]):
+            acc_pockets = [p for p in all_user_pockets if p.account_id is None]
+
+        sum_other_targets = sum(int(p.target_amount) for p in acc_pockets if not p.slug.startswith("utama"))
+        pockets_breakdown = []
+        for p in acc_pockets:
+            target = int(p.target_amount)
+            if p.slug.startswith("utama") and target == 0:
+                target = max(0, curr_bal - sum_other_targets)
+            pockets_breakdown.append(PocketBreakdownItem(
+                id=p.id,
+                name=p.name,
+                slug=p.slug,
+                role=p.role,
+                target_amount=target,
+                spent_amount=0,
+                remaining_amount=target,
+                percentage_spent=0.0,
+                is_active=p.is_active,
+            ))
+
         results.append(AccountResponse(
             id=acc.id,
             name=acc.name,
@@ -74,9 +113,29 @@ def get_accounts(
             color=acc.color,
             initial_balance=acc.initial_balance,
             current_balance=curr_bal,
-            created_at=acc.created_at
+            created_at=acc.created_at,
+            pockets=pockets_breakdown,
         ))
     return results
+
+
+@router.get("/{account_id}/pockets", response_model=JagoPocketsSummaryResponse)
+def get_account_pockets(
+    account_id: int,
+    cycle_start: Optional[date] = None,
+    cycle_end: Optional[date] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get full pocket breakdown and metrics for a specific parent account."""
+    from app.api.v1.endpoints.jago_pockets import compute_pockets_summary
+    return compute_pockets_summary(
+        db=db,
+        user_id=current_user.id,
+        account_id=account_id,
+        cycle_start=cycle_start,
+        cycle_end=cycle_end,
+    )
 
 @router.post("", response_model=AccountResponse, status_code=status.HTTP_201_CREATED)
 def create_account(
@@ -95,10 +154,11 @@ def create_account(
     if existing:
         raise HTTPException(status_code=400, detail=f"Rekening '{name_clean}' sudah terdaftar")
 
+    acc_type = (account_in.type or "operasional").strip().lower()
     new_acc = Account(
         user_id=current_user.id,
         name=name_clean,
-        type=account_in.type,
+        type=acc_type,
         tag=account_in.tag or f"Akun {name_clean}",
         color=account_in.color or "amberGold",
         initial_balance=account_in.initial_balance
@@ -182,7 +242,7 @@ def update_account(
         acc.name = new_name
 
     if account_in.type is not None:
-        acc.type = account_in.type
+        acc.type = account_in.type.strip().lower()
     if account_in.tag is not None:
         acc.tag = account_in.tag
     if account_in.color is not None:

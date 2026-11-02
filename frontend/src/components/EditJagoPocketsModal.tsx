@@ -48,7 +48,7 @@ export function EditJagoPocketsModal({
     setError(null);
 
     if (pockets.length === 0) {
-      setError("Belum ada kantong yang dapat diperbarui");
+      setError("Belum ada sub-kantong yang dapat diperbarui");
       return;
     }
 
@@ -71,7 +71,7 @@ export function EditJagoPocketsModal({
       onSuccess(updated);
       onClose();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Terjadi kesalahan saat memperbarui kantong";
+      const msg = err instanceof Error ? err.message : "Terjadi kesalahan saat memperbarui sub-kantong";
       setError(msg);
     } finally {
       setLoading(false);
@@ -82,8 +82,8 @@ export function EditJagoPocketsModal({
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit Target Kantong Jago"
-      subtitle="Perbarui plafon alokasi tiap sub-kantong Bank Jago — gunakan 0 untuk mengikuti saldo dinamis"
+      title="Edit Target Sub-Kantong"
+      subtitle="Perbarui plafon alokasi tiap sub-kantong operasional"
       icon={<Landmark className="w-5 h-5 text-amberGold" />}
       accent="amber"
       maxWidth="lg"
@@ -156,3 +156,6 @@ export function EditJagoPocketsModal({
     </CustomModal>
   );
 }
+
+export const EditOperationalPocketsModal = EditJagoPocketsModal;
+export default EditJagoPocketsModal;

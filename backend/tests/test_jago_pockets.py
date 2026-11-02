@@ -409,3 +409,93 @@ def test_jago_pockets_tenant_isolation(client, db_session, test_user, other_user
     # Current user's gym spent amount MUST be 0
     assert slugs["gym"]["spent_amount"] == 0
     assert slugs["gym"]["user_id"] == test_user.id
+
+
+def test_jago_pockets_total_pocket_balance_alias(client, db_session, test_user):
+    """Verifies that total_pocket_balance is present and matches total_jago_balance."""
+    response = client.get("/api/v1/jago-pockets")
+    assert response.status_code == 200
+    data = response.json()
+    assert "total_pocket_balance" in data
+    assert "total_jago_balance" in data
+    assert data["total_pocket_balance"] == data["total_jago_balance"]
+
+
+def test_jago_pockets_dynamic_account_resolution(client, db_session, test_user):
+    """Verifies that pocket balance & expenses resolve dynamically for accounts named 'Kantong' or non-utama."""
+    today = date.today()
+    # Create custom account with 'kantong' in name
+    kantong_acc = Account(
+        user_id=test_user.id,
+        name="Kantong Tagihan",
+        type="operasional",
+        tag="Subs & Tagihan",
+        initial_balance=0,
+    )
+    db_session.add(kantong_acc)
+    db_session.commit()
+
+    # Funding income transaction
+    tx_inc = Transaction(
+        user_id=test_user.id,
+        type="income",
+        amount=300_000,
+        account="Kantong Tagihan",
+        category="Gajian",
+        description="Alokasi Gajian Kantong Tagihan",
+        date=today,
+    )
+    # Expense on this custom pocket account
+    tx_exp = Transaction(
+        user_id=test_user.id,
+        type="expense",
+        amount=50_000,
+        account="Kantong Tagihan",
+        category="Tagihan",
+        description="Paket Kuota Bulanan",
+        date=today,
+    )
+    db_session.add_all([tx_inc, tx_exp])
+    db_session.commit()
+
+    response = client.get("/api/v1/jago-pockets")
+    assert response.status_code == 200
+    data = response.json()
+    slugs = {p["slug"]: p for p in data["pockets"]}
+    assert slugs["kuota"]["spent_amount"] == 50_000
+    assert data["total_pocket_balance"] == 250_000
+    assert data["total_jago_balance"] == 250_000
+
+
+def test_pocket_envelopes_bot_generalization(db_session, test_user):
+    """Verifies bot pocket envelope calculations and dynamic pocket matching."""
+    from app.bot.bot import (
+        get_pocket_envelopes,
+        get_mandiri_envelopes,
+        is_matching_pocket_account,
+        get_pocket_account_variants,
+    )
+
+    # 1. Verification of get_pocket_envelopes & backward compat alias
+    env_pocket = get_pocket_envelopes(30)
+    env_mandiri = get_mandiri_envelopes(30)
+    assert env_pocket == env_mandiri
+    assert env_pocket["Makanan & Minuman"] == 450_000
+    assert env_pocket["Jajan / Ngopi"] == 100_000
+
+    # 2. Matching with custom bank/pocket accounts
+    assert is_matching_pocket_account("BCA", "BCA") is True
+    assert is_matching_pocket_account("bca", "BCA") is True
+    assert is_matching_pocket_account("BRI", "BCA") is False
+
+    # 3. Inter-compatibility for operational/mandiri/saku defaults
+    assert is_matching_pocket_account("Mandiri", "Rekening Utama") is True
+    assert is_matching_pocket_account("saku", "operasional") is True
+
+    # 4. Variants generation
+    variants_custom = get_pocket_account_variants("BCA")
+    assert "bca" in variants_custom
+
+    variants_mandiri = get_pocket_account_variants("Mandiri")
+    assert "mandiri" in variants_mandiri
+    assert "rekening utama" in variants_mandiri

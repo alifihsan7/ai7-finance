@@ -27,6 +27,8 @@ import {
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
+  WalletCards,
+  Pencil,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { LumaOverview } from "@/components/LumaOverview";
@@ -34,8 +36,9 @@ import { LumaAccountStrip } from "@/components/LumaAccountStrip";
 import { LumaRecentTransactions } from "@/components/LumaRecentTransactions";
 import { AccountGrid } from "@/components/AccountGrid";
 import { CategoryGrid } from "@/components/CategoryGrid";
-import { MandiriEnvelopes } from "@/components/MandiriEnvelopes";
-import { JagoPockets } from "@/components/JagoPockets";
+import { SmartBudgetEnvelopes } from "@/components/MandiriEnvelopes";
+import { JagoPockets, OperationalPockets } from "@/components/JagoPockets";
+import { EditJagoPocketsModal } from "@/components/EditJagoPocketsModal";
 import { Transaction } from "@/components/TransactionTable";
 import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionLedgerView } from "@/components/TransactionLedgerView";
@@ -64,7 +67,16 @@ import { AuthModal } from "@/components/AuthModal";
 import { OnboardingWizardModal } from "@/components/OnboardingWizardModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserProfileModal } from "@/components/UserProfileModal";
-import { authFetch, getAuthToken, setStoredUser, setAuthToken, UserProfile } from "@/lib/api";
+import {
+  authFetch,
+  getAuthToken,
+  setStoredUser,
+  setAuthToken,
+  UserProfile,
+  getJagoPockets,
+  syncJagoPocketCommitments,
+  JagoPocketsSummaryResponse,
+} from "@/lib/api";
 import { DashboardLoadError, loadDashboardData } from "@/lib/dashboardData";
 import { getCategoryColorDef } from "@/lib/categoryColors";
 
@@ -177,7 +189,7 @@ const SLUG_TO_NAV: Record<string, string> = {
   "/buku-transaksi": "Transaksi",
   "buku-transaksi": "Transaksi",
 
-  // Anggaran (sebelumnya Alokasi Amplop / Envelopes)
+  // Anggaran (Pos Amplop Belanja & Alokasi Peran Finansial)
   "#/budget": "Anggaran",
   "/budget": "Anggaran",
   "budget": "Anggaran",
@@ -187,9 +199,6 @@ const SLUG_TO_NAV: Record<string, string> = {
   "#/envelopes": "Anggaran",
   "/envelopes": "Anggaran",
   "envelopes": "Anggaran",
-  "#/alokasi-amplop": "Anggaran",
-  "/alokasi-amplop": "Anggaran",
-  "alokasi-amplop": "Anggaran",
 
   // Rencana (Target Tabungan + Tagihan)
   "#/plan": "Rencana",
@@ -250,13 +259,28 @@ const SLUG_TO_NAV: Record<string, string> = {
   "#/kategori": "Pengaturan",
   "/kategori": "Pengaturan",
   "kategori": "Pengaturan",
+  "#/pockets": "Pengaturan",
+  "/pockets": "Pengaturan",
+  "pockets": "Pengaturan",
+  "#/kantong": "Pengaturan",
+  "/kantong": "Pengaturan",
+  "kantong": "Pengaturan",
+  "#/settings/pockets": "Pengaturan",
+  "/settings/pockets": "Pengaturan",
+  "settings/pockets": "Pengaturan",
+  "#/profile": "Pengaturan",
+  "/profile": "Pengaturan",
+  "profile": "Pengaturan",
+  "#/profil": "Pengaturan",
+  "/profil": "Pengaturan",
+  "profil": "Pengaturan",
 };
 
 export default function FinanceDashboard() {
   const googleSheetUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL;
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
   const [planSubTab, setPlanSubTab] = useState<"target" | "tagihan">("target");
-  const [settingsSubTab, setSettingsSubTab] = useState<"rekening" | "kategori" | "profil">("rekening");
+  const [settingsSubTab, setSettingsSubTab] = useState<"rekening" | "kantong" | "kategori" | "profil">("rekening");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   useEffect(() => {
     setSidebarCollapsed(localStorage.getItem("ai7_sidebar_collapsed") === "true");
@@ -399,6 +423,16 @@ export default function FinanceDashboard() {
         setSettingsSubTab("rekening");
         return;
       }
+      if (
+        cleanHash === "pockets" ||
+        cleanHash === "kantong" ||
+        cleanHash === "settings/pockets" ||
+        cleanHash === "pengaturan/kantong"
+      ) {
+        setActiveNav("Pengaturan");
+        setSettingsSubTab("kantong");
+        return;
+      }
       if (cleanHash === "profile" || cleanHash === "profil" || cleanHash === "preferences" || cleanHash === "preferensi") {
         setActiveNav("Pengaturan");
         setSettingsSubTab("profil");
@@ -462,6 +496,53 @@ export default function FinanceDashboard() {
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [jagoRefreshSignal, setJagoRefreshSignal] = useState(0);
+  const [jagoPocketsData, setJagoPocketsData] = useState<JagoPocketsSummaryResponse | null>(null);
+  const [isEditPocketModalOpen, setIsEditPocketModalOpen] = useState(false);
+  const [isSyncingPockets, setIsSyncingPockets] = useState(false);
+
+  const fetchJagoPocketsData = useCallback(async () => {
+    try {
+      const res = await getJagoPockets();
+      setJagoPocketsData(res);
+    } catch {
+      // non-blocking fallback
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchJagoPocketsData();
+  }, [fetchJagoPocketsData, jagoRefreshSignal]);
+
+  const handleSyncPockets = async () => {
+    if (isSyncingPockets) return;
+    setIsSyncingPockets(true);
+    try {
+      const res = await syncJagoPocketCommitments();
+      setJagoPocketsData(res);
+      setJagoRefreshSignal((prev) => prev + 1);
+      showToast("Komitmen sub-kantong operasional tersinkron dengan Langganan");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Gagal menyelaraskan komitmen kantong";
+      showToast(msg);
+    } finally {
+      setIsSyncingPockets(false);
+    }
+  };
+
+  const handleOpenEditPockets = async () => {
+    if (!jagoPocketsData) {
+      try {
+        const res = await getJagoPockets();
+        setJagoPocketsData(res);
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Gagal memuat sub-kantong operasional");
+        return;
+      }
+    }
+    setIsEditPocketModalOpen(true);
+  };
+
+  const pocketsCount = (jagoPocketsData?.pockets ?? jagoPocketsData?.items)?.length ?? 5;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1451,6 +1532,8 @@ export default function FinanceDashboard() {
               {activeNav === "Pengaturan" && (
                 settingsSubTab === "rekening"
                   ? "Pengaturan — Rekening"
+                  : settingsSubTab === "kantong"
+                  ? "Pengaturan — Kantong"
                   : settingsSubTab === "kategori"
                   ? "Pengaturan — Kategori"
                   : "Pengaturan — Profil & Preferensi"
@@ -1462,7 +1545,11 @@ export default function FinanceDashboard() {
               {activeNav === "Anggaran" && "Batas belanja per kategori, evaluasi pemakaian anggaran, serta formula/alokasi pemasukan."}
               {activeNav === "Rencana" && (planSubTab === "target" ? "Target tabungan masa depan, dana darurat, dan progres capaian milestone." : "Daftar kewajiban tagihan berkala, autodebet rutin, dan jadwal jatuh tempo.")}
               {activeNav === "Laporan" && "Arus kas, pengeluaran per kategori, dan perbandingan laju belanja periode."}
-              {activeNav === "Pengaturan" && "Pengelolaan rekening simpanan fisik, pos kategori transaksi, preferensi tema, dan profil pengguna."}
+              {activeNav === "Pengaturan" && (
+                settingsSubTab === "kantong"
+                  ? "Konfigurasi alokasi sub-kantong operasional, sinkronisasi autodebet, dan plafon target pengeluaran."
+                  : "Pengelolaan rekening simpanan fisik, pos kategori transaksi, preferensi tema, dan profil pengguna."
+              )}
             </p>
           </div>
 
@@ -1555,7 +1642,14 @@ export default function FinanceDashboard() {
 
             {currentUser && !overviewError && <>
             <LumaAccountStrip
-              accounts={(summary.accounts || []).map((a) => ({ name: a.account, balance: a.balance }))}
+              accounts={(summary.accounts || []).map((a) => {
+                const found = customAccounts.find((c) => c.name.toLowerCase() === a.account.toLowerCase());
+                return {
+                  name: a.account,
+                  balance: a.balance,
+                  type: found?.type,
+                };
+              })}
               formatRupiah={formatRupiah}
               loading={loading}
               onOpenAccounts={() => {
@@ -1696,17 +1790,17 @@ export default function FinanceDashboard() {
               </section>
             ) : null}
 
-            {/* 6. Amplop Kas Mandiri */}
-            <MandiriEnvelopes
+            {/* 6. Kantong Belanja Harian & Saku Operasional */}
+            <SmartBudgetEnvelopes
               mandiriExpenses={mandiriExpenses}
               formatRupiah={formatRupiah}
               cycleDays={summary.safe_to_spend?.cycle_days || 14}
-              pocketAccount={summary.safe_to_spend?.pocket_account || (customAccounts[0]?.name || "Saku Belanja")}
+              pocketAccount={summary.safe_to_spend?.pocket_account || (customAccounts[0]?.name || "Saku Operasional")}
               pocketBudget={summary.safe_to_spend?.pocket_budget}
               loading={loading}
             />
 
-            {/* 7. Sub-Kantong Jago */}
+            {/* 7. Sub-Kantong Operasional */}
             <JagoPockets
               formatRupiah={formatRupiah}
               refreshSignal={jagoRefreshSignal}
@@ -1750,7 +1844,7 @@ export default function FinanceDashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 3: ANGGARAN (SEBELUMNYA ALOKASI AMPLOP) */}
+        {/* VIEW 3: ANGGARAN & ALOKASI KANTONG */}
         {/* ============================================================== */}
         {activeNav === "Anggaran" && (
           <div className="space-y-8 animate-fadeIn">
@@ -1762,11 +1856,11 @@ export default function FinanceDashboard() {
               formatRupiah={formatRupiah}
               loading={loading}
             />
-            <MandiriEnvelopes
+            <SmartBudgetEnvelopes
               mandiriExpenses={mandiriExpenses}
               formatRupiah={formatRupiah}
               cycleDays={summary.safe_to_spend?.cycle_days || 14}
-              pocketAccount={summary.safe_to_spend?.pocket_account || (customAccounts[0]?.name || "Saku Belanja")}
+              pocketAccount={summary.safe_to_spend?.pocket_account || (customAccounts[0]?.name || "Saku Operasional")}
               pocketBudget={summary.safe_to_spend?.pocket_budget}
               loading={loading}
             />
@@ -1777,13 +1871,18 @@ export default function FinanceDashboard() {
               onToast={showToast}
             />
 
-            {/* Pos Jago & Pos BRI */}
+            {/* Pos Tagihan & Utilitas */}
             <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-6 space-y-5">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-slateText-primary">
-                    Amplop Tagihan Rutin &amp; Utilitas
-                  </h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-base sm:text-lg text-slateText-primary">
+                      Kantong Tagihan Rutin &amp; Utilitas
+                    </h3>
+                    <span className="text-[10px] font-mono font-semibold px-2.5 py-0.5 rounded-full border bg-coralFall/15 text-coralFall border-coralFall/30">
+                      TAGIHAN
+                    </span>
+                  </div>
                   <p className="text-xs text-slateText-secondary mt-0.5">
                     Alokasi autodebet tagihan berkala, langganan digital, dan komitmen bulanan
                   </p>
@@ -2008,7 +2107,7 @@ export default function FinanceDashboard() {
           <div className="space-y-6 animate-fadeIn">
             {/* Sub-tab Navigation */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-white/[0.08]">
-              <div className="inline-flex p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08]" role="tablist" aria-label="Sub navigasi Pengaturan">
+              <div className="inline-flex p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08] overflow-x-auto" role="tablist" aria-label="Sub navigasi Pengaturan">
                 <button
                   type="button"
                   role="tab"
@@ -2017,7 +2116,7 @@ export default function FinanceDashboard() {
                     setSettingsSubTab("rekening");
                     window.location.hash = "#/settings";
                   }}
-                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer shrink-0 ${
                     settingsSubTab === "rekening"
                       ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
                       : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
@@ -2032,12 +2131,32 @@ export default function FinanceDashboard() {
                 <button
                   type="button"
                   role="tab"
+                  aria-selected={settingsSubTab === "kantong"}
+                  onClick={() => {
+                    setSettingsSubTab("kantong");
+                    window.location.hash = "#/pockets";
+                  }}
+                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer shrink-0 ${
+                    settingsSubTab === "kantong"
+                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
+                  }`}
+                >
+                  <WalletCards className="w-4 h-4 shrink-0 text-luma-gold" />
+                  <span>Kantong</span>
+                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
+                    {pocketsCount}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
                   aria-selected={settingsSubTab === "kategori"}
                   onClick={() => {
                     setSettingsSubTab("kategori");
                     window.location.hash = "#/categories";
                   }}
-                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer shrink-0 ${
                     settingsSubTab === "kategori"
                       ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
                       : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
@@ -2055,8 +2174,9 @@ export default function FinanceDashboard() {
                   aria-selected={settingsSubTab === "profil"}
                   onClick={() => {
                     setSettingsSubTab("profil");
+                    window.location.hash = "#/profile";
                   }}
-                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer shrink-0 ${
                     settingsSubTab === "profil"
                       ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
                       : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
@@ -2069,7 +2189,7 @@ export default function FinanceDashboard() {
 
               {/* Sub-tab action shortcuts */}
               {settingsSubTab === "rekening" && (
-                <div className="flex items-center gap-2 justify-end">
+                <div className="flex items-center gap-2 justify-end flex-wrap sm:flex-nowrap">
                   <button
                     type="button"
                     onClick={() => setIsTransferModalOpen(true)}
@@ -2085,6 +2205,30 @@ export default function FinanceDashboard() {
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                     <span>Tambah Rekening</span>
+                  </button>
+                </div>
+              )}
+
+              {settingsSubTab === "kantong" && (
+                <div className="flex items-center gap-2 justify-end flex-wrap sm:flex-nowrap">
+                  <button
+                    type="button"
+                    onClick={handleSyncPockets}
+                    disabled={isSyncingPockets}
+                    title="Selaraskan target kantong dengan Langganan aktif"
+                    className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-white/[0.06] text-luma-ivory border border-white/[0.12] hover:bg-white/[0.1] hover:border-white/[0.2] transition inline-flex items-center justify-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${isSyncingPockets ? "animate-spin" : ""}`} />
+                    <span>{isSyncingPockets ? "Menyelaraskan..." : "Sync Komitmen"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenEditPockets}
+                    title="Ubah plafon target tiap sub-kantong operasional"
+                    className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-bold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+                  >
+                    <Pencil className="w-3.5 h-3.5 shrink-0" />
+                    <span>Edit Target Sub-Kantong</span>
                   </button>
                 </div>
               )}
@@ -2112,7 +2256,27 @@ export default function FinanceDashboard() {
               </div>
             )}
 
-            {/* Sub-tab 2: Kategori */}
+            {/* Sub-tab 2: Kantong */}
+            {settingsSubTab === "kantong" && (
+              <div className="space-y-4 animate-fadeIn">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                    Sub-Kantong Operasional
+                  </h2>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Konfigurasi alokasi sub-kantong operasional, sinkronisasi autodebet, dan plafon target pengeluaran.
+                  </p>
+                </div>
+                <OperationalPockets
+                  formatRupiah={formatRupiah}
+                  refreshSignal={jagoRefreshSignal}
+                  onToast={showToast}
+                  onDataLoaded={(data) => setJagoPocketsData(data)}
+                />
+              </div>
+            )}
+
+            {/* Sub-tab 3: Kategori */}
             {settingsSubTab === "kategori" && (
               <div className="animate-fadeIn">
                 <CategoryGrid
@@ -2416,7 +2580,7 @@ export default function FinanceDashboard() {
             </label>
             <input
               type="text"
-              placeholder="Contoh: Share family plan / Kartu debit Jago"
+              placeholder="Contoh: Share family plan / Kartu debit operasional"
               value={subNotes}
               onChange={(e) => setSubNotes(e.target.value)}
               className="w-full bg-obsidian-panel border border-white/[0.08] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
@@ -2513,6 +2677,19 @@ export default function FinanceDashboard() {
         onSuccess={fetchData}
         accountOptions={SUB_ACCOUNT_OPTIONS}
         categoryOptions={SUB_CATEGORY_OPTIONS}
+      />
+
+      {/* Edit Jago Pockets Modal */}
+      <EditJagoPocketsModal
+        isOpen={isEditPocketModalOpen}
+        pockets={jagoPocketsData?.pockets ?? jagoPocketsData?.items ?? []}
+        formatRupiah={formatRupiah}
+        onClose={() => setIsEditPocketModalOpen(false)}
+        onSuccess={(updated) => {
+          setJagoPocketsData(updated);
+          setJagoRefreshSignal((prev) => prev + 1);
+          showToast("Plafon sub-kantong operasional berhasil diperbarui");
+        }}
       />
 
       {/* Add Goal Modal */}

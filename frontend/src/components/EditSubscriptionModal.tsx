@@ -28,7 +28,7 @@ export function EditSubscriptionModal({
   const [name, setName] = useState("");
   const [amount, setAmount] = useState<string>("");
   const [category, setCategory] = useState("Layanan Digital");
-  const [account, setAccount] = useState("Jago");
+  const [account, setAccount] = useState("Rekening Operasional");
   const [billingType, setBillingType] = useState<"fixed_day" | "exact_date">("fixed_day");
   const [billingDay, setBillingDay] = useState("1");
   const [exactDueDate, setExactDueDate] = useState("");
@@ -41,7 +41,7 @@ export function EditSubscriptionModal({
       setName(subscription.name);
       setAmount(subscription.amount.toString());
       setCategory(subscription.category);
-      setAccount(subscription.account);
+      setAccount(subscription.account || "Rekening Operasional");
       setBillingType(subscription.billing_type || "fixed_day");
       setBillingDay(subscription.billing_day ? subscription.billing_day.toString() : "1");
       setExactDueDate(subscription.exact_due_date || subscription.next_billing_date || "");

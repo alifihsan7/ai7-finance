@@ -23,6 +23,7 @@ interface JagoPocketsProps {
   formatRupiah: (val: number) => string;
   refreshSignal?: number;
   onToast?: (msg: string) => void;
+  onDataLoaded?: (data: JagoPocketsSummaryResponse) => void;
 }
 
 const POCKET_ORDER = ["utama", "kuota", "visa", "claude", "gym"] as const;
@@ -74,7 +75,7 @@ function statusFor(tone: ReturnType<typeof getPocketStatus>["tone"]): {
   };
 }
 
-export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPocketsProps) {
+export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast, onDataLoaded }: JagoPocketsProps) {
   const [data, setData] = useState<JagoPocketsSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -87,13 +88,14 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
     try {
       const res = await getJagoPockets();
       setData(res);
+      onDataLoaded?.(res);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Gagal memuat kantong Bank Jago";
+      const msg = err instanceof Error ? err.message : "Gagal memuat sub-kantong operasional";
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onDataLoaded]);
 
   useEffect(() => {
     fetchPockets();
@@ -105,8 +107,9 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
     try {
       const res = await syncJagoPocketCommitments();
       setData(res);
+      onDataLoaded?.(res);
       setError(null);
-      onToast?.("Komitmen kantong Jago tersinkron dengan Langganan");
+      onToast?.("Komitmen sub-kantong tersinkron dengan Langganan");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Gagal menyelaraskan komitmen";
       onToast?.(msg);
@@ -117,13 +120,14 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
 
   const handleEditSuccess = (updated: JagoPocketsSummaryResponse) => {
     setData(updated);
+    onDataLoaded?.(updated);
     setError(null);
-    onToast?.("Plafon kantong Bank Jago berhasil diperbarui");
+    onToast?.("Plafon sub-kantong operasional berhasil diperbarui");
   };
 
   if (loading) {
     return (
-      <section aria-label="Kantong Bank Jago" className="luma-glass p-6 sm:p-7 space-y-5">
+      <section aria-label="Sub-Kantong Operasional" className="luma-glass p-6 sm:p-7 space-y-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <Skeleton className="w-56 h-5 rounded-full" />
@@ -167,20 +171,18 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
   const totalBalance = data?.total_jago_balance ?? 0;
 
   return (
-    <section aria-label="Kantong Bank Jago" className="luma-glass p-6 sm:p-7 space-y-5">
+    <section aria-label="Sub-Kantong Operasional" className="luma-glass p-6 sm:p-7 space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight flex items-center gap-2">
             <Landmark className="w-5 h-5 text-luma-ember shrink-0" aria-hidden="true" />
             <span>
-              Kantong Bank Jago{" "}
+              Sub-Kantong Operasional{" "}
               {totalTarget > 0 ? `(Plafon ${formatRupiah(totalTarget)})` : "(Belum Ada Plafon)"}
             </span>
           </h2>
           <p className="text-xs sm:text-sm text-luma-smoke mt-0.5 tabular-nums">
-            Lima sub-kantong operasional dengan potongan otomatis per siklus — saldo Jago{" "}
-            {formatRupiah(totalBalance)}, terpakai {formatRupiah(totalSpent)}, sisa{" "}
-            {formatRupiah(totalRemaining)}
+            Sub-kantong operasional dengan alokasi otomatis — saldo {formatRupiah(totalBalance)}, terpakai {formatRupiah(totalSpent)}, sisa {formatRupiah(totalRemaining)}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -197,11 +199,11 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
           <button
             type="button"
             onClick={() => setIsEditOpen(true)}
-            title="Ubah plafon target tiap kantong"
+            title="Ubah plafon target tiap sub-kantong operasional"
             className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-bold bg-luma-ivory text-luma-charcoal hover:brightness-95 active:scale-95 transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Pencil className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            <span>Edit Target Kantong</span>
+            <span>Edit Target Sub-Kantong</span>
           </button>
         </div>
       </div>
@@ -221,7 +223,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
 
       {pockets.length === 0 && !error ? (
         <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-center text-sm text-luma-smoke">
-          Belum ada kantong aktif. Tekan Sync Komitmen untuk menginisialisasi lima kantong bawaan.
+          Belum ada sub-kantong operasional aktif. Tekan Sync Komitmen untuk menginisialisasi sub-kantong bawaan.
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3.5 sm:gap-4">
@@ -316,3 +318,6 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
     </section>
   );
 }
+
+export const OperationalPockets = JagoPockets;
+export default JagoPockets;

@@ -171,7 +171,7 @@ export function AddTransactionModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Catat Transaksi Baru"
-      subtitle="Catat transaksi untuk otomatis memperbarui saldo rekening & amplop anggaran"
+      subtitle="Catat transaksi untuk otomatis memperbarui saldo rekening & kantong anggaran"
       icon={<Plus className="w-5 h-5" />}
       accent={formType === "expense" ? "coral" : "mint"}
       maxWidth="md"

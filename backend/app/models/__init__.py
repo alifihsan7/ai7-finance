@@ -5,7 +5,7 @@ from app.models.subscription import Subscription
 from app.models.goal import Goal
 from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckSession
 from app.models.category import Category
-from app.models.jago_pocket import JagoPocket
+from app.models.jago_pocket import JagoPocket, Pocket
 
 __all__ = [
     "User",
@@ -18,4 +18,5 @@ __all__ = [
     "PaycheckSession",
     "Category",
     "JagoPocket",
+    "Pocket",
 ]

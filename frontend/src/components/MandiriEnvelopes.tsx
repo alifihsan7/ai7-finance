@@ -2,8 +2,14 @@ import React from "react";
 import { Wallet } from "lucide-react";
 import { Skeleton } from "./ui/Skeleton";
 
-interface MandiriEnvelopesProps {
-  mandiriExpenses: {
+export interface SmartBudgetEnvelopesProps {
+  mandiriExpenses?: {
+    makan: number;
+    jajan: number;
+    laundry: number;
+    galon: number;
+  };
+  expenses?: {
     makan: number;
     jajan: number;
     laundry: number;
@@ -16,17 +22,27 @@ interface MandiriEnvelopesProps {
   loading?: boolean;
 }
 
+export type MandiriEnvelopesProps = SmartBudgetEnvelopesProps;
+
 const ENVELOPE_ICONS = ["Makan Harian", "Jajan & Kopi", "Laundry", "Galon & Air"];
 
-export function MandiriEnvelopes({
+export function SmartBudgetEnvelopes({
   mandiriExpenses,
+  expenses: propExpenses,
   formatRupiah,
   cycleDays = 14,
-  pocketAccount = "Saku Belanja",
+  pocketAccount = "Saku Operasional",
   pocketBudget,
   loading,
-}: MandiriEnvelopesProps) {
+}: SmartBudgetEnvelopesProps) {
+  const currentExpenses = propExpenses || mandiriExpenses || {
+    makan: 0,
+    jajan: 0,
+    laundry: 0,
+    galon: 0,
+  };
   const totalPlafond = pocketBudget && pocketBudget > 0 ? pocketBudget : 0;
+  const activePocketName = pocketAccount || "Saku Operasional";
 
   // Round envelope limits to nearest thousand IDR to avoid awkward fractions
   const roundToThousand = (val: number) => Math.round(val / 1000) * 1000;
@@ -35,28 +51,28 @@ export function MandiriEnvelopes({
     {
       title: "Makan Harian",
       limit: totalPlafond > 0 ? roundToThousand(totalPlafond * 0.55) : 0,
-      spent: mandiriExpenses.makan,
+      spent: currentExpenses.makan,
     },
     {
       title: "Jajan & Kopi",
       limit: totalPlafond > 0 ? roundToThousand(totalPlafond * 0.15) : 0,
-      spent: mandiriExpenses.jajan,
+      spent: currentExpenses.jajan,
     },
     {
       title: "Laundry",
       limit: totalPlafond > 0 ? roundToThousand(totalPlafond * 0.15) : 0,
-      spent: mandiriExpenses.laundry,
+      spent: currentExpenses.laundry,
     },
     {
       title: "Galon & Air",
       limit: totalPlafond > 0 ? roundToThousand(totalPlafond * 0.15) : 0,
-      spent: mandiriExpenses.galon,
+      spent: currentExpenses.galon,
     },
   ];
 
   if (loading) {
     return (
-      <section aria-label="Amplop belanja" className="luma-glass p-6 sm:p-7 space-y-5">
+      <section aria-label="Kantong belanja harian" className="luma-glass p-6 sm:p-7 space-y-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <Skeleton className="w-56 h-5 rounded-full" />
@@ -90,16 +106,25 @@ export function MandiriEnvelopes({
     );
   }
 
+  const pocketTitle = activePocketName.toLowerCase().startsWith("kantong")
+    ? activePocketName
+    : `Kantong ${activePocketName}`;
+
   return (
-    <section aria-label={`Amplop belanja ${pocketAccount}`} className="luma-glass p-6 sm:p-7 space-y-5">
+    <section aria-label={`Kantong belanja ${activePocketName}`} className="luma-glass p-6 sm:p-7 space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
-            Amplop Belanja {pocketAccount}{" "}
-            <span className="font-mono font-semibold text-luma-smoke text-sm">
-              {totalPlafond > 0 ? `(Plafon ${formatRupiah(totalPlafond)})` : "(Monitoring Saku Harian)"}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
+              {pocketTitle}{" "}
+              <span className="font-mono font-semibold text-luma-smoke text-sm">
+                {totalPlafond > 0 ? `(Plafon ${formatRupiah(totalPlafond)})` : "(Monitoring Saku Harian)"}
+              </span>
+            </h2>
+            <span className="text-[10px] sm:text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full border bg-amberGold/15 text-amberGold border-amberGold/30">
+              OPERASIONAL
             </span>
-          </h2>
+          </div>
           <p className="text-xs sm:text-sm text-luma-smoke mt-0.5">
             Monitoring limit pos belanja harian agar pengeluaran terkontrol sampai siklus berikutnya
           </p>
@@ -192,3 +217,8 @@ export function MandiriEnvelopes({
     </section>
   );
 }
+
+export const MandiriEnvelopes = SmartBudgetEnvelopes;
+export const SmartBudgetPockets = SmartBudgetEnvelopes;
+export const MandiriPockets = SmartBudgetEnvelopes;
+export default SmartBudgetEnvelopes;

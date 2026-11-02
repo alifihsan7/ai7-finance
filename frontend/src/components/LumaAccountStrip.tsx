@@ -3,10 +3,12 @@
 import React from "react";
 import { Wallet } from "lucide-react";
 import { Skeleton } from "./ui/Skeleton";
+import { getAccountRoleBadge } from "./AccountGrid";
 
 export interface LumaAccountSummary {
   name: string;
   balance: number;
+  type?: string;
 }
 
 interface LumaAccountStripProps {
@@ -59,11 +61,20 @@ export function LumaAccountStrip({ accounts, formatRupiah, loading, onOpenAccoun
             key={acc.name}
             className="luma-account-item"
           >
-            <div className="flex items-center gap-2 min-w-0">
-              <Wallet className="w-4 h-4 text-luma-smoke shrink-0" aria-hidden="true" />
-              <p className="text-xs font-normal text-luma-smoke leading-snug break-words">
-                {acc.name}
-              </p>
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Wallet className="w-4 h-4 text-luma-smoke shrink-0" aria-hidden="true" />
+                <p className="text-xs font-normal text-luma-smoke leading-snug break-words">
+                  {acc.name}
+                </p>
+              </div>
+              {acc.type && (
+                <span
+                  className={`text-[9px] font-mono font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 ${getAccountRoleBadge(acc.type).className}`}
+                >
+                  {getAccountRoleBadge(acc.type).label}
+                </span>
+              )}
             </div>
             <p className="text-lg font-medium text-luma-ivory mt-2 tabular-nums break-words">
               {formatRupiah(acc.balance)}

@@ -60,7 +60,16 @@ def get_or_seed_buckets(db: Session, config_id: int = 1) -> List[PaycheckBucket]
             default_buckets = []
             for i, acc in enumerate(user_accs):
                 pct = round(100.0 - even_pct * (n - 1), 2) if i == n - 1 else even_pct
-                purpose = "Operasional & Belanja" if acc.type == "operasional" else ("Tabungan" if acc.type == "tabungan" else ("Investasi" if acc.type == "investasi" else "Alokasi Pos"))
+                purpose_map = {
+                    "operasional": "Operasional & Belanja",
+                    "tagihan": "Tagihan & Rutin",
+                    "gajian": "Pemasukan Utama",
+                    "tabungan": "Tabungan",
+                    "investasi": "Investasi",
+                    "darurat": "Dana Darurat",
+                    "ewallet": "Dompet Digital",
+                }
+                purpose = purpose_map.get((acc.type or "").strip().lower(), "Alokasi Pos")
                 default_buckets.append(PaycheckBucket(
                     config_id=config_id,
                     account=acc.name,

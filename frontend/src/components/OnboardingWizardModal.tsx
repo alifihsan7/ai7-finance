@@ -409,9 +409,12 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                   onChange={(val) => setNewAccType(val)}
                   options={[
                     { value: "operasional", label: "Operasional" },
+                    { value: "tagihan", label: "Tagihan" },
+                    { value: "gajian", label: "Gajian" },
                     { value: "tabungan", label: "Tabungan" },
                     { value: "investasi", label: "Investasi" },
                     { value: "darurat", label: "Dana Darurat" },
+                    { value: "ewallet", label: "E-Wallet" },
                   ]}
                   accent="amber"
                 />

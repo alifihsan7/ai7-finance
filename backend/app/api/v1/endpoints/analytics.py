@@ -21,6 +21,7 @@ from app.schemas.transaction import (
     CycleBurnDay,
     SafeToSpendInfo,
 )
+from app.services.analytics import compute_safe_to_spend_metrics
 from app.core.config import settings
 
 router = APIRouter()
@@ -398,162 +399,14 @@ def get_monthly_summary(
         ) for t in trend_rows
     ]
 
-    # Safe to spend calculation
-    cycle_start = start_date
-    cycle_end = end_date
-    total_days = (cycle_end - cycle_start).days + 1
-    total_days = max(1, total_days)
-
-    if today_wib < cycle_start:
-        day_of_cycle = 1
-        days_remaining = total_days
-    elif today_wib > cycle_end:
-        day_of_cycle = total_days
-        days_remaining = 0
-    else:
-        day_of_cycle = (today_wib - cycle_start).days + 1
-        days_remaining = max(1, total_days - day_of_cycle + 1)
-
-    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == current_user.id).first()
-    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 30
-    cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "monthly_date"
-
-    # Resolusi rekening saku belanja operasional dinamis dari akun user
-    user_accs = db.query(Account).filter(Account.user_id == current_user.id).all()
-    user_acc_names = [a.name for a in user_accs]
-
-    if cfg and cfg.pocket_account and cfg.pocket_account in user_acc_names:
-        pocket_account = cfg.pocket_account
-    else:
-        op_acc = next((a for a in user_accs if a.type == "operasional"), None)
-        if op_acc:
-            pocket_account = op_acc.name
-        elif user_accs:
-            pocket_account = user_accs[0].name
-        else:
-            pocket_account = "Rekening Utama"
-
-    pocket_income_row = db.query(
-        func.coalesce(func.sum(Transaction.amount), 0).label("inc")
-    ).filter(
-        Transaction.user_id == current_user.id,
-        Transaction.account == pocket_account,
-        Transaction.type == "income",
-        Transaction.date >= cycle_start,
-        Transaction.date <= cycle_end
-    ).first()
-
-    base_pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else 0
-    if base_pocket_budget == 0 and cfg:
-        p_bucket = db.query(PaycheckBucket).filter(
-            PaycheckBucket.config_id == cfg.id,
-            PaycheckBucket.account == pocket_account
-        ).first()
-        pct = (p_bucket.percentage / 100.0) if p_bucket else 0.5
-        salary = getattr(cfg, "total_salary", None)
-        salary = salary if (salary and salary > 0) else 0
-        if salary > 0:
-            base_pocket_budget = int(round(salary * pct))
-        elif user_accs:
-            # Jika belum ada gaji tercatat, ambil total pemasukan seluruh akun periode ini * proporsi
-            all_inc = db.query(
-                func.coalesce(func.sum(Transaction.amount), 0)
-            ).filter(
-                Transaction.user_id == current_user.id,
-                Transaction.type == "income",
-                Transaction.date >= cycle_start,
-                Transaction.date <= cycle_end
-            ).scalar() or 0
-            if all_inc > 0:
-                base_pocket_budget = int(round(all_inc * pct))
-
-    pocket_budget = base_pocket_budget if period_type == "cycle" else int(base_pocket_budget / cycle_days * total_days)
-    
-    pocket_spent_row = db.query(
-        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
-    ).filter(
-        Transaction.user_id == current_user.id,
-        Transaction.account == pocket_account,
-        Transaction.type == "expense",
-        Transaction.date >= cycle_start,
-        Transaction.date <= cycle_end
-    ).first()
-    pocket_spent = int(pocket_spent_row.spent if pocket_spent_row else 0)
-    pocket_remaining = max(0, pocket_budget - pocket_spent)
-    if days_remaining > 0:
-        safe_daily = int(pocket_remaining / days_remaining)
-    elif pocket_remaining > 0:
-        overdue_days = max(1, (today_wib - cycle_end).days)
-        grace_divisor = max(1, 3 - overdue_days + 1)
-        safe_daily = int(pocket_remaining / grace_divisor)
-    else:
-        safe_daily = 0
-
-    ideal_daily_rate = pocket_budget / total_days
-    ideal_pace_today = int(round(ideal_daily_rate * day_of_cycle / 100) * 100)
-
-    if pocket_spent < ideal_pace_today * 0.9:
-        pace_status = "ahead"
-    elif pocket_spent <= ideal_pace_today * 1.1:
-        pace_status = "on_track"
-    else:
-        pace_status = "warning"
-
-    daily_spent_rows = db.query(
-        Transaction.date,
-        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
-    ).filter(
-        Transaction.user_id == current_user.id,
-        Transaction.account == pocket_account,
-        Transaction.type == "expense",
-        Transaction.date >= cycle_start,
-        Transaction.date <= cycle_end
-    ).group_by(Transaction.date).all()
-    spent_by_date = {str(r.date): int(r.spent) for r in daily_spent_rows}
-
-    burn_chart = []
-    cumulative = 0
-    for d in range(1, total_days + 1):
-        day_date = cycle_start + timedelta(days=d-1)
-        day_str = str(day_date)
-        day_spent = spent_by_date.get(day_str, 0)
-        
-        # Round ideal pace to hundreds to avoid unrounded division artifacts
-        day_ideal = int(round(ideal_daily_rate * d / 100) * 100)
-
-        if day_date <= today_wib:
-            cumulative += day_spent
-            burn_chart.append(CycleBurnDay(
-                day=d,
-                date=day_str,
-                spent=day_spent,
-                cumulative_spent=cumulative,
-                ideal_pace=day_ideal
-            ))
-        else:
-            burn_chart.append(CycleBurnDay(
-                day=d,
-                date=day_str,
-                spent=0,
-                cumulative_spent=cumulative,
-                ideal_pace=day_ideal
-            ))
-
-    safe_info = SafeToSpendInfo(
-        cycle_start=cycle_start,
-        cycle_end=cycle_end,
-        cycle_type=cycle_type,
-        cycle_days=cycle_days,
-        pocket_account=pocket_account,
-        day_of_cycle=day_of_cycle,
-        days_remaining=days_remaining,
-        pocket_budget=pocket_budget,
-        pocket_spent=pocket_spent,
-        pocket_remaining=pocket_remaining,
-        safe_daily=safe_daily,
-        pace_status=pace_status,
-        ideal_pace_today=ideal_pace_today,
-        burn_chart=burn_chart
+    # Safe to spend calculation via dedicated analytics service
+    safe_info = compute_safe_to_spend_metrics(
+        db=db,
+        user_id=current_user.id,
+        start_date=start_date,
+        end_date=end_date,
+        period_type=period_type,
+        today_wib=today_wib,
     )
 
     return MonthlySummary(

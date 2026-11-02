@@ -375,8 +375,8 @@ export default function PaycheckModal({
 
   // Colors per account for visual polish
   const getAccountDot = (acc: string) => {
-    if (acc === "Mandiri") return "bg-amberGold";
-    if (acc === "Bank Jago") return "bg-mintRise";
+    if (acc === "Mandiri" || acc === "Saku Operasional" || acc === "Rekening Operasional") return "bg-amberGold";
+    if (acc === "Bank Jago" || acc === "Sub-Kantong Operasional" || acc === "Rekening Utama") return "bg-mintRise";
     if (acc === "Bibit") return "bg-emerald-400";
     if (acc === "BRI 1") return "bg-cyanHub";
     if (acc === "BRI 2") return "bg-purpleLock";
@@ -926,7 +926,7 @@ export default function PaycheckModal({
                 </label>
                 <input
                   type="text"
-                  value={customConfig.pocket_account || "Mandiri"}
+                  value={customConfig.pocket_account || "Rekening Operasional"}
                   onChange={(e) =>
                     setCustomConfig({
                       ...customConfig,
@@ -934,7 +934,7 @@ export default function PaycheckModal({
                     })
                   }
                   className="w-full h-10 px-3 rounded-2xl bg-obsidian-card border border-white/[0.08] text-sm text-white focus:outline-none focus:border-mintRise transition"
-                  placeholder="Mandiri / BCA / Saku"
+                  placeholder="Rekening Operasional / Rekening Utama / Debit"
                 />
               </div>
             </div>

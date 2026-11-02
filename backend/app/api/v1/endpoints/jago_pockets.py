@@ -13,17 +13,19 @@ from app.api.deps import get_current_user
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.account import Account
-from app.models.jago_pocket import JagoPocket
+from app.models.jago_pocket import JagoPocket, Pocket
 from app.models.paycheck import PaycheckConfig
 from app.models.subscription import Subscription
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.schemas.jago_pocket import (
+    JagoPocketCreate,
     JagoPocketItemResponse,
     JagoPocketsBatchUpdate,
     JagoPocketsSummaryResponse,
     JagoPocketTargetUpdate,
     JagoPocketUpdate,
+    VALID_POCKET_ROLES,
 )
 
 router = APIRouter()
@@ -34,30 +36,35 @@ DEFAULT_POCKET_SPECS = [
         "slug": "gym",
         "name": "GYM",
         "default_target": 225_000,
+        "role": "tagihan",
         "subscription_keywords": ["gym", "fitness", "fithub", "membership"],
     },
     {
         "slug": "claude",
         "name": "Subscription Claude",
         "default_target": 75_000,
+        "role": "tagihan",
         "subscription_keywords": ["claude", "anthropic"],
     },
     {
         "slug": "kuota",
         "name": "Kuota",
         "default_target": 50_000,
+        "role": "tagihan",
         "subscription_keywords": ["kuota", "pulsa", "paket data", "internet"],
     },
     {
         "slug": "visa",
         "name": "VISA",
         "default_target": 50_000,
+        "role": "operasional",
         "subscription_keywords": ["visa", "online debit"],
     },
     {
         "slug": "utama",
         "name": "Kantong Utama",
         "default_target": 0,
+        "role": "operasional",
         "subscription_keywords": [],
     },
 ]
@@ -130,13 +137,132 @@ def find_subscription_commitment(db: Session, user_id: int, keywords: List[str])
     return None
 
 
-def ensure_default_pockets(db: Session, user_id: int) -> List[JagoPocket]:
+def get_target_pocket_account_names(db: Session, user_id: int) -> List[str]:
     """
-    Idempotently seeds default 5 Jago Pockets for user if missing.
-    Auto-populates routine commitments from active Subscriptions when available.
+    Dynamically resolves account names representing sub-pockets / billing pockets for user:
+    - Accounts with type 'pocket'
+    - Accounts whose name or tag contains 'kantong', 'jago', 'pocket', 'subs', 'tagihan'
+    - Fallback to non-utama operational accounts
+    - Always includes ['bank jago', 'jago'] for full backward compatibility.
     """
+    matched: set[str] = set()
+    user_accs = db.query(Account).filter(Account.user_id == user_id).all()
+
+    for acc in user_accs:
+        name_l = (acc.name or "").strip().lower()
+        tag_l = (acc.tag or "").strip().lower()
+        type_l = (acc.type or "").strip().lower()
+
+        if (
+            type_l in ["pocket", "tagihan"]
+            or any(k in name_l for k in ["kantong", "jago", "pocket"])
+            or any(k in tag_l for k in ["kantong", "jago", "pocket", "subs", "tagihan"])
+        ):
+            matched.add(name_l)
+
+    if not matched and user_accs:
+        cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
+        primary_spent_acc = (cfg.pocket_account.strip().lower() if cfg and cfg.pocket_account else "")
+        primary_src_acc = (cfg.source_account.strip().lower() if cfg and cfg.source_account else "")
+
+        for acc in user_accs:
+            name_l = (acc.name or "").strip().lower()
+            type_l = (acc.type or "").strip().lower()
+            if type_l == "operasional":
+                if (
+                    name_l != primary_spent_acc
+                    and name_l != primary_src_acc
+                    and not any(u in name_l for u in ["utama", "main", "primary", "gaji", "income"])
+                ):
+                    matched.add(name_l)
+
+    # Always ensure backward-compatible tokens
+    matched.add("bank jago")
+    matched.add("jago")
+    return list(matched)
+
+
+def ensure_default_pockets(db: Session, user_id: int, account_id: Optional[int] = None) -> List[JagoPocket]:
+    """
+    Idempotently seeds default pockets for user and links legacy pockets to parent account.
+    - If account_id is None, seeds the 5 canonical Bank Jago pockets if none exist.
+    - If account_id is provided, seeds canonical pockets if it's Jago, or 1 Kantong Utama for other accounts.
+    - Automatically migrates existing pockets with account_id=None to user's active Jago/operational account.
+    """
+    # 1. Fallback migration: link orphan pockets with account_id=None
+    orphans = db.query(JagoPocket).filter(JagoPocket.user_id == user_id, JagoPocket.account_id == None).all()
+    if orphans:
+        jago_acc = db.query(Account).filter(
+            Account.user_id == user_id,
+            func.lower(Account.name).like("%jago%")
+        ).first()
+        if not jago_acc:
+            jago_acc = db.query(Account).filter(Account.user_id == user_id, Account.type == "operasional").first()
+        if jago_acc:
+            for p in orphans:
+                p.account_id = jago_acc.id
+            db.commit()
+
+    # 2. If specific account requested
+    if account_id is not None:
+        target_acc = db.query(Account).filter(Account.id == account_id, Account.user_id == user_id).first()
+        if not target_acc:
+            return []
+
+        existing = db.query(JagoPocket).filter(
+            JagoPocket.user_id == user_id,
+            JagoPocket.account_id == account_id,
+        ).all()
+        if existing:
+            return existing
+
+        is_jago = any(k in target_acc.name.lower() for k in ["jago", "pocket"])
+        added = False
+        if is_jago:
+            for spec in DEFAULT_POCKET_SPECS:
+                sub_commitment = find_subscription_commitment(db, user_id, spec["subscription_keywords"])
+                initial_target = sub_commitment if sub_commitment is not None else spec["default_target"]
+                new_pocket = JagoPocket(
+                    user_id=user_id,
+                    account_id=target_acc.id,
+                    name=spec["name"],
+                    slug=spec["slug"],
+                    role=spec.get("role", "operasional"),
+                    target_amount=initial_target,
+                    is_active=True,
+                )
+                db.add(new_pocket)
+                added = True
+        else:
+            # Seed default Kantong Utama for non-Jago accounts
+            slug = f"utama-{target_acc.id}"
+            new_pocket = JagoPocket(
+                user_id=user_id,
+                account_id=target_acc.id,
+                name="Kantong Utama",
+                slug=slug,
+                role="operasional",
+                target_amount=0,
+                is_active=True,
+            )
+            db.add(new_pocket)
+            added = True
+
+        if added:
+            db.commit()
+        return db.query(JagoPocket).filter(JagoPocket.user_id == user_id, JagoPocket.account_id == account_id).all()
+
+    # 3. Default / backward compatibility mode (no account_id specified)
     existing = db.query(JagoPocket).filter(JagoPocket.user_id == user_id).all()
     existing_map = {p.slug: p for p in existing}
+
+    target_acc = db.query(Account).filter(
+        Account.user_id == user_id,
+        func.lower(Account.name).like("%jago%")
+    ).first()
+    if not target_acc:
+        target_acc = db.query(Account).filter(Account.user_id == user_id, Account.type == "operasional").first()
+    default_acc_id = target_acc.id if target_acc else None
 
     added = False
     for spec in DEFAULT_POCKET_SPECS:
@@ -147,8 +273,10 @@ def ensure_default_pockets(db: Session, user_id: int) -> List[JagoPocket]:
 
             new_pocket = JagoPocket(
                 user_id=user_id,
+                account_id=default_acc_id,
                 name=spec["name"],
                 slug=slug,
+                role=spec.get("role", "operasional"),
                 target_amount=initial_target,
                 is_active=True,
             )
@@ -163,7 +291,8 @@ def ensure_default_pockets(db: Session, user_id: int) -> List[JagoPocket]:
 
 
 def get_jago_account_balance(db: Session, user_id: int) -> int:
-    """Calculates all-time ledger balance for Bank Jago account."""
+    """Calculates all-time ledger balance for pocket / Bank Jago accounts."""
+    pocket_names = get_target_pocket_account_names(db, user_id)
     tx_balance = db.query(
         func.coalesce(
             func.sum(
@@ -177,18 +306,21 @@ def get_jago_account_balance(db: Session, user_id: int) -> int:
         )
     ).filter(
         Transaction.user_id == user_id,
-        func.lower(Transaction.account).in_(["bank jago", "jago"]),
+        func.lower(Transaction.account).in_(pocket_names),
     ).scalar()
 
     balance = int(tx_balance or 0)
     if balance == 0:
-        jago_acc = db.query(Account).filter(
+        pocket_acc = db.query(Account).filter(
             Account.user_id == user_id,
-            func.lower(Account.name).in_(["bank jago", "jago"]),
+            func.lower(Account.name).in_(pocket_names),
         ).first()
-        if jago_acc and jago_acc.initial_balance > 0:
-            balance = int(jago_acc.initial_balance)
+        if pocket_acc and pocket_acc.initial_balance > 0:
+            balance = int(pocket_acc.initial_balance)
     return balance
+
+
+get_pocket_account_balance = get_jago_account_balance
 
 
 def classify_jago_transaction(tx: Transaction) -> str:
@@ -242,52 +374,136 @@ def classify_jago_transaction(tx: Transaction) -> str:
     return "utama"
 
 
-def compute_jago_pockets_summary(
+classify_pocket_transaction = classify_jago_transaction
+
+
+def classify_pocket_transaction_for_account(tx: Transaction, pockets: List[JagoPocket]) -> str:
+    """Classifies an expense transaction to the most appropriate pocket slug for a parent account."""
+    if not pockets:
+        return "utama"
+
+    p_slugs = {p.slug: p for p in pockets}
+    if "gym" in p_slugs or "claude" in p_slugs:
+        return classify_jago_transaction(tx)
+
+    desc = (tx.description or "").lower()
+    cat = (tx.category or "").lower()
+    combined = f"{cat} {desc}"
+
+    # 1. Match by pocket name or slug keyword
+    for p in pockets:
+        p_name_clean = (p.name or "").strip().lower()
+        if p_name_clean and p_name_clean != "kantong utama" and p_name_clean in combined:
+            return p.slug
+        p_slug_clean = (p.slug or "").strip().lower()
+        if p_slug_clean and not p_slug_clean.startswith("utama") and p_slug_clean in combined:
+            return p.slug
+
+    # 2. Match by role (e.g. tagihan category)
+    if any(k in combined for k in ["tagihan", "subs", "langganan", "cicilan", "listrik", "air", "wifi", "internet"]):
+        tagihan_p = next((p for p in pockets if p.role == "tagihan"), None)
+        if tagihan_p:
+            return tagihan_p.slug
+
+    # 3. Fallback to Utama or first operasional pocket
+    fallback_p = next((p for p in pockets if "utama" in p.slug.lower() or p.role == "operasional"), pockets[0])
+    return fallback_p.slug
+
+
+def compute_pockets_summary(
     db: Session,
     user_id: int,
+    account_id: Optional[int] = None,
     cycle_start: Optional[date] = None,
     cycle_end: Optional[date] = None,
 ) -> JagoPocketsSummaryResponse:
-    """Computes comprehensive summary, auto-deduction metrics, and balance for 5 pockets."""
-    ensure_default_pockets(db, user_id)
+    """Computes comprehensive summary, auto-deduction metrics, and balance for pockets of an account."""
+    ensure_default_pockets(db, user_id, account_id=account_id)
 
     if not cycle_start or not cycle_end:
         calc_start, calc_end = get_current_cycle_bounds(db, user_id)
         cycle_start = cycle_start or calc_start
         cycle_end = cycle_end or calc_end
 
-    total_jago_balance = get_jago_account_balance(db, user_id)
-
-    slug_order = ["gym", "claude", "kuota", "visa", "utama"]
-    all_pockets = db.query(JagoPocket).filter(
-        JagoPocket.user_id == user_id,
-        JagoPocket.is_active == True,
-    ).all()
-
-    pocket_map = {p.slug: p for p in all_pockets}
+    acc: Optional[Account] = None
+    target_account_names: List[str] = []
     ordered_pockets: List[JagoPocket] = []
-    for s in slug_order:
-        if s in pocket_map:
-            ordered_pockets.append(pocket_map[s])
-    for p in all_pockets:
-        if p.slug not in slug_order:
-            ordered_pockets.append(p)
+
+    if account_id is not None:
+        acc = db.query(Account).filter(
+            Account.id == account_id,
+            Account.user_id == user_id,
+        ).first()
+        if not acc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Rekening dengan id {account_id} tidak ditemukan",
+            )
+        target_account_names = [acc.name.lower()]
+        ordered_pockets = db.query(JagoPocket).filter(
+            JagoPocket.user_id == user_id,
+            JagoPocket.account_id == acc.id,
+            JagoPocket.is_active == True,
+        ).order_by(JagoPocket.id.asc()).all()
+    else:
+        # Backward compatibility mode
+        target_account_names = get_target_pocket_account_names(db, user_id)
+        acc = db.query(Account).filter(
+            Account.user_id == user_id,
+            func.lower(Account.name).in_(target_account_names),
+        ).first()
+        if not acc:
+            acc = db.query(Account).filter(Account.user_id == user_id).first()
+
+        slug_order = ["gym", "claude", "kuota", "visa", "utama"]
+        all_pockets = db.query(JagoPocket).filter(
+            JagoPocket.user_id == user_id,
+            JagoPocket.is_active == True,
+        ).all()
+        pocket_map = {p.slug: p for p in all_pockets}
+        for s in slug_order:
+            if s in pocket_map:
+                ordered_pockets.append(pocket_map[s])
+        for p in all_pockets:
+            if p.slug not in slug_order and p not in ordered_pockets:
+                ordered_pockets.append(p)
+
+    # Balance from transactions
+    tx_balance = db.query(
+        func.coalesce(
+            func.sum(
+                case(
+                    (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
+                    (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                    else_=0,
+                )
+            ),
+            0,
+        )
+    ).filter(
+        Transaction.user_id == user_id,
+        func.lower(Transaction.account).in_(target_account_names),
+    ).scalar()
+
+    total_balance = int(tx_balance or 0)
+    if total_balance == 0 and acc and acc.initial_balance > 0:
+        total_balance = int(acc.initial_balance)
 
     expenses = db.query(Transaction).filter(
         Transaction.user_id == user_id,
         Transaction.type == "expense",
-        func.lower(Transaction.account).in_(["bank jago", "jago"]),
+        func.lower(Transaction.account).in_(target_account_names),
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end,
     ).all()
 
     spent_by_slug: dict[str, int] = defaultdict(int)
     for tx in expenses:
-        slug = classify_jago_transaction(tx)
+        slug = classify_pocket_transaction_for_account(tx, ordered_pockets)
         spent_by_slug[slug] += int(tx.amount)
 
     sum_other_targets = sum(
-        int(p.target_amount) for p in ordered_pockets if p.slug != "utama"
+        int(p.target_amount) for p in ordered_pockets if not p.slug.startswith("utama")
     )
 
     items: List[JagoPocketItemResponse] = []
@@ -296,18 +512,23 @@ def compute_jago_pockets_summary(
 
     for p in ordered_pockets:
         target = int(p.target_amount)
-        if p.slug == "utama" and target == 0:
-            target = max(0, total_jago_balance - sum_other_targets)
+        if p.slug.startswith("utama") and target == 0:
+            target = max(0, total_balance - sum_other_targets)
 
         spent = spent_by_slug.get(p.slug, 0)
         remaining = target - spent
         pct = round((spent / target * 100), 1) if target > 0 else 0.0
 
+        p_acc = db.query(Account).filter(Account.id == p.account_id).first() if p.account_id else acc
+
         item = JagoPocketItemResponse(
             id=p.id,
             user_id=p.user_id,
+            account_id=p.account_id or (acc.id if acc else None),
+            account_name=p_acc.name if p_acc else None,
             name=p.name,
             slug=p.slug,
+            role=p.role,
             target_amount=target,
             spent_amount=spent,
             remaining_amount=remaining,
@@ -324,7 +545,10 @@ def compute_jago_pockets_summary(
     total_remaining = total_target - total_spent
 
     return JagoPocketsSummaryResponse(
-        total_jago_balance=total_jago_balance,
+        account_id=acc.id if acc else None,
+        account_name=acc.name if acc else None,
+        total_jago_balance=total_balance,
+        total_pocket_balance=total_balance,
         total_target_amount=total_target,
         total_spent_amount=total_spent,
         total_remaining_amount=total_remaining,
@@ -332,6 +556,22 @@ def compute_jago_pockets_summary(
         cycle_end=cycle_end,
         pockets=items,
         items=items,
+    )
+
+
+def compute_jago_pockets_summary(
+    db: Session,
+    user_id: int,
+    cycle_start: Optional[date] = None,
+    cycle_end: Optional[date] = None,
+) -> JagoPocketsSummaryResponse:
+    """Backward compatible helper for Jago pockets summary."""
+    return compute_pockets_summary(
+        db=db,
+        user_id=user_id,
+        account_id=None,
+        cycle_start=cycle_start,
+        cycle_end=cycle_end,
     )
 
 
@@ -357,35 +597,132 @@ def normalize_update_payload(payload: Any) -> List[Dict[str, Any]]:
 
 
 @router.get("", response_model=JagoPocketsSummaryResponse)
-def get_jago_pockets(
+def get_pockets(
+    account_id: Optional[int] = Query(None, description="Filter pockets berdasarkan Rekening Induk (account_id)"),
     cycle_start: Optional[date] = None,
     cycle_end: Optional[date] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
-    Get summary of 5 Bank Jago pockets with real-time auto-deductions,
-    target allocations, remaining balances, and total Bank Jago ledger balance.
+    Get summary of virtual pockets with real-time auto-deductions,
+    target allocations, remaining balances, and total ledger balance.
+    Can be filtered by account_id for universal multi-account pockets.
     """
-    return compute_jago_pockets_summary(
+    return compute_pockets_summary(
         db=db,
         user_id=current_user.id,
+        account_id=account_id,
         cycle_start=cycle_start,
         cycle_end=cycle_end,
     )
 
 
-@router.put("", response_model=JagoPocketsSummaryResponse)
-def update_jago_pockets(
-    payload: Any = Body(...),
+@router.post("", response_model=JagoPocketItemResponse, status_code=status.HTTP_201_CREATED)
+def create_pocket(
+    payload: JagoPocketCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
-    Update target allocations manually for Jago pockets.
+    Create a new universal virtual pocket associated with a parent account.
+    Accepts account_id, name, target_amount, role (operasional, tagihan, darurat, tabungan, investasi).
+    """
+    name_clean = payload.name.strip()
+    if not name_clean:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nama kantong tidak boleh kosong",
+        )
+
+    # Resolve parent account
+    acc = None
+    if payload.account_id is not None:
+        acc = db.query(Account).filter(
+            Account.id == payload.account_id,
+            Account.user_id == current_user.id,
+        ).first()
+        if not acc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Rekening dengan id {payload.account_id} tidak ditemukan",
+            )
+    else:
+        # Default fallback to operational or first account
+        acc = db.query(Account).filter(
+            Account.user_id == current_user.id,
+            Account.type == "operasional",
+        ).first()
+        if not acc:
+            acc = db.query(Account).filter(Account.user_id == current_user.id).first()
+
+    # Generate or sanitize slug
+    slug = payload.slug.strip().lower() if payload.slug else None
+    if not slug:
+        base_slug = re.sub(r"[^a-z0-9]+", "-", name_clean.lower()).strip("-") or "pocket"
+        slug = base_slug
+        idx = 1
+        while db.query(JagoPocket).filter(JagoPocket.user_id == current_user.id, JagoPocket.slug == slug).first():
+            if acc and idx == 1:
+                slug = f"{base_slug}-{acc.id}"
+            else:
+                slug = f"{base_slug}-{idx}"
+            idx += 1
+    else:
+        existing = db.query(JagoPocket).filter(
+            JagoPocket.user_id == current_user.id,
+            JagoPocket.slug == slug,
+        ).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Kantong dengan slug '{slug}' sudah terdaftar",
+            )
+
+    new_pocket = JagoPocket(
+        user_id=current_user.id,
+        account_id=acc.id if acc else None,
+        name=name_clean,
+        slug=slug,
+        role=payload.role,
+        target_amount=payload.target_amount,
+        is_active=payload.is_active,
+    )
+    db.add(new_pocket)
+    db.commit()
+    db.refresh(new_pocket)
+
+    return JagoPocketItemResponse(
+        id=new_pocket.id,
+        user_id=new_pocket.user_id,
+        account_id=new_pocket.account_id,
+        account_name=acc.name if acc else None,
+        name=new_pocket.name,
+        slug=new_pocket.slug,
+        role=new_pocket.role,
+        target_amount=new_pocket.target_amount,
+        spent_amount=0,
+        remaining_amount=new_pocket.target_amount,
+        percentage_spent=0.0,
+        percentage=0.0,
+        is_active=new_pocket.is_active,
+        created_at=new_pocket.created_at,
+        updated_at=new_pocket.updated_at,
+    )
+
+
+@router.put("", response_model=JagoPocketsSummaryResponse)
+def update_pockets_batch(
+    payload: Any = Body(...),
+    account_id: Optional[int] = Query(None, description="Optional account_id filter for summary"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Update target allocations manually for pockets in batch.
     Accepts batch list, wrapper object `{"pockets": [...]}`, or slug-target dictionary.
     """
-    ensure_default_pockets(db, current_user.id)
+    ensure_default_pockets(db, current_user.id, account_id=account_id)
     updates = normalize_update_payload(payload)
 
     if not updates:
@@ -398,8 +735,10 @@ def update_jago_pockets(
         slug = item.get("slug")
         pocket_id = item.get("id")
         name = item.get("name")
+        role = item.get("role")
         target_amount = item.get("target_amount")
         is_active = item.get("is_active")
+        item_acc_id = item.get("account_id")
 
         pocket = None
         if pocket_id:
@@ -421,14 +760,21 @@ def update_jago_pockets(
         if pocket:
             if target_amount is not None:
                 pocket.target_amount = max(0, int(target_amount))
+            if role is not None and role in VALID_POCKET_ROLES:
+                pocket.role = role
             if is_active is not None:
                 pocket.is_active = bool(is_active)
+            if item_acc_id is not None:
+                acc_exists = db.query(Account).filter(Account.id == item_acc_id, Account.user_id == current_user.id).first()
+                if acc_exists:
+                    pocket.account_id = item_acc_id
 
     db.commit()
 
-    return compute_jago_pockets_summary(
+    return compute_pockets_summary(
         db=db,
         user_id=current_user.id,
+        account_id=account_id,
     )
 
 
@@ -453,54 +799,124 @@ def sync_commitments_from_subscriptions(
                 pocket_map[slug].target_amount = sub_amt
 
     db.commit()
-    return compute_jago_pockets_summary(db=db, user_id=current_user.id)
+    return compute_pockets_summary(db=db, user_id=current_user.id)
 
 
-@router.get("/{slug}", response_model=JagoPocketItemResponse)
-def get_single_jago_pocket(
-    slug: str,
+@router.get("/{pocket_id_or_slug}", response_model=JagoPocketItemResponse)
+def get_single_pocket(
+    pocket_id_or_slug: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Retrieve details and metrics for an individual Jago pocket."""
-    summary = compute_jago_pockets_summary(db=db, user_id=current_user.id)
-    pocket_item = next((p for p in summary.pockets if p.slug.lower() == slug.strip().lower()), None)
+    """Retrieve details and metrics for an individual virtual pocket by ID or Slug."""
+    pocket = None
+    if pocket_id_or_slug.isdigit():
+        pocket = db.query(JagoPocket).filter(
+            JagoPocket.id == int(pocket_id_or_slug),
+            JagoPocket.user_id == current_user.id,
+        ).first()
+    if not pocket:
+        pocket = db.query(JagoPocket).filter(
+            func.lower(JagoPocket.slug) == pocket_id_or_slug.strip().lower(),
+            JagoPocket.user_id == current_user.id,
+        ).first()
+
+    if not pocket:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Kantong '{pocket_id_or_slug}' tidak ditemukan",
+        )
+
+    summary = compute_pockets_summary(db=db, user_id=current_user.id, account_id=pocket.account_id)
+    pocket_item = next((p for p in summary.pockets if p.id == pocket.id or p.slug == pocket.slug), None)
     if not pocket_item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Kantong dengan slug '{slug}' tidak ditemukan",
+            detail=f"Kantong '{pocket_id_or_slug}' tidak ditemukan",
         )
     return pocket_item
 
 
-@router.put("/{slug}", response_model=JagoPocketItemResponse)
-def update_single_jago_pocket(
-    slug: str,
+@router.put("/{pocket_id_or_slug}", response_model=JagoPocketItemResponse)
+def update_single_pocket(
+    pocket_id_or_slug: str,
     payload: JagoPocketUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Update target amount or status for a single Jago pocket."""
-    ensure_default_pockets(db, current_user.id)
-    pocket = db.query(JagoPocket).filter(
-        func.lower(JagoPocket.slug) == slug.strip().lower(),
-        JagoPocket.user_id == current_user.id,
-    ).first()
+    """Update target amount, name, role, account_id, or status for a single pocket."""
+    pocket = None
+    if pocket_id_or_slug.isdigit():
+        pocket = db.query(JagoPocket).filter(
+            JagoPocket.id == int(pocket_id_or_slug),
+            JagoPocket.user_id == current_user.id,
+        ).first()
+    if not pocket:
+        pocket = db.query(JagoPocket).filter(
+            func.lower(JagoPocket.slug) == pocket_id_or_slug.strip().lower(),
+            JagoPocket.user_id == current_user.id,
+        ).first()
+
     if not pocket:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Kantong dengan slug '{slug}' tidak ditemukan",
+            detail=f"Kantong '{pocket_id_or_slug}' tidak ditemukan",
         )
 
     if payload.target_amount is not None:
         pocket.target_amount = max(0, int(payload.target_amount))
     if payload.name is not None and payload.name.strip():
         pocket.name = payload.name.strip()
+    if payload.role is not None:
+        pocket.role = payload.role
+    if payload.account_id is not None:
+        acc = db.query(Account).filter(Account.id == payload.account_id, Account.user_id == current_user.id).first()
+        if not acc:
+            raise HTTPException(status_code=404, detail="Rekening tidak ditemukan")
+        pocket.account_id = payload.account_id
     if payload.is_active is not None:
         pocket.is_active = bool(payload.is_active)
 
     db.commit()
+    db.refresh(pocket)
 
-    summary = compute_jago_pockets_summary(db=db, user_id=current_user.id)
-    pocket_item = next((p for p in summary.pockets if p.slug.lower() == slug.strip().lower()), None)
+    summary = compute_pockets_summary(db=db, user_id=current_user.id, account_id=pocket.account_id)
+    pocket_item = next((p for p in summary.pockets if p.id == pocket.id or p.slug == pocket.slug), None)
     return pocket_item
+
+
+@router.delete("/{pocket_id_or_slug}")
+def delete_single_pocket(
+    pocket_id_or_slug: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Delete an individual virtual pocket by ID or Slug."""
+    pocket = None
+    if pocket_id_or_slug.isdigit():
+        pocket = db.query(JagoPocket).filter(
+            JagoPocket.id == int(pocket_id_or_slug),
+            JagoPocket.user_id == current_user.id,
+        ).first()
+    if not pocket:
+        pocket = db.query(JagoPocket).filter(
+            func.lower(JagoPocket.slug) == pocket_id_or_slug.strip().lower(),
+            JagoPocket.user_id == current_user.id,
+        ).first()
+
+    if not pocket:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Kantong '{pocket_id_or_slug}' tidak ditemukan",
+        )
+
+    pocket_name = pocket.name
+    pocket_id = pocket.id
+    db.delete(pocket)
+    db.commit()
+
+    return {
+        "ok": True,
+        "message": f"Kantong '{pocket_name}' berhasil dihapus",
+        "id": pocket_id,
+    }

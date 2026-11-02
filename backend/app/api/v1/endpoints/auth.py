@@ -167,7 +167,8 @@ Halo, **{user.full_name or user.username}**! Akun Telegram kamu kini telah terhu
 
 Kamu bisa langsung mencatat pengeluaran di sini:
 • `makan siang warteg 25k`
-• `tf 100k mandiri ke jago`
+• `kopi 25k saku`
+• `tf 100k utama ke tabungan`
 • Kirim foto struk kasir / QRIS
 • Kirim voice note pengeluaran
 
@@ -263,8 +264,8 @@ def link_telegram_custom_bot(
 Halo, **{user.full_name or user.username}**! Bot `@{bot_username}` kini terhubung langsung ke akun AI7 Finance kamu.
 
 Semua pencatatan transaksi melalui bot ini bersifat eksklusif untuk akun kamu:
-• `kopi susu 22k mandiri`
-• `tf 200k mandiri ke jago`
+• `kopi 25k saku`
+• `tf 100k utama ke tabungan`
 • Foto struk / screenshot QRIS
 • Voice note pengeluaran
 
