@@ -66,7 +66,7 @@ export function SubscriptionsView({
 
         <div className="bg-obsidian-card border border-white/[0.08] rounded-2xl p-5 sm:p-6 space-y-2 shadow-sm">
           <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider truncate">
-            Langganan Aktif
+            Tagihan Aktif
           </div>
           {loading ? (
             <Skeleton className="h-8 w-24 rounded-full" />
@@ -120,10 +120,10 @@ export function SubscriptionsView({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h3 className="font-bold text-base sm:text-lg text-white">
-              Daftar Layanan & Tagihan Terjadwal
+              Daftar Tagihan & Layanan Berkala
             </h3>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Total {subsData.items.length} langganan dan tagihan rutin terdaftar
+              Total {subsData.items.length} tagihan dan layanan rutin terdaftar
             </p>
           </div>
           <button

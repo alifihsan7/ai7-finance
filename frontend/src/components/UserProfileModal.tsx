@@ -361,7 +361,7 @@ export function UserProfileModal({
                   Zona Bahaya
                 </h4>
                 <p className="text-[11px] text-zinc-400 mt-0.5">
-                  Hapus permanen akun Anda beserta seluruh data rekening, transaksi, dan target finansial.
+                  Hapus permanen akun Anda beserta seluruh data rekening, transaksi, dan target tabungan.
                 </p>
               </div>
 

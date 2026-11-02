@@ -411,7 +411,7 @@ export function GoalsView({
                     {isCompleted ? (
                       <div className="flex items-center gap-2 text-luma-sage font-medium">
                         <CheckCircle2 className="w-4 h-4 shrink-0" />
-                        <span>Target finansial ini telah tercapai 100%.</span>
+                        <span>Target tabungan ini telah tercapai 100%.</span>
                       </div>
                     ) : goal.estimated_cycles !== null ? (
                       <div className="flex items-start justify-between gap-2 text-luma-smoke">

@@ -67,7 +67,7 @@ export function EditSubscriptionModal({
     }
 
     if (billingType === "exact_date" && !exactDueDate) {
-      setError("Pilih tanggal berakhir langganan.");
+      setError("Pilih tanggal berakhir tagihan.");
       return;
     }
 
@@ -104,7 +104,7 @@ export function EditSubscriptionModal({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.detail || "Gagal memperbarui langganan");
+        throw new Error(data.detail || "Gagal memperbarui tagihan");
       }
 
       onSuccess();
@@ -122,7 +122,7 @@ export function EditSubscriptionModal({
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit Langganan / Masa Aktif"
+      title="Edit Tagihan / Masa Aktif"
       subtitle={`Perbarui parameter siklus dan tanggal jatuh tempo untuk ${subscription.name}`}
       accent="amber"
       maxWidth="md"

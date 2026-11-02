@@ -32,7 +32,7 @@ const CATEGORY_OPTIONS = [
   { value: "Investasi", label: "Investasi Portofolio", description: "Reksadana, obligasi, saham, emas" },
   { value: "Darurat", label: "Dana Darurat", description: "Cadangan likuid untuk situasi genting" },
   { value: "Wishlist", label: "Wishlist & Impian", description: "Gadget, perlengkapan, hobi" },
-  { value: "Lainnya", label: "Lain-lain", description: "Target finansial kustom" },
+  { value: "Lainnya", label: "Lain-lain", description: "Target tabungan kustom" },
 ];
 
 const COLOR_OPTIONS = [
@@ -86,7 +86,7 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
 
     const nameTrim = name.trim();
     if (!nameTrim) {
-      setError("Nama target finansial wajib diisi");
+      setError("Nama target tabungan wajib diisi");
       return;
     }
 
