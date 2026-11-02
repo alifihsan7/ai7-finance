@@ -29,6 +29,7 @@ interface SummaryCategoryItem {
 interface CategoryGridProps {
   categories: CategoryItem[];
   summaryCategories?: SummaryCategoryItem[];
+  incomeSummaryCategories?: SummaryCategoryItem[];
   formatRupiah: (val: number) => string;
   loading?: boolean;
   onCategoriesUpdated?: () => void;
@@ -39,6 +40,7 @@ interface CategoryGridProps {
 export function CategoryGrid({
   categories,
   summaryCategories = [],
+  incomeSummaryCategories = [],
   formatRupiah,
   loading = false,
   onCategoriesUpdated,
@@ -94,14 +96,15 @@ export function CategoryGrid({
 
     // 1. Defined categories from API
     (categories || []).forEach((c) => {
-      seenNames.add(c.name.toLowerCase());
-      const stats = summaryCategories.find(
+      const type = (c.type as "expense" | "income") || "expense";
+      seenNames.add(`${type}:${c.name.toLowerCase()}`);
+      const stats = (type === "income" ? incomeSummaryCategories : summaryCategories).find(
         (sc) => sc.category.toLowerCase() === c.name.toLowerCase()
       );
       list.push({
         id: c.id,
         name: c.name,
-        type: (c.type as "expense" | "income") || "expense",
+        type,
         color: c.color,
         total: stats ? stats.total : 0,
         count: stats ? stats.count : 0,
@@ -110,13 +113,18 @@ export function CategoryGrid({
     });
 
     // 2. Summary categories not yet explicitly in categories table
-    (summaryCategories || []).forEach((sc, idx) => {
-      if (!seenNames.has(sc.category.toLowerCase())) {
-        seenNames.add(sc.category.toLowerCase());
+    const summaries = [
+      ...summaryCategories.map((sc) => ({ ...sc, type: "expense" as const })),
+      ...incomeSummaryCategories.map((sc) => ({ ...sc, type: "income" as const })),
+    ];
+    summaries.forEach((sc, idx) => {
+      const key = `${sc.type}:${sc.category.toLowerCase()}`;
+      if (!seenNames.has(key)) {
+        seenNames.add(key);
         list.push({
           id: `legacy-${idx}-${sc.category}`,
           name: sc.category,
-          type: "expense",
+          type: sc.type,
           color: "amberGold",
           total: sc.total,
           count: sc.count,
@@ -132,7 +140,7 @@ export function CategoryGrid({
       }
       return a.name.localeCompare(b.name);
     });
-  }, [categories, summaryCategories]);
+  }, [categories, summaryCategories, incomeSummaryCategories]);
 
   // Filtered by tab
   const filteredList = useMemo(() => {

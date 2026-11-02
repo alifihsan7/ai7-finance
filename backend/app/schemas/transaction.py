@@ -81,6 +81,7 @@ class MonthlySummary(BaseModel):
     net: int
     savings_rate: float
     categories: List[CategorySummary]
+    income_categories: List[CategorySummary] = Field(default_factory=list)
     accounts: List[AccountBalance]
     total_balance: int
     daily_trend: List[DailyTrendItem]

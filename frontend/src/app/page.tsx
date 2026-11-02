@@ -77,6 +77,7 @@ interface MonthlySummary {
   total_balance: number;
   accounts: { account: string; balance: number; expense?: number }[];
   categories: { category: string; total: number; count: number; percentage: number }[];
+  income_categories?: { category: string; total: number; count: number; percentage: number }[];
   daily_trend?: { date: string; income: number; expense: number }[];
   safe_to_spend?: {
     cycle_start: string;
@@ -1220,9 +1221,9 @@ export default function FinanceDashboard() {
       <main id="main-content" ref={mainContentRef} className="luma-main flex-1 overflow-y-auto w-full">
         {/* Persistent Sticky Topbar Header — slim Luma: period + utilities menu */}
         <header className="luma-topbar sticky top-0 z-20 bg-luma-charcoal/90 backdrop-blur-md border-b border-luma-smokeline/60 py-2.5 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto w-full flex flex-row items-center justify-between gap-3 sm:gap-4">
+          <div className="luma-topbar-inner max-w-7xl 2xl:max-w-[1600px] mx-auto w-full flex flex-row items-center justify-between gap-3 sm:gap-4">
             {/* Pure Control Period Selector & Theme Switch */}
-            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0">
+            <div className="luma-period-controls flex items-center gap-2 sm:gap-2.5 min-w-0">
               {currentUser ? <PeriodSelector
                 key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
                 currentPeriod={selectedPeriod}
@@ -1234,7 +1235,7 @@ export default function FinanceDashboard() {
             </div>
 
             {/* Slim utility toolbar: guest badge + consolidated utilities menu */}
-            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            <div className="luma-toolbar flex items-center gap-1.5 sm:gap-2.5 shrink-0">
 
               {/* Consolidated utilities menu (refresh, export, paycheck checklist) */}
               <div className="relative" ref={exportMenuRef}>
@@ -1792,6 +1793,7 @@ export default function FinanceDashboard() {
             <CategoryGrid
               categories={categories}
               summaryCategories={summary.categories}
+              incomeSummaryCategories={summary.income_categories}
               formatRupiah={formatRupiah}
               loading={loading}
               onCategoriesUpdated={fetchData}
@@ -1916,7 +1918,7 @@ export default function FinanceDashboard() {
         isOpen={isSubModalOpen}
         onClose={() => setIsSubModalOpen(false)}
         title="Tambah Langganan / Tagihan Rutin"
-        subtitle="Dialokasikan ke pos Bank Jago (31.7%) dan dipantau tanggal jatuh temponya"
+        subtitle="Pilih akun autodebet dan tanggal jatuh tempo untuk tagihan ini."
         icon={<Bell className="w-5 h-5" />}
         accent="amber"
         maxWidth="md"

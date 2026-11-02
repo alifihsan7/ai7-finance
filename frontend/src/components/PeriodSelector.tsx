@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useId } from "react";
 import { Calendar, ChevronDown, Check, Clock, CalendarDays, SlidersHorizontal } from "lucide-react";
 import { authFetch } from "@/lib/api";
 
@@ -37,6 +37,8 @@ export function PeriodSelector({
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popupId = useId();
 
   useEffect(() => {
     authFetch("/api/v1/analytics/periods")
@@ -66,11 +68,20 @@ export function PeriodSelector({
         setIsOpen(false);
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setIsOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen]);
 
@@ -89,15 +100,20 @@ export function PeriodSelector({
   };
 
   return (
-    <div ref={dropdownRef} className="relative inline-block text-left">
+    <div ref={dropdownRef} className="luma-period-selector relative min-w-0 text-left">
       {/* Trigger Button */}
       <button
+        ref={triggerRef}
         type="button"
+        aria-expanded={isOpen}
+        aria-controls={popupId}
+        aria-label={currentPeriod.label || "Pilih periode"}
+        title={currentPeriod.label || "Pilih periode"}
         onClick={() => setIsOpen(!isOpen)}
-        className="py-2 px-3.5 rounded-full text-xs font-mono font-semibold bg-obsidian-card border border-white/[0.08] hover:border-amberGold/50 text-white hover:bg-obsidian-hover transition inline-flex items-center gap-2 shadow-xs group"
+        className="w-full min-w-0 min-h-11 py-2 px-3.5 rounded-xl text-xs font-medium bg-obsidian-card border border-white/[0.08] hover:border-amberGold/50 text-slateText-primary hover:bg-obsidian-hover transition inline-flex items-center gap-2 group"
       >
         <Calendar className="w-3.5 h-3.5 text-amberGold shrink-0 group-hover:scale-105 transition-transform" />
-        <span className="max-w-[200px] sm:max-w-none truncate">
+        <span className="min-w-0 flex-1 text-left truncate">
           {currentPeriod.label || "Pilih Periode"}
         </span>
         <ChevronDown
@@ -109,7 +125,7 @@ export function PeriodSelector({
 
       {/* Floating Modal Popover */}
       {isOpen && (
-        <div className="absolute right-0 sm:left-0 mt-2 z-[90] w-80 sm:w-96 bg-obsidian-card border border-white/[0.12] rounded-3xl shadow-2xl overflow-hidden p-3.5 animate-in fade-in zoom-in-95 duration-150">
+        <div id={popupId} aria-label="Pilih periode" className="luma-period-popup absolute left-0 mt-2 z-[90] bg-obsidian-card border border-white/[0.12] rounded-2xl shadow-2xl p-3.5">
           {/* Header Type Tabs */}
           <div className="grid grid-cols-4 gap-1 p-1 bg-obsidian-panel rounded-full border border-white/[0.08] mb-3">
             <button
@@ -279,8 +295,9 @@ export function PeriodSelector({
                 </div>
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-[11px] text-slateText-muted mb-1">Tanggal Mulai</label>
+                    <label htmlFor={`${popupId}-start`} className="block text-[11px] text-slateText-muted mb-1">Tanggal Mulai</label>
                     <input
+                      id={`${popupId}-start`}
                       type="date"
                       required
                       value={customStart}
@@ -289,8 +306,9 @@ export function PeriodSelector({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-slateText-muted mb-1">Tanggal Selesai</label>
+                    <label htmlFor={`${popupId}-end`} className="block text-[11px] text-slateText-muted mb-1">Tanggal Selesai</label>
                     <input
+                      id={`${popupId}-end`}
                       type="date"
                       required
                       value={customEnd}

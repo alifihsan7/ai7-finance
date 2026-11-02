@@ -310,23 +310,27 @@ def get_monthly_summary(
     net_total = income_total - expense_total
     savings_rate = round((net_total / income_total * 100), 1) if income_total > 0 else 0.0
 
-    # Expense by category dalam periode
+    # Keep expense categories compatible with existing charts; report income separately.
     cat_rows = db.query(
         Transaction.category,
+        Transaction.type,
         func.sum(Transaction.amount).label("total"),
         func.count(Transaction.id).label("count")
     ).filter(
         Transaction.user_id == current_user.id,
         Transaction.date >= start_date,
         Transaction.date < query_end_date,
-        Transaction.type == "expense"
-    ).group_by(Transaction.category).order_by(func.sum(Transaction.amount).desc()).all()
+        Transaction.type.in_(["expense", "income"])
+    ).group_by(Transaction.category, Transaction.type).order_by(func.sum(Transaction.amount).desc()).all()
 
     categories = []
+    income_categories = []
     for c in cat_rows:
         tot = int(c.total)
-        pct = round((tot / expense_total * 100), 1) if expense_total > 0 else 0.0
-        categories.append(CategorySummary(
+        denominator = income_total if c.type == "income" else expense_total
+        pct = round((tot / denominator * 100), 1) if denominator > 0 else 0.0
+        group = income_categories if c.type == "income" else categories
+        group.append(CategorySummary(
             category=c.category,
             total=tot,
             count=c.count,
@@ -565,6 +569,7 @@ def get_monthly_summary(
         net=net_total,
         savings_rate=savings_rate,
         categories=categories,
+        income_categories=income_categories,
         accounts=accounts,
         total_balance=total_balance,
         daily_trend=daily_trend,

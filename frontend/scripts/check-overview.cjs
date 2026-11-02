@@ -14,9 +14,14 @@ function loadComponent(filename) {
   componentModule.filename = filename;
   componentModule.paths = Module._nodeModulePaths(path.dirname(filename));
   const nativeRequire = componentModule.require.bind(componentModule);
-  componentModule.require = (name) => name.startsWith(".")
-    ? loadComponent(path.resolve(path.dirname(filename), name + ".tsx"))
-    : nativeRequire(name);
+  componentModule.require = (name) => {
+    if (!name.startsWith(".") && !name.startsWith("@/")) return nativeRequire(name);
+    const source = name.startsWith("@/")
+      ? path.resolve(__dirname, "../src", name.slice(2))
+      : path.resolve(path.dirname(filename), name);
+    const resolved = [source + ".tsx", source + ".ts", source].find((candidate) => fs.existsSync(candidate));
+    return loadComponent(resolved);
+  };
   componentModule._compile(compiled, filename);
   return componentModule.exports;
 }
@@ -61,3 +66,24 @@ assert.match(zero, /Rp0/);
 assert.doesNotMatch(zero, /24\.850\.000|55\.000/);
 assert.match(render({ loading: true }), /aria-busy="true"/);
 console.log("PASS: real zero values stay zero; loading is announced without fixture amounts.");
+
+const { getPocketStatus } = loadComponent(path.resolve(__dirname, "../src/lib/pocketStatus.ts"));
+assert.deepEqual(getPocketStatus(0, 100, -100), { label: "Saldo negatif", tone: "danger", percentage: null });
+assert.equal(getPocketStatus(0, 0, 0).label, "Tanpa plafon");
+assert.equal(getPocketStatus(100, 101, -1).tone, "danger");
+assert.equal(getPocketStatus(100, 100, 0).label, "Batas tercapai");
+assert.equal(getPocketStatus(100, 80, 20).label, "Mendekati batas");
+assert.equal(getPocketStatus(100, 20, 80).label, "Dalam batas");
+console.log("PASS: negative, unset, exhausted and near-limit pockets have distinct, honest statuses.");
+
+const { CategoryGrid } = loadComponent(path.resolve(__dirname, "../src/components/CategoryGrid.tsx"));
+const categoryMarkup = renderToStaticMarkup(React.createElement(CategoryGrid, {
+  categories: [{ id: 1, name: "Lainnya", type: "income", color: "amberGold" },
+    { id: 2, name: "Lainnya", type: "expense", color: "amberGold" }],
+  summaryCategories: [{ category: "Lainnya", total: 200, count: 1, percentage: 100 }],
+  incomeSummaryCategories: [{ category: "Lainnya", total: 800, count: 2, percentage: 100 }],
+  formatRupiah: fixture.formatRupiah,
+}));
+assert.match(text(categoryMarkup), /Rp800/);
+assert.match(text(categoryMarkup), /Rp200/);
+console.log("PASS: income and expense categories with the same name render their own totals.");

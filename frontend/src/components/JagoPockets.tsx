@@ -17,6 +17,7 @@ import {
   syncJagoPocketCommitments,
 } from "@/lib/api";
 import { EditJagoPocketsModal } from "./EditJagoPocketsModal";
+import { getPocketStatus } from "@/lib/pocketStatus";
 
 interface JagoPocketsProps {
   formatRupiah: (val: number) => string;
@@ -47,29 +48,29 @@ function sortPockets(pockets: JagoPocketItem[]): JagoPocketItem[] {
   });
 }
 
-function statusFor(pct: number): {
+function statusFor(tone: ReturnType<typeof getPocketStatus>["tone"]): {
   bar: string;
   badge: string;
-  label: string;
 } {
-  if (pct >= 100) {
+  if (tone === "danger") {
     return {
       bar: "bg-luma-coral",
       badge: "bg-luma-coral/10 border-luma-coral/30 text-luma-coral",
-      label: "Over-budget",
     };
   }
-  if (pct >= 80) {
+  if (tone === "warning") {
     return {
       bar: "bg-luma-gold",
       badge: "bg-luma-gold/10 border-luma-gold/30 text-luma-gold",
-      label: "Mendekati batas",
     };
   }
+  if (tone === "neutral") return {
+    bar: "bg-luma-smoke",
+    badge: "bg-white/[0.06] border-white/[0.12] text-luma-smoke",
+  };
   return {
     bar: "bg-luma-sage",
     badge: "bg-luma-sage/10 border-luma-sage/30 text-luma-sage",
-    label: "Aman",
   };
 }
 
@@ -228,9 +229,9 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
             const target = pocket.target_amount ?? 0;
             const spent = pocket.spent_amount ?? 0;
             const remaining = pocket.remaining_amount ?? target - spent;
-            const rawPct = pocket.percentage_spent ?? pocket.percentage ?? 0;
-            const pct = target > 0 ? Math.min(100, Math.round(rawPct)) : 0;
-            const status = statusFor(rawPct);
+            const state = getPocketStatus(target, spent, remaining);
+            const pct = state.percentage === null ? null : Math.min(100, Math.round(state.percentage));
+            const status = statusFor(state.tone);
             const meta = POCKET_META[pocket.slug] ?? {
               icon: Wallet,
               accent: "text-luma-smoke bg-white/[0.06] border-white/[0.1]",
@@ -253,10 +254,9 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
                       <span className="text-luma-ivory font-semibold text-sm block break-words leading-snug">{pocket.name}</span>
                     </div>
                     <span
-                      className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-full border shrink-0 tabular-nums ${status.badge}`}
-                      title={status.label}
+                      className={`text-[11px] px-2 py-1 rounded-lg border max-w-full ${status.badge}`}
                     >
-                      {pct}%
+                      {state.label}
                     </span>
                   </div>
 
@@ -267,7 +267,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
                     <div className="text-xs text-luma-smoke mt-0.5">Sisa saldo kantong</div>
                   </div>
 
-                  <div
+                  {pct !== null ? <div
                     className="h-1.5 bg-black/25 rounded-full overflow-hidden"
                     role="progressbar"
                     aria-valuenow={pct}
@@ -279,7 +279,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
                       style={{ width: `${pct}%` }}
                       className={`h-full transition-all duration-500 rounded-full ${status.bar}`}
                     />
-                  </div>
+                  </div> : <p className="text-xs text-luma-smoke">Plafon belum diatur. Persentase pemakaian belum tersedia.</p>}
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-luma-smoke font-mono pt-3 border-t border-white/[0.08] gap-2 tabular-nums">
@@ -293,7 +293,7 @@ export function JagoPockets({ formatRupiah, refreshSignal = 0, onToast }: JagoPo
                     <span className="text-[11px]">Pakai:</span>
                     <span
                       className={`font-semibold text-[11px] whitespace-nowrap ${
-                        pct >= 80 ? "text-luma-coral font-bold" : "text-luma-ivory"
+                        state.tone === "danger" ? "text-luma-coral font-bold" : "text-luma-ivory"
                       }`}
                     >
                       {formatRupiah(spent)}
