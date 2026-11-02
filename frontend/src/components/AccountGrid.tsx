@@ -288,7 +288,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
             className="ai7-account-card luma-glass p-5 flex flex-col justify-between"
           >
             <div className="min-w-0">
-              <div className="flex justify-between items-center gap-2">
+              <div className="ai7-account-header grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <span
                     aria-hidden="true"
@@ -297,22 +297,12 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                     <CreditCard className="w-4 h-4" />
                     <span className={`absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full ${ACCOUNT_COLOR_DOTS[acc.colorKey] || "bg-luma-ember"}`} />
                   </span>
-                  <span className="text-luma-ivory font-semibold text-sm sm:text-base break-words leading-snug flex-1">
+                  <span className="text-luma-ivory font-semibold text-sm sm:text-base min-w-0 [overflow-wrap:anywhere] leading-snug flex-1">
                     {acc.name}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                  {acc.isPocket && (
-                    <span className="text-xs sm:text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-white/[0.05] text-luma-smoke border border-luma-smokeline whitespace-nowrap">
-                      {acc.cycleBadge}
-                    </span>
-                  )}
-                  <span
-                    className={`text-xs sm:text-xs font-sans font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap ${acc.roleBadge.className}`}
-                  >
-                    {acc.roleBadge.label}
-                  </span>
+                <div className="flex items-center gap-1 shrink-0 justify-end">
                   {acc.id && onEditAccount && (
                     <button
                       type="button"
@@ -354,6 +344,17 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                 </div>
               </div>
 
+              <div className="ai7-account-badges flex flex-wrap items-center gap-2 mt-3">
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-badge border ${acc.roleBadge.className}`}>
+                  {acc.roleBadge.label}
+                </span>
+                {acc.isPocket && (
+                  <span className="text-xs font-medium px-2 py-1 rounded-badge bg-white/[0.05] text-luma-smoke border border-luma-smokeline">
+                    {acc.cycleBadge}
+                  </span>
+                )}
+              </div>
+
               {/* Tag / Deskripsi — full wrap, never clipped */}
               <div className="text-xs text-luma-smoke mt-2 w-full break-words leading-relaxed">
                 {acc.tag}
@@ -361,7 +362,7 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
 
               <div className="mt-4">
                 <div className="text-xs text-luma-smoke font-semibold ">
-                  Saldo Rekening
+                  Saldo rekening
                 </div>
                 <div className="ai7-type-metric text-luma-ivory mt-1 tracking-tight break-words tabular-nums">
                   {formatRupiah(acc.balance)}
@@ -423,7 +424,9 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
               ) : (
                 <div className="flex items-center justify-between text-xs text-luma-smoke font-sans py-1">
                   <span>Status</span>
-                  <span className="text-luma-sage shrink-0 whitespace-nowrap font-semibold">Aman · Aktif</span>
+                  <span className={`shrink-0 font-semibold ${acc.balance < 0 ? "text-luma-coral" : "text-luma-smoke"}`}>
+                    {acc.balance < 0 ? "Saldo negatif" : acc.balance === 0 ? "Saldo kosong" : "Aktif"}
+                  </span>
                 </div>
               )}
             </div>
