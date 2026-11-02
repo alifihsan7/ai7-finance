@@ -21,8 +21,6 @@ export const viewport: Viewport = {
   themeColor: "#090A0D",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
 };
 
@@ -81,6 +79,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-obsidian-bg text-slateText-primary font-sans antialiased selection:bg-amberGold selection:text-obsidian-bg min-h-screen">
+        <a className="luma-skip-link" href="#main-content">Langsung ke isi</a>
         <ThemeProvider>
           {children}
         </ThemeProvider>

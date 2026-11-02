@@ -25,8 +25,8 @@ export function ThemeToggle({
   const isLight = resolvedTheme === "light";
   const sizeClasses =
     size === "sm"
-      ? "w-8 h-8 p-1.5"
-      : "w-9 h-9 p-2";
+      ? "w-11 h-11 p-2.5"
+      : "w-11 h-11 p-2.5";
   const iconSize = size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4";
 
   // Prevent layout shift during SSR hydration

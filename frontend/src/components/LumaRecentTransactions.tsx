@@ -20,6 +20,7 @@ interface LumaRecentTransactionsProps {
   formatRupiah: (val: number) => string;
   loading?: boolean;
   onOpenLedger: () => void;
+  onAddTransaction?: () => void;
   onEdit?: (tx: LumaTransaction) => void;
   onDelete?: (tx: LumaTransaction) => void;
 }
@@ -45,13 +46,14 @@ export function LumaRecentTransactions({
   formatRupiah,
   loading,
   onOpenLedger,
+  onAddTransaction,
   onEdit,
   onDelete,
 }: LumaRecentTransactionsProps) {
   return (
-    <section aria-label="Transaksi terbaru" className="space-y-4">
+    <section aria-label="Transaksi terbaru" className="luma-recent space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
+        <h2 className="text-sm font-medium text-luma-ivory tracking-tight">
           Transaksi Terbaru
         </h2>
         <button
@@ -59,7 +61,7 @@ export function LumaRecentTransactions({
           onClick={onOpenLedger}
           className="luma-touch inline-flex items-center gap-1 px-2 text-xs text-luma-ember hover:underline font-semibold shrink-0 whitespace-nowrap cursor-pointer"
         >
-          <span>Buka Buku Transaksi ({totalCount})</span>
+          <span>Semua transaksi ({totalCount})</span>
           <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
         </button>
       </div>
@@ -84,6 +86,7 @@ export function LumaRecentTransactions({
               <Receipt className="w-5 h-5 text-luma-smoke" aria-hidden="true" />
             </div>
             <p className="text-sm text-luma-smoke">Belum ada transaksi pada periode ini.</p>
+            {onAddTransaction && <button type="button" onClick={onAddTransaction} className="luma-text-action">Catat transaksi pertama</button>}
           </div>
         ) : (
           <ul className="divide-y divide-white/[0.06]">
@@ -120,7 +123,7 @@ export function LumaRecentTransactions({
                     {isPositive ? "+" : "-"} {formatRupiah(tx.amount)}
                   </div>
                   {(onEdit || onDelete) && (
-                    <div className="hidden sm:flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0 ml-auto">
                       {onEdit && (
                         <button
                           type="button"

@@ -234,7 +234,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       isOpen={isOpen}
       onClose={onClose}
       title={mode === "login" ? "Masuk ke AI7 Finance" : "Daftar Akun Baru"}
-      subtitle="Akses dashboard & pencatatan keuangan multi-tenant Anda"
+      subtitle="Masuk untuk membuka catatan keuangan Anda."
       icon={<Shield className="w-4 h-4 text-amberGold" />}
       accent="amber"
       maxWidth="md"
@@ -357,12 +357,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         {mode === "login" ? (
           <form key="login-form" onSubmit={handleLogin} className="space-y-3.5 animate-fadeIn duration-150">
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+              <label htmlFor="auth-login-id" className="block text-xs font-medium text-zinc-300 mb-1.5">
                 Username atau Email
               </label>
               <div className="relative">
                 <AtSign className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
+                  id="auth-login-id"
                   type="text"
                   value={loginId}
                   onChange={(e) => setLoginId(e.target.value)}
@@ -374,12 +375,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+              <label htmlFor="auth-login-password" className="block text-xs font-medium text-zinc-300 mb-1.5">
                 Password
               </label>
               <div className="relative">
                 <KeyRound className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
+                  id="auth-login-password"
                   type="password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
@@ -414,12 +416,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           /* Register Form */
           <form key="register-form" onSubmit={handleRegister} className="space-y-3 animate-fadeIn duration-150">
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1">
+              <label htmlFor="auth-register-name" className="block text-xs font-medium text-zinc-300 mb-1">
                 Nama Lengkap
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
+                  id="auth-register-name"
                   type="text"
                   value={regFullName}
                   onChange={(e) => setRegFullName(e.target.value)}
@@ -431,12 +434,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1">
+              <label htmlFor="auth-register-username" className="block text-xs font-medium text-zinc-300 mb-1">
                 Username
               </label>
               <div className="relative">
                 <AtSign className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
+                  id="auth-register-username"
                   type="text"
                   value={regUsername}
                   onChange={(e) => setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
@@ -448,10 +452,11 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1">
+              <label htmlFor="auth-register-email" className="block text-xs font-medium text-zinc-300 mb-1">
                 Email <span className="text-zinc-400 font-normal">(Opsional)</span>
               </label>
               <input
+                id="auth-register-email"
                 type="email"
                 value={regEmail}
                 onChange={(e) => setRegEmail(e.target.value)}
@@ -462,10 +467,11 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
             <div className="grid grid-cols-2 gap-2.5">
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">
+                <label htmlFor="auth-register-password" className="block text-xs font-medium text-zinc-300 mb-1">
                   Password
                 </label>
                 <input
+                  id="auth-register-password"
                   type="password"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
@@ -475,10 +481,11 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">
+                <label htmlFor="auth-register-confirm" className="block text-xs font-medium text-zinc-300 mb-1">
                   Konfirmasi
                 </label>
                 <input
+                  id="auth-register-confirm"
                   type="password"
                   value={regConfirmPassword}
                   onChange={(e) => setRegConfirmPassword(e.target.value)}

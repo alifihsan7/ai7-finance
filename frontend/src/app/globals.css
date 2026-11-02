@@ -84,7 +84,7 @@
   --slate-primary-rgb: 15 23 42;
   --slate-secondary-rgb: 71 85 105;
   --slate-muted-rgb: 100 116 139;
-  --amber-gold-rgb: 217 119 6;
+  --amber-gold-rgb: 156 73 27;
   --mint-rise-rgb: 5 150 105;
   --coral-fall-rgb: 220 38 38;
   --cyan-hub-rgb: 2 132 199;
@@ -100,7 +100,7 @@
   --slate-primary: #0F172A;
   --slate-secondary: #475569;
   --slate-muted: #64748B;
-  --amber-gold: #D97706;
+  --amber-gold: #9C491B;
   --mint-rise: #059669;
   --coral-fall: #DC2626;
   --cyan-hub: #0284C7;
@@ -298,12 +298,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 @layer components {
   .luma-glass {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: var(--luma-panel-surface, #3b3835);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    box-shadow: none;
   }
 
   .luma-hero {
@@ -312,7 +310,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 28px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
   }
 
   .luma-ember-glow {
@@ -328,9 +326,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   /* Luma form wells — dark inset inputs inside modal bodies.
      Smoke #B9B2A7 @ #33302F = 6.23:1 (AA); labels + values use Ivory
      (11.62:1 AAA) via the rules below. Placeholders keep Smoke (AA decorative). */
-  .luma-form-scope input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
-  .luma-form-scope textarea,
-  .luma-form-scope select {
+  .luma-form-scope :where(input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]), textarea, select) {
     background-color: #33302F;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
@@ -344,6 +340,167 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   .luma-form-scope label {
     color: #F4F1EC;
   }
+}
+
+/* Dashboard composition: one primary balance card and two quieter side panels. */
+.luma-app { background: #343333; height: 100dvh; }
+.luma-main {
+  background: #343333;
+  min-width: 0;
+}
+.luma-topbar { background: #343333; border-color: rgba(255,255,255,.06); backdrop-filter: none; }
+.luma-sidebar { background: #1a1a1a; border: 1px solid rgba(255,255,255,.06); }
+.luma-sidebar nav button { border-radius: 12px; font-size: 12px; padding-left: 12px; padding-right: 12px; }
+.luma-sidebar nav button svg { color: var(--luma-ivory); }
+.luma-sidebar nav button:not([aria-current]) { background: transparent; }
+.luma-sidebar nav button:not([aria-current]):hover { background: rgba(145,130,115,.12); }
+.luma-sidebar nav button:focus-visible { outline: 2px solid var(--luma-ember); outline-offset: 2px; }
+.luma-page-content { max-width: 1250px; }
+.luma-guest-banner { padding: 12px 16px; background: rgba(255,255,255,.04); border-radius: 16px; }
+.luma-guest-banner > div > div:first-child { display: none; }
+.luma-overview-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; }
+.luma-balance-panel {
+  position: relative; isolation: isolate; overflow: hidden; min-width: 0;
+  padding: 26px; border-radius: 28px; border: 1px solid rgba(255,255,255,.12);
+  background: radial-gradient(ellipse at 90% 95%, rgba(167, 88, 39, .60), transparent 67%),
+    linear-gradient(135deg, #514b50, #514741 62%, #403a35);
+  display: flex; flex-direction: column; justify-content: space-between; min-height: 362px;
+  box-shadow: 0 14px 36px rgba(0,0,0,.06);
+}
+.luma-balance-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.luma-balance-panel > * { position: relative; z-index: 1; }
+.luma-panel-label { font-size: 13px; font-weight: 400; color: #eee4dd; }
+.luma-icon-button { display: inline-flex; align-items: center; justify-content: center; width: 44px; min-height: 44px; color: #f4f1ec; border-radius: 12px; }
+.luma-icon-button:hover { background: rgba(255,255,255,.1); }
+.luma-balance-body { padding: 18px 0 25px; }
+.luma-balance-number { font-size: clamp(28px, 3.2vw, 44px); line-height: 1.25; font-weight: 500; letter-spacing: -.045em; font-variant-numeric: tabular-nums; margin: 8px 0; overflow-wrap: anywhere; color: #fff; }
+.luma-balance-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.luma-action-primary, .luma-action-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 13px; padding: 11px 16px; font-size: 12px; font-weight: 500; transition: background-color .15s; }
+.luma-action-primary { color: #222; background: #f4f1ec; }
+.luma-action-primary:hover { background: #fff; }
+.luma-action-secondary { color: #f4f1ec; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.12); }
+.luma-action-secondary:hover { background: rgba(255,255,255,.16); }
+.luma-balance-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 18px; margin: 0 -12px -12px; border-radius: 20px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.09); backdrop-filter: blur(20px); }
+.luma-balance-stats > div { min-width: 0; }
+.luma-balance-stats span { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #f0e3d9; }
+.luma-balance-stats strong { display: block; margin-top: 5px; font-size: clamp(15px,1.5vw,21px); font-weight: 500; letter-spacing: -.025em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; color: #fff; }
+.luma-overview-side { display: grid; grid-template-rows: 1fr 1fr; gap: 16px; min-width: 0; }
+.luma-matte { background: var(--luma-panel-surface, #3b3835); border: 1px solid rgba(255,255,255,.07); border-radius: 20px; }
+.luma-flow-panel, .luma-daily-panel { padding: 22px 24px; border-radius: 20px; }
+.luma-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.luma-section-heading h2 { font-size: 13px; font-weight: 500; }
+.luma-section-heading > span { font-size: 11px; color: var(--luma-smoke); }
+.luma-flow-line { display: grid; grid-template-columns: 40px minmax(20px,1fr) auto; gap: 12px; align-items: center; font-size: 11px; margin-top: 13px; }
+.luma-flow-line > span { color: var(--luma-smoke); }
+.luma-flow-line strong { font-variant-numeric: tabular-nums; font-weight: 400; }
+.luma-flow-track, .luma-quota-track { height: 5px; background: rgba(255,255,255,.07); border-radius: 8px; overflow: hidden; }
+.luma-flow-track > div, .luma-quota-track > div { height: 100%; border-radius: inherit; }
+.luma-flow-income { background: var(--luma-sage); }
+.luma-flow-expense { background: var(--luma-ember); }
+.luma-flow-net { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 17px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.09); font-size: 11px; color: var(--luma-smoke); }
+.luma-daily-panel .luma-section-heading { margin-bottom: 10px; }
+.luma-daily-amount { font-size: 27px; font-weight: 500; letter-spacing: -.035em; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.luma-daily-amount > span { font-size: 12px; letter-spacing: 0; color: var(--luma-smoke); margin-left: 7px; font-weight: 400; }
+.luma-daily-caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px 12px; font-size: 11px; color: var(--luma-smoke); margin-top: 9px; }
+.luma-quota-track { margin-top: 14px; }
+.luma-quota-track > div { background: var(--luma-sage); }
+.luma-overview-details { border-top: 1px solid rgba(255,255,255,.1); padding-top: 6px; }
+.luma-overview-details > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; min-height: 48px; list-style: none; font-size: 12px; color: var(--luma-smoke); }
+.luma-overview-details > summary::-webkit-details-marker { display: none; }
+.luma-overview-details[open] > summary svg { transform: rotate(180deg); }
+.luma-accounts { padding: 20px 24px; border-radius: 24px; background: rgba(255,255,255,.035); }
+.luma-accounts-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr)); gap: 20px; }
+.luma-account-item { padding: 0; }
+.luma-recent { padding: 22px 24px; border-radius: 20px; background: var(--luma-panel-surface, #3b3835); border: 1px solid rgba(255,255,255,.08); }
+.luma-recent > div:first-child { flex-wrap: wrap; }
+.luma-recent .luma-glass { background: transparent; border: 0; box-shadow: none; backdrop-filter: none; }
+.luma-recent ul { display: grid; gap: 8px; }
+.luma-recent li { border: 0; background: rgba(255,255,255,.055); border-radius: 18px; padding: 14px 16px; }
+.luma-recent li > div:first-child { border: 0; border-radius: 12px; background: rgba(0,0,0,.14); width: 38px; height: 38px; }
+.luma-recent .font-mono { font-family: inherit; }
+.luma-recent .font-bold, .luma-recent .font-semibold { font-weight: 500; }
+.light { --luma-charcoal-rgb: 244 243 240; --luma-coal-rgb: 255 255 252; --luma-ivory-rgb: 39 38 35; --luma-smoke-rgb: 105 98 91; --luma-smokeline-rgb: 217 213 208; --luma-sage-rgb: 52 107 72; --luma-coral-rgb: 157 79 53; --luma-gold-rgb: 137 103 28; --luma-smoke: #69625b; --luma-ivory: #272623; --luma-sage: #346b48; --luma-charcoal: #f4f3f0; }
+.light { --luma-panel-surface: #fcfbf8; --luma-ember-rgb: 156 73 27; --luma-ember: #9c491b; }
+.light .luma-app, .light .luma-main { background: #f1efeb; }
+.light .luma-sidebar { background: #e5e1db; border-color: rgba(60,40,20,.08); }
+.light .luma-topbar { background: rgba(244,243,240,.9); }
+.light .luma-glass, .light .luma-recent { background: var(--luma-panel-surface); border-color: rgba(60,40,20,.08); }
+.light .luma-balance-body > p:not(.luma-balance-number) { color: #f4f1ec; }
+.light .luma-balance-panel { background: linear-gradient(135deg, #e5dbd1, #d7b69e); isolation: auto; }
+.light .luma-balance-panel .luma-panel-label,
+.light .luma-balance-panel .luma-balance-number,
+.light .luma-balance-panel .luma-balance-body > p,
+.light .luma-guest-panel h2,
+.light .luma-guest-panel > p:not(.luma-panel-label),
+.light .luma-balance-stats strong,
+.light .luma-balance-stats span,
+.light .luma-guest-inset,
+.light .luma-balance-panel .luma-icon-button { color: #493a30; }
+.light .luma-balance-stats, .light .luma-guest-inset { background: rgba(255,255,255,.3); backdrop-filter: none; }
+.light .luma-balance-panel .luma-action-primary { background: #292724; color: #f4f1ec; }
+.light .luma-balance-panel .luma-action-secondary { color: #493a30; border-color: #8b7260; }
+.light .luma-flow-track, .light .luma-quota-track, .light .luma-recent li { background: rgba(60,40,20,.06); }
+.light .luma-recent .luma-glass { background: transparent; }
+.luma-guest-panel { min-height: 360px; }
+.luma-guest-panel h2 { margin: 24px 0 16px; font-size: clamp(26px, 3vw, 38px); line-height: 1.2; letter-spacing: -.035em; font-weight: 500; color: #fff; }
+.luma-guest-panel > p:not(.luma-panel-label) { font-size: 13px; line-height: 1.7; color: #eee4dd; }
+.luma-guest-inset { margin-top: 28px; padding: 16px; border-radius: 16px; color: #f4f1ec; background: rgba(255,255,255,.07); backdrop-filter: blur(20px); font-size: 12px; line-height: 1.65; }
+.luma-guest-guide { padding: 28px; }
+.luma-guest-guide h2 { font-size: 14px; font-weight: 500; }
+.luma-guest-guide dl { margin-top: 24px; }
+.luma-guest-guide dl > div + div { padding-top: 20px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,.1); }
+.luma-guest-guide dt { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.luma-guest-guide dd { font-size: 12px; line-height: 1.7; color: var(--luma-smoke); }
+.luma-budget-empty { padding: 14px 0; font-size: 13px; color: var(--luma-smoke); }
+.luma-text-action { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 0; text-decoration: underline; text-underline-offset: 4px; color: var(--luma-ivory); font-size: 12px; }
+.luma-data-state { padding: 28px; border: 1px solid var(--luma-smoke); border-radius: 20px; }
+.luma-data-state h2 { font-size: 18px; font-weight: 500; }
+.luma-data-state p { margin: 12px 0 20px; font-size: 14px; color: var(--luma-smoke); }
+.luma-skip-link { position: absolute; left: 20px; top: -80px; z-index: 100; padding: 12px 18px; background: #f4f1ec; color: #222; border-radius: 10px; }
+.luma-skip-link:focus { top: 12px; }
+.luma-dialog-panel { background: var(--luma-panel-surface, #2b2825); border: 1px solid rgba(255,255,255,.16); }
+.luma-dialog-panel button, .luma-dialog-panel input { min-height: 44px; }
+.luma-dialog-panel input { font-size: 16px; }
+.luma-dialog-panel input:focus-visible { outline: 2px solid var(--luma-ember); outline-offset: 2px; }
+.light .luma-form-scope input:not([type=checkbox]):not([type=radio]), .light .luma-form-scope textarea, .light .luma-form-scope select { background: #f1efeb; color: #272623; border-color: #93897e; }
+.light .luma-form-scope label { color: #272623; }
+.light .luma-form-scope input::placeholder, .light .luma-form-scope textarea::placeholder { color: #69625b; }
+.light .luma-matte { border-color: rgba(60,40,20,.09); }
+.light .luma-guest-guide dl > div + div { border-color: rgba(60,40,20,.12); }
+.luma-app button:not(:disabled):active { transform: translateY(1px); }
+.luma-topbar button, .luma-topbar [role=menu], .luma-sidebar > div:last-child > button { border-radius: 10px; font-weight: 400; }
+.luma-topbar [role=menu] { background: var(--luma-panel-surface, #3b3835); backdrop-filter: none; }
+@layer base {
+  button:not(:disabled), a[href], summary, select:not(:disabled), label[for], [role=button], input[type=checkbox]:not(:disabled), input[type=radio]:not(:disabled) { cursor: pointer; }
+  button:disabled, input:disabled, select:disabled { cursor: not-allowed; }
+}
+@media (min-width: 768px) {
+  .luma-app { margin: 18px; height: calc(100dvh - 36px); border-radius: 30px; border: 1px solid rgba(255,255,255,.07); }
+  .luma-sidebar { margin: 12px 0 12px 12px; height: auto; border-radius: 20px; padding: 20px 12px; }
+  .luma-topbar { border-bottom: 0; }
+}
+@media (max-width: 920px) {
+  .luma-overview-grid { grid-template-columns: 1fr; }
+  .luma-overview-side { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+  .luma-balance-panel { min-height: 310px; }
+  .luma-balance-number { font-size: 40px; }
+  .luma-flow-line { grid-template-columns: 35px minmax(12px,1fr); gap: 8px; }
+  .luma-flow-line strong { grid-column: 2; }
+}
+@media (max-width: 600px) {
+  .luma-topbar > div > div:last-child > button:last-child { display: none; }
+  .luma-overview-side { grid-template-columns: 1fr; }
+  .luma-balance-panel { padding: 20px; }
+  .luma-balance-number { font-size: clamp(26px,8vw,38px); }
+  .luma-balance-stats { gap: 12px; padding: 14px; margin: 0 -6px -6px; }
+  .luma-balance-stats strong { font-size: 17px; }
+  .luma-flow-line { grid-template-columns: 40px minmax(20px,1fr) auto; }
+  .luma-flow-line strong { grid-column: auto; }
+  .luma-recent, .luma-accounts { padding: 18px 16px; }
+  .luma-recent li { flex-wrap: wrap; padding: 12px; gap: 10px; }
+  .luma-recent li > div:nth-child(2) { flex-basis: calc(100% - 60px); }
+  .luma-recent li > div:nth-child(3) { padding-left: 48px; }
+  .luma-accounts-grid { grid-template-columns: 1fr 1fr; gap: 20px 12px; }
 }
 
 /* Visible keyboard focus for all interactive elements (WCAG 2.4.7) */

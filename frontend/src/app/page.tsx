@@ -26,14 +26,14 @@ import {
   Receipt,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
-import { LumaHeroGrid } from "@/components/LumaHeroGrid";
+import { LumaOverview } from "@/components/LumaOverview";
 import { LumaAccountStrip } from "@/components/LumaAccountStrip";
 import { LumaRecentTransactions } from "@/components/LumaRecentTransactions";
 import { AccountGrid } from "@/components/AccountGrid";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { MandiriEnvelopes } from "@/components/MandiriEnvelopes";
 import { JagoPockets } from "@/components/JagoPockets";
-import { Transaction, TransactionTable } from "@/components/TransactionTable";
+import { Transaction } from "@/components/TransactionTable";
 import { BurnRateChart } from "@/components/BurnRateChart";
 import { TransactionLedgerView } from "@/components/TransactionLedgerView";
 import { SubscriptionsView, SubscriptionItem, SubscriptionsData } from "@/components/SubscriptionsView";
@@ -312,6 +312,7 @@ export default function FinanceDashboard() {
   }, [activeNav]);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
 
   const [summary, setSummary] = useState<MonthlySummary>({
     month: "",
@@ -446,6 +447,7 @@ export default function FinanceDashboard() {
   }, []);
 
   const fetchData = async () => {
+    setOverviewError(null);
     const token = getAuthToken();
     if (!token) {
       setTransactions([]);
@@ -497,6 +499,13 @@ export default function FinanceDashboard() {
         authFetch("/api/v1/paycheck/config"),
         authFetch("/api/v1/categories"),
       ]);
+
+      if (!txRes.ok || !sumRes.ok) {
+        if (txRes.status === 401 || sumRes.status === 401) {
+          setIsAuthModalOpen(true);
+        }
+        throw new Error("Saldo dan transaksi belum tersedia. Periksa koneksi, lalu coba lagi.");
+      }
 
       if (txRes.ok) {
         const txData = await txRes.json();
@@ -566,6 +575,7 @@ export default function FinanceDashboard() {
       // Refresh Bank Jago pockets after any ledger-affecting fetch.
       setJagoRefreshSignal((prev) => prev + 1);
     } catch (err) {
+      setOverviewError(err instanceof Error ? err.message : "Koneksi terputus. Coba muat ulang ringkasan.");
       console.error("Fetch error:", err);
     } finally {
       setLoading(false);
@@ -845,27 +855,23 @@ export default function FinanceDashboard() {
   };
 
   return (
-    <div className="h-screen h-[100dvh] bg-luma-charcoal text-luma-ivory flex flex-col md:flex-row antialiased font-sans overflow-hidden">
+    <div className="luma-app bg-luma-charcoal text-luma-ivory flex flex-col md:flex-row antialiased font-sans overflow-hidden">
       {/* DESKTOP/TABLET SIDEBAR NAVIGATION — slim Luma: pill logo, pill nav, calm footer */}
-      <aside className="hidden md:flex md:w-60 lg:w-64 shrink-0 bg-luma-charcoal border-r border-luma-smokeline/60 p-5 md:h-screen flex-col justify-between overflow-y-hidden">
+      <aside className="luma-sidebar hidden md:flex md:w-52 lg:w-56 shrink-0 bg-luma-charcoal border-r border-luma-smokeline/60 p-5 flex-col justify-between overflow-y-auto">
         <div>
-          {/* Pill logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-full bg-luma-ivory text-luma-charcoal font-black text-lg flex items-center justify-center shrink-0" aria-hidden="true">
-              l.
-            </div>
+          <div className="flex items-center gap-2.5 px-3 pt-2">
             <div>
               <div className="font-bold text-base tracking-tight text-luma-ivory leading-none whitespace-nowrap">
                 ai7<span className="text-luma-ember">.</span>finance
               </div>
-              <div className="text-[10px] font-mono text-luma-smoke tracking-widest mt-1">
-                LUMA COCKPIT
+              <div className="text-xs text-luma-smoke mt-2">
+                Catatan keuangan pribadi
               </div>
             </div>
           </div>
 
           {/* Navigation Items — calm pill nav with soft glass hover */}
-          <nav className="mt-8 flex flex-col space-y-1">
+          <nav aria-label="Navigasi utama" className="mt-8 flex flex-col space-y-1">
             {[
               { name: "Ringkasan", icon: LayoutDashboard },
               { name: "Target Finansial", icon: Target },
@@ -942,16 +948,13 @@ export default function FinanceDashboard() {
       </aside>
 
       {/* MOBILE STICKY TOP APP BAR */}
-      <header className="md:hidden sticky top-0 z-30 w-full bg-luma-charcoal/95 backdrop-blur-md border-b border-luma-smokeline/60 px-3.5 py-2.5 flex items-center justify-between shrink-0">
+      <header className="luma-mobile-header md:hidden sticky top-0 z-30 w-full bg-luma-charcoal border-b border-luma-smokeline/60 px-3.5 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-luma-ivory text-luma-charcoal font-black text-sm flex items-center justify-center shrink-0" aria-hidden="true">
-            l.
-          </div>
           <div className="min-w-0">
             <div className="font-bold text-sm tracking-tight text-luma-ivory leading-none truncate">
               ai7<span className="text-luma-ember">.</span>finance
             </div>
-            <div className="text-[10px] font-mono text-luma-ember tracking-wider font-semibold mt-0.5 truncate">
+            <div className="text-[11px] text-luma-smoke mt-1 truncate">
               {activeNav}
             </div>
           </div>
@@ -962,7 +965,7 @@ export default function FinanceDashboard() {
             onClick={fetchData}
             title="Refresh Data"
             aria-label="Refresh data"
-            className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-smoke hover:text-luma-ivory bg-white/[0.05] border border-white/[0.08] rounded-full transition active:scale-95 cursor-pointer"
+            className="hidden luma-touch min-w-[44px] items-center justify-center text-luma-smoke hover:text-luma-ivory bg-white/[0.05] border border-white/[0.08] rounded-full transition active:scale-95 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-luma-ember" : ""}`} />
           </button>
@@ -970,7 +973,7 @@ export default function FinanceDashboard() {
           <button
             onClick={() => setIsPaycheckModalOpen(true)}
             title="Gajian Masuk"
-            className="luma-touch px-3 py-1.5 bg-luma-sage/15 text-luma-sage border border-luma-sage/30 font-semibold text-[11px] rounded-full transition active:scale-95 flex items-center gap-1 cursor-pointer"
+            className="hidden luma-touch px-3 py-1.5 bg-luma-sage/15 text-luma-sage border border-luma-sage/30 font-semibold text-[11px] rounded-full transition active:scale-95 items-center gap-1 cursor-pointer"
           >
             <ArrowDownLeft className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap">Gajian</span>
@@ -1015,9 +1018,6 @@ export default function FinanceDashboard() {
               {/* Header with Close */}
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-luma-ivory text-luma-charcoal font-black text-sm flex items-center justify-center shrink-0" aria-hidden="true">
-                    l.
-                  </div>
                   <div>
                     <div className="font-bold text-base tracking-tight text-luma-ivory leading-none">
                       ai7<span className="text-luma-ember">.</span>finance
@@ -1217,17 +1217,17 @@ export default function FinanceDashboard() {
       </nav>
 
       {/* MAIN VIEWPORT */}
-      <main ref={mainContentRef} className="flex-1 overflow-y-auto w-full bg-luma-charcoal">
+      <main id="main-content" ref={mainContentRef} className="luma-main flex-1 overflow-y-auto w-full">
         {/* Persistent Sticky Topbar Header — slim Luma: period + utilities menu */}
-        <header className="sticky top-0 z-20 bg-luma-charcoal/90 backdrop-blur-md border-b border-luma-smokeline/60 py-2.5 px-4 sm:px-6 lg:px-8">
+        <header className="luma-topbar sticky top-0 z-20 bg-luma-charcoal/90 backdrop-blur-md border-b border-luma-smokeline/60 py-2.5 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto w-full flex flex-row items-center justify-between gap-3 sm:gap-4">
             {/* Pure Control Period Selector & Theme Switch */}
             <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0">
-              <PeriodSelector
+              {currentUser ? <PeriodSelector
                 key={`${selectedPeriod.id}_${currentUser?.id || 1}`}
                 currentPeriod={selectedPeriod}
                 onSelectPeriod={(p) => setSelectedPeriod(p)}
-              />
+              /> : <span className="text-xs text-luma-smoke">Keuangan pribadi</span>}
               <div className="hidden md:flex items-center">
                 <ThemeToggle />
               </div>
@@ -1235,17 +1235,6 @@ export default function FinanceDashboard() {
 
             {/* Slim utility toolbar: guest badge + consolidated utilities menu */}
             <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-              {/* Guest Status Badge in Topbar (Desktop) */}
-              {!currentUser && (
-                <button
-                  type="button"
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="luma-touch hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-luma-ember/15 border border-luma-ember/40 text-luma-ember hover:bg-luma-ember/25 font-semibold text-xs transition cursor-pointer active:scale-95"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-luma-ember"></span>
-                  <span>Mode Tamu</span>
-                </button>
-              )}
 
               {/* Consolidated utilities menu (refresh, export, paycheck checklist) */}
               <div className="relative" ref={exportMenuRef}>
@@ -1254,6 +1243,7 @@ export default function FinanceDashboard() {
                   onClick={() => setIsExportMenuOpen((prev) => !prev)}
                   aria-haspopup="menu"
                   aria-expanded={isExportMenuOpen}
+                  aria-label="Utilitas"
                   className="luma-touch py-2 px-3 sm:px-3.5 text-xs rounded-full font-semibold border border-white/[0.12] bg-white/[0.06] text-luma-ivory hover:bg-white/[0.1] hover:border-white/[0.2] transition inline-flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
                 >
                   <Download className="w-3.5 h-3.5 text-luma-smoke shrink-0" />
@@ -1353,10 +1343,10 @@ export default function FinanceDashboard() {
           </div>
         </header>
 
-        <div className="p-3.5 sm:p-5 md:p-6 lg:p-8 xl:p-10 pb-24 md:pb-10 max-w-7xl 2xl:max-w-[1600px] mx-auto w-full space-y-6 sm:space-y-8">
+        <div className="luma-page-content p-3.5 sm:p-5 md:p-6 lg:p-8 xl:p-10 pb-24 md:pb-10 max-w-7xl 2xl:max-w-[1600px] mx-auto w-full space-y-6 sm:space-y-8">
           {/* Page Title & Antislop Copy Header */}
           <div className="mb-2 sm:mb-4">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-luma-ivory">
+            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-luma-ivory">
               {activeNav === "Ringkasan" && "Ringkasan"}
               {activeNav === "Target Finansial" && "Target Simpanan"}
               {activeNav === "Alokasi Amplop" && "Amplop Belanja"}
@@ -1377,8 +1367,8 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Guest Mode Banner */}
-        {!currentUser && (
-          <div className="luma-glass !rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        {!currentUser && activeNav !== "Ringkasan" && (
+          <div className="luma-guest-banner flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3.5">
               <div className="w-10 h-10 rounded-full bg-luma-ember/15 border border-luma-ember/40 flex items-center justify-center text-luma-ember shrink-0">
                 <AlertCircle className="w-5 h-5" />
@@ -1388,7 +1378,7 @@ export default function FinanceDashboard() {
                   Mode Tamu (Belum Masuk)
                 </p>
                 <p className="text-xs text-luma-smoke mt-0.5 leading-relaxed">
-                  Silakan masuk atau buat akun baru untuk mengakses pencatatan keuangan pribadi Anda secara aman.
+                  Masuk untuk melihat dan mencatat keuangan Anda.
                 </p>
               </div>
             </div>
@@ -1406,7 +1396,7 @@ export default function FinanceDashboard() {
         {/* VIEW 1: RINGKASAN */}
         {/* ============================================================== */}
         {activeNav === "Ringkasan" && (
-          <div className="space-y-5 sm:space-y-8 animate-fadeIn">
+          <div className="space-y-5 sm:space-y-8">
             {/* Active Paycheck Session Banner */}
             {activePaycheckSession && activePaycheckSession.status === "in_progress" && (
               <div className="luma-glass !rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1438,13 +1428,13 @@ export default function FinanceDashboard() {
               </div>
             )}
 
-            {/* 1+2. Hero Grid — Net Worth (7) & Safe-to-Spend Ember (5), struktur awal */}
-            <LumaHeroGrid
+            {/* Main balance with compact cash-flow and daily-budget panels. */}
+            <LumaOverview
               totalBalance={summary.total_balance ?? (summary.income - summary.expense)}
               income={summary.income}
               expense={summary.expense}
-              accountCount={availableAccountNames.length}
-              safeDaily={summary.safe_to_spend?.safe_daily || 55000}
+              accountCount={summary.accounts?.length ?? 0}
+              safeDaily={summary.safe_to_spend?.safe_daily ?? 0}
               pocketAccount={summary.safe_to_spend?.pocket_account || "Belanja"}
               pocketRemaining={summary.safe_to_spend?.pocket_remaining || 0}
               pocketBudget={summary.safe_to_spend?.pocket_budget ?? null}
@@ -1455,10 +1445,36 @@ export default function FinanceDashboard() {
               periodEnded={(summary.safe_to_spend?.days_remaining ?? 1) === 0}
               formatRupiah={formatRupiah}
               loading={loading}
+              isGuest={!currentUser}
+              error={overviewError}
+              onRetry={fetchData}
+              onSignIn={() => setIsAuthModalOpen(true)}
               onAddTransaction={() => setIsModalOpen(true)}
               onOpenPaycheck={() => setIsPaycheckModalOpen(true)}
             />
 
+            {currentUser && !overviewError && <>
+            <LumaAccountStrip
+              accounts={(summary.accounts || []).map((a) => ({ name: a.account, balance: a.balance }))}
+              formatRupiah={formatRupiah}
+              loading={loading}
+              onOpenAccounts={() => setActiveNav("Akun & Kategori")}
+            />
+
+            <LumaRecentTransactions
+              transactions={transactions.slice(0, 5)}
+              totalCount={transactions.length}
+              formatRupiah={formatRupiah}
+              loading={loading}
+              onOpenLedger={() => setActiveNav("Buku Transaksi")}
+              onAddTransaction={() => setIsModalOpen(true)}
+              onEdit={(tx) => setTxToEdit(tx)}
+              onDelete={(tx) => setTxToDelete(tx)}
+            />
+
+            <details className="luma-overview-details">
+              <summary>Rincian anggaran &amp; tabungan <ChevronDown size={16} /></summary>
+              <div className="space-y-6 pt-6">
             {/* 3. Formula Strata Allocation Bar (50/30/20) */}
             <StrataAllocationBar
               cycleType={summary.safe_to_spend?.cycle_type}
@@ -1468,30 +1484,6 @@ export default function FinanceDashboard() {
               formatRupiah={formatRupiah}
               loading={loading}
             />
-
-            {/* 4. Grid Rekening Kas (AccountGrid) */}
-            <section aria-label="Rekening kas" className="space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
-                  Rekening Kas
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setActiveNav("Akun & Kategori")}
-                  className="luma-touch inline-flex items-center px-2 text-xs text-luma-ember hover:underline font-semibold shrink-0 whitespace-nowrap cursor-pointer"
-                >
-                  Kelola Akun
-                </button>
-              </div>
-              <AccountGrid
-                summary={summary}
-                customAccounts={customAccounts}
-                formatRupiah={formatRupiah}
-                loading={loading}
-                onAccountDeleted={fetchData}
-                onEditAccount={(acc) => setAccountToEdit(acc)}
-              />
-            </section>
 
             {/* 5. Quick Goals & Milestone Preview (Target Tabungan) */}
             {loading ? (
@@ -1609,47 +1601,9 @@ export default function FinanceDashboard() {
             {/* 8. Grafik Burn Rate */}
             <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
 
-            {/* 9. Tabel Transaksi Terakhir */}
-            <section aria-label="Transaksi terakhir" className="space-y-4">
-              <div className="flex justify-between items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight truncate">
-                  Transaksi Terakhir
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setActiveNav("Buku Transaksi")}
-                  className="luma-touch inline-flex items-center gap-1 px-2 text-xs text-luma-ember hover:underline font-semibold shrink-0 whitespace-nowrap cursor-pointer"
-                >
-                  <span>Buka Buku Transaksi Lengkap ({transactions.length})</span>
-                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-                </button>
               </div>
-              <TransactionTable
-                transactions={transactions.slice(0, 5)}
-                formatRupiah={formatRupiah}
-                onEdit={(tx) => setTxToEdit(tx)}
-                onDelete={(tx) => setTxToDelete(tx)}
-                loading={loading}
-              />
-            </section>
-
-            {/* Ringkasan strip + recent — navigasi cepat ke Akun & Buku */}
-            <LumaAccountStrip
-              accounts={(summary.accounts || []).map((a) => ({ name: a.account, balance: a.balance }))}
-              formatRupiah={formatRupiah}
-              loading={loading}
-              onOpenAccounts={() => setActiveNav("Akun & Kategori")}
-            />
-
-            <LumaRecentTransactions
-              transactions={transactions.slice(0, 5)}
-              totalCount={transactions.length}
-              formatRupiah={formatRupiah}
-              loading={loading}
-              onOpenLedger={() => setActiveNav("Buku Transaksi")}
-              onEdit={(tx) => setTxToEdit(tx)}
-              onDelete={(tx) => setTxToDelete(tx)}
-            />
+            </details>
+            </>}
           </div>
         )}
 

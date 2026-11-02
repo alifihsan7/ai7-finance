@@ -23,9 +23,9 @@ interface LumaAccountStripProps {
 export function LumaAccountStrip({ accounts, formatRupiah, loading, onOpenAccounts }: LumaAccountStripProps) {
   if (loading) {
     return (
-      <section aria-label="Ringkasan rekening kas" className="space-y-4">
+      <section aria-label="Ringkasan rekening kas" className="luma-accounts space-y-4">
         <Skeleton className="h-5 w-48 rounded-full" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="luma-accounts-grid">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="luma-glass !rounded-3xl p-5 space-y-3">
               <Skeleton className="h-4 w-24 rounded-full" />
@@ -40,9 +40,9 @@ export function LumaAccountStrip({ accounts, formatRupiah, loading, onOpenAccoun
   if (accounts.length === 0) return null;
 
   return (
-    <section aria-label="Ringkasan rekening kas" className="space-y-4">
+    <section aria-label="Ringkasan rekening kas" className="luma-accounts space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-base sm:text-lg font-bold text-luma-ivory tracking-tight">
+        <h2 className="text-sm font-medium text-luma-ivory tracking-tight">
           Rekening Kas
         </h2>
         <button
@@ -53,19 +53,19 @@ export function LumaAccountStrip({ accounts, formatRupiah, loading, onOpenAccoun
           Kelola Akun
         </button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="luma-accounts-grid">
         {accounts.map((acc) => (
           <div
             key={acc.name}
-            className="luma-glass !rounded-3xl p-5 transition-colors hover:border-white/[0.18]"
+            className="luma-account-item"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <Wallet className="w-4 h-4 text-luma-ember shrink-0" aria-hidden="true" />
-              <p className="text-sm font-semibold text-luma-ivory leading-snug break-words">
+              <Wallet className="w-4 h-4 text-luma-smoke shrink-0" aria-hidden="true" />
+              <p className="text-xs font-normal text-luma-smoke leading-snug break-words">
                 {acc.name}
               </p>
             </div>
-            <p className="text-lg sm:text-xl font-extrabold font-mono text-luma-ivory mt-2 tabular-nums break-words">
+            <p className="text-lg font-medium text-luma-ivory mt-2 tabular-nums break-words">
               {formatRupiah(acc.balance)}
             </p>
           </div>
