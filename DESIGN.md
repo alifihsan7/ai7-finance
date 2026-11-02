@@ -23,4 +23,4 @@ Light mode uses warm paper, dark ink and solid surfaces. The balance panel uses 
 
 Scope of this iteration: dashboard overview, its navigation chrome and shared dialog accessibility. No change to financial calculations or production hosting.
 
-The application fills the viewport without an outer margin, rounded frame or content width cap. The sidebar sits flush against the screen edge; internal panels retain their spacing and radii for readability.
+The application fills the viewport without an outer frame or content width cap. The sidebar is a separate rounded panel inset 16 px from the screen edges. A 44 px toggle switches between labeled navigation and an icon rail; the browser remembers the choice. Internal panels retain their spacing and radii for readability.

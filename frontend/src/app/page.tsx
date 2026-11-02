@@ -24,6 +24,8 @@ import {
   Target,
   AlertCircle,
   Receipt,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { StrataAllocationBar } from "@/components/StrataAllocation";
 import { LumaOverview } from "@/components/LumaOverview";
@@ -181,6 +183,17 @@ const SLUG_TO_NAV: Record<string, string> = {
 export default function FinanceDashboard() {
   const googleSheetUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL;
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  useEffect(() => {
+    setSidebarCollapsed(localStorage.getItem("ai7_sidebar_collapsed") === "true");
+  }, []);
+  const toggleSidebar = () => {
+    setSidebarCollapsed((collapsed) => {
+      const next = !collapsed;
+      localStorage.setItem("ai7_sidebar_collapsed", String(next));
+      return next;
+    });
+  };
   const mainContentRef = useRef<HTMLElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaycheckModalOpen, setIsPaycheckModalOpen] = useState(false);
@@ -857,11 +870,10 @@ export default function FinanceDashboard() {
 
   return (
     <div className="luma-app bg-luma-charcoal text-luma-ivory flex flex-col md:flex-row antialiased font-sans overflow-hidden">
-      {/* DESKTOP/TABLET SIDEBAR NAVIGATION — slim Luma: pill logo, pill nav, calm footer */}
-      <aside className="luma-sidebar hidden md:flex md:w-52 lg:w-56 shrink-0 bg-luma-charcoal border-r border-luma-smokeline/60 p-5 flex-col justify-between overflow-y-auto">
+      <aside id="desktop-sidebar" aria-label="Sidebar" data-collapsed={sidebarCollapsed} className="luma-sidebar hidden md:flex shrink-0 bg-luma-charcoal p-5 flex-col justify-between overflow-y-auto">
         <div>
-          <div className="flex items-center gap-2.5 px-3 pt-2">
-            <div>
+          <div className="luma-sidebar-heading flex items-center justify-between gap-1">
+            <div className="luma-sidebar-copy">
               <div className="font-bold text-base tracking-tight text-luma-ivory leading-none whitespace-nowrap">
                 ai7<span className="text-luma-ember">.</span>finance
               </div>
@@ -869,6 +881,9 @@ export default function FinanceDashboard() {
                 Catatan keuangan pribadi
               </div>
             </div>
+            <button type="button" onClick={toggleSidebar} aria-label={sidebarCollapsed ? "Perluas sidebar" : "Ciutkan sidebar"} title={sidebarCollapsed ? "Perluas sidebar" : "Ciutkan sidebar"} aria-expanded={!sidebarCollapsed} aria-controls="desktop-sidebar" className="luma-sidebar-toggle inline-flex items-center justify-center shrink-0 rounded-lg hover:bg-white/10">
+              {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            </button>
           </div>
 
           {/* Navigation Items — calm pill nav with soft glass hover */}
@@ -893,6 +908,8 @@ export default function FinanceDashboard() {
                     if (slug) window.location.hash = slug;
                   }}
                   aria-current={isActive ? "page" : undefined}
+                  aria-label={item.name}
+                  title={sidebarCollapsed ? item.name : undefined}
                   className={`luma-touch flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                     isActive
                       ? "text-luma-ivory bg-white/[0.08] border border-white/[0.1] font-semibold"
@@ -900,7 +917,7 @@ export default function FinanceDashboard() {
                   }`}
                 >
                   <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-luma-ember" : "text-luma-smoke"}`} />
-                  <span className="truncate whitespace-nowrap">{item.name}</span>
+                  <span className="luma-sidebar-copy truncate whitespace-nowrap">{item.name}</span>
                 </button>
               );
             })}
@@ -911,6 +928,8 @@ export default function FinanceDashboard() {
         <div className="mt-8 pt-5 border-t border-white/[0.08] text-sm">
           <button
             type="button"
+            aria-label={currentUser ? `Profil ${currentUser.full_name}` : "Masuk atau kelola akun"}
+            title={sidebarCollapsed ? (currentUser ? currentUser.full_name : "Masuk / Akun") : undefined}
             onClick={() => {
               if (currentUser) {
                 setIsProfileModalOpen(true);
@@ -924,7 +943,7 @@ export default function FinanceDashboard() {
               <div className="w-9 h-9 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-bold text-xs flex items-center justify-center shrink-0">
                 {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="luma-sidebar-copy min-w-0 flex-1">
                 <p className="text-luma-ivory font-semibold text-xs truncate group-hover:text-luma-ember transition-colors">
                   {currentUser ? currentUser.full_name : "Masuk / Akun"}
                 </p>
@@ -933,12 +952,12 @@ export default function FinanceDashboard() {
                 </p>
               </div>
               {currentUser ? (
-                <span className="inline-flex items-center gap-1.5 text-[10px] text-luma-sage font-medium px-2 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25 shrink-0">
+                <span className="luma-sidebar-copy inline-flex items-center gap-1.5 text-[10px] text-luma-sage font-medium px-2 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-luma-sage"></span>
                   Aktif
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 text-[10px] text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
+                <span className="luma-sidebar-copy inline-flex items-center gap-1.5 text-[10px] text-luma-smoke font-medium px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-luma-smoke"></span>
                   Tamu
                 </span>
