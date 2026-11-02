@@ -50,7 +50,7 @@ export function LumaAccountStrip({ accounts, formatRupiah, loading, onOpenAccoun
           onClick={onOpenAccounts}
           className="luma-touch inline-flex items-center px-2 text-xs text-luma-ember hover:underline font-semibold shrink-0 whitespace-nowrap cursor-pointer"
         >
-          Kelola Akun
+          Kelola Rekening
         </button>
       </div>
       <div className="luma-accounts-grid">

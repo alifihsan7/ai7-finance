@@ -174,7 +174,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSuccess, availableAccou
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Ubah Target Finansial"
+      title="Ubah Target Tabungan"
       subtitle="Perbarui nominal sasaran, akun rekening tertaut, atau proyeksi tanggal"
       icon={<Target className="w-5 h-5 text-amberGold" />}
       accent="amber"

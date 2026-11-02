@@ -24,6 +24,7 @@ import {
   Target,
   AlertCircle,
   Receipt,
+  Settings,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
@@ -146,44 +147,116 @@ const SUB_ACCOUNT_OPTIONS = [
 
 const NAV_SLUGS: Record<string, string> = {
   "Ringkasan": "#/overview",
-  "Target Finansial": "#/goals",
-  "Alokasi Amplop": "#/envelopes",
-  "Akun & Kategori": "#/accounts",
-  "Buku Transaksi": "#/ledger",
-  "Langganan & Tagihan": "#/subscriptions",
-  "Analisis & Tren": "#/analytics",
+  "Transaksi": "#/transactions",
+  "Anggaran": "#/budget",
+  "Rencana": "#/plan",
+  "Laporan": "#/reports",
+  "Pengaturan": "#/settings",
 };
 
 const SLUG_TO_NAV: Record<string, string> = {
+  // Ringkasan
   "#/overview": "Ringkasan",
   "/overview": "Ringkasan",
   "overview": "Ringkasan",
-  "#/goals": "Target Finansial",
-  "/goals": "Target Finansial",
-  "goals": "Target Finansial",
-  "#/envelopes": "Alokasi Amplop",
-  "/envelopes": "Alokasi Amplop",
-  "envelopes": "Alokasi Amplop",
-  "#/accounts": "Akun & Kategori",
-  "/accounts": "Akun & Kategori",
-  "accounts": "Akun & Kategori",
-  "#/categories": "Akun & Kategori",
-  "/categories": "Akun & Kategori",
-  "categories": "Akun & Kategori",
-  "#/ledger": "Buku Transaksi",
-  "/ledger": "Buku Transaksi",
-  "ledger": "Buku Transaksi",
-  "#/subscriptions": "Langganan & Tagihan",
-  "/subscriptions": "Langganan & Tagihan",
-  "subscriptions": "Langganan & Tagihan",
-  "#/analytics": "Analisis & Tren",
-  "/analytics": "Analisis & Tren",
-  "analytics": "Analisis & Tren",
+  "#/ringkasan": "Ringkasan",
+  "/ringkasan": "Ringkasan",
+  "ringkasan": "Ringkasan",
+
+  // Transaksi (sebelumnya Buku Transaksi / Ledger)
+  "#/transactions": "Transaksi",
+  "/transactions": "Transaksi",
+  "transactions": "Transaksi",
+  "#/transaksi": "Transaksi",
+  "/transaksi": "Transaksi",
+  "transaksi": "Transaksi",
+  "#/ledger": "Transaksi",
+  "/ledger": "Transaksi",
+  "ledger": "Transaksi",
+  "#/buku-transaksi": "Transaksi",
+  "/buku-transaksi": "Transaksi",
+  "buku-transaksi": "Transaksi",
+
+  // Anggaran (sebelumnya Alokasi Amplop / Envelopes)
+  "#/budget": "Anggaran",
+  "/budget": "Anggaran",
+  "budget": "Anggaran",
+  "#/anggaran": "Anggaran",
+  "/anggaran": "Anggaran",
+  "anggaran": "Anggaran",
+  "#/envelopes": "Anggaran",
+  "/envelopes": "Anggaran",
+  "envelopes": "Anggaran",
+  "#/alokasi-amplop": "Anggaran",
+  "/alokasi-amplop": "Anggaran",
+  "alokasi-amplop": "Anggaran",
+
+  // Rencana (Target Tabungan + Tagihan)
+  "#/plan": "Rencana",
+  "/plan": "Rencana",
+  "plan": "Rencana",
+  "#/rencana": "Rencana",
+  "/rencana": "Rencana",
+  "rencana": "Rencana",
+  "#/goals": "Rencana",
+  "/goals": "Rencana",
+  "goals": "Rencana",
+  "#/target-finansial": "Rencana",
+  "/target-finansial": "Rencana",
+  "target-finansial": "Rencana",
+  "#/target-tabungan": "Rencana",
+  "/target-tabungan": "Rencana",
+  "target-tabungan": "Rencana",
+  "#/subscriptions": "Rencana",
+  "/subscriptions": "Rencana",
+  "subscriptions": "Rencana",
+  "#/langganan": "Rencana",
+  "/langganan": "Rencana",
+  "langganan": "Rencana",
+  "#/tagihan": "Rencana",
+  "/tagihan": "Rencana",
+  "tagihan": "Rencana",
+
+  // Laporan (sebelumnya Analisis & Tren / Analytics)
+  "#/reports": "Laporan",
+  "/reports": "Laporan",
+  "reports": "Laporan",
+  "#/laporan": "Laporan",
+  "/laporan": "Laporan",
+  "laporan": "Laporan",
+  "#/analytics": "Laporan",
+  "/analytics": "Laporan",
+  "analytics": "Laporan",
+  "#/analisis": "Laporan",
+  "/analisis": "Laporan",
+  "analisis": "Laporan",
+
+  // Pengaturan (sebelumnya Akun & Kategori / Settings)
+  "#/settings": "Pengaturan",
+  "/settings": "Pengaturan",
+  "settings": "Pengaturan",
+  "#/pengaturan": "Pengaturan",
+  "/pengaturan": "Pengaturan",
+  "pengaturan": "Pengaturan",
+  "#/accounts": "Pengaturan",
+  "/accounts": "Pengaturan",
+  "accounts": "Pengaturan",
+  "#/rekening": "Pengaturan",
+  "/rekening": "Pengaturan",
+  "rekening": "Pengaturan",
+  "#/categories": "Pengaturan",
+  "/categories": "Pengaturan",
+  "categories": "Pengaturan",
+  "#/kategori": "Pengaturan",
+  "/kategori": "Pengaturan",
+  "kategori": "Pengaturan",
 };
 
 export default function FinanceDashboard() {
   const googleSheetUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL;
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
+  const [planSubTab, setPlanSubTab] = useState<"target" | "tagihan">("target");
+  const [settingsSubTab, setSettingsSubTab] = useState<"rekening" | "kategori" | "profil">("rekening");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   useEffect(() => {
     setSidebarCollapsed(localStorage.getItem("ai7_sidebar_collapsed") === "true");
@@ -302,11 +375,40 @@ export default function FinanceDashboard() {
   // SPA Hash Routing sync & browser Back/Forward navigation listener
   useEffect(() => {
     const handleHashSync = () => {
-      const hash = window.location.hash;
-      const matched = SLUG_TO_NAV[hash] || SLUG_TO_NAV[hash.replace(/^#/, "")];
+      const rawHash = window.location.hash;
+      const cleanHash = rawHash.replace(/^#\/?/, "").toLowerCase();
+
+      // Backward-compatible & deep-linking sub-tab detection
+      if (cleanHash === "subscriptions" || cleanHash === "langganan" || cleanHash === "tagihan") {
+        setActiveNav("Rencana");
+        setPlanSubTab("tagihan");
+        return;
+      }
+      if (cleanHash === "goals" || cleanHash === "target-finansial" || cleanHash === "target-tabungan") {
+        setActiveNav("Rencana");
+        setPlanSubTab("target");
+        return;
+      }
+      if (cleanHash === "categories" || cleanHash === "kategori") {
+        setActiveNav("Pengaturan");
+        setSettingsSubTab("kategori");
+        return;
+      }
+      if (cleanHash === "accounts" || cleanHash === "rekening" || cleanHash === "akun") {
+        setActiveNav("Pengaturan");
+        setSettingsSubTab("rekening");
+        return;
+      }
+      if (cleanHash === "profile" || cleanHash === "profil" || cleanHash === "preferences" || cleanHash === "preferensi") {
+        setActiveNav("Pengaturan");
+        setSettingsSubTab("profil");
+        return;
+      }
+
+      const matched = SLUG_TO_NAV[rawHash] || SLUG_TO_NAV[cleanHash] || SLUG_TO_NAV["#" + cleanHash] || SLUG_TO_NAV["#/" + cleanHash];
       if (matched) {
         setActiveNav(matched);
-      } else if (!hash) {
+      } else if (!rawHash || rawHash === "#" || rawHash === "#/") {
         window.location.hash = "#/overview";
       }
     };
@@ -318,9 +420,16 @@ export default function FinanceDashboard() {
 
   // Update URL hash and auto-scroll viewport when activeNav changes
   useEffect(() => {
-    const targetHash = NAV_SLUGS[activeNav];
-    if (targetHash && window.location.hash !== targetHash) {
-      window.location.hash = targetHash;
+    const rawHash = window.location.hash;
+    const cleanHash = rawHash.replace(/^#\/?/, "").toLowerCase();
+    const currentNav = SLUG_TO_NAV[rawHash] || SLUG_TO_NAV[cleanHash] || SLUG_TO_NAV["#" + cleanHash] || SLUG_TO_NAV["#/" + cleanHash];
+
+    // Only overwrite hash if navigating to a different main section, so subtab URLs are retained
+    if (currentNav !== activeNav) {
+      const targetHash = NAV_SLUGS[activeNav];
+      if (targetHash && window.location.hash !== targetHash) {
+        window.location.hash = targetHash;
+      }
     }
     if (mainContentRef.current) {
       mainContentRef.current.scrollTop = 0;
@@ -827,12 +936,10 @@ export default function FinanceDashboard() {
           <nav aria-label="Navigasi utama" className="mt-8 flex flex-col space-y-1">
             {[
               { name: "Ringkasan", icon: LayoutDashboard },
-              { name: "Target Finansial", icon: Target },
-              { name: "Alokasi Amplop", icon: Layers },
-              { name: "Akun & Kategori", icon: CreditCard },
-              { name: "Buku Transaksi", icon: Receipt },
-              { name: "Langganan & Tagihan", icon: Bell },
-              { name: "Analisis & Tren", icon: BarChart2 },
+              { name: "Transaksi", icon: Receipt },
+              { name: "Anggaran", icon: Layers },
+              { name: "Rencana", icon: Target },
+              { name: "Laporan", icon: BarChart2 },
             ].map((item) => {
               const isActive = activeNav === item.name;
               const Icon = item.icon;
@@ -861,8 +968,30 @@ export default function FinanceDashboard() {
           </nav>
         </div>
 
-        {/* Slim user footer — single calm pill */}
-        <div className="mt-8 pt-5 border-t border-white/[0.08] text-sm">
+        {/* Secondary Navigation (Pengaturan) & Slim user footer */}
+        <div className="mt-8 pt-5 border-t border-white/[0.08] space-y-2">
+          <nav aria-label="Navigasi sekunder" className="flex flex-col space-y-1">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveNav("Pengaturan");
+                const slug = NAV_SLUGS["Pengaturan"];
+                if (slug) window.location.hash = slug;
+              }}
+              aria-current={activeNav === "Pengaturan" ? "page" : undefined}
+              aria-label="Pengaturan"
+              title={sidebarCollapsed ? "Pengaturan" : undefined}
+              className={`luma-touch flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
+                activeNav === "Pengaturan"
+                  ? "text-luma-ivory bg-white/[0.08] border border-white/[0.1] font-semibold"
+                  : "text-luma-smoke hover:text-luma-ivory border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
+              }`}
+            >
+              <Settings className={`w-4 h-4 shrink-0 ${activeNav === "Pengaturan" ? "text-luma-ember" : "text-luma-smoke"}`} />
+              <span className="luma-sidebar-copy truncate whitespace-nowrap">Pengaturan</span>
+            </button>
+          </nav>
+
           <button
             type="button"
             aria-label={currentUser ? `Profil ${currentUser.full_name}` : "Masuk atau kelola akun"}
@@ -997,12 +1126,11 @@ export default function FinanceDashboard() {
               <nav className="flex flex-col space-y-1" aria-label="Navigasi utama">
                 {[
                   { name: "Ringkasan", icon: LayoutDashboard },
-                  { name: "Target Finansial", icon: Target },
-                  { name: "Alokasi Amplop", icon: Layers },
-                  { name: "Akun & Kategori", icon: CreditCard },
-                  { name: "Buku Transaksi", icon: Receipt },
-                  { name: "Langganan & Tagihan", icon: Bell },
-                  { name: "Analisis & Tren", icon: BarChart2 },
+                  { name: "Transaksi", icon: Receipt },
+                  { name: "Anggaran", icon: Layers },
+                  { name: "Rencana", icon: Target },
+                  { name: "Laporan", icon: BarChart2 },
+                  { name: "Pengaturan", icon: Settings },
                 ].map((item) => {
                   const isActive = activeNav === item.name;
                   const Icon = item.icon;
@@ -1016,7 +1144,7 @@ export default function FinanceDashboard() {
                         setIsMobileDrawerOpen(false);
                       }}
                       aria-current={isActive ? "page" : undefined}
-                      className={`luma-touch flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
+                      className={`luma-touch min-h-[44px] flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-xs sm:text-sm transition-all text-left whitespace-nowrap select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                         isActive
                           ? "text-luma-ivory bg-white/[0.08] border border-white/[0.1] font-semibold"
                           : "text-luma-smoke hover:text-luma-ivory border border-transparent hover:border-white/[0.06] hover:bg-white/[0.04] font-medium"
@@ -1106,9 +1234,12 @@ export default function FinanceDashboard() {
       {/* MOBILE BOTTOM NAVIGATION BAR */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-luma-charcoal/95 backdrop-blur-md border-t border-luma-smokeline/60 px-3 py-1.5 flex items-center justify-around safe-bottom shadow-2xl" aria-label="Navigasi utama">
         <button
-          onClick={() => setActiveNav("Ringkasan")}
+          onClick={() => {
+            setActiveNav("Ringkasan");
+            window.location.hash = "#/overview";
+          }}
           aria-current={activeNav === "Ringkasan" ? "page" : undefined}
-          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] select-none ${
+          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] min-h-[44px] select-none ${
             activeNav === "Ringkasan"
               ? "text-luma-ember font-semibold"
               : "text-luma-smoke hover:text-luma-ivory"
@@ -1119,16 +1250,19 @@ export default function FinanceDashboard() {
         </button>
 
         <button
-          onClick={() => setActiveNav("Alokasi Amplop")}
-          aria-current={activeNav === "Alokasi Amplop" ? "page" : undefined}
-          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] select-none ${
-            activeNav === "Alokasi Amplop"
+          onClick={() => {
+            setActiveNav("Transaksi");
+            window.location.hash = "#/transactions";
+          }}
+          aria-current={activeNav === "Transaksi" ? "page" : undefined}
+          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] min-h-[44px] select-none ${
+            activeNav === "Transaksi"
               ? "text-luma-ember font-semibold"
               : "text-luma-smoke hover:text-luma-ivory"
           }`}
         >
-          <Layers className="w-5 h-5 shrink-0" />
-          <span className="text-[10px] mt-1 leading-tight tracking-tight">Amplop</span>
+          <Receipt className="w-5 h-5 shrink-0" />
+          <span className="text-[10px] mt-1 leading-tight tracking-tight">Transaksi</span>
         </button>
 
         {/* Center Floating Plus Action */}
@@ -1142,34 +1276,39 @@ export default function FinanceDashboard() {
         </button>
 
         <button
-          onClick={() => setActiveNav("Buku Transaksi")}
-          aria-current={activeNav === "Buku Transaksi" ? "page" : undefined}
-          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] select-none ${
-            activeNav === "Buku Transaksi"
+          onClick={() => {
+            setActiveNav("Anggaran");
+            window.location.hash = "#/budget";
+          }}
+          aria-current={activeNav === "Anggaran" ? "page" : undefined}
+          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] min-h-[44px] select-none ${
+            activeNav === "Anggaran"
               ? "text-luma-ember font-semibold"
               : "text-luma-smoke hover:text-luma-ivory"
           }`}
         >
-          <Receipt className="w-5 h-5 shrink-0" />
-          <span className="text-[10px] mt-1 leading-tight tracking-tight">Buku Kas</span>
+          <Layers className="w-5 h-5 shrink-0" />
+          <span className="text-[10px] mt-1 leading-tight tracking-tight">Anggaran</span>
         </button>
 
         <button
           onClick={() => setIsMobileDrawerOpen(true)}
           aria-label="Buka menu navigasi lainnya"
-          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] select-none ${
-            ["Akun & Kategori", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav)
+          className={`luma-touch flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition min-w-[56px] min-h-[44px] select-none ${
+            ["Rencana", "Laporan", "Pengaturan"].includes(activeNav)
               ? "text-luma-ember font-semibold"
               : "text-luma-smoke hover:text-luma-ivory"
           }`}
         >
           <div className="relative">
             <Menu className="w-5 h-5 shrink-0" />
-            {["Akun & Kategori", "Target Finansial", "Langganan & Tagihan", "Analisis & Tren"].includes(activeNav) && (
+            {["Rencana", "Laporan", "Pengaturan"].includes(activeNav) && (
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-luma-ember"></span>
             )}
           </div>
-          <span className="text-[10px] mt-1 leading-tight tracking-tight">Menu</span>
+          <span className="text-[10px] mt-1 leading-tight tracking-tight">
+            {["Rencana", "Laporan", "Pengaturan"].includes(activeNav) ? activeNav : "Menu"}
+          </span>
         </button>
       </nav>
 
@@ -1305,21 +1444,25 @@ export default function FinanceDashboard() {
           <div className="mb-2 sm:mb-4">
             <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-luma-ivory">
               {activeNav === "Ringkasan" && "Ringkasan"}
-              {activeNav === "Target Finansial" && "Target Simpanan"}
-              {activeNav === "Alokasi Amplop" && "Amplop Belanja"}
-              {activeNav === "Akun & Kategori" && "Akun & Kategori"}
-              {activeNav === "Buku Transaksi" && "Buku Transaksi"}
-              {activeNav === "Langganan & Tagihan" && "Langganan Rutin"}
-              {activeNav === "Analisis & Tren" && "Tren Pengeluaran"}
+              {activeNav === "Transaksi" && "Transaksi"}
+              {activeNav === "Anggaran" && "Anggaran"}
+              {activeNav === "Rencana" && (planSubTab === "target" ? "Rencana — Target Tabungan" : "Rencana — Tagihan")}
+              {activeNav === "Laporan" && "Laporan"}
+              {activeNav === "Pengaturan" && (
+                settingsSubTab === "rekening"
+                  ? "Pengaturan — Rekening"
+                  : settingsSubTab === "kategori"
+                  ? "Pengaturan — Kategori"
+                  : "Pengaturan — Profil & Preferensi"
+              )}
             </h1>
             <p className="text-sm text-luma-smoke mt-1 tabular-nums">
-              {activeNav === "Ringkasan" && "Total saldo kas, sisa batas belanja harian, dan distribusi rekening."}
-              {activeNav === "Target Finansial" && "Progres tabungan darurat, investasi, dan rencana beli barang."}
-              {activeNav === "Alokasi Amplop" && "Batas jatah makan, jajan, dan kebutuhan rutin saku Mandiri."}
-              {activeNav === "Akun & Kategori" && "Daftar rekening simpanan fisik dan pengaturan pos kategori pengeluaran."}
-              {activeNav === "Buku Transaksi" && "Riwayat keluar masuk uang, filter kategori, dan pencatatan kas."}
-              {activeNav === "Langganan & Tagihan" && "Daftar tagihan bulanan berulang dan jadwal jatuh tempo."}
-              {activeNav === "Analisis & Tren" && "Grafik laju belanja per siklus gajian dibanding batas aman."}
+              {activeNav === "Ringkasan" && "Total saldo kas, sisa batas belanja harian, dan ringkasan kondisi keuangan."}
+              {activeNav === "Transaksi" && "Pemasukan, pengeluaran, transfer, pencarian, filter, dan ekspor data transaksi."}
+              {activeNav === "Anggaran" && "Batas belanja per kategori, evaluasi pemakaian anggaran, serta formula/alokasi pemasukan."}
+              {activeNav === "Rencana" && (planSubTab === "target" ? "Target tabungan masa depan, dana darurat, dan progres capaian milestone." : "Daftar kewajiban tagihan berkala, autodebet rutin, dan jadwal jatuh tempo.")}
+              {activeNav === "Laporan" && "Arus kas, pengeluaran per kategori, dan perbandingan laju belanja periode."}
+              {activeNav === "Pengaturan" && "Pengelolaan rekening simpanan fisik, pos kategori transaksi, preferensi tema, dan profil pengguna."}
             </p>
           </div>
 
@@ -1415,7 +1558,11 @@ export default function FinanceDashboard() {
               accounts={(summary.accounts || []).map((a) => ({ name: a.account, balance: a.balance }))}
               formatRupiah={formatRupiah}
               loading={loading}
-              onOpenAccounts={() => setActiveNav("Akun & Kategori")}
+              onOpenAccounts={() => {
+                setActiveNav("Pengaturan");
+                setSettingsSubTab("rekening");
+                window.location.hash = "#/settings";
+              }}
             />
 
             <LumaRecentTransactions
@@ -1423,7 +1570,10 @@ export default function FinanceDashboard() {
               totalCount={transactions.length}
               formatRupiah={formatRupiah}
               loading={loading}
-              onOpenLedger={() => setActiveNav("Buku Transaksi")}
+              onOpenLedger={() => {
+                setActiveNav("Transaksi");
+                window.location.hash = "#/transactions";
+              }}
               onAddTransaction={() => setIsModalOpen(true)}
               onEdit={(tx) => setTxToEdit(tx)}
               onDelete={(tx) => setTxToDelete(tx)}
@@ -1476,7 +1626,11 @@ export default function FinanceDashboard() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setActiveNav("Target Finansial")}
+                    onClick={() => {
+                      setActiveNav("Rencana");
+                      setPlanSubTab("target");
+                      window.location.hash = "#/plan";
+                    }}
                     className="luma-touch inline-flex items-center gap-1 px-2 text-xs text-luma-ember hover:underline font-semibold shrink-0 whitespace-nowrap cursor-pointer"
                   >
                     <span>Buka Seluruh Target ({goals.length})</span>
@@ -1502,7 +1656,11 @@ export default function FinanceDashboard() {
                       <button
                         key={g.id}
                         type="button"
-                        onClick={() => setActiveNav("Target Finansial")}
+                        onClick={() => {
+                          setActiveNav("Rencana");
+                          setPlanSubTab("target");
+                          window.location.hash = "#/plan";
+                        }}
                         className="rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.16] p-4 space-y-3 cursor-pointer transition-all duration-200 text-left"
                       >
                         <div className="flex justify-between items-center gap-2">
@@ -1565,25 +1723,36 @@ export default function FinanceDashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW: TARGET FINANSIAL */}
+        {/* VIEW 2: TRANSAKSI (SEBELUMNYA BUKU TRANSAKSI / LEDGER) */}
         {/* ============================================================== */}
-        {activeNav === "Target Finansial" && (
+        {activeNav === "Transaksi" && (
           <div className="animate-fadeIn">
-            <GoalsView
-              goals={goals}
+            <TransactionLedgerView
+              transactions={transactions}
+              accounts={allAccountTabs}
+              categories={categories}
+              currentCycle={
+                summary.start_date && summary.end_date
+                  ? {
+                      start_date: summary.start_date,
+                      end_date: summary.end_date,
+                      label: summary.period_label || "",
+                    }
+                  : undefined
+              }
               formatRupiah={formatRupiah}
-              onOpenAddModal={() => setIsAddGoalModalOpen(true)}
-              onEdit={(goal) => setGoalToEdit(goal)}
-              onDelete={(id) => setGoalToDelete(id)}
+              onEdit={(tx) => setTxToEdit(tx)}
+              onDelete={(tx) => setTxToDelete(tx)}
+              onOpenAddModal={() => setIsModalOpen(true)}
               loading={loading}
             />
           </div>
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 2: ALOKASI AMPLOP */}
+        {/* VIEW 3: ANGGARAN (SEBELUMNYA ALOKASI AMPLOP) */}
         {/* ============================================================== */}
-        {activeNav === "Alokasi Amplop" && (
+        {activeNav === "Anggaran" && (
           <div className="space-y-8 animate-fadeIn">
             <StrataAllocationBar
               cycleType={summary.safe_to_spend?.cycle_type}
@@ -1613,15 +1782,20 @@ export default function FinanceDashboard() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
                   <h3 className="font-bold text-base sm:text-lg text-slateText-primary">
-                    Amplop Tagihan Rutin & Utilitas
+                    Amplop Tagihan Rutin &amp; Utilitas
                   </h3>
                   <p className="text-xs text-slateText-secondary mt-0.5">
                     Alokasi autodebet tagihan berkala, langganan digital, dan komitmen bulanan
                   </p>
                 </div>
                 <button
-                  onClick={() => setActiveNav("Langganan & Tagihan")}
-                  className="text-xs text-amberGold hover:underline font-medium shrink-0 whitespace-nowrap inline-flex items-center gap-1 group"
+                  type="button"
+                  onClick={() => {
+                    setActiveNav("Rencana");
+                    setPlanSubTab("tagihan");
+                    window.location.hash = "#/subscriptions";
+                  }}
+                  className="luma-touch text-xs text-amberGold hover:underline font-medium shrink-0 whitespace-nowrap inline-flex items-center gap-1 group cursor-pointer min-h-[44px]"
                 >
                   <span>Atur Tagihan ({subsData.items.length})</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -1650,7 +1824,7 @@ export default function FinanceDashboard() {
 
                 <div className="bg-obsidian-panel border border-obsidian-border rounded-lg p-5 space-y-3">
                   <div className="flex justify-between items-center gap-2">
-                    <span className="font-semibold text-slateText-primary text-sm truncate">Pos Tabungan & Investasi</span>
+                    <span className="font-semibold text-slateText-primary text-sm truncate">Pos Tabungan &amp; Investasi</span>
                     <span className="text-xs font-mono px-2 py-0.5 rounded bg-obsidian-card border border-obsidian-border text-cyanHub shrink-0 whitespace-nowrap">
                       Pertumbuhan Aset
                     </span>
@@ -1701,130 +1875,108 @@ export default function FinanceDashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 3: AKUN & KATEGORI */}
+        {/* VIEW 4: RENCANA (TARGET TABUNGAN & TAGIHAN) */}
         {/* ============================================================== */}
-        {activeNav === "Akun & Kategori" && (
-          <div className="space-y-8 animate-fadeIn">
-            {/* Seksi 1: Rekening & Dompet Kas */}
-            <section className="space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                    Rekening & Dompet Kas
-                  </h2>
-                  <p className="text-xs text-zinc-400 mt-0.5">
-                    Daftar rekening bank fisik, dompet digital, dan pos simpanan kas aktif.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+        {activeNav === "Rencana" && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Sub-tab Navigation */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-white/[0.08]">
+              <div className="inline-flex p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08]" role="tablist" aria-label="Sub navigasi Rencana">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={planSubTab === "target"}
+                  onClick={() => {
+                    setPlanSubTab("target");
+                    window.location.hash = "#/plan";
+                  }}
+                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                    planSubTab === "target"
+                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
+                  }`}
+                >
+                  <Target className="w-4 h-4 shrink-0 text-luma-ember" />
+                  <span>Target Tabungan</span>
+                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
+                    {goals.length}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={planSubTab === "tagihan"}
+                  onClick={() => {
+                    setPlanSubTab("tagihan");
+                    window.location.hash = "#/subscriptions";
+                  }}
+                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                    planSubTab === "tagihan"
+                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
+                  }`}
+                >
+                  <Bell className="w-4 h-4 shrink-0 text-luma-gold" />
+                  <span>Tagihan</span>
+                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
+                    {subsData.items.length}
+                  </span>
+                </button>
+              </div>
+
+              {/* Action shortcut depending on active sub-tab */}
+              <div className="flex items-center gap-2">
+                {planSubTab === "target" ? (
                   <button
                     type="button"
-                    onClick={() => setIsTransferModalOpen(true)}
-                    className="py-2 px-3.5 text-xs font-semibold rounded-xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap active:scale-95 cursor-pointer min-h-[38px]"
+                    onClick={() => setIsAddGoalModalOpen(true)}
+                    className="luma-touch min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-luma-ivory text-luma-charcoal font-bold rounded-full hover:brightness-95 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
                   >
-                    <ArrowLeftRight className="w-3.5 h-3.5 text-cyanHub shrink-0" />
-                    <span>Transfer Antar Akun</span>
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Tambah Target</span>
                   </button>
+                ) : (
                   <button
                     type="button"
-                    onClick={() => setIsAddAccountModalOpen(true)}
-                    className="py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer min-h-[38px]"
+                    onClick={() => setIsSubModalOpen(true)}
+                    className="luma-touch min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-amberGold text-slate-950 font-bold rounded-full hover:bg-yellow-300 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95 shadow-sm"
                   >
-                    <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                    <span>Tambah Akun</span>
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Tambah Tagihan</span>
                   </button>
-                </div>
+                )}
               </div>
-              <AccountGrid
-                summary={summary}
-                customAccounts={customAccounts}
-                formatRupiah={formatRupiah}
-                loading={loading}
-                onAccountDeleted={fetchData}
-                onEditAccount={(acc) => setAccountToEdit(acc)}
-              />
-            </section>
-
-            {/* Seksi 2: Kategori Belanja & Pemasukan */}
-            <CategoryGrid
-              categories={categories}
-              summaryCategories={summary.categories}
-              incomeSummaryCategories={summary.income_categories}
-              formatRupiah={formatRupiah}
-              loading={loading}
-              onCategoriesUpdated={fetchData}
-              transactions={transactions}
-              onOpenManageCategories={() => setIsManageCategoriesOpen(true)}
-            />
-
-            {/* Seksi 3: Navigasi CTA ke Buku Transaksi */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-white/[0.08] bg-obsidian-panel/60 backdrop-blur-xs">
-              <div className="text-sm text-zinc-400">
-                Ingin melihat seluruh mutasi dan riwayat transaksi kas?
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveNav("Buku Transaksi");
-                  window.location.hash = "#/ledger";
-                }}
-                className="text-xs font-semibold text-amberGold hover:underline flex items-center gap-1.5 cursor-pointer min-h-[44px]"
-              >
-                <span>Buka Buku Transaksi</span>
-                <span aria-hidden="true">→</span>
-              </button>
             </div>
+
+            {planSubTab === "target" && (
+              <GoalsView
+                goals={goals}
+                formatRupiah={formatRupiah}
+                onOpenAddModal={() => setIsAddGoalModalOpen(true)}
+                onEdit={(goal) => setGoalToEdit(goal)}
+                onDelete={(id) => setGoalToDelete(id)}
+                loading={loading}
+              />
+            )}
+
+            {planSubTab === "tagihan" && (
+              <SubscriptionsView
+                subsData={subsData}
+                formatRupiah={formatRupiah}
+                onOpenModal={() => setIsSubModalOpen(true)}
+                onToggleActive={handleToggleSubscription}
+                onDelete={handleDeleteSubscription}
+                onEdit={(sub) => setSubToEdit(sub)}
+                loading={loading}
+              />
+            )}
           </div>
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 4: BUKU TRANSAKSI (LEDGER) */}
+        {/* VIEW 5: LAPORAN (SEBELUMNYA ANALISIS & TREN) */}
         {/* ============================================================== */}
-        {activeNav === "Buku Transaksi" && (
-          <div className="animate-fadeIn">
-            <TransactionLedgerView
-              transactions={transactions}
-              accounts={allAccountTabs}
-              categories={categories}
-              currentCycle={
-                summary.start_date && summary.end_date
-                  ? {
-                      start_date: summary.start_date,
-                      end_date: summary.end_date,
-                      label: summary.period_label || "",
-                    }
-                  : undefined
-              }
-              formatRupiah={formatRupiah}
-              onEdit={(tx) => setTxToEdit(tx)}
-              onDelete={(tx) => setTxToDelete(tx)}
-              onOpenAddModal={() => setIsModalOpen(true)}
-              loading={loading}
-            />
-          </div>
-        )}
-
-        {/* ============================================================== */}
-        {/* VIEW 5: LANGGANAN & TAGIHAN RUTIN */}
-        {/* ============================================================== */}
-        {activeNav === "Langganan & Tagihan" && (
-          <div className="animate-fadeIn">
-            <SubscriptionsView
-              subsData={subsData}
-              formatRupiah={formatRupiah}
-              onOpenModal={() => setIsSubModalOpen(true)}
-              onToggleActive={handleToggleSubscription}
-              onDelete={handleDeleteSubscription}
-              onEdit={(sub) => setSubToEdit(sub)}
-              loading={loading}
-            />
-          </div>
-        )}
-
-        {/* ============================================================== */}
-        {/* VIEW 6: ANALISIS & TREN */}
-        {/* ============================================================== */}
-        {activeNav === "Analisis & Tren" && (
+        {activeNav === "Laporan" && (
           <div className="animate-fadeIn">
             <AnalyticsView
               summary={{
@@ -1846,6 +1998,260 @@ export default function FinanceDashboard() {
               formatRupiah={formatRupiah}
               loading={loading}
             />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW 6: PENGATURAN (SEBELUMNYA AKUN & KATEGORI) */}
+        {/* ============================================================== */}
+        {activeNav === "Pengaturan" && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Sub-tab Navigation */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-white/[0.08]">
+              <div className="inline-flex p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08]" role="tablist" aria-label="Sub navigasi Pengaturan">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={settingsSubTab === "rekening"}
+                  onClick={() => {
+                    setSettingsSubTab("rekening");
+                    window.location.hash = "#/settings";
+                  }}
+                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                    settingsSubTab === "rekening"
+                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
+                  }`}
+                >
+                  <CreditCard className="w-4 h-4 shrink-0 text-luma-ember" />
+                  <span>Rekening</span>
+                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
+                    {customAccounts.length || summary.accounts?.length || 0}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={settingsSubTab === "kategori"}
+                  onClick={() => {
+                    setSettingsSubTab("kategori");
+                    window.location.hash = "#/categories";
+                  }}
+                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                    settingsSubTab === "kategori"
+                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
+                  }`}
+                >
+                  <Layers className="w-4 h-4 shrink-0 text-luma-sage" />
+                  <span>Kategori</span>
+                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-luma-smoke ml-1">
+                    {categories.length}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={settingsSubTab === "profil"}
+                  onClick={() => {
+                    setSettingsSubTab("profil");
+                  }}
+                  className={`luma-touch min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                    settingsSubTab === "profil"
+                      ? "bg-white/[0.1] text-luma-ivory border border-white/[0.12] shadow-xs"
+                      : "text-luma-smoke hover:text-luma-ivory hover:bg-white/[0.04] border border-transparent"
+                  }`}
+                >
+                  <Settings className="w-4 h-4 shrink-0 text-luma-gold" />
+                  <span>Profil &amp; Preferensi</span>
+                </button>
+              </div>
+
+              {/* Sub-tab action shortcuts */}
+              {settingsSubTab === "rekening" && (
+                <div className="flex items-center gap-2 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsTransferModalOpen(true)}
+                    className="luma-touch min-h-[44px] py-2 px-3.5 text-xs font-semibold rounded-xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+                  >
+                    <ArrowLeftRight className="w-3.5 h-3.5 text-cyanHub shrink-0" />
+                    <span>Transfer Antar Rekening</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddAccountModalOpen(true)}
+                    className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                    <span>Tambah Rekening</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Sub-tab 1: Rekening */}
+            {settingsSubTab === "rekening" && (
+              <div className="space-y-4 animate-fadeIn">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                    Rekening &amp; Dompet Kas
+                  </h2>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Daftar rekening bank fisik, dompet digital, dan pos simpanan kas aktif.
+                  </p>
+                </div>
+                <AccountGrid
+                  summary={summary}
+                  customAccounts={customAccounts}
+                  formatRupiah={formatRupiah}
+                  loading={loading}
+                  onAccountDeleted={fetchData}
+                  onEditAccount={(acc) => setAccountToEdit(acc)}
+                />
+              </div>
+            )}
+
+            {/* Sub-tab 2: Kategori */}
+            {settingsSubTab === "kategori" && (
+              <div className="animate-fadeIn">
+                <CategoryGrid
+                  categories={categories}
+                  summaryCategories={summary.categories}
+                  incomeSummaryCategories={summary.income_categories}
+                  formatRupiah={formatRupiah}
+                  loading={loading}
+                  onCategoriesUpdated={fetchData}
+                  transactions={transactions}
+                  onOpenManageCategories={() => setIsManageCategoriesOpen(true)}
+                />
+              </div>
+            )}
+
+            {/* Sub-tab 3: Profil & Preferensi */}
+            {settingsSubTab === "profil" && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="luma-glass !rounded-3xl p-6 sm:p-7 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.08]">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full bg-luma-sage/15 border border-luma-sage/30 text-luma-sage font-bold text-xl flex items-center justify-center shrink-0">
+                        {currentUser ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-bold text-luma-ivory tracking-tight">
+                          {currentUser?.full_name || "Pengguna Tamu"}
+                        </h2>
+                        <p className="text-xs text-luma-smoke font-mono mt-0.5">
+                          {currentUser ? `@${currentUser.username} • ${currentUser.email || "Email belum disetel"}` : "Mode Tamu (Sesi Lokal)"}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          {currentUser ? (
+                            <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-sage font-medium px-2.5 py-0.5 rounded-full bg-luma-sage/10 border border-luma-sage/25">
+                              <span className="w-1.5 h-1.5 rounded-full bg-luma-sage"></span>
+                              Akun Terverifikasi
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-smoke font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-luma-smoke"></span>
+                              Tamu
+                            </span>
+                          )}
+                          {currentUser?.telegram_chat_id ? (
+                            <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-ember font-medium px-2.5 py-0.5 rounded-full bg-luma-ember/10 border border-luma-ember/25">
+                              Telegram Terhubung ({currentUser.telegram_chat_id})
+                            </span>
+                          ) : currentUser ? (
+                            <span className="inline-flex items-center gap-1.5 text-[11px] text-luma-smoke font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+                              Telegram Belum Terhubung
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      {currentUser ? (
+                        <button
+                          type="button"
+                          onClick={() => setIsProfileModalOpen(true)}
+                          className="luma-touch min-h-[44px] px-4 py-2 rounded-full bg-white/[0.08] hover:bg-white/[0.12] text-luma-ivory border border-white/[0.12] text-xs font-semibold transition cursor-pointer"
+                        >
+                          Ubah Profil &amp; Telegram
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setIsAuthModalOpen(true)}
+                          className="luma-touch min-h-[44px] px-4 py-2 rounded-full bg-luma-ivory hover:brightness-95 text-luma-charcoal text-xs font-bold transition cursor-pointer"
+                        >
+                          Masuk / Daftar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Preferensi Antarmuka */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-luma-ivory tracking-tight">
+                      Preferensi Antarmuka
+                    </h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                      <div>
+                        <div className="text-xs font-semibold text-luma-ivory">Tema Tampilan</div>
+                        <div className="text-[11px] text-luma-smoke mt-0.5">
+                          Ganti palet Ink &amp; Silver antara mode Gelap (Dark Glass) dan Terang.
+                        </div>
+                      </div>
+                      <div className="shrink-0">
+                        <ThemeToggle />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Admin Google Sheets Link */}
+                  {currentUser?.id === 1 && googleSheetUrl && (
+                    <div className="space-y-2 pt-2">
+                      <h3 className="text-sm font-semibold text-luma-ivory tracking-tight">
+                        Integrasi Data
+                      </h3>
+                      <a
+                        href={googleSheetUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="luma-touch min-h-[44px] flex items-center justify-between p-4 rounded-2xl bg-luma-sage/10 border border-luma-sage/25 text-luma-sage hover:bg-luma-sage/15 transition"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FileSpreadsheet className="w-5 h-5 shrink-0" />
+                          <div>
+                            <div className="text-xs font-semibold">Google Sheets Rapor Keuangan</div>
+                            <div className="text-[11px] text-luma-smoke">Buka spreadsheet cadangan data terintegrasi</div>
+                          </div>
+                        </div>
+                        <ExternalLink className="w-4 h-4 opacity-70" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Seksi 3: Navigasi CTA ke Transaksi */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-white/[0.08] bg-obsidian-panel/60 backdrop-blur-xs">
+              <div className="text-sm text-zinc-400">
+                Ingin melihat seluruh mutasi dan riwayat transaksi kas?
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveNav("Transaksi");
+                  window.location.hash = "#/transactions";
+                }}
+                className="luma-touch text-xs font-semibold text-amberGold hover:underline flex items-center gap-1.5 cursor-pointer min-h-[44px]"
+              >
+                <span>Buka Transaksi</span>
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
           </div>
         )}
         </div>
@@ -2131,8 +2537,8 @@ export default function FinanceDashboard() {
         isOpen={goalToDelete !== null}
         onClose={() => setGoalToDelete(null)}
         onConfirm={handleConfirmDeleteGoal}
-        title="Hapus Target Finansial?"
-        message="Apakah kamu yakin ingin menghapus target finansial ini? Progres capaian akan dihapus dari dashboard."
+        title="Hapus Target Tabungan?"
+        message="Apakah Anda yakin ingin menghapus target tabungan ini? Progres capaian akan dihapus dari dashboard."
         confirmText="Hapus Target"
         loading={deleteLoading}
       />

@@ -162,7 +162,7 @@ export function GoalsView({
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
         <div className="luma-glass !rounded-3xl p-5 sm:p-6 space-y-2.5">
           <div className="text-xs font-semibold text-luma-smoke uppercase tracking-wider truncate">
-            Total Target Finansial
+            Total Target Tabungan
           </div>
           {loading ? (
             <Skeleton className="h-8 w-36 rounded-full" />
@@ -286,9 +286,9 @@ export function GoalsView({
             <Target className="w-7 h-7" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-luma-ivory">Belum Ada Target Finansial</h3>
+            <h3 className="text-base font-bold text-luma-ivory">Belum Ada Target Tabungan</h3>
             <p className="text-xs sm:text-sm text-luma-smoke mt-1 max-w-md mx-auto">
-              Mulai tetapkan target tabungan masa depan atau portofolio investasi lo untuk memantau capaian finansial siklus.
+              Mulai tetapkan target tabungan masa depan atau portofolio investasi Anda untuk memantau capaian finansial siklus.
             </p>
           </div>
           <button
