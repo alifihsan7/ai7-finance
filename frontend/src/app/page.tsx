@@ -1980,7 +1980,7 @@ export default function FinanceDashboard() {
           <div className="space-y-6 animate-fadeIn">
             {/* Sub-tab Navigation */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-luma-smokeline">
-              <div className="inline-flex p-1 rounded-2xl bg-white/[0.04] border border-luma-smokeline" role="tablist" aria-label="Sub navigasi Rencana">
+              <div className="ai7-tab-group inline-flex bg-white/[0.04] border border-luma-smokeline" role="tablist" aria-label="Sub navigasi Rencana">
                 <button
                   type="button"
                   role="tab"
@@ -2107,7 +2107,7 @@ export default function FinanceDashboard() {
           <div className="space-y-6 animate-fadeIn">
             {/* Sub-tab Navigation */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-luma-smokeline">
-              <div className="inline-flex p-1 rounded-2xl bg-white/[0.04] border border-luma-smokeline overflow-x-auto" role="tablist" aria-label="Sub navigasi Pengaturan">
+              <div className="ai7-tab-group inline-flex bg-white/[0.04] border border-luma-smokeline overflow-x-auto" role="tablist" aria-label="Sub navigasi Pengaturan">
                 <button
                   type="button"
                   role="tab"

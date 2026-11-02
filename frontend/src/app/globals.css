@@ -585,6 +585,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .ai7-ledger-table td { font-size: var(--ai7-text-body); }
 .luma-dialog-panel .ai7-type-card { font-size: var(--ai7-text-section); }
 .luma-app button { border-radius: var(--ai7-radius-control); min-height: 44px; }
+.ai7-tab-group {
+  --ai7-tab-inset: 4px;
+  padding: var(--ai7-tab-inset);
+  border-radius: calc(var(--ai7-radius-control) + var(--ai7-tab-inset) + 1px);
+}
 .ai7-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media(min-width: 1440px) { .ai7-metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media(max-width: 600px) { .ai7-metric-grid { grid-template-columns: minmax(0, 1fr); } }
