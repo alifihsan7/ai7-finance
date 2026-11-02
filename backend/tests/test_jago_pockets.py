@@ -125,8 +125,8 @@ def test_jago_pockets_default_seeding(client, db_session, test_user):
     assert len(response_second.json()["pockets"]) == 5
 
 
-def test_jago_pockets_auto_populate_subscriptions(db_session, test_user):
-    """Verifies that active subscriptions auto-populate initial pocket targets."""
+def test_jago_pockets_do_not_guess_subscription_links(db_session, test_user):
+    """Matching names do not overwrite manual targets without an explicit link."""
     # Seed active subscriptions before first pocket access
     sub_gym = Subscription(
         user_id=test_user.id,
@@ -165,8 +165,9 @@ def test_jago_pockets_auto_populate_subscriptions(db_session, test_user):
     data = response.json()
     slugs = {p["slug"]: p for p in data["pockets"]}
 
-    assert slugs["gym"]["target_amount"] == 350_000
-    assert slugs["claude"]["target_amount"] == 315_000
+    assert slugs["gym"]["target_amount"] == 225_000
+    assert slugs["claude"]["target_amount"] == 75_000
+    assert slugs["gym"]["subscription_id"] is None
     assert slugs["kuota"]["target_amount"] == 50_000  # Default fallback
     assert slugs["visa"]["target_amount"] == 50_000   # Default fallback
 

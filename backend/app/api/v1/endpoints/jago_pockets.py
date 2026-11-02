@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from sqlalchemy import case, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -26,6 +27,7 @@ from app.schemas.jago_pocket import (
     JagoPocketTargetUpdate,
     JagoPocketUpdate,
     VALID_POCKET_ROLES,
+    PocketSubscriptionLink,
 )
 
 router = APIRouter()
@@ -37,35 +39,30 @@ DEFAULT_POCKET_SPECS = [
         "name": "GYM",
         "default_target": 225_000,
         "role": "tagihan",
-        "subscription_keywords": ["gym", "fitness", "fithub", "membership"],
     },
     {
         "slug": "claude",
         "name": "Subscription Claude",
         "default_target": 75_000,
         "role": "tagihan",
-        "subscription_keywords": ["claude", "anthropic"],
     },
     {
         "slug": "kuota",
         "name": "Kuota",
         "default_target": 50_000,
         "role": "tagihan",
-        "subscription_keywords": ["kuota", "pulsa", "paket data", "internet"],
     },
     {
         "slug": "visa",
         "name": "VISA",
         "default_target": 50_000,
         "role": "operasional",
-        "subscription_keywords": ["visa", "online debit"],
     },
     {
         "slug": "utama",
         "name": "Kantong Utama",
         "default_target": 0,
         "role": "operasional",
-        "subscription_keywords": [],
     },
 ]
 
@@ -120,21 +117,6 @@ def get_current_cycle_bounds(db: Session, user_id: int, ref_date: Optional[date]
         return start_date, end_date
 
 
-def find_subscription_commitment(db: Session, user_id: int, keywords: List[str]) -> Optional[int]:
-    """Find active routine subscription amount matching keyword list."""
-    if not keywords:
-        return None
-    subs = db.query(Subscription).filter(
-        Subscription.user_id == user_id,
-        Subscription.is_active == True,
-    ).all()
-    for sub in subs:
-        sub_name = (sub.name or "").lower()
-        sub_cat = (sub.category or "").lower()
-        combined = f"{sub_cat} {sub_name}"
-        if any(k in combined for k in keywords):
-            return int(sub.amount)
-    return None
 
 
 def get_target_pocket_account_names(db: Session, user_id: int) -> List[str]:
@@ -220,8 +202,7 @@ def ensure_default_pockets(db: Session, user_id: int, account_id: Optional[int] 
         added = False
         if is_jago:
             for spec in DEFAULT_POCKET_SPECS:
-                sub_commitment = find_subscription_commitment(db, user_id, spec["subscription_keywords"])
-                initial_target = sub_commitment if sub_commitment is not None else spec["default_target"]
+                initial_target = spec["default_target"]
                 new_pocket = JagoPocket(
                     user_id=user_id,
                     account_id=target_acc.id,
@@ -268,8 +249,7 @@ def ensure_default_pockets(db: Session, user_id: int, account_id: Optional[int] 
     for spec in DEFAULT_POCKET_SPECS:
         slug = spec["slug"]
         if slug not in existing_map:
-            sub_commitment = find_subscription_commitment(db, user_id, spec["subscription_keywords"])
-            initial_target = sub_commitment if sub_commitment is not None else spec["default_target"]
+            initial_target = spec["default_target"]
 
             new_pocket = JagoPocket(
                 user_id=user_id,
@@ -502,17 +482,32 @@ def compute_pockets_summary(
         slug = classify_pocket_transaction_for_account(tx, ordered_pockets)
         spent_by_slug[slug] += int(tx.amount)
 
-    sum_other_targets = sum(
-        int(p.target_amount) for p in ordered_pockets if not p.slug.startswith("utama")
-    )
+    linked_ids = [p.subscription_id for p in ordered_pockets if p.subscription_id]
+    linked_subscriptions = {sub.id: sub for sub in db.query(Subscription).filter(
+        Subscription.user_id == user_id, Subscription.id.in_(linked_ids),
+    ).all()} if linked_ids else {}
+    account_names = {account.id: account.name.strip().casefold() for account in db.query(Account).filter(Account.user_id == user_id).all()}
+    targets = {}
+    link_states = {}
+    for pocket in ordered_pockets:
+        target = int(pocket.target_amount)
+        if pocket.subscription_id:
+            sub = linked_subscriptions.get(pocket.subscription_id)
+            state = "missing" if not sub else "inactive" if not sub.is_active else "active"
+            if sub and sub.account.strip().casefold() != account_names.get(pocket.account_id):
+                state = "account_mismatch"
+            target = int(sub.amount) if state == "active" else 0
+            link_states[pocket.id] = state
+        targets[pocket.id] = target
+    sum_other_targets = sum(targets[p.id] for p in ordered_pockets if not p.slug.startswith("utama"))
 
     items: List[JagoPocketItemResponse] = []
     total_target = 0
     total_spent = 0
 
     for p in ordered_pockets:
-        target = int(p.target_amount)
-        if p.slug.startswith("utama") and target == 0:
+        target = targets[p.id]
+        if p.slug.startswith("utama") and target == 0 and not p.subscription_id:
             target = max(0, total_balance - sum_other_targets)
 
         spent = spent_by_slug.get(p.slug, 0)
@@ -526,6 +521,10 @@ def compute_pockets_summary(
             user_id=p.user_id,
             account_id=p.account_id or (acc.id if acc else None),
             account_name=p_acc.name if p_acc else None,
+            subscription_id=p.subscription_id,
+            subscription_name=linked_subscriptions[p.subscription_id].name if p.subscription_id in linked_subscriptions else None,
+            subscription_status=link_states.get(p.id),
+            subscription_billing_cycle=linked_subscriptions[p.subscription_id].billing_cycle if p.subscription_id in linked_subscriptions else None,
             name=p.name,
             slug=p.slug,
             role=p.role,
@@ -758,13 +757,15 @@ def update_pockets_batch(
             ).first()
 
         if pocket:
-            if target_amount is not None:
+            if target_amount is not None and not pocket.subscription_id:
                 pocket.target_amount = max(0, int(target_amount))
             if role is not None and role in VALID_POCKET_ROLES:
                 pocket.role = role
             if is_active is not None:
                 pocket.is_active = bool(is_active)
             if item_acc_id is not None:
+                if pocket.subscription_id and item_acc_id != pocket.account_id:
+                    raise HTTPException(status_code=409, detail="Lepaskan hubungan tagihan sebelum memindahkan kantong")
                 acc_exists = db.query(Account).filter(Account.id == item_acc_id, Account.user_id == current_user.id).first()
                 if acc_exists:
                     pocket.account_id = item_acc_id
@@ -780,26 +781,51 @@ def update_pockets_batch(
 
 @router.post("/sync-commitments", response_model=JagoPocketsSummaryResponse)
 def sync_commitments_from_subscriptions(
+    account_id: Optional[int] = Query(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """
-    Re-synchronizes routine pocket targets with active Subscriptions
-    for GYM, Subscription Claude, and Kuota.
-    """
-    ensure_default_pockets(db, current_user.id)
-    pockets = db.query(JagoPocket).filter(JagoPocket.user_id == current_user.id).all()
-    pocket_map = {p.slug: p for p in pockets}
+    """Compatibility endpoint: only explicit links affect effective targets."""
+    return compute_pockets_summary(db=db, user_id=current_user.id, account_id=account_id)
 
-    for spec in DEFAULT_POCKET_SPECS:
-        slug = spec["slug"]
-        if slug in pocket_map and spec["subscription_keywords"]:
-            sub_amt = find_subscription_commitment(db, current_user.id, spec["subscription_keywords"])
-            if sub_amt is not None and sub_amt > 0:
-                pocket_map[slug].target_amount = sub_amt
 
-    db.commit()
-    return compute_pockets_summary(db=db, user_id=current_user.id)
+@router.put("/{pocket_id}/subscription", response_model=JagoPocketsSummaryResponse)
+def link_pocket_subscription(
+    pocket_id: int,
+    payload: PocketSubscriptionLink,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    pocket = db.query(JagoPocket).filter(JagoPocket.id == pocket_id, JagoPocket.user_id == current_user.id).first()
+    if not pocket:
+        raise HTTPException(status_code=404, detail="Kantong tidak ditemukan")
+    account = db.query(Account).filter(Account.id == pocket.account_id, Account.user_id == current_user.id).first()
+    if not account:
+        raise HTTPException(status_code=400, detail="Kantong harus memiliki rekening induk")
+    if payload.subscription_id is not None:
+        sub = db.query(Subscription).filter(Subscription.id == payload.subscription_id, Subscription.user_id == current_user.id).first()
+        if not sub:
+            raise HTTPException(status_code=404, detail="Tagihan tidak ditemukan")
+        if not sub.is_active:
+            raise HTTPException(status_code=400, detail="Pilih tagihan yang masih aktif")
+        if sub.account.strip().casefold() != account.name.strip().casefold():
+            raise HTTPException(status_code=400, detail="Tagihan harus berasal dari rekening induk yang sama")
+        existing = db.query(JagoPocket).filter(JagoPocket.user_id == current_user.id, JagoPocket.subscription_id == sub.id, JagoPocket.id != pocket.id).first()
+        if existing:
+            raise HTTPException(status_code=409, detail=f"Tagihan sudah terhubung ke kantong {existing.name}")
+        pocket.subscription_id = sub.id
+        pocket.target_amount = int(sub.amount)
+    else:
+        sub = db.query(Subscription).filter(Subscription.id == pocket.subscription_id, Subscription.user_id == current_user.id).first() if pocket.subscription_id else None
+        if sub:
+            pocket.target_amount = int(sub.amount) if sub.is_active else 0
+        pocket.subscription_id = None
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Tagihan sudah terhubung ke kantong lain")
+    return compute_pockets_summary(db=db, user_id=current_user.id, account_id=account.id)
 
 
 @router.get("/{pocket_id_or_slug}", response_model=JagoPocketItemResponse)
@@ -863,13 +889,15 @@ def update_single_pocket(
             detail=f"Kantong '{pocket_id_or_slug}' tidak ditemukan",
         )
 
-    if payload.target_amount is not None:
+    if payload.target_amount is not None and not pocket.subscription_id:
         pocket.target_amount = max(0, int(payload.target_amount))
     if payload.name is not None and payload.name.strip():
         pocket.name = payload.name.strip()
     if payload.role is not None:
         pocket.role = payload.role
     if payload.account_id is not None:
+        if pocket.subscription_id and payload.account_id != pocket.account_id:
+            raise HTTPException(status_code=409, detail="Lepaskan hubungan tagihan sebelum memindahkan kantong")
         acc = db.query(Account).filter(Account.id == payload.account_id, Account.user_id == current_user.id).first()
         if not acc:
             raise HTTPException(status_code=404, detail="Rekening tidak ditemukan")

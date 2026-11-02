@@ -104,6 +104,10 @@ class JagoPocketItemResponse(BaseModel):
     user_id: int
     account_id: Optional[int] = None
     account_name: Optional[str] = None
+    subscription_id: Optional[int] = None
+    subscription_name: Optional[str] = None
+    subscription_status: Optional[str] = None
+    subscription_billing_cycle: Optional[str] = None
     name: str
     slug: str
     role: str = "operasional"
@@ -120,6 +124,10 @@ class JagoPocketItemResponse(BaseModel):
 
 
 # Universal aliases for single response
+class PocketSubscriptionLink(BaseModel):
+    subscription_id: Optional[int] = Field(..., gt=0)
+
+
 PocketResponse = JagoPocketItemResponse
 PocketItemResponse = JagoPocketItemResponse
 

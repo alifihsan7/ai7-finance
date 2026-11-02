@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 interface CustomModalProps {
@@ -52,7 +53,7 @@ export function CustomModal({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === "undefined") return null;
 
   const maxWidthStyles = {
     sm: "max-w-sm",
@@ -61,7 +62,7 @@ export function CustomModal({
     xl: "max-w-2xl",
   };
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -113,6 +114,7 @@ export function CustomModal({
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.querySelector(".luma-app") || document.body
   );
 }

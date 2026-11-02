@@ -68,6 +68,10 @@ export interface JagoPocketItem {
   account_id?: number | null;
   account_name?: string | null;
   role?: string;
+  subscription_id?: number | null;
+  subscription_name?: string | null;
+  subscription_status?: "active" | "inactive" | "missing" | "account_mismatch" | null;
+  subscription_billing_cycle?: string | null;
   name: string;
   slug: string;
   target_amount: number;
@@ -134,11 +138,30 @@ export async function updateJagoPockets(
   return parseJagoResponse(res, "memperbarui");
 }
 
-export async function syncJagoPocketCommitments(): Promise<JagoPocketsSummaryResponse> {
-  const res = await authFetch("/api/v1/jago-pockets/sync-commitments", {
-    method: "POST",
+export interface PocketBill {
+  id: number;
+  name: string;
+  account: string;
+  amount: number;
+  is_active: boolean;
+  billing_cycle: string;
+  billing_type?: string;
+}
+
+export async function getPocketBills(): Promise<PocketBill[]> {
+  const res = await authFetch("/api/v1/subscriptions");
+  if (!res.ok) throw new Error("Gagal memuat tagihan. Coba lagi.");
+  const body = await res.json();
+  return body.items;
+}
+
+export async function linkPocketBill(pocketId: number, subscriptionId: number | null): Promise<JagoPocketsSummaryResponse> {
+  const res = await authFetch(`/api/v1/jago-pockets/${pocketId}/subscription`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subscription_id: subscriptionId }),
   });
-  return parseJagoResponse(res, "menyelaraskan");
+  return parseJagoResponse(res, "menghubungkan tagihan ke");
 }
 
 export async function createAccountPocket(payload: { account_id: number; name: string; role: string; target_amount: number }): Promise<JagoPocketItem> {

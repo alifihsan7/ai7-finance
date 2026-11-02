@@ -6,7 +6,7 @@ import {
   Landmark,
   Pencil,
   Plus,
-  RefreshCw,
+  Link2,
   Smartphone,
   Wallet,
 } from "lucide-react";
@@ -15,11 +15,11 @@ import {
   JagoPocketItem,
   JagoPocketsSummaryResponse,
   getJagoPockets,
-  syncJagoPocketCommitments,
 } from "@/lib/api";
 import { EditJagoPocketsModal } from "./EditJagoPocketsModal";
 import { getPocketStatus } from "@/lib/pocketStatus";
 import { AddPocketModal } from "./AddPocketModal";
+import { LinkPocketBillModal } from "./LinkPocketBillModal";
 import type { AccountItem } from "./AccountGrid";
 
 interface JagoPocketsProps {
@@ -86,10 +86,10 @@ export function JagoPockets({ accountId, accountName, formatRupiah, refreshSigna
   useEffect(() => { onDataLoadedRef.current = onDataLoaded; }, [onDataLoaded]);
   const [data, setData] = useState<JagoPocketsSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [linkPocketId, setLinkPocketId] = useState<number | null>(null);
   const requestVersion = useRef(0);
 
   const fetchPockets = useCallback(async () => {
@@ -116,22 +116,6 @@ export function JagoPockets({ accountId, accountName, formatRupiah, refreshSigna
     return () => { requestVersion.current += 1; };
   }, [fetchPockets, refreshSignal]);
 
-  const handleSync = async () => {
-    if (syncing) return;
-    const version = requestVersion.current;
-    setSyncing(true);
-    try {
-      await syncJagoPocketCommitments();
-      if (version !== requestVersion.current) return;
-      await fetchPockets();
-      onToast?.("Komitmen kantong tersinkron dengan tagihan");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Gagal menyelaraskan komitmen";
-      onToast?.(msg);
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   const handleEditSuccess = (updated: JagoPocketsSummaryResponse) => {
     setData(updated);
@@ -203,16 +187,16 @@ export function JagoPockets({ accountId, accountName, formatRupiah, refreshSigna
           </p>
         </div>
         {showActions && <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {(accountId === undefined || pockets.some(pocket => ["kuota", "claude", "gym"].includes(pocket.slug))) && <button
+          <button
             type="button"
-            onClick={handleSync}
-            disabled={syncing}
-            title="Selaraskan target kantong dengan Tagihan aktif"
+            onClick={() => setLinkPocketId((pockets.find(pocket => pocket.role === "tagihan") || pockets[0]).id)}
+            disabled={!!error || !parentName || pockets.length === 0}
+            title="Pilih tagihan yang menentukan plafon kantong"
             className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-semibold bg-white/[0.06] text-luma-ivory border border-luma-smokeline hover:bg-white/[0.1] hover:border-white/[0.2] active:scale-95 transition inline-flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${syncing ? "animate-spin" : ""}`} aria-hidden="true" />
-            <span>{syncing ? "Menyelaraskan..." : "Sync komitmen"}</span>
-          </button>}
+            <Link2 className="w-4 h-4" aria-hidden="true" />
+            <span>Hubungkan tagihan</span>
+          </button>
           <button
             type="button"
             onClick={() => setIsEditOpen(true)}
@@ -288,6 +272,9 @@ export function JagoPockets({ accountId, accountName, formatRupiah, refreshSigna
                       {formatRupiah(remaining)}
                     </div>
                     <div className="text-xs text-luma-smoke mt-0.5">Sisa saldo kantong</div>
+                    {pocket.subscription_id && <p className={`text-xs mt-2 ${pocket.subscription_status === "active" ? "text-luma-smoke" : "text-luma-coral"}`}>
+                      {pocket.subscription_name || "Tagihan terhubung"} · {pocket.subscription_status === "active" ? "Plafon otomatis" : "Tagihan tidak aktif atau rekening berubah; plafon 0"}
+                    </p>}
                   </div>
 
                   {pct !== null ? <div
@@ -306,6 +293,9 @@ export function JagoPockets({ accountId, accountName, formatRupiah, refreshSigna
                 </div>
 
                 <div className="grid text-xs text-luma-smoke font-sans pt-3 border-t border-luma-smokeline gap-2 tabular-nums">
+                  {parentName && <button type="button" onClick={() => setLinkPocketId(pocket.id)} className="text-left text-luma-smoke hover:text-luma-ivory" aria-label={`Atur tagihan ${pocket.name}`}>
+                    {pocket.subscription_id ? "Atur hubungan tagihan" : "Hubungkan tagihan"}
+                  </button>}
                   <div className="flex flex-wrap items-center justify-between gap-1 min-w-0">
                     <span className="text-xs">Plafon:</span>
                     <span className="font-semibold text-luma-ivory text-xs break-all">
@@ -341,6 +331,11 @@ export function JagoPockets({ accountId, accountName, formatRupiah, refreshSigna
       {isAddOpen && accountId !== undefined && <AddPocketModal accountId={accountId} accountName={parentName || "Rekening"} onClose={() => setIsAddOpen(false)} onCreated={() => {
         void fetchPockets();
         onToast?.("Kantong berhasil ditambahkan");
+      }} />}
+      {linkPocketId !== null && parentName && <LinkPocketBillModal pockets={pockets} initialPocketId={linkPocketId} accountName={parentName} formatRupiah={formatRupiah} onClose={() => setLinkPocketId(null)} onSuccess={updated => {
+        setData(updated);
+        onDataLoadedRef.current?.(updated);
+        onToast?.("Hubungan tagihan berhasil disimpan");
       }} />}
     </section>
   );

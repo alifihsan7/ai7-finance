@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.api.v1.router import api_router
 from app.db.session import engine, Base
+from app.db.pocket_schema import ensure_pocket_subscription_schema
 import app.models.transaction
 import app.models.subscription
 import app.models.account
@@ -35,6 +36,7 @@ def ensure_pocket_schema_compatibility():
         pass
 
 ensure_pocket_schema_compatibility()
+ensure_pocket_subscription_schema(engine)
 
 IS_PROD = os.getenv("ENVIRONMENT", "production").lower() == "production"
 

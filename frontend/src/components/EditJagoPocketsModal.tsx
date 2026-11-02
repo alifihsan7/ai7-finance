@@ -56,7 +56,7 @@ export function EditJagoPocketsModal({
       return;
     }
 
-    const payload = pockets.map((p) => {
+    const payload = pockets.filter(p => !p.subscription_id).map((p) => {
       const raw = (targets[p.slug] ?? "").replace(/[^\d]/g, "");
       const amount = raw ? parseInt(raw, 10) : 0;
       if (Number.isNaN(amount) || amount < 0) {
@@ -101,7 +101,7 @@ export function EditJagoPocketsModal({
 
         <div className="space-y-3">
           {pockets.map((pocket) => (
-            <div
+            <fieldset disabled={!!pocket.subscription_id || loading}
               key={pocket.slug}
               className="bg-obsidian-panel border border-luma-smokeline rounded-2xl p-4 space-y-2.5"
             >
@@ -124,7 +124,8 @@ export function EditJagoPocketsModal({
                 placeholder="0"
                 accent="amber"
               />
-            </div>
+              {pocket.subscription_id && <p className="text-xs text-luma-smoke">Plafon mengikuti {pocket.subscription_name || "tagihan terhubung"}. Lepaskan hubungan tagihan untuk mengaturnya manual.</p>}
+            </fieldset>
           ))}
         </div>
 
@@ -143,7 +144,7 @@ export function EditJagoPocketsModal({
           </button>
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || pockets.every(pocket => !!pocket.subscription_id)}
             className="min-h-[44px] px-6 py-2.5 rounded-2xl text-xs sm:text-sm bg-amberGold text-slate-950 font-semibold hover:bg-amber-300 transition flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amberGold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-card"
           >
             {loading ? (

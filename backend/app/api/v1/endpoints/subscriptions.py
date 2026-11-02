@@ -8,6 +8,7 @@ from sqlalchemy import desc
 
 from app.db.session import get_db
 from app.models.subscription import Subscription
+from app.models.jago_pocket import JagoPocket
 from app.models.user import User
 from app.api.deps import get_current_user
 from app.schemas.subscription import (
@@ -169,8 +170,15 @@ def update_subscription(
         raise HTTPException(status_code=404, detail="Langganan tidak ditemukan")
 
     update_data = sub_in.model_dump(exclude_unset=True)
+    if "account" in update_data and (not update_data["account"] or not update_data["account"].strip()):
+        raise HTTPException(status_code=400, detail="Rekening tagihan tidak boleh kosong")
+    if "account" in update_data and update_data["account"].strip().casefold() != sub.account.strip().casefold():
+        if db.query(JagoPocket.id).filter(JagoPocket.subscription_id == sub.id).first():
+            raise HTTPException(status_code=409, detail="Lepaskan hubungan kantong sebelum memindahkan rekening tagihan")
     for field, value in update_data.items():
         setattr(sub, field, value)
+    for pocket in db.query(JagoPocket).filter(JagoPocket.user_id == current_user.id, JagoPocket.subscription_id == sub.id).all():
+        pocket.target_amount = int(sub.amount) if sub.is_active else 0
 
     db.commit()
     db.refresh(sub)
@@ -205,6 +213,8 @@ def delete_subscription(
     if not sub:
         raise HTTPException(status_code=404, detail="Langganan tidak ditemukan")
 
+    if db.query(JagoPocket.id).filter(JagoPocket.subscription_id == sub.id).first():
+        raise HTTPException(status_code=409, detail="Lepaskan hubungan kantong sebelum menghapus tagihan")
     db.delete(sub)
     db.commit()
     return {"status": "success", "message": f"Langganan '{sub.name}' berhasil dihapus"}
