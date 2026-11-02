@@ -20,7 +20,6 @@ import {
 import { EditJagoPocketsModal } from "./EditJagoPocketsModal";
 import { getPocketStatus } from "@/lib/pocketStatus";
 import { AddPocketModal } from "./AddPocketModal";
-import { CustomSelect } from "./ui/CustomSelect";
 import type { AccountItem } from "./AccountGrid";
 
 interface JagoPocketsProps {
@@ -354,9 +353,19 @@ export function AccountPockets({ accounts, ...props }: Omit<JagoPocketsProps, "a
   const selected = available.find(account => account.id === selectedId) || available[0];
   if (!selected) return <p className="luma-data-state text-luma-smoke">Tambahkan rekening terlebih dahulu sebelum membuat kantong.</p>;
   return <div className="space-y-4">
-    <fieldset className="max-w-sm">
+    <fieldset className="min-w-0">
       <legend className="text-xs text-luma-smoke font-medium mb-2">Rekening induk</legend>
-      <CustomSelect value={String(selected.id)} onChange={value => setSelectedId(Number(value))} options={available.map(account => ({ value: String(account.id), label: account.name }))} />
+      <div className="flex flex-wrap gap-2">
+        {available.map(account => <button
+          key={account.id}
+          type="button"
+          aria-pressed={account.id === selected.id}
+          onClick={() => setSelectedId(account.id)}
+          className={`min-w-0 max-w-full px-4 py-2 text-left font-medium [overflow-wrap:anywhere] border transition-colors ${account.id === selected.id
+            ? "bg-luma-ivory text-luma-charcoal border-transparent"
+            : "bg-white/[0.04] text-luma-smoke border-luma-smokeline hover:bg-white/[0.08] hover:text-luma-ivory"}`}
+        >{account.name}</button>)}
+      </div>
     </fieldset>
     <JagoPockets key={selected.id} {...props} accountId={selected.id} accountName={selected.name} />
   </div>;

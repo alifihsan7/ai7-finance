@@ -2,7 +2,7 @@
 
 Kantong adalah pembagian alokasi dalam rekening induk, bukan tambahan saldo kas.
 
-- Pengaturan → Kantong menyediakan pilihan rekening induk. Judul mengikuti nama rekening, misalnya “Kantong Bank Uji”.
+- Pengaturan → Kantong dan Anggaran menampilkan semua rekening induk sebagai tombol yang membungkus ke baris berikutnya. Tombol aktif ditandai secara visual dan dengan `aria-pressed`. Judul mengikuti nama rekening, misalnya “Kantong Bank Uji”.
 - Halaman Anggaran memakai komponen pilihan rekening yang sama. Panel amplop lama yang menampilkan rekening utama lagi dihapus dari halaman tersebut; ringkasan tagihan/simpanan tetap terpisah dari daftar kantong.
 - Daftar dan ringkasan diminta menggunakan `account_id`. Pergantian rekening memisahkan daftar, formulir, dan permintaan yang masih berjalan.
 - “Tambah kantong” mengisi nama, jenis (operasional, tagihan, darurat, tabungan, investasi), dan plafon. Rekening induk ditetapkan dari pilihan aktif.
