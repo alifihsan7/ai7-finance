@@ -1897,17 +1897,8 @@ export default function FinanceDashboard() {
               formatRupiah={formatRupiah}
               loading={loading}
             />
-            <SmartBudgetEnvelopes
-              mandiriExpenses={mandiriExpenses}
-              formatRupiah={formatRupiah}
-              cycleDays={summary.safe_to_spend?.cycle_days || 14}
-              pocketAccount={summary.safe_to_spend?.pocket_account || (customAccounts[0]?.name || "Saku Operasional")}
-              pocketBudget={summary.safe_to_spend?.pocket_budget}
-              loading={loading}
-            />
-
-            <JagoPockets
-              accountId={(customAccounts.find(account => account.name === summary.safe_to_spend?.pocket_account) || customAccounts.find(account => account.type === "operasional") || customAccounts[0])?.id}
+            <AccountPockets
+              accounts={customAccounts}
               formatRupiah={formatRupiah}
               refreshSignal={jagoRefreshSignal}
               onToast={showToast}
@@ -1919,7 +1910,7 @@ export default function FinanceDashboard() {
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="ai7-type-card text-slateText-primary">
-                      Kantong Tagihan Rutin &amp; Utilitas
+                      Komitmen tagihan dan simpanan
                     </h3>
                     <span className="text-xs font-sans font-semibold px-2.5 py-0.5 rounded-full border bg-coralFall/15 text-coralFall border-coralFall/30">
                       Tagihan
