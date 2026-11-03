@@ -67,7 +67,7 @@ export function EditSubscriptionModal({
     }
 
     if (billingType === "exact_date" && !exactDueDate) {
-      setError("Pilih tanggal berakhir tagihan.");
+      setError("Pilih tanggal jatuh tempo.");
       return;
     }
 
@@ -163,7 +163,7 @@ export function EditSubscriptionModal({
               }`}
             >
               <Clock className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">Rutin Tiap Tgl (1-31)</span>
+              <span>Tanggal rutin</span>
             </button>
             <button
               type="button"
@@ -182,7 +182,7 @@ export function EditSubscriptionModal({
               }`}
             >
               <Calendar className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">Tgl Berakhir Tertentu (Gym)</span>
+              <span>Tanggal tertentu</span>
             </button>
           </div>
         </div>
@@ -221,7 +221,7 @@ export function EditSubscriptionModal({
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="block text-xs font-semibold text-zinc-400 ">
-                  Tanggal berakhir riil
+                  Tanggal jatuh tempo
                 </label>
                 <div className="flex gap-1">
                   <button
