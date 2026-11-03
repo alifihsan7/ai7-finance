@@ -1402,7 +1402,7 @@ export default function FinanceDashboard() {
       </button>
 
       {/* MOBILE BOTTOM NAVIGATION BAR — 5 Core Menus */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-luma-charcoal/95 backdrop-blur-md border-t border-luma-smokeline/60 px-1.5 py-1.5 flex items-center justify-around safe-bottom shadow-2xl" aria-label="Navigasi utama">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-luma-charcoal border-t border-luma-smokeline px-1.5 py-1.5 flex items-center justify-around safe-bottom shadow-2xl" aria-label="Navigasi utama">
         {[
           { name: "Ringkasan", slug: "#/overview", icon: LayoutDashboard },
           { name: "Transaksi", slug: "#/transactions", icon: Receipt },
