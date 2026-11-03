@@ -2168,8 +2168,8 @@ export default function FinanceDashboard() {
         {activeNav === "Pengaturan" && (
           <div className="space-y-6 animate-fadeIn">
             {/* Sub-tab Navigation */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-luma-smokeline">
-              <div className="ai7-tab-group inline-flex bg-white/[0.04] border border-luma-smokeline overflow-x-auto" role="tablist" aria-label="Pengaturan" onKeyDown={handleTabArrowKeys}>
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-luma-smokeline">
+              <div className="ai7-tab-group grid w-full grid-cols-2 gap-1 border border-luma-smokeline bg-white/[0.04] sm:flex sm:w-auto sm:max-w-full sm:flex-wrap" role="tablist" aria-label="Pengaturan" onKeyDown={handleTabArrowKeys}>
                 <button
                   type="button"
                   role="tab"
@@ -2257,13 +2257,13 @@ export default function FinanceDashboard() {
                   }`}
                 >
                   <Settings className="w-4 h-4 shrink-0 text-luma-gold" />
-                  <span>Profil &amp; Preferensi</span>
+                  <span>Profil</span>
                 </button>
               </div>
 
               {/* Sub-tab action shortcuts */}
               {settingsSubTab === "rekening" && (
-                <div className="flex items-center gap-2 justify-end flex-wrap sm:flex-nowrap">
+                <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setIsTransferModalOpen(true)}
