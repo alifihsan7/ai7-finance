@@ -105,7 +105,7 @@ export function LumaRecentTransactions({
                 >
                   <div
                     aria-hidden="true"
-                    className="w-11 h-11 rounded-full bg-[#2B2825] border border-luma-smokeline flex items-center justify-center shrink-0"
+                    className="w-11 h-11 rounded-[var(--ai7-radius-control)] bg-luma-coal border border-luma-smokeline flex items-center justify-center shrink-0"
                   >
                     <TxIcon type={tx.type} />
                   </div>
