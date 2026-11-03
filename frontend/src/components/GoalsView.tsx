@@ -172,7 +172,7 @@ export function GoalsView({
             </div>
           )}
           <div className="text-xs text-luma-smoke font-sans">
-            Akumulasi seluruh milestone
+            Jumlah semua target
           </div>
         </div>
 
@@ -234,7 +234,7 @@ export function GoalsView({
             Milestone Tracker Tabungan &amp; Investasi
           </h2>
           <p className="text-xs sm:text-sm text-luma-smoke mt-1">
-            Pantau akumulasi target dana dingin, portofolio aset, dan alokasi tabungan masa depan
+            Pantau progres tabungan dan investasi
           </p>
         </div>
 
@@ -288,7 +288,7 @@ export function GoalsView({
           <div>
             <h3 className="ai7-type-card text-luma-ivory">Belum ada target tabungan</h3>
             <p className="text-xs sm:text-sm text-luma-smoke mt-1 max-w-md mx-auto">
-              Mulai tetapkan target tabungan masa depan atau portofolio investasi Anda untuk memantau capaian finansial siklus.
+              Buat target untuk mulai melacak tabungan atau investasi.
             </p>
           </div>
           <button

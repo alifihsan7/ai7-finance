@@ -370,10 +370,10 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
             </div>
             <p className="text-xs text-zinc-400 leading-relaxed">
               {paceStatus === "ahead"
-                ? `Laju belanja Anda sangat terkontrol. Pengeluaran aktual (${formatRupiah(pocketSpent)}) berada di bawah target ideal kumulatif (${formatRupiah(safe?.ideal_pace_today || 0)}), memberikan peluang surplus di akhir siklus.`
+                ? `Belanja (${formatRupiah(pocketSpent)}) masih di bawah target (${formatRupiah(safe?.ideal_pace_today || 0)}).`
                 : paceStatus === "on_track"
-                ? `Laju belanja stabil dan sesuai rencana. Batas aman harian Anda saat ini adalah ${formatRupiah(safeDaily)} / hari untuk ${daysRemaining} hari ke depan.`
-                : `Perhatian: Akumulasi belanja telah melampaui target ideal kumulatif. Disarankan membatasi pengeluaran non-primer agar sisa kuota ${formatRupiah(safeDaily)} / hari mencukupi hingga siklus berakhir.`}
+                ? `Belanja sesuai rencana. Batas harian: ${formatRupiah(safeDaily)} untuk ${daysRemaining} hari ke depan.`
+                : `Belanja melewati target. Batasi belanja tambahan agar ${formatRupiah(safeDaily)} per hari cukup sampai siklus berakhir.`}
             </p>
           </div>
 

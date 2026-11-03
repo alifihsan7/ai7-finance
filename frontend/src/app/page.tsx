@@ -1580,15 +1580,15 @@ export default function FinanceDashboard() {
               )}
             </h1>
             <p className="text-sm text-luma-smoke mt-1 tabular-nums">
-              {activeNav === "Ringkasan" && "Total saldo kas, sisa batas belanja harian, dan ringkasan kondisi keuangan."}
-              {activeNav === "Transaksi" && "Pemasukan, pengeluaran, transfer, pencarian, filter, dan ekspor data transaksi."}
-              {activeNav === "Anggaran" && "Batas belanja per kategori, evaluasi pemakaian anggaran, serta formula/alokasi pemasukan."}
-              {activeNav === "Rencana" && (planSubTab === "target" ? "Target tabungan masa depan, dana darurat, dan progres capaian milestone." : "Daftar kewajiban tagihan berkala, autodebet rutin, dan jadwal jatuh tempo.")}
-              {activeNav === "Laporan" && "Arus kas, pengeluaran per kategori, dan perbandingan laju belanja periode."}
+              {activeNav === "Ringkasan" && "Saldo kas dan batas belanja harian."}
+              {activeNav === "Transaksi" && "Cari, filter, dan ekspor transaksi."}
+              {activeNav === "Anggaran" && "Atur batas belanja dan alokasi pemasukan."}
+              {activeNav === "Rencana" && (planSubTab === "target" ? "Pantau progres target tabungan." : "Tagihan rutin dan tanggal jatuh tempo.")}
+              {activeNav === "Laporan" && "Arus kas, kategori pengeluaran, dan laju belanja."}
               {activeNav === "Pengaturan" && (
                 settingsSubTab === "kantong"
-                  ? "Pilih rekening induk, tambah kantong, dan atur plafon alokasinya."
-                  : "Pengelolaan rekening simpanan fisik, pos kategori transaksi, preferensi tema, dan profil pengguna."
+                  ? "Atur kantong dan alokasi tiap rekening."
+                  : "Kelola rekening, kategori, tema, dan profil."
               )}
             </p>
           </div>
@@ -2645,7 +2645,7 @@ export default function FinanceDashboard() {
         onClose={() => setSubToDelete(null)}
         onConfirm={handleConfirmDeleteSubscription}
         title="Hapus Tagihan?"
-        message="Apakah kamu yakin ingin menghapus tagihan rutin ini? Data akan dihapus dari pemantauan bulanan."
+        message="Tagihan ini akan hilang dari pemantauan bulanan."
         confirmText="Hapus Tagihan"
         loading={deleteLoading}
       />
@@ -2707,7 +2707,7 @@ export default function FinanceDashboard() {
         onClose={() => setGoalToDelete(null)}
         onConfirm={handleConfirmDeleteGoal}
         title="Hapus target tabungan?"
-        message="Apakah Anda yakin ingin menghapus target tabungan ini? Progres capaian akan dihapus dari dashboard."
+        message="Target dan progresnya akan dihapus."
         confirmText="Hapus target"
         loading={deleteLoading}
       />

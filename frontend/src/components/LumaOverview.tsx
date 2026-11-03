@@ -55,7 +55,7 @@ export function LumaOverview({ totalBalance, income, expense, accountCount, safe
       <h2>Saldo, jatah belanja,<br />dan catatan harian.</h2>
       <p>Masuk untuk melihat rekening dan transaksi Anda.<br />Data keuangan belum ditampilkan.</p>
       <div className="luma-balance-actions"><button type="button" className="luma-action-primary" onClick={onSignIn}>Masuk ke akun</button></div>
-      <div className="luma-guest-inset">Catat pengeluaran dari web atau bot Telegram yang terhubung ke akun Anda.</div>
+      <div className="luma-guest-inset">Catat pengeluaran lewat web atau bot Telegram yang terhubung.</div>
     </section>
     <section className="luma-matte luma-guest-guide" aria-label="Panduan ringkasan">
       <h2>Yang bisa Anda lihat di sini</h2>
