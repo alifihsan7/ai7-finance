@@ -352,7 +352,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-panel-label { font-size: 12px; font-weight: 500; color: var(--luma-ivory); }
 .luma-icon-button { display: inline-flex; align-items: center; justify-content: center; width: 44px; min-height: 44px; color: #f4f1ec; border-radius: var(--ai7-radius-control); }
 .luma-icon-button:hover { background: rgba(255,255,255,.1); }
-.luma-balance-body { padding: 18px 0 25px; }
+.luma-balance-body { padding: 18px 0 25px; container-type: inline-size; }
 .luma-balance-number { font-size: var(--ai7-text-balance); line-height: 1.2; font-weight: 500; letter-spacing: -.035em; font-variant-numeric: tabular-nums; margin: 8px 0; overflow-wrap: anywhere; color: #fff; }
 .luma-balance-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
 .luma-action-primary, .luma-action-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: var(--ai7-radius-control); padding: 11px 16px; font-size: 14px; font-weight: 500; transition: background-color .15s; }
@@ -577,7 +577,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   --ai7-radius-badge: 6px;
   --ai7-text-page: 30px; --ai7-text-section: 18px; --ai7-text-card: 16px;
   --ai7-text-body: 14px; --ai7-text-meta: 12px; --ai7-text-input: 16px;
-  --ai7-text-metric: 28px; --ai7-text-balance: 36px;
+  --ai7-text-metric: 28px; --ai7-text-balance: clamp(28px, 10.5cqi, 64px);
 }
 .luma-app { font-family: var(--ai7-font-ui); font-size: var(--ai7-text-body); line-height: 1.5; }
 .ai7-type-page { font: 500 var(--ai7-text-page)/1.2 var(--ai7-font-ui); }
@@ -606,7 +606,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-app .ai7-currency-field input { border-radius: 0; border: 0; }
 .luma-app .ai7-filters button { border-radius: var(--ai7-radius-control) var(--ai7-radius-control) 0 0; }
 @media(max-width: 600px) {
-  :root { --ai7-text-page: 24px; --ai7-text-metric: 24px; --ai7-text-balance: 28px; }
+  :root { --ai7-text-page: 24px; --ai7-text-metric: 24px; }
 }
 
 /* Visible keyboard focus for all interactive elements (WCAG 2.4.7) */
