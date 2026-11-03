@@ -2484,7 +2484,7 @@ export default function FinanceDashboard() {
                 }`}
               >
                 <Clock className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Rutin Tiap Tgl (1-31)</span>
+                <span>Tanggal rutin</span>
               </button>
               <button
                 type="button"
@@ -2503,7 +2503,7 @@ export default function FinanceDashboard() {
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Tgl Berakhir spesifik (Gym)</span>
+                <span>Tanggal tertentu</span>
               </button>
             </div>
           </div>
@@ -2542,7 +2542,7 @@ export default function FinanceDashboard() {
             ) : (
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
-                  Tanggal berakhir riil
+                  Tanggal jatuh tempo
                 </label>
                 <input
                   type="date"
