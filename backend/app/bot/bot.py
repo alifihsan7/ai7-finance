@@ -7,22 +7,30 @@ import requests
 from datetime import datetime, date, timedelta
 import calendar
 import zoneinfo
+import json
+import uuid
 
 logger = logging.getLogger("ai7-finance-bot")
 
-from typing import Optional, List
+from typing import Optional, List, Dict
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func, case
 
 from app.core.config import settings
-from app.core.parser import parse_transaction, parse_multi_transactions
+from app.core.parser import parse_transaction, parse_multi_transactions, parse_amount
 from app.core.transfer import find_paired_transfer
 from app.db.session import SessionLocal, Base, engine
 from app.models.transaction import Transaction
 from app.models.account import Account
 from app.models.jago_pocket import JagoPocket
-from app.models.paycheck import PaycheckConfig, PaycheckBucket
+from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckReceipt, PaycheckCycle
+from app.models.subscription import Subscription
+from app.models.goal import Goal
 from app.models.user import User
+
+from app.services.analytics import compute_safe_to_spend_metrics, resolve_pocket_account
+from app.services.paycheck_cycles import recorded_cycle_ends, receipt_allocations
+from app.api.v1.endpoints.analytics import get_monthly_date_bounds
 
 API_BASE = f"https://api.telegram.org/bot{settings.BOT_TOKEN}"
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
@@ -35,23 +43,13 @@ def get_user_cycle_info(db: Session, user_id: int) -> dict:
     today_wib = now_wib.date()
 
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
-    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
+    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days and cfg.cycle_days > 0 else 14
     cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "biweekly"
     anchor_start = cfg.cycle_start_date if cfg and cfg.cycle_start_date else None
     paycheck_day = cfg.paycheck_day if cfg and cfg.paycheck_day else (anchor_start.day if anchor_start else 25)
 
-    pocket_account = None
-    if cfg and cfg.pocket_account:
-        pocket_account = cfg.pocket_account
-    else:
-        user_accs = db.query(Account).filter(Account.user_id == user_id).all()
-        op_acc = next((a for a in user_accs if a.type == "operasional" or (a.tag and "saku" in a.tag.lower())), None)
-        if op_acc:
-            pocket_account = op_acc.name
-        elif user_accs:
-            pocket_account = user_accs[0].name
-        else:
-            pocket_account = "Mandiri"
+    user_accs = db.query(Account).filter(Account.user_id == user_id).all()
+    pocket_account = resolve_pocket_account(db, user_id, user_accs=user_accs, cfg=cfg)
 
     latest_paycheck = db.query(Transaction).filter(
         Transaction.user_id == user_id,
@@ -59,28 +57,34 @@ def get_user_cycle_info(db: Session, user_id: int) -> dict:
         Transaction.category.in_(["Gajian", "Gaji", "Pemasukan", "Uang Saku Ortu", "Income"]) | Transaction.description.ilike("%gajian%") | Transaction.description.ilike("%pemasukan%")
     ).order_by(desc(Transaction.date), desc(Transaction.id)).first()
 
-    if cycle_type == "monthly_date":
-        if today_wib.day >= paycheck_day:
-            start_year, start_month = today_wib.year, today_wib.month
-        else:
-            if today_wib.month == 1:
-                start_year, start_month = today_wib.year - 1, 12
-            else:
-                start_year, start_month = today_wib.year, today_wib.month - 1
-        _, max_days_start = calendar.monthrange(start_year, start_month)
-        cycle_start = date(start_year, start_month, min(paycheck_day, max_days_start))
+    cycle_ends = recorded_cycle_ends(db, user_id)
+    active_recorded_start = max((day for day, end in cycle_ends.items() if day <= today_wib <= end), default=None)
 
-        if start_month == 12:
-            next_year, next_month = start_year + 1, 1
-        else:
-            next_year, next_month = start_year, start_month + 1
-        _, max_days_next = calendar.monthrange(next_year, next_month)
-        cycle_end = date(next_year, next_month, min(paycheck_day, max_days_next)) - timedelta(days=1)
+    if active_recorded_start:
+        cycle_start = active_recorded_start
+        cycle_end = cycle_ends[active_recorded_start]
+        cycle_days = (cycle_end - cycle_start).days + 1
+        cycle_label = f"Siklus {cycle_days} Hari"
+    elif cycle_type == "monthly_date":
+        cycle_start, cycle_end = get_monthly_date_bounds(today_wib, paycheck_day)
         cycle_days = (cycle_end - cycle_start).days + 1
         cycle_label = f"Siklus Bulanan (Tgl {paycheck_day})"
     else:
-        cycle_start = anchor_start or (latest_paycheck.date if latest_paycheck else today_wib)
+        if latest_paycheck and latest_paycheck.date:
+            base_start = latest_paycheck.date
+            if anchor_start and anchor_start > latest_paycheck.date:
+                base_start = anchor_start
+        elif anchor_start:
+            base_start = anchor_start
+        else:
+            base_start = today_wib
+
+        cycle_start = base_start
         cycle_end = cycle_start + timedelta(days=cycle_days - 1)
+        if cycle_start in cycle_ends:
+            cycle_end = cycle_ends[cycle_start]
+            cycle_days = (cycle_end - cycle_start).days + 1
+
         if cycle_type == "weekly" or cycle_days == 7:
             cycle_label = "Siklus Mingguan"
         elif cycle_type == "biweekly" or cycle_days == 14:
@@ -142,77 +146,28 @@ def get_pocket_account_variants(pocket_account: str) -> List[str]:
 
 def get_safe_to_spend_snippet(db: Session, user_id: int) -> str:
     c_info = get_user_cycle_info(db, user_id=user_id)
-    cfg = c_info["cfg"]
-    cycle_days = c_info["cycle_days"]
-    pocket_account = c_info["pocket_account"]
     cycle_start = c_info["cycle_start"]
     cycle_end = c_info["cycle_end"]
-    day_of_cycle = c_info["day_of_cycle"]
-    days_remaining = c_info["days_remaining"]
+    today_wib = datetime.now(WIB).date()
 
-    pocket_income_row = db.query(
-        func.coalesce(func.sum(Transaction.amount), 0).label("inc")
-    ).filter(
-        Transaction.user_id == user_id,
-        Transaction.account == pocket_account,
-        Transaction.type == "income",
-        Transaction.date >= cycle_start,
-        Transaction.date <= cycle_end
-    ).first()
-    salary = getattr(cfg, "total_salary", None) if cfg else None
-    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (salary or 825000)
+    metrics = compute_safe_to_spend_metrics(
+        db=db,
+        user_id=user_id,
+        start_date=cycle_start,
+        end_date=cycle_end,
+        period_type="cycle",
+        today_wib=today_wib,
+        cfg=c_info["cfg"]
+    )
 
-    pocket_acc_obj = db.query(Account).filter(Account.user_id == user_id, func.lower(Account.name) == pocket_account.lower()).first()
-    account_pockets = []
-    if pocket_acc_obj:
-        account_pockets = db.query(JagoPocket).filter(
-            JagoPocket.user_id == user_id,
-            JagoPocket.account_id == pocket_acc_obj.id,
-            JagoPocket.is_active == True,
-        ).all()
-    if not account_pockets and any(k in pocket_account.lower() for k in ["jago", "pocket"]):
-        account_pockets = db.query(JagoPocket).filter(
-            JagoPocket.user_id == user_id,
-            JagoPocket.account_id == None,
-            JagoPocket.is_active == True,
-        ).all()
-
-    expenses_on_pocket_acc = db.query(Transaction).filter(
-        Transaction.user_id == user_id,
-        Transaction.account == pocket_account,
-        Transaction.type == "expense",
-        Transaction.date >= cycle_start,
-        Transaction.date <= cycle_end
-    ).all()
-
-    has_non_operasional_pockets = any(p.role != "operasional" for p in account_pockets)
-    if has_non_operasional_pockets and account_pockets:
-        from app.api.v1.endpoints.jago_pockets import classify_pocket_transaction_for_account
-        pocket_by_slug = {p.slug: p for p in account_pockets}
-        pocket_spent = 0
-        for tx in expenses_on_pocket_acc:
-            matched_slug = classify_pocket_transaction_for_account(tx, account_pockets)
-            matched_p = pocket_by_slug.get(matched_slug)
-            p_role = matched_p.role if matched_p else "operasional"
-            if p_role == "operasional":
-                pocket_spent += int(tx.amount)
-    else:
-        pocket_spent = sum(int(tx.amount) for tx in expenses_on_pocket_acc)
-
-    pocket_remaining = max(0, pocket_budget - pocket_spent)
-    safe_daily = int(pocket_remaining / days_remaining)
-
-    ideal_daily_rate = pocket_budget / cycle_days
-    ideal_pace_today = int(ideal_daily_rate * day_of_cycle)
-
-    if pocket_spent <= ideal_pace_today:
+    if metrics.pace_status in ("ahead", "on_track"):
         pace_icon = "🟢"
         pace_label = "Pace Aman"
     else:
         pace_icon = "🔴"
         pace_label = "Agak Boros"
 
-    return f"🛡️ **Safe-to-Spend:** {format_rp(safe_daily)} / hari ({pace_icon} {pace_label} • Sisa {days_remaining} hari)"
+    return f"🛡️ **Safe-to-Spend:** {format_rp(metrics.safe_daily)} / hari ({pace_icon} {pace_label} • Sisa {metrics.days_remaining} hari)"
 
 def get_main_keyboard() -> dict:
     url = settings.APP_BASE_URL
@@ -224,9 +179,9 @@ def get_main_keyboard() -> dict:
     return {
         "keyboard": [
             [{"text": "📊 Rekap"}, {"text": "💳 Saldo"}],
-            [{"text": "🎯 Target & Goals"}, {"text": "🔔 Tagihan / Subs"}],
-            [{"text": "📜 Transaksi"}, {"text": "🔄 Transfer"}],
-            [{"text": "💰 Info Gajian"}, {"text": "📑 Google Sheets"}],
+            [{"text": "🎯 Pacing"}, {"text": "🔔 Tagihan / Subs"}],
+            [{"text": "🎯 Target & Goals"}, {"text": "🔄 Transfer"}],
+            [{"text": "📜 Transaksi"}, {"text": "💰 Info Gajian"}],
             [dashboard_btn],
         ],
         "resize_keyboard": True,
@@ -236,13 +191,14 @@ def get_main_keyboard() -> dict:
 def setup_bot_commands():
     commands = [
         {"command": "menu", "description": "📱 Buka tombol menu navigasi"},
-        {"command": "rekap", "description": "📊 Rekap pengeluaran & pacing belanja"},
         {"command": "saldo", "description": "💳 Estimasi saldo seluruh rekening"},
+        {"command": "pacing", "description": "🎯 Status burn rate & safe-to-spend"},
+        {"command": "rekap", "description": "📊 Rekap pengeluaran & pacing belanja"},
         {"command": "goals", "description": "🎯 Target tabungan & milestone finansial"},
         {"command": "transfer", "description": "🔄 Transfer antar rekening"},
         {"command": "subs", "description": "🔔 Jadwal langganan & tagihan rutin"},
         {"command": "transaksi", "description": "📜 5 transaksi terakhir"},
-        {"command": "gajian", "description": "💰 Auto-split alokasi gajian sesuai siklus"},
+        {"command": "gajian", "description": "💰 Catat gajian & siapkan alokasi pos"},
         {"command": "sheets", "description": "📑 Sinkronisasi snapshot ke Google Sheets"},
         {"command": "batal", "description": "↩️ Hapus/batalkan transaksi terakhir"},
         {"command": "help", "description": "ℹ️ Panduan cara input bot"},
@@ -336,12 +292,14 @@ Bot ini terintegrasi langsung dengan Web Dashboard AI7 Finance lo.
 
 📌 **Perintah Tersedia:**
 • `/saldo` - Estimasi saldo per rekening & total net worth
+• `/pacing` - Status laju pengeluaran & sisa safe-to-spend
 • `/rekap` - Ringkasan pengeluaran bulan ini
 • `/transaksi` - 5 transaksi terakhir
 • `/batal` - Hapus/batalkan transaksi terakhir jika salah
 • `/subs` - Cek jadwal langganan & tagihan rutin
 • `/goals` - Pantau target finansial & milestone
-• `/gajian [nominal]` - Catat gajian & split alokasi rekening
+• `/gajian [nominal]` - Catat gajian & siapkan rencana alokasi rekening
+• `/transfer` - Pindahkan saldo antar rekening
 • `/menu` - Tampilkan tombol menu cepat
 
 Tinggal ketik catatan pengeluaran/pemasukan lo kapan saja!"""
@@ -413,27 +371,58 @@ def handle_saldo(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
         send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
         return
     user_id = user.id
-    rows = db.query(
+    from app.api.v1.endpoints.accounts import ensure_default_accounts
+    ensure_default_accounts(db, user_id)
+
+    # Real ledger balance from transactions
+    acc_rows = db.query(
         Transaction.account,
         func.sum(
-            case((Transaction.type.in_(["income", "transfer_in"]), Transaction.amount), else_=-Transaction.amount)
+            case(
+                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
+                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                else_=0
+            )
         ).label("balance")
-    ).filter(
-        Transaction.user_id == user_id
-    ).group_by(Transaction.account).order_by(func.sum(
-        case((Transaction.type.in_(["income", "transfer_in"]), Transaction.amount), else_=-Transaction.amount)
-    ).desc()).all()
+    ).filter(Transaction.user_id == user_id).group_by(Transaction.account).all()
+    balance_map = {r.account: int(r.balance or 0) for r in acc_rows}
 
-    if not rows:
-        send_message(chat_id, "ℹ️ Belum ada data transaksi untuk menghitung saldo.", bot_token=bot_token)
+    accounts = db.query(Account).filter(Account.user_id == user_id).order_by(Account.id.asc()).all()
+    if not accounts:
+        send_message(chat_id, "ℹ️ Belum ada data rekening terdaftar.", bot_token=bot_token)
         return
 
-    lines = ["💳 **Estimasi Saldo per Rekening:**\n"]
+    all_user_pockets = db.query(JagoPocket).filter(
+        JagoPocket.user_id == user_id,
+        JagoPocket.is_active == True,
+    ).all()
+
+    pocket_by_account: dict[int, list[JagoPocket]] = {}
+    for p in all_user_pockets:
+        if p.account_id:
+            pocket_by_account.setdefault(p.account_id, []).append(p)
+
+    lines = ["💳 **Estimasi Saldo per Rekening & Kantong:**\n"]
     total = 0
-    for b in rows:
-        bal = int(b.balance or 0)
+
+    for acc in accounts:
+        bal = balance_map.get(acc.name, 0)
         total += bal
-        lines.append(f"• **{b.account}**: {format_rp(bal)}")
+        tag_str = f" • _{acc.tag}_" if acc.tag else ""
+        lines.append(f"• **{acc.name}**: {format_rp(bal)}{tag_str}")
+
+        acc_pockets = pocket_by_account.get(acc.id, [])
+        if not acc_pockets and any(k in acc.name.lower() for k in ["jago", "pocket"]):
+            acc_pockets = [p for p in all_user_pockets if p.account_id is None]
+
+        if acc_pockets:
+            sum_other_targets = sum(int(p.target_amount) for p in acc_pockets if not p.slug.startswith("utama"))
+            for p in acc_pockets:
+                p_amt = int(p.target_amount)
+                if p.slug.startswith("utama") and p_amt == 0:
+                    p_amt = max(0, bal - sum_other_targets)
+                role_icon = "🛍️" if p.role == "operasional" else "🔒"
+                lines.append(f"  └ {role_icon} {p.name}: {format_rp(p_amt)}")
 
     lines.append(f"\n💵 **Total Keseluruhan:** {format_rp(total)}")
     lines.append(f"\n{get_safe_to_spend_snippet(db, user_id=user_id)}")
@@ -445,54 +434,41 @@ def handle_pacing(chat_id: int, db: Session, user: Optional[User] = None, bot_to
         return
     user_id = user.id
     now_wib = datetime.now(WIB)
+    today_wib = now_wib.date()
     c_info = get_user_cycle_info(db, user_id=user_id)
-    cfg = c_info["cfg"]
-    cycle_days = c_info["cycle_days"]
-    cycle_label = c_info["cycle_label"]
-    pocket_account = c_info["pocket_account"]
     cycle_start = c_info["cycle_start"]
     cycle_end = c_info["cycle_end"]
-    day_of_cycle = c_info["day_of_cycle"]
-    days_remaining = c_info["days_remaining"]
+    cycle_label = c_info["cycle_label"]
 
-    pocket_income_row = db.query(
-        func.coalesce(func.sum(Transaction.amount), 0).label("inc")
-    ).filter(
-        Transaction.user_id == user_id,
-        Transaction.account == pocket_account,
-        Transaction.type == "income",
-        Transaction.date >= cycle_start,
-        Transaction.date <= cycle_end
-    ).first()
-    salary = getattr(cfg, "total_salary", None) if cfg else None
-    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (salary or 825000)
+    metrics = compute_safe_to_spend_metrics(
+        db=db,
+        user_id=user_id,
+        start_date=cycle_start,
+        end_date=cycle_end,
+        period_type="cycle",
+        today_wib=today_wib,
+        cfg=c_info["cfg"]
+    )
 
-    spent_row = db.query(
-        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
-    ).filter(
-        Transaction.user_id == user_id,
-        Transaction.account == pocket_account,
-        Transaction.type == "expense",
-        Transaction.date >= cycle_start,
-        Transaction.date <= cycle_end
-    ).first()
-    pocket_spent = int(spent_row.spent if spent_row else 0)
-    pocket_remaining = max(0, pocket_budget - pocket_spent)
-    safe_daily = int(pocket_remaining / days_remaining)
+    pocket_budget = metrics.pocket_budget
+    pocket_spent = metrics.pocket_spent
+    pocket_remaining = metrics.pocket_remaining
+    safe_daily = metrics.safe_daily
+    day_of_cycle = metrics.day_of_cycle
+    days_remaining = metrics.days_remaining
+    cycle_days = metrics.cycle_days
+    pocket_account = metrics.pocket_account
 
     ratio = min(1.0, pocket_spent / pocket_budget) if pocket_budget > 0 else 0
     filled = int(round(ratio * 10))
     bar = f"[{'█' * filled}{'░' * (10 - filled)}] {int(ratio * 100)}%"
 
-    ideal_daily_rate = pocket_budget / cycle_days
-    ideal_pace_today = int(ideal_daily_rate * day_of_cycle)
-
-    if pocket_spent <= ideal_pace_today:
+    if metrics.pace_status == "ahead":
         pace_status = "🟢 On Track (Pengeluaran hemat & terkontrol)"
-    elif pocket_spent <= ideal_pace_today * 1.15:
-        pace_status = "🟡 Pacing Warning (Mendekati batas rata-rata)"
+    elif metrics.pace_status == "on_track":
+        pace_status = "🟢 On Track (Pengeluaran sesuai laju harian)"
     else:
-        pace_status = "🔴 Over Budget (Pengeluaran melebihi laju harian)"
+        pace_status = "🔴 Pacing Warning (Pengeluaran melebihi laju harian)"
 
     lines = [
         f"🎯 **AI7.Steward — Status Pacing Belanja ({cycle_label})**",
@@ -519,52 +495,46 @@ def handle_obsidian(chat_id: int, db: Session, user: Optional[User] = None, bot_
         return
 
     now_wib = datetime.now(WIB)
+    today_wib = now_wib.date()
     vault_path = "/home/alifihsan/SecondBrainAI7"
     finance_dir = os.path.join(vault_path, "2 Areas", "Finance")
     os.makedirs(finance_dir, exist_ok=True)
 
     c_info = get_user_cycle_info(db, user_id=user_id)
-    cfg = c_info["cfg"]
-    cycle_days = c_info["cycle_days"]
-    pocket_account = c_info["pocket_account"]
     cycle_start = c_info["cycle_start"]
     cycle_end = c_info["cycle_end"]
-    day_of_cycle = c_info["day_of_cycle"]
-    days_remaining = c_info["days_remaining"]
+    cycle_days = c_info["cycle_days"]
+    pocket_account = c_info["pocket_account"]
 
-    pocket_income_row = db.query(
-        func.coalesce(func.sum(Transaction.amount), 0).label("inc")
-    ).filter(
-        Transaction.user_id == user_id,
-        Transaction.account == pocket_account,
-        Transaction.type == "income",
-        Transaction.date >= cycle_start,
-        Transaction.date <= cycle_end
-    ).first()
-    salary = getattr(cfg, "total_salary", None) if cfg else None
-    pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else (salary or 825000)
+    metrics = compute_safe_to_spend_metrics(
+        db=db,
+        user_id=user_id,
+        start_date=cycle_start,
+        end_date=cycle_end,
+        period_type="cycle",
+        today_wib=today_wib,
+        cfg=c_info["cfg"]
+    )
 
-    spent_row = db.query(
-        func.coalesce(func.sum(Transaction.amount), 0).label("spent")
-    ).filter(
-        Transaction.user_id == user_id,
-        Transaction.account == pocket_account,
-        Transaction.type == "expense",
-        Transaction.date >= cycle_start,
-        Transaction.date <= cycle_end
-    ).first()
-    pocket_spent = int(spent_row.spent if spent_row else 0)
-    pocket_remaining = max(0, pocket_budget - pocket_spent)
-    safe_daily = int(pocket_remaining / days_remaining)
+    pocket_budget = metrics.pocket_budget
+    pocket_spent = metrics.pocket_spent
+    pocket_remaining = metrics.pocket_remaining
+    safe_daily = metrics.safe_daily
+    day_of_cycle = metrics.day_of_cycle
+    days_remaining = metrics.days_remaining
 
-    accounts = db.query(
+    accounts = db.query(Account).filter(Account.user_id == user_id).order_by(Account.id.asc()).all()
+    acc_rows = db.query(
         Transaction.account,
         func.sum(
-            case((Transaction.type.in_(["income", "transfer_in"]), Transaction.amount), else_=-Transaction.amount)
+            case(
+                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
+                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                else_=0
+            )
         ).label("balance")
-    ).filter(
-        Transaction.user_id == user_id
-    ).group_by(Transaction.account).all()
+    ).filter(Transaction.user_id == user_id).group_by(Transaction.account).all()
+    bal_map = {r.account: int(r.balance or 0) for r in acc_rows}
 
     filename = f"Siklus_{cycle_start}_sd_{cycle_end}.md"
     file_path = os.path.join(finance_dir, filename)
@@ -598,7 +568,7 @@ tags: [finance, cycle-snapshot, operasional, pacing]
 | --- | --- |
 """
     for a in accounts:
-        doc += f"| {a.account} | {format_rp(int(a.balance or 0))} |\n"
+        doc += f"| {a.name} | {format_rp(bal_map.get(a.name, 0))} |\n"
 
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(doc)
@@ -650,10 +620,10 @@ def handle_subs(chat_id: int, db: Session, user: Optional[User] = None, bot_toke
     lines = ["💳 **Daftar Langganan & Tagihan Rutin:**\n"]
     total = 0
 
-    # Sort subs by due date
+    # Sort subs by due date: active, soonest days_until_due
     def get_sort_key(s):
         days, _ = compute_due_info(s, now_date)
-        return days if days is not None else 999
+        return (days is None, days if days is not None else 999)
 
     subs.sort(key=get_sort_key)
 
@@ -662,7 +632,7 @@ def handle_subs(chat_id: int, db: Session, user: Optional[User] = None, bot_toke
         days_until, next_date = compute_due_info(s, now_date)
         if days_until is None:
             due_str = "Atur tanggal tagihan tahunan"
-        elif s.billing_type == "exact_date" and s.exact_due_date:
+        elif (s.billing_type or "fixed_day") == "exact_date" and s.exact_due_date:
             if days_until < 0:
                 due_str = f"❌ **Expired ({abs(days_until)} hari lalu)**"
             elif days_until == 0:
@@ -679,8 +649,10 @@ def handle_subs(chat_id: int, db: Session, user: Optional[User] = None, bot_toke
             else:
                 due_str = f"🗓️ {next_date} ({days_until} hari lagi)"
 
-        unit = "periode" if s.billing_type == "exact_date" else "tahun" if s.billing_cycle == "yearly" else "bulan"
-        lines.append(f"• **{s.name}**: {format_rp(s.amount)}/{unit}\n  └ {due_str} ({s.category})")
+        unit = "periode" if (s.billing_type or "fixed_day") == "exact_date" else "tahun" if s.billing_cycle == "yearly" else "bulan"
+        cycle_badge = " [Tahunan]" if s.billing_cycle == "yearly" else ""
+        account_str = f" • `{s.account}`" if s.account else ""
+        lines.append(f"• **{s.name}**: {format_rp(s.amount)}/{unit}{cycle_badge}\n  └ {due_str} ({s.category}{account_str})")
 
     lines.append(f"\n💵 **Total Komitmen Bulanan:** {format_rp((total + 6) // 12)}")
     send_message(chat_id, "\n".join(lines), bot_token=bot_token)
@@ -700,7 +672,7 @@ def handle_goals(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
 
     lines = ["🎯 **PROGRESS TARGET & GOALS FINANSIAL**\n"]
     for idx, g in enumerate(goals, 1):
-        m = compute_goal_metrics(g, db)
+        m = compute_goal_metrics(g, user_id, db)
         pct = m["percentage"]
         blocks_filled = min(10, max(0, int(round(pct / 10))))
         bar = "█" * blocks_filled + "░" * (10 - blocks_filled)
@@ -797,8 +769,12 @@ def handle_transfer(chat_id: int, text: str, db: Session, user: Optional[User] =
         return
     user_id = user.id
     clean = text.strip()
+
+    user_accs = db.query(Account).filter(Account.user_id == user_id).order_by(Account.id.asc()).all()
+    acc_options_str = ", ".join(f"`{a.name}`" for a in user_accs) if user_accs else "`Rekening Utama`, `Rekening Tagihan`, `Tabungan`"
+
     if clean.lower() in ["/transfer", "transfer", "tf", "🔄 transfer"]:
-        guide = """🔄 **Panduan Transfer Antar Rekening**
+        guide = f"""🔄 **Panduan Transfer Antar Rekening**
 
 Gunakan format:
 `/transfer [nominal] dari [asal] ke [tujuan] [catatan]`
@@ -810,10 +786,10 @@ atau singkat:
 • `tf 150rb utama ke tagihan top up subs`
 • `tf 50k tabungan ke utama tarik tunai`
 
-🏦 **Pilihan Rekening:**
-`Utama`, `Tagihan`, `Tabungan`, `Investasi`, `Cash` (atau sesuai nama rekening di dashboard kamu)
+🏦 **Pilihan Rekening Anda:**
+{acc_options_str}
 
-ℹ️ _Transfer antar rekening hanya memindahkan saldo & tidak memotong batas pengeluaran (Safe-to-Spend)._"""
+ℹ️ _Transfer antar rekening memindahkan saldo via mutasi berpasangan (transfer out & transfer in) dan tidak memotong kuota Safe-to-Spend operasional._"""
         send_message(chat_id, guide, bot_token=bot_token)
         return
 
@@ -833,13 +809,27 @@ atau singkat:
     from_acc = normalize_account(from_raw, db, user_id=user_id)
     to_acc = normalize_account(to_raw, db, user_id=user_id)
 
-    if not from_acc:
-        send_message(chat_id, f"⚠️ Rekening asal `{from_raw}` tidak dikenali.\nPilihan: Mandiri, Jago, BRI 1, BRI 2, Cash.", bot_token=bot_token)
-        return
-    if not to_acc:
-        send_message(chat_id, f"⚠️ Rekening tujuan `{to_raw}` tidak dikenali.\nPilihan: Mandiri, Jago, BRI 1, BRI 2, Cash.", bot_token=bot_token)
-        return
-    if from_acc == to_acc:
+    valid_acc_names = {a.name.lower(): a.name for a in user_accs}
+    if user_accs:
+        from_matched = valid_acc_names.get(from_acc.lower()) if from_acc else None
+        to_matched = valid_acc_names.get(to_acc.lower()) if to_acc else None
+        if not from_matched:
+            send_message(chat_id, f"⚠️ Rekening asal `{from_raw}` tidak dikenali.\nPilihan rekening Anda:\n{acc_options_str}", bot_token=bot_token)
+            return
+        if not to_matched:
+            send_message(chat_id, f"⚠️ Rekening tujuan `{to_raw}` tidak dikenali.\nPilihan rekening Anda:\n{acc_options_str}", bot_token=bot_token)
+            return
+        from_acc = from_matched
+        to_acc = to_matched
+    else:
+        if not from_acc:
+            send_message(chat_id, f"⚠️ Rekening asal `{from_raw}` tidak dikenali.\nPilihan rekening Anda:\n{acc_options_str}", bot_token=bot_token)
+            return
+        if not to_acc:
+            send_message(chat_id, f"⚠️ Rekening tujuan `{to_raw}` tidak dikenali.\nPilihan rekening Anda:\n{acc_options_str}", bot_token=bot_token)
+            return
+
+    if from_acc.lower() == to_acc.lower():
         send_message(chat_id, "⚠️ Rekening asal dan rekening tujuan tidak boleh sama.", bot_token=bot_token)
         return
 
@@ -847,32 +837,16 @@ atau singkat:
     now_wib = datetime.now(WIB)
     tx_date = now_wib.date()
 
-    tx_out = Transaction(
+    from app.api.v1.endpoints.transactions import add_transfer_pair
+    tx_out, tx_in = add_transfer_pair(
+        db=db,
         user_id=user_id,
-        type="transfer_out",
+        from_account=from_acc,
+        to_account=to_acc,
         amount=int(amt),
-        account=from_acc,
-        category="Transfer",
-        description=f"Transfer ke {to_acc}: {desc}",
-        raw_text=f"bot transfer: {clean}",
-        date=tx_date
+        tx_date=tx_date,
+        desc=desc
     )
-    tx_in = Transaction(
-        user_id=user_id,
-        type="transfer_in",
-        amount=int(amt),
-        account=to_acc,
-        category="Transfer",
-        description=f"Transfer dari {from_acc}: {desc}",
-        raw_text=f"bot transfer: {clean}",
-        date=tx_date
-    )
-
-    db.add(tx_out)
-    db.add(tx_in)
-    db.flush()
-    tx_out.raw_text = f"{tx_out.raw_text} [pair_id:{tx_in.id}]"
-    tx_in.raw_text = f"{tx_in.raw_text} [pair_id:{tx_out.id}]"
     db.commit()
 
     bal_from = get_acc_balance(from_acc, db, user_id=user_id)
@@ -885,7 +859,7 @@ atau singkat:
 📥 **Ke:** {to_acc} (Saldo Baru: `{format_rp(bal_to)}`)
 📝 **Keterangan:** {desc}
 
-ℹ️ _Saldo berhasil dipindahkan. Transaksi ini tidak memotong kuota Safe-to-Spend._"""
+ℹ️ _Saldo berhasil dipindahkan via ledger berpasangan. Transaksi ini tidak memotong kuota Safe-to-Spend._"""
     send_message(chat_id, res_msg, bot_token=bot_token)
 
 def handle_batal(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):
@@ -923,17 +897,18 @@ def handle_batal(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
         msg = f"""🗑️ **Transfer Berpasangan Berhasil Dibatalkan!**
 
 • **Nominal:** {format_rp(deleted_info['amount'])}
-• **Rekening Terkait:** {deleted_info['account']} & {pair_account}
+• **Rekening Terkait:** `{deleted_info['account']}` & `{pair_account}`
 • **Kategori:** Transfer
+• **Keterangan:** {deleted_info['description']}
 
 Kedua sisi mutasi transfer (keluar & masuk) telah dihapus dari database secara sinkron."""
     else:
-        msg = f"""🗑️ **Transaksi Terakhir Dibatalkan!**
+        msg = f"""↩️ **Transaksi Berhasil Dibatalkan / Dihapus!**
 
 • **Deskripsi:** {deleted_info['description']}
-• **Nominal:** {format_rp(deleted_info['amount'])}
-• **Rekening:** {deleted_info['account']}
+• **Nominal:** {format_rp(deleted_info['amount'])} ({deleted_info['type']})
 • **Kategori:** {deleted_info['category']}
+• **Rekening:** {deleted_info['account']}
 
 Catatan tersebut sudah dihapus dari database PostgreSQL."""
     send_message(chat_id, msg, bot_token=bot_token)
@@ -943,78 +918,145 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
         send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
         return
     user_id = user.id
-    cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
-    cycle_days = cfg.cycle_days if cfg and cfg.cycle_days > 0 else 14
-    salary = getattr(cfg, "total_salary", None) if cfg else None
-    total = int(salary) if (salary and salary > 0) else 1500000
+    now_wib = datetime.now(WIB)
+    today_wib = now_wib.date()
+
+    from app.api.v1.endpoints.paycheck import get_or_seed_config, get_or_seed_buckets, compute_bucket_amounts
+    from app.services.paycheck_cycles import receipt_allocations
+    import uuid
+
+    cfg = get_or_seed_config(db, user_id)
+    buckets = get_or_seed_buckets(db, cfg.id)
+    user_accs = db.query(Account).filter(Account.user_id == user_id).order_by(Account.id.asc()).all()
+    accounts_by_name = {a.name: a for a in user_accs}
+
+    source_account = cfg.source_account if (cfg.source_account and cfg.source_account in accounts_by_name) else (user_accs[0].name if user_accs else "Rekening Utama")
+
+    cycle_start = today_wib
+    if cfg.cycle_type == "monthly_date":
+        from app.api.v1.endpoints.analytics import get_monthly_date_bounds
+        payday = cfg.paycheck_day or cycle_start.day
+        _, cycle_end = get_monthly_date_bounds(cycle_start, payday)
+        cycle_days = (cycle_end - cycle_start).days + 1
+        cycle_label = f"Siklus Bulanan (Tgl {payday})"
+    else:
+        cycle_days = cfg.cycle_days if cfg.cycle_days and cfg.cycle_days > 0 else 14
+        cycle_end = cycle_start + timedelta(days=cycle_days - 1)
+        if cfg.cycle_type == "weekly" or cycle_days == 7:
+            cycle_label = "Siklus Mingguan"
+        elif cfg.cycle_type == "biweekly" or cycle_days == 14:
+            cycle_label = "Siklus 2-Mingguan"
+        elif cfg.cycle_type == "monthly" or cycle_days == 30:
+            cycle_label = "Siklus Bulanan (30 Hari)"
+        else:
+            cycle_label = f"Siklus {cycle_days} Hari"
 
     parts = text.split()
+    parsed_amt = None
     if len(parts) > 1:
         from app.core.parser import parse_amount
         parsed_amt, _ = parse_amount(parts[1])
-        if parsed_amt and parsed_amt > 0:
-            total = int(parsed_amt)
 
-    now = datetime.now(WIB)
-    cycle_start = now.date()
-    cycle_end = cycle_start + timedelta(days=cycle_days - 1)
+    if not parsed_amt or parsed_amt <= 0:
+        latest_receipt = db.query(PaycheckReceipt).join(
+            Transaction, Transaction.id == PaycheckReceipt.transaction_id
+        ).filter(
+            PaycheckReceipt.user_id == user_id,
+            Transaction.type == "income"
+        ).order_by(PaycheckReceipt.transaction_id.desc()).first()
 
-    buckets = []
-    if cfg:
-        buckets = db.query(PaycheckBucket).filter(PaycheckBucket.config_id == cfg.id).order_by(PaycheckBucket.sort_order).all()
+        if latest_receipt:
+            tx = db.get(Transaction, latest_receipt.transaction_id)
+            accounts_by_id = {a.id: a.name for a in user_accs}
+            allocs = receipt_allocations(db, latest_receipt)
 
-    if buckets:
-        allocations = []
-        allocated_so_far = 0
-        for i, b in enumerate(buckets):
-            if i == len(buckets) - 1:
-                amt = total - allocated_so_far
-            else:
-                amt = int(round(total * (b.percentage / 100.0)))
-                allocated_so_far += amt
-            allocations.append((b.account, amt, b.purpose or "Alokasi Pos"))
-    else:
-        mandiri_amt = int(round(total * 0.55))
-        jago_amt = int(round(total * 0.18333333))
-        bibit_amt = int(round(total * 0.13333333))
-        bri1_amt = int(round(total * 0.06666667))
-        bri2_amt = total - (mandiri_amt + jago_amt + bibit_amt + bri1_amt)
-        pocket = cfg.pocket_account if cfg and cfg.pocket_account else "Mandiri"
-        allocations = [
-            (pocket, mandiri_amt, "Pos Belanja Operasional & Kebutuhan Pokok"),
-            ("Bank Jago", jago_amt, "Alokasi Langganan & Tagihan Rutin Jago"),
-            ("Bibit", bibit_amt, "Alokasi Investasi Reksadana/Saham Bibit"),
-            ("BRI 1", bri1_amt, "Alokasi Dana Darurat"),
-            ("BRI 2", bri2_amt, "Alokasi Tabungan Kunci"),
-        ]
+            alloc_lines = []
+            for item in allocs:
+                acc_name = accounts_by_id.get(item["account_id"], "Rekening")
+                is_done = bool(item.get("transfer_id"))
+                status_badge = "✅ Ditransfer" if is_done else "⏳ Belum ditransfer"
+                alloc_lines.append(f"• **{acc_name}:** {format_rp(item['amount'])} ({status_badge})")
 
-    for acc, amt, desc in allocations:
-        tx = Transaction(
-            user_id=user_id,
-            type="income",
-            amount=amt,
-            account=acc,
-            category="Gajian",
-            description=f"Gajian ({desc})",
-            raw_text=f"paycheck split /gajian: {total} -> {acc} {amt}",
-            date=cycle_start
-        )
-        db.add(tx)
+            alloc_str = "\n".join(alloc_lines) if alloc_lines else "_Tidak ada alokasi transfer sekunder._"
+            end_str = latest_receipt.cycle_end.strftime('%d %b %Y') if latest_receipt.cycle_end else str(cycle_end)
 
-    # Synchronize cycle_start_date so Safe-to-Spend telemetry tracks the new cycle
-    if cfg:
-        cfg.cycle_start_date = cycle_start
-        db.add(cfg)
-    else:
-        cfg = PaycheckConfig(
-            user_id=user_id,
-            cycle_start_date=cycle_start,
-            cycle_days=cycle_days
-        )
-        db.add(cfg)
+            msg = f"""💰 **Status Payroll & Gajian Terakhir ({cycle_label})**
 
+💵 **Gaji Diterima:** `{format_rp(tx.amount)}`
+🏦 **Rekening:** `{tx.account}`
+📅 **Tanggal Masuk:** `{tx.date}` (Siklus berakhir `{end_str}`)
+
+📋 **Status Rencana Alokasi Transfer:**
+{alloc_str}
+
+💡 *Untuk mencatat gajian baru:*
+Ketik: `/gajian [nominal]` (contoh: `/gajian 5.000.000` atau `/gajian 5jt`)"""
+            send_message(chat_id, msg, bot_token=bot_token)
+            return
+        else:
+            msg = f"""💰 **Pencatatan Gajian & Payroll**
+
+Gunakan perintah ini untuk mencatat gaji masuk secara rapi dan menyiapkan alur pembagian ke rekening/pos anggaran.
+
+📌 **Cara Pakai:**
+`/gajian [nominal]`
+Contoh: `/gajian 5.000.000` atau `/gajian 5jt`
+
+🏦 **Rekening Penampung Default:** `{source_account}`
+📅 **Siklus Tanggal Anggaran:** `{cycle_label}`
+
+ℹ️ _Gaji akan dicatat sebagai pemasukan riil di rekening penampung. Pos alokasi rekening lain disiapkan sebagai rencana transfer terpisah._"""
+            send_message(chat_id, msg, bot_token=bot_token)
+            return
+
+    total = int(parsed_amt)
+
+    # 1. Record single income transaction in receiver account (source_account)
+    tx = Transaction(
+        user_id=user_id,
+        type="income",
+        amount=total,
+        account=source_account,
+        category="Gaji",
+        description="Gaji",
+        raw_text=f"paycheck record /gajian: {total}",
+        date=cycle_start
+    )
+    db.add(tx)
+    db.flush()
+
+    # 2. Compute dynamic bucket allocations without hardcoding
+    bucket_amounts = compute_bucket_amounts(total, buckets)
+    allocations_json_data = []
+    remaining = total
+
+    for b in buckets:
+        amt = bucket_amounts.get(b.account, 0)
+        if b.account != source_account and b.account in accounts_by_name and amt > 0 and remaining > 0:
+            alloc_amt = min(amt, remaining)
+            allocations_json_data.append({
+                "account_id": accounts_by_name[b.account].id,
+                "amount": alloc_amt,
+                "transfer_id": None
+            })
+            remaining -= alloc_amt
+
+    # 3. Create PaycheckReceipt linking the transaction and optional transfer allocations
+    receipt = PaycheckReceipt(
+        transaction_id=tx.id,
+        user_id=user_id,
+        request_key=str(uuid.uuid4()),
+        cycle_end=cycle_end,
+        allocations_json=json.dumps(allocations_json_data)
+    )
+    db.add(receipt)
+
+    # 4. Synchronize cycle start date in PaycheckConfig
+    cfg.cycle_start_date = cycle_start
+    db.add(cfg)
     db.commit()
 
+    # 5. Sheets auto-sync for admin account
     sheet_info = ""
     if user_id == 1:
         try:
@@ -1022,24 +1064,30 @@ def handle_gajian(chat_id: int, text: str, db: Session, user: Optional[User] = N
             res = sync_cycle_snapshot(db, user_id=user_id, cycle_start_date=cycle_start)
             sheet_info = f"\n\n📑 **Google Sheets:** Tab `{res['sheet_title']}` otomatis dibuat & disinkronkan!"
         except Exception as e:
-            print(f"Sheets auto-sync error: {e}")
+            logger.warning(f"Sheets auto-sync error: {e}")
 
+    # Build response message
     distrib_lines = []
-    for acc, amt, desc in allocations:
+    for b in buckets:
+        amt = bucket_amounts.get(b.account, 0)
         pct = round(amt / total * 100, 1) if total > 0 else 0
-        distrib_lines.append(f"• **{acc} ({pct}%):** {format_rp(amt)}\n  └ *{desc}*")
+        is_source = (b.account == source_account)
+        source_note = " *(Penampung Gaji Utama)*" if is_source else ""
+        distrib_lines.append(f"• **{b.account} ({pct}%):** {format_rp(amt)}{source_note}\n  └ *{b.purpose}*")
+
     distrib_str = "\n".join(distrib_lines)
 
-    msg = f"""🎉 **GAJIAN MASUK & ALOKASI OTOMATIS TERCATAT!**
+    msg = f"""🎉 **GAJIAN MASUK & ALUR ANGGARAN TERCATAT!**
 
-💰 **Total Pemasukan / Gajian:** {format_rp(total)}
-📅 **Siklus {cycle_days} Hari:** {cycle_start.strftime('%d %b')} – {cycle_end.strftime('%d %b %Y')}
+💰 **Total Gaji Masuk:** {format_rp(total)}
+📥 **Rekening Penerima:** `{source_account}`
+📅 **{cycle_label}:** {cycle_start.strftime('%d %b')} – {cycle_end.strftime('%d %b %Y')}
 
-📊 **Distribusi Alokasi {len(allocations)} Rekening:**
+📊 **Rencana Alokasi Pos ({len(buckets)} Pos Anggaran):**
 {distrib_str}
 
-🌐 *Gunakan Checklist Interaktif di Web Dashboard:*
-[Buka AI7 Finance Web Dashboard]({settings.APP_BASE_URL}){sheet_info}"""
+ℹ️ _Pemasukan gaji dicatat utuh di rekening `{source_account}`. Alokasi transfer ke rekening/pos lain dapat dieksekusi terpisah via `/transfer` atau Checklist Dashboard._
+🌐 [Buka Web Dashboard AI7 Finance]({settings.APP_BASE_URL}){sheet_info}"""
 
     send_message(chat_id, msg, bot_token=bot_token)
 
@@ -1608,46 +1656,34 @@ Setelah terhubung, kamu bisa langsung mencatat pengeluaran, struk kasir, QRIS, d
 
         lower_text = text.lower()
         cmd = text.split()[0].lower()
-        if lower_text in ["📊 rekap", "rekap"]:
+        if lower_text in ["📊 rekap", "rekap"] or cmd in ["/rekap", "/bulan"]:
             handle_rekap(chat_id, db, user=user, bot_token=bot_token)
-        elif lower_text in ["💳 saldo", "saldo"]:
+        elif lower_text in ["💳 saldo", "saldo"] or cmd in ["/saldo"]:
             handle_saldo(chat_id, db, user=user, bot_token=bot_token)
+        elif lower_text in ["🎯 pacing", "pacing", "pace", "burn rate"] or cmd in ["/pacing", "/pace", "/status"]:
+            handle_pacing(chat_id, db, user=user, bot_token=bot_token)
         elif lower_text in ["🎯 target & goals", "🎯 target", "target", "goals", "milestone"] or cmd in ["/goals", "/target", "/milestone"]:
             handle_goals(chat_id, db, user=user, bot_token=bot_token)
-        elif lower_text in ["🔔 tagihan / subs", "tagihan", "subs"]:
+        elif lower_text in ["🔔 tagihan / subs", "tagihan", "subs", "langganan"] or cmd in ["/subs", "/langganan", "/tagihan"]:
             handle_subs(chat_id, db, user=user, bot_token=bot_token)
-        elif lower_text in ["📜 transaksi", "transaksi", "history"]:
+        elif lower_text in ["📜 transaksi", "transaksi", "history"] or cmd in ["/transaksi", "/history"]:
             handle_transaksi(chat_id, db, user=user, bot_token=bot_token)
-        elif lower_text in ["💰 info gajian"]:
-            handle_gajian(chat_id, "/gajian", db, user=user, bot_token=bot_token)
+        elif lower_text in ["💰 info gajian"] or cmd == "/gajian" or lower_text.startswith("gajian ") or cmd == "gajian":
+            handle_gajian(chat_id, text, db, user=user, bot_token=bot_token)
+        elif lower_text in ["🔄 transfer", "transfer", "tf"] or cmd in ["/transfer", "/tf"] or lower_text.startswith("transfer ") or lower_text.startswith("tf "):
+            handle_transfer(chat_id, text, db, user=user, bot_token=bot_token)
         elif lower_text in ["📑 google sheets", "google sheets", "sheets"] or cmd in ["/sheets", "/sheet", "/sync_sheets"]:
             handle_sheets(chat_id, db, user=user, bot_token=bot_token)
         elif lower_text in ["🌐 web dashboard", "dashboard", "web"] or cmd in ["/web", "/dashboard"]:
             send_dashboard_link(chat_id, bot_token=bot_token)
         elif lower_text in ["📱 menu", "menu"] or cmd in ["/menu"]:
             handle_menu(chat_id, bot_token=bot_token)
-        elif lower_text in ["🔄 transfer", "transfer", "tf"] or cmd in ["/transfer", "/tf"] or lower_text.startswith("transfer ") or lower_text.startswith("tf "):
-            handle_transfer(chat_id, text, db, user=user, bot_token=bot_token)
         elif cmd in ["/start", "/help"]:
             handle_start(chat_id, user=user, bot_token=bot_token)
-        elif cmd in ["/gajian"]:
-            handle_gajian(chat_id, text, db, user=user, bot_token=bot_token)
-        elif cmd in ["/transfer", "🔄 transfer"]:
-            handle_transfer(chat_id, text, db, user=user, bot_token=bot_token)
-        elif cmd in ["/rekap", "/bulan"]:
-            handle_rekap(chat_id, db, user=user, bot_token=bot_token)
-        elif cmd in ["/saldo"]:
-            handle_saldo(chat_id, db, user=user, bot_token=bot_token)
-        elif lower_text in ["🎯 pacing", "pacing", "pace"] or cmd in ["/pacing", "/pace", "/status"]:
-            handle_pacing(chat_id, db, user=user, bot_token=bot_token)
         elif lower_text in ["📓 obsidian", "obsidian"] or cmd in ["/obsidian", "/export"]:
             handle_obsidian(chat_id, db, user=user, bot_token=bot_token)
-        elif cmd in ["/transaksi", "/history"]:
-            handle_transaksi(chat_id, db, user=user, bot_token=bot_token)
         elif cmd in ["/batal", "/undo", "/hapus"]:
             handle_batal(chat_id, db, user=user, bot_token=bot_token)
-        elif cmd in ["/subs", "/langganan", "/tagihan"]:
-            handle_subs(chat_id, db, user=user, bot_token=bot_token)
         else:
             handle_text_message(chat_id, text, message_id, db, user=user, bot_token=bot_token)
     finally:
