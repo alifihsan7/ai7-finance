@@ -1,13 +1,13 @@
 import json
 import zoneinfo
-from datetime import datetime, date as dt_date
+from datetime import datetime, date as dt_date, timedelta
 from typing import List, Optional, Dict
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.config import settings
-from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckSession
+from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckSession, PaycheckCycle
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.api.deps import get_current_user
@@ -365,11 +365,28 @@ def start_paycheck_session(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    cycle_days = {"weekly": 7, "biweekly": 14, "monthly": 30}.get(payload.cycle_type)
+    if payload.cycle_type == "custom":
+        cycle_days = payload.cycle_days
+        if cycle_days is None:
+            raise HTTPException(status_code=400, detail="Isi durasi siklus kustom.")
+    if payload.save_cycle_default and cycle_days is None:
+        raise HTTPException(status_code=400, detail="Pilih siklus yang akan dijadikan default.")
+    cycle_date = payload.date or datetime.now(WIB).date()
+    cycle_end = None
+    if cycle_days is not None:
+        try:
+            cycle_end = cycle_date + timedelta(days=cycle_days - 1)
+        except OverflowError:
+            raise HTTPException(status_code=400, detail="Tanggal akhir siklus tidak valid.")
+
     # Cancel any existing active session to avoid stale dangling sessions
     active = db.query(PaycheckSession).filter(
         PaycheckSession.user_id == current_user.id,
         PaycheckSession.status == "in_progress"
     ).all()
+    if active and cycle_end is not None:
+        raise HTTPException(status_code=409, detail="Selesaikan atau batalkan checklist gajian yang aktif.")
     for s in active:
         s.status = "cancelled"
     db.commit()
@@ -378,9 +395,6 @@ def start_paycheck_session(
     buckets = get_or_seed_buckets(db, cfg.id)
     amounts = compute_bucket_amounts(payload.total_amount, buckets, payload.allocations)
     steps = generate_steps(cfg, buckets, amounts)
-
-    now_wib = datetime.now(WIB)
-    cycle_date = payload.date or now_wib.date()
 
     # Pre-record income for auto steps (e.g. Sisa di BRI 1 and Sisa di Jago)
     for s in steps:
@@ -409,6 +423,12 @@ def start_paycheck_session(
         steps_json=json.dumps(steps_dicts),
     )
     db.add(session)
+    if cycle_end is not None:
+        db.flush()
+        db.add(PaycheckCycle(session_id=session.id, end_date=cycle_end))
+        if payload.save_cycle_default:
+            cfg.cycle_type = payload.cycle_type
+            cfg.cycle_days = cycle_days
     db.commit()
     db.refresh(session)
 

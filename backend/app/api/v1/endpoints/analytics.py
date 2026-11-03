@@ -10,6 +10,7 @@ from sqlalchemy import func, case, desc
 from app.db.session import get_db
 from app.models.transaction import Transaction
 from app.models.paycheck import PaycheckConfig, PaycheckBucket
+from app.services.paycheck_cycles import recorded_cycle_ends
 from app.models.account import Account
 from app.models.user import User
 from app.api.deps import get_current_user
@@ -84,9 +85,11 @@ def get_available_periods(
         Transaction.category.in_(["Gajian", "Gaji", "Pemasukan", "Uang Saku Ortu", "Income"]) | Transaction.description.ilike("%gajian%") | Transaction.description.ilike("%pemasukan%")
     ).order_by(Transaction.date.desc()).distinct().all()
 
+    cycle_ends = recorded_cycle_ends(db, current_user.id)
+    paycheck_dates = sorted({row.date for row in paycheck_rows} | cycle_ends.keys(), reverse=True)
     cycles = []
     # Jika tidak ada riwayat gajian, gunakan anchor onboarding atau hari ini
-    if not paycheck_rows:
+    if not paycheck_dates:
         if cycle_type == "monthly_date":
             default_start, default_end = get_monthly_date_bounds(today_wib, paycheck_day)
         else:
@@ -101,11 +104,15 @@ def get_available_periods(
             "is_current": True
         })
     else:
-        for idx, row in enumerate(paycheck_rows):
-            if cycle_type == "monthly_date":
-                c_start, c_end = get_monthly_date_bounds(row.date, paycheck_day)
+        for idx, paycheck_date in enumerate(paycheck_dates):
+            cycle_label = label_prefix
+            if paycheck_date in cycle_ends:
+                c_start, c_end = paycheck_date, cycle_ends[paycheck_date]
+                cycle_label = f"Siklus {(c_end - c_start).days + 1} Hari"
+            elif cycle_type == "monthly_date":
+                c_start, c_end = get_monthly_date_bounds(paycheck_date, paycheck_day)
             else:
-                c_start = row.date
+                c_start = paycheck_date
                 c_end = c_start + timedelta(days=cycle_days - 1)
             is_cur = (c_start <= today_wib <= c_end) or (idx == 0 and today_wib >= c_start)
             status_text = " (Aktif)" if is_cur else ""
@@ -114,7 +121,7 @@ def get_available_periods(
                 "type": "cycle",
                 "start": str(c_start),
                 "end": str(c_end),
-                "label": f"{label_prefix} ({c_start.strftime('%d %b')} – {c_end.strftime('%d %b %Y')}){status_text}",
+                "label": f"{cycle_label} ({c_start.strftime('%d %b')} – {c_end.strftime('%d %b %Y')}){status_text}",
                 "is_current": is_cur
             })
 
@@ -252,6 +259,13 @@ def get_monthly_summary(
         else:
             latest_cycle_start = today_wib
 
+        cycle_ends = recorded_cycle_ends(db, current_user.id)
+        latest_recorded_start = max((day for day in cycle_ends if day <= today_wib), default=None)
+        if latest_recorded_start and latest_recorded_start >= latest_cycle_start:
+            latest_cycle_start = latest_recorded_start
+        elif latest_recorded_start and not paychecks:
+            latest_cycle_start = latest_recorded_start
+
         if start:
             try:
                 start_date = datetime.strptime(start, "%Y-%m-%d").date()
@@ -260,7 +274,9 @@ def get_monthly_summary(
         else:
             start_date = latest_cycle_start
 
-        if end:
+        if not end and start_date in cycle_ends:
+            end_date = cycle_ends[start_date]
+        elif end:
             try:
                 end_date = datetime.strptime(end, "%Y-%m-%d").date()
             except Exception:
@@ -274,7 +290,9 @@ def get_monthly_summary(
             else:
                 end_date = start_date + timedelta(days=cycle_days - 1)
 
-        if cycle_type == "monthly_date":
+        if start_date in cycle_ends:
+            label_prefix = f"Siklus {(end_date - start_date).days + 1} Hari"
+        elif cycle_type == "monthly_date":
             cycle_days = (end_date - start_date).days + 1
             label_prefix = f"Siklus Bulanan (Tgl {paycheck_day})"
         elif cycle_days == 30 or cycle_type == "monthly":

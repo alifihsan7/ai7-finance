@@ -86,6 +86,9 @@ export default function PaycheckModal({
   // Setup state
   const [totalAmountStr, setTotalAmountStr] = useState<string>("0");
   const [cycleDate, setCycleDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [cycleChoice, setCycleChoice] = useState("");
+  const [customCycleEnd, setCustomCycleEnd] = useState("");
+  const [saveCycleDefault, setSaveCycleDefault] = useState(false);
   const [config, setConfig] = useState<PaycheckConfig>({
     id: 1,
     source_account: "Rekening Utama",
@@ -199,16 +202,17 @@ export default function PaycheckModal({
     return numTotal - totalAllocated;
   }, [numTotal, totalAllocated]);
 
-  const computeEndDateStr = () => {
-    try {
-      const d = new Date(cycleDate);
-      if (isNaN(d.getTime())) return "";
-      d.setDate(d.getDate() + (config.cycle_days || 14) - 1);
-      return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
-    } catch {
-      return "";
-    }
-  };
+  const cycleType = cycleChoice || config.cycle_type;
+  const startTime = Date.parse(cycleDate);
+  const dayMs = 86400000;
+  const cycleDays = cycleType === "custom" && customCycleEnd
+    ? (Date.parse(customCycleEnd) - startTime) / dayMs + 1
+    : cycleChoice === "weekly" ? 7 : cycleChoice === "biweekly" ? 14 : cycleChoice === "monthly" ? 30 : config.cycle_days || 14;
+  const cycleValid = Number.isFinite(startTime) && cycleDays >= 1 && cycleDays <= 365;
+  const endTime = startTime + (cycleDays - 1) * dayMs;
+  const endDate = cycleValid && cycleType !== "monthly_date"
+    ? new Date(endTime).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })
+    : "";
 
   const handleTotalChange = (val: string) => {
     setTotalAmountStr(val);
@@ -227,6 +231,10 @@ export default function PaycheckModal({
 
   // Start new Paycheck Session
   const handleStartSession = async () => {
+    if (!cycleValid) {
+      setErrorMsg("Pilih tanggal dan durasi siklus antara 1–365 hari.");
+      return;
+    }
     if (balanceDifference !== 0) {
       setErrorMsg("Total alokasi harus seimbang dengan total uang masuk sebelum memulai.");
       return;
@@ -243,6 +251,11 @@ export default function PaycheckModal({
           date: cycleDate,
           note: "Alokasi Gajian Siklus",
           allocations: customAmounts,
+          ...(cycleType && cycleType !== "monthly_date" ? {
+            cycle_type: cycleChoice || "custom",
+            cycle_days: cycleDays,
+            save_cycle_default: saveCycleDefault && Boolean(cycleChoice),
+          } : {}),
         }),
       });
 
@@ -252,6 +265,12 @@ export default function PaycheckModal({
       }
 
       const sessionData = await res.json();
+      if (saveCycleDefault && cycleChoice) {
+        setConfig((previous) => ({ ...previous, cycle_type: cycleChoice, cycle_days: cycleDays }));
+        setCycleChoice("");
+        setSaveCycleDefault(false);
+        setCustomCycleEnd("");
+      }
       setActiveSession(sessionData);
       setView("checklist");
       onSuccess(); // Refresh parent balances for auto-steps
@@ -449,24 +468,63 @@ export default function PaycheckModal({
             </div>
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-zinc-400 ">
-                  Tanggal Siklus Dimulai
+                <label htmlFor="paycheck-cycle-date" className="block text-xs font-semibold text-zinc-400">
+                  Tanggal gajian
                 </label>
-                <span className="text-xs text-mintRise font-medium px-2 py-0.5 rounded-full bg-mintRise/10 border border-mintRise/20">
-                  {config.cycle_days || 14} Hari
-                </span>
               </div>
               <input
+                id="paycheck-cycle-date"
                 type="date"
                 value={cycleDate}
                 onChange={(e) => setCycleDate(e.target.value)}
                 className="w-full h-11 px-3.5 rounded-2xl bg-obsidian-panel border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise focus:ring-1 focus:ring-mintRise/30 transition [color-scheme:dark]"
               />
-              <span className="text-xs text-zinc-400 mt-1.5 block">
-                Berakhir: <strong className="text-zinc-300">{computeEndDateStr()}</strong>
-              </span>
             </div>
           </div>
+
+          <fieldset className="space-y-3 rounded-2xl border border-luma-smokeline p-4">
+            <legend className="px-1 text-sm font-semibold">Siklus anggaran</legend>
+            <label className="block space-y-1 text-sm">
+              <span>Durasi</span>
+              <select
+                className="w-full"
+                value={cycleChoice}
+                onChange={(event) => {
+                  setCycleChoice(event.target.value);
+                  setSaveCycleDefault(false);
+                  setCustomCycleEnd("");
+                }}
+              >
+                <option value="">Default ({config.cycle_type === "monthly_date" ? "bulanan, tanggal tetap" : `${config.cycle_days || 14} hari`})</option>
+                <option value="weekly">Mingguan · 7 hari</option>
+                <option value="biweekly">Dua mingguan · 14 hari</option>
+                <option value="monthly">Bulanan · 30 hari</option>
+                <option value="custom">Kustom</option>
+              </select>
+            </label>
+            {cycleType === "custom" && (
+              <label className="block space-y-1 text-sm">
+                <span>Tanggal akhir</span>
+                <input
+                  className="w-full"
+                  type="date"
+                  min={cycleDate}
+                  value={customCycleEnd || (cycleValid ? new Date(endTime).toISOString().slice(0, 10) : "")}
+                  onChange={(event) => {
+                    if (event.target.value) setCycleChoice("custom");
+                    setCustomCycleEnd(event.target.value);
+                  }}
+                />
+              </label>
+            )}
+            {endDate && <p className="text-xs text-luma-smoke">Berakhir {endDate} · {cycleDays} hari</p>}
+            {cycleChoice && (
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+                <input type="checkbox" checked={saveCycleDefault} onChange={(event) => setSaveCycleDefault(event.target.checked)} />
+                Jadikan default untuk gajian berikutnya
+              </label>
+            )}
+          </fieldset>
 
           {/* Allocation Breakdown Table */}
           <div className="p-5 rounded-3xl bg-obsidian-panel border border-luma-smokeline space-y-3.5 shadow-sm">
@@ -586,7 +644,7 @@ export default function PaycheckModal({
               <button
                 type="button"
                 onClick={handleStartSession}
-                disabled={loading || balanceDifference !== 0}
+                disabled={loading || !cycleValid || balanceDifference !== 0}
                 className="px-5 py-2.5 text-xs sm:text-sm font-semibold bg-mintRise text-slate-950 hover:brightness-110 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span>{loading ? "Menyiapkan..." : "Mulai Checklist Transfer"}</span>

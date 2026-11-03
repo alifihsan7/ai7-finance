@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from app.api.deps import get_current_user
-from app.api.v1.endpoints import accounts, analytics, transactions
+from app.api.v1.endpoints import accounts, analytics, paycheck, transactions
 from app.db.session import Base, get_db
 from app.models.account import Account
 from app.models.paycheck import PaycheckConfig, PaycheckBucket
@@ -30,6 +30,7 @@ def ledger():
         app.include_router(transactions.router, prefix="/transactions")
         app.include_router(accounts.router, prefix="/accounts")
         app.include_router(analytics.router, prefix="/analytics")
+        app.include_router(paycheck.router, prefix="/paycheck")
         app.dependency_overrides[get_db] = lambda: db
         app.dependency_overrides[get_current_user] = lambda: user
         with TestClient(app, raise_server_exceptions=False) as client:
@@ -54,6 +55,34 @@ def create(client, kind, amount, account="Bank"):
                            "category": "Test", "description": "Data uji", "date": "2026-11-02"})
     assert response.status_code == 200, response.text
     return response.json()
+
+
+def test_paycheck_cycle_override_and_saved_default(ledger):
+    client, db = ledger
+    first = client.post("/paycheck/session/start", json={
+        "total_amount": 1_000_000, "date": "2026-10-01",
+        "cycle_type": "custom", "cycle_days": 19,
+    })
+    assert first.status_code == 200, first.text
+    assert client.get("/paycheck/config").json()["config"]["cycle_type"] == "monthly_date"
+    report = client.get("/analytics/summary", params={"period_type": "cycle", "start": "2026-10-01"}).json()
+    assert report["end_date"] == "2026-10-19"
+    assert report["safe_to_spend"]["cycle_days"] == 19
+    active = db.get(paycheck.PaycheckSession, first.json()["id"])
+    active.status = "completed"
+    db.commit()
+
+    second = client.post("/paycheck/session/start", json={
+        "total_amount": 1_000_000, "date": "2026-11-01",
+        "cycle_type": "weekly", "save_cycle_default": True,
+    })
+    assert second.status_code == 200, second.text
+    cfg = client.get("/paycheck/config").json()["config"]
+    assert (cfg["cycle_type"], cfg["cycle_days"]) == ("weekly", 7)
+    periods = client.get("/analytics/periods").json()["cycles"]
+    ends = {period["start"]: period["end"] for period in periods}
+    assert ends["2026-10-01"] == "2026-10-19"
+    assert ends["2026-11-01"] == "2026-11-07"
 
 
 def test_add_edit_delete_updates_accounts_and_summary(ledger):

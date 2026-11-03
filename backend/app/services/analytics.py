@@ -255,7 +255,7 @@ def compute_safe_to_spend_metrics(
         cycle_start=cycle_start,
         cycle_end=cycle_end,
         cycle_type=cycle_type,
-        cycle_days=cycle_days,
+        cycle_days=total_days if period_type == "cycle" else cycle_days,
         pocket_account=pocket_account,
         day_of_cycle=day_of_cycle,
         days_remaining=days_remaining,

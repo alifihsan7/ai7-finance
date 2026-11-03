@@ -95,6 +95,13 @@ def get_current_cycle_bounds(db: Session, user_id: int, ref_date: Optional[date]
     if ref_date is None:
         ref_date = datetime.now(WIB).date()
 
+    from app.services.paycheck_cycles import recorded_cycle_ends
+
+    cycle_ends = recorded_cycle_ends(db, user_id)
+    cycle_start = max((day for day, end in cycle_ends.items() if day <= ref_date <= end), default=None)
+    if cycle_start:
+        return cycle_start, cycle_ends[cycle_start]
+
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()
     cycle_days = cfg.cycle_days if cfg and cfg.cycle_days and cfg.cycle_days > 0 else 30
     cycle_type = cfg.cycle_type if cfg and cfg.cycle_type else "monthly_date"

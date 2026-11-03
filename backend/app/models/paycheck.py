@@ -59,3 +59,10 @@ class PaycheckSession(Base):
     steps_json = Column(Text, nullable=False) # JSON array of Step objects
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class PaycheckCycle(Base):
+    __tablename__ = "paycheck_cycles"
+
+    session_id = Column(Integer, ForeignKey("paycheck_sessions.id", ondelete="CASCADE"), primary_key=True)
+    end_date = Column(Date, nullable=False)

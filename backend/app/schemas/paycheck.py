@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import List, Optional, Dict
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, Literal
 from datetime import date as dt_date, datetime
 
 class PaycheckConfigOut(BaseModel):
@@ -78,3 +78,6 @@ class PaycheckStartRequest(BaseModel):
     date: Optional[dt_date] = None
     note: Optional[str] = "Alokasi Gajian Siklus"
     allocations: Optional[Dict[str, int]] = None  # Custom adjusted amounts: {"Mandiri": 825000, ...}
+    cycle_type: Optional[Literal["weekly", "biweekly", "monthly", "custom"]] = None
+    cycle_days: Optional[int] = Field(default=None, ge=1, le=365)
+    save_cycle_default: bool = False
