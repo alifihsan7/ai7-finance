@@ -1,5 +1,7 @@
 import io
 import csv
+import json
+import re
 from typing import Optional, List
 from datetime import datetime, date, timedelta
 import zoneinfo
@@ -11,7 +13,7 @@ from sqlalchemy import desc
 
 from app.db.session import get_db
 from app.models.transaction import Transaction
-from app.models.paycheck import PaycheckConfig, PaycheckBucket
+from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckReceipt
 from app.models.account import Account
 from app.models.user import User
 from app.api.deps import get_current_user
@@ -318,10 +320,24 @@ def delete_transaction(
 
     deleted_ids = [tx.id]
     if tx.type in ("transfer_out", "transfer_in"):
+        receipt_tag = re.search(r"\[paycheck_receipt:(\d+)\]$", tx.raw_text or "")
+        receipt = None
+        if receipt_tag:
+            receipt = db.query(PaycheckReceipt).filter(
+                PaycheckReceipt.transaction_id == int(receipt_tag.group(1)),
+                PaycheckReceipt.user_id == current_user.id,
+            ).with_for_update().first()
+
         pair = find_paired_transfer(db, tx)
         if pair:
             db.delete(pair)
             deleted_ids.append(pair.id)
+        if receipt:
+            allocations = json.loads(receipt.allocations_json)
+            for item in allocations:
+                if item["transfer_id"] in deleted_ids:
+                    item["transfer_id"] = None
+            receipt.allocations_json = json.dumps(allocations)
 
     db.delete(tx)
     db.commit()

@@ -81,7 +81,8 @@ def test_picker_lists_unique_cycles_and_only_one_active(ledger, cycle_type, expe
     assert [cycle["start"] for cycle in cycles if cycle["is_current"]] == [today.isoformat()]
 
 
-def test_salary_is_recorded_once_and_allocation_is_a_paired_transfer(ledger):
+@pytest.mark.parametrize("delete_side", ["transfer_out", "transfer_in"])
+def test_salary_is_recorded_once_and_allocation_is_a_paired_transfer(ledger, delete_side):
     client, db = ledger
     payload = {
         "request_key": "f73dd60b-c10a-4634-9e67-87808d01b9f8",
@@ -103,6 +104,19 @@ def test_salary_is_recorded_once_and_allocation_is_a_paired_transfer(ledger):
     assert balances(client)["Cash"] == 500_000
     assert sorted(tx.type for tx in db.query(Transaction).all()) == ["income", "transfer_in", "transfer_out"]
     assert client.get("/paycheck/record/latest").json() is None
+
+    transfer = db.query(Transaction).filter_by(type=delete_side).one()
+    deleted = client.delete(f"/transactions/{transfer.id}")
+    assert deleted.status_code == 200
+    assert len(deleted.json()["deleted_ids"]) == 2
+    assert balances(client)["Bank"] == 1_000_000
+    assert balances(client)["Cash"] == 0
+    pending = client.get("/paycheck/record/latest").json()
+    assert pending["id"] == data["id"]
+    assert pending["allocations"][0]["transfer_id"] is None
+    assert client.post(url).status_code == 200
+    assert balances(client)["Bank"] == 500_000
+    assert balances(client)["Cash"] == 500_000
 
     payload.update(request_key="b401d1cf-4d31-49c6-a4fc-8a9a13f4daf4", start_cycle=False)
     supplemental = client.post("/paycheck/record", json=payload)
