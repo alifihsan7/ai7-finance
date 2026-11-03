@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   ArrowDownLeft,
   ArrowRight,
-  ArrowLeft,
   Settings2,
   Plus,
   Trash2,
@@ -14,7 +13,6 @@ import {
 } from "lucide-react";
 import { CustomModal } from "./ui/CustomModal";
 import { CurrencyInput } from "./ui/CurrencyInput";
-import { CustomSelect } from "./ui/CustomSelect";
 import { authFetch } from "@/lib/api";
 
 interface PaycheckConfig {
@@ -93,7 +91,7 @@ export default function PaycheckModal({
     id: 1,
     source_account: "Rekening Utama",
     use_gate: true,
-    gate_name: "Flip",
+    gate_name: "Perantara transfer",
     cycle_type: "monthly_date",
     cycle_days: 30,
     pocket_account: "Rekening Utama",
@@ -109,6 +107,8 @@ export default function PaycheckModal({
   // Customizer state
   const [customConfig, setCustomConfig] = useState<PaycheckConfig>(config);
   const [customBuckets, setCustomBuckets] = useState<PaycheckBucket[]>([]);
+  const allocationPercent = Math.round(customBuckets.reduce((total, bucket) => total + bucket.percentage, 0) * 100) / 100;
+  const unallocatedPercent = Math.round((100 - allocationPercent) * 100) / 100;
 
   // Fetch initial config & active session
   const fetchConfigAndSession = async () => {
@@ -344,6 +344,7 @@ export default function PaycheckModal({
   const handleSaveCustomize = async () => {
     try {
       setLoading(true);
+      setErrorMsg(null);
       // 1. Update config
       const cfgRes = await authFetch("/api/v1/paycheck/config", {
         method: "PUT",
@@ -423,7 +424,7 @@ export default function PaycheckModal({
         view === "checklist"
           ? "Checklist Eksekusi Gajian Bertahap"
           : view === "customize"
-          ? "Sesuaikan Alur & Routing Gajian"
+          ? "Atur alokasi gaji"
           : config.cycle_type === "monthly" || config.cycle_days === 30
           ? "Alokasi Gajian Bulanan"
           : config.cycle_type === "weekly" || config.cycle_days === 7
@@ -434,10 +435,10 @@ export default function PaycheckModal({
       }
       subtitle={
         view === "checklist"
-          ? "Panduan transfer m-banking & jembatan Flip bebas biaya admin"
+          ? "Centang setiap transfer yang sudah dilakukan."
           : view === "customize"
-          ? "Konfigurasi rekening hub, jembatan transfer, dan pos alokasi dinamis"
-          : "Distribusi alokasi pemasukan gajian ke pos-pos rekening Anda"
+          ? "Pilih rekening penerima dan atur pembagiannya."
+          : "Atur siklus dan cek pembagian gaji."
       }
       icon={<ArrowDownLeft className="w-5 h-5 text-mintRise" />}
       accent="mint"
@@ -526,6 +527,11 @@ export default function PaycheckModal({
             )}
           </fieldset>
 
+          <p className="text-sm text-luma-smoke">
+            Gaji masuk ke <strong className="text-luma-ivory">{config.source_account || "rekening penerima"}</strong>
+            {" · "}{buckets.length} pos alokasi
+          </p>
+
           {/* Allocation Breakdown Table */}
           <div className="p-5 rounded-3xl bg-obsidian-panel border border-luma-smokeline space-y-3.5 shadow-sm">
             <div className="flex justify-between items-center pb-3 border-b border-luma-smokeline">
@@ -566,9 +572,9 @@ export default function PaycheckModal({
                           <span className="px-2 py-0.5 rounded-full text-xs font-sans text-zinc-400 bg-obsidian-panel border border-luma-smokeline">
                             {b.percentage}%
                           </span>
-                          {b.via_gate && (
+                          {config.use_gate && b.via_gate && (
                             <span className="px-2 py-0.5 rounded-full text-xs font-medium text-amberGold bg-amberGold/10 border border-amberGold/20">
-                              via {config.gate_name}
+                              Lewat perantara
                             </span>
                           )}
                         </div>
@@ -626,11 +632,16 @@ export default function PaycheckModal({
           <div className="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-luma-smokeline">
             <button
               type="button"
-              onClick={() => setView("customize")}
+              onClick={() => {
+                setCustomConfig({ ...config });
+                setCustomBuckets(buckets.map((bucket) => ({ ...bucket })));
+                setErrorMsg(null);
+                setView("customize");
+              }}
               className="text-xs font-semibold text-zinc-300 hover:text-white flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl border border-luma-smokeline hover:border-white/[0.16] transition cursor-pointer"
             >
               <Settings2 className="w-4 h-4 text-zinc-400" />
-              <span>Sesuaikan Alur & Routing</span>
+              <span>Ubah alokasi</span>
             </button>
 
             <div className="flex items-center gap-2 ml-auto">
@@ -860,152 +871,36 @@ export default function PaycheckModal({
         </div>
       )}
 
-      {/* -------------------- VIEW 3: CUSTOMIZE PIPELINE & BUCKETS -------------------- */}
+
       {view === "customize" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-2xl bg-obsidian-card border border-luma-smokeline flex items-center justify-between gap-3 shadow-xs">
-            <div>
-              <h4 className="text-xs font-semibold text-white">Konfigurasi Multi-User</h4>
-              <p className="text-xs text-zinc-400">
-                Atur rekening penampung awal (hub), nama jembatan transfer (Flip/BI-Fast), dan pos tujuan.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setView("setup")}
-              className="text-xs text-zinc-300 hover:text-white flex items-center gap-1 transition cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Kembali
-            </button>
-          </div>
-
-          {/* Config Settings Form */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
-                Rekening Sumber (Hub)
-              </label>
+          <fieldset className="grid gap-3 rounded-2xl border border-luma-smokeline p-4 sm:grid-cols-2">
+            <legend className="px-1 text-sm font-semibold">Rekening</legend>
+            <label className="block space-y-1 text-sm">
+              <span>Rekening penerima gaji</span>
               <input
                 type="text"
+                className="w-full"
                 value={customConfig.source_account}
-                onChange={(e) => setCustomConfig({ ...customConfig, source_account: e.target.value })}
-                className="w-full h-10 px-3 rounded-2xl bg-obsidian-panel border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise transition"
-                placeholder="BRI 1 / BCA / Payroll"
+                onChange={(event) => setCustomConfig({ ...customConfig, source_account: event.target.value })}
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
-                Pakai Gate Jembatan?
-              </label>
-              <CustomSelect
-                value={customConfig.use_gate ? "yes" : "no"}
-                onChange={(val) => setCustomConfig({ ...customConfig, use_gate: val === "yes" })}
-                options={[
-                  { value: "yes", label: "Ya (Hemat via Gate)", color: "bg-mintRise" },
-                  { value: "no", label: "Tidak (Direct Transfer)", color: "bg-slate-400" },
-                ]}
-                accent="mint"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
-                Nama Gate Jembatan
-              </label>
+            </label>
+            <label className="block space-y-1 text-sm">
+              <span>Rekening belanja harian</span>
               <input
                 type="text"
-                value={customConfig.gate_name}
-                onChange={(e) => setCustomConfig({ ...customConfig, gate_name: e.target.value })}
-                disabled={!customConfig.use_gate}
-                className="w-full h-10 px-3 rounded-2xl bg-obsidian-panel border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise transition disabled:opacity-40"
-                placeholder="Flip / OVO / DANA"
+                className="w-full"
+                value={customConfig.pocket_account}
+                onChange={(event) => setCustomConfig({ ...customConfig, pocket_account: event.target.value })}
               />
-            </div>
-          </div>
-
-          {/* Cycle & Budget Settings */}
-          <div className="p-5 rounded-3xl bg-obsidian-panel border border-luma-smokeline space-y-3 shadow-sm">
-            <span className="text-xs font-semibold text-zinc-400 block">
-              Pengaturan Siklus Anggaran & Dompet Harian
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
-                  Tipe Siklus
-                </label>
-                <CustomSelect
-                  value={customConfig.cycle_type || "biweekly"}
-                  onChange={(val) => {
-                    let days = customConfig.cycle_days;
-                    if (val === "biweekly") days = 14;
-                    else if (val === "monthly") days = 30;
-                    else if (val === "weekly") days = 7;
-                    setCustomConfig({
-                      ...customConfig,
-                      cycle_type: val,
-                      cycle_days: days,
-                    });
-                  }}
-                  options={[
-                    { value: "biweekly", label: "2-Mingguan (14 Hari)", color: "bg-mintRise" },
-                    { value: "monthly", label: "Bulanan (30 Hari)", color: "bg-cyanHub" },
-                    { value: "weekly", label: "Mingguan (7 Hari)", color: "bg-amberGold" },
-                    { value: "custom", label: "Kustom (Jumlah Hari)", color: "bg-purple-400" },
-                  ]}
-                  accent="mint"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
-                  Durasi Siklus (Hari)
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={365}
-                  value={customConfig.cycle_days || 14}
-                  onChange={(e) =>
-                    setCustomConfig({
-                      ...customConfig,
-                      cycle_days: Math.max(1, parseInt(e.target.value, 10) || 1),
-                    })
-                  }
-                  className="w-full h-10 px-3 rounded-2xl bg-obsidian-card border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise transition font-sans"
-                  placeholder="14 / 30 / 7"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
-                  Rekening Saku Harian
-                </label>
-                <input
-                  type="text"
-                  value={customConfig.pocket_account || "Rekening Operasional"}
-                  onChange={(e) =>
-                    setCustomConfig({
-                      ...customConfig,
-                      pocket_account: e.target.value,
-                    })
-                  }
-                  className="w-full h-10 px-3 rounded-2xl bg-obsidian-card border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise transition"
-                  placeholder="Rekening Operasional / Rekening Utama / Debit"
-                />
-              </div>
-            </div>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              Durasi siklus menentukan rentang waktu evaluasi Safe-to-Spend, burn rate, dan tanggal snapshot penutupan siklus. Rekening saku adalah akun yang dievaluasi burn rate belanjanya.
-            </p>
-          </div>
+            </label>
+          </fieldset>
 
           {/* Buckets Editor */}
           <div className="p-5 rounded-3xl bg-obsidian-panel border border-luma-smokeline space-y-3 shadow-sm">
             <div className="flex justify-between items-center pb-2 border-b border-luma-smokeline">
               <span className="text-xs font-semibold text-zinc-400 ">
-                Daftar Pos Alokasi & Persentase
+                Pembagian gaji
               </span>
               <button
                 type="button"
@@ -1013,10 +908,10 @@ export default function PaycheckModal({
                   setCustomBuckets([
                     ...customBuckets,
                     {
-                      account: "Rekening Baru",
-                      percentage: 10,
+                      account: "",
+                      percentage: 0,
                       via_gate: customConfig.use_gate,
-                      purpose: "Pos Alokasi Tambahan",
+                      purpose: "",
                       sort_order: customBuckets.length + 1,
                     },
                   ]);
@@ -1024,11 +919,11 @@ export default function PaycheckModal({
                 className="text-xs font-semibold text-mintRise hover:brightness-110 flex items-center gap-1 transition cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                Tambah Pos
+                Tambah rekening
               </button>
             </div>
 
-            <div className="space-y-2.5 max-h-[40vh] overflow-y-auto scrollbar-thin pr-1">
+            <div className="space-y-2.5">
               {customBuckets.map((b, idx) => (
                 <div
                   key={idx}
@@ -1044,7 +939,8 @@ export default function PaycheckModal({
                         setCustomBuckets(copy);
                       }}
                       className="h-8 px-2.5 text-xs rounded-xl bg-obsidian-panel border border-luma-smokeline text-white font-semibold"
-                      placeholder="Nama Akun"
+                      aria-label={`Rekening alokasi ${idx + 1}`}
+                      placeholder="Nama rekening"
                     />
                     <div className="flex items-center gap-1">
                       <input
@@ -1057,6 +953,9 @@ export default function PaycheckModal({
                           setCustomBuckets(copy);
                         }}
                         className="h-8 w-20 px-2 text-xs rounded-xl bg-obsidian-panel border border-luma-smokeline text-white font-sans"
+                        min={0}
+                        max={100}
+                        aria-label={`Persentase alokasi ${idx + 1}`}
                         placeholder="%"
                       />
                       <span className="text-xs text-zinc-400">%</span>
@@ -1070,12 +969,13 @@ export default function PaycheckModal({
                         setCustomBuckets(copy);
                       }}
                       className="h-8 px-2.5 text-xs rounded-xl bg-obsidian-panel border border-luma-smokeline text-white col-span-2"
-                      placeholder="Tujuan / Keterangan Pos"
+                      aria-label={`Keterangan alokasi ${idx + 1}`}
+                      placeholder="Keterangan"
                     />
                   </div>
 
                   <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                    <label className="text-xs text-zinc-400 flex items-center gap-1 cursor-pointer">
+                    {customConfig.use_gate && <label className="text-xs text-zinc-400 flex items-center gap-1 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={b.via_gate}
@@ -1086,8 +986,8 @@ export default function PaycheckModal({
                         }}
                         className="rounded border-luma-smokeline"
                       />
-                      via Gate
-                    </label>
+                      Lewat perantara
+                    </label>}
 
                     <button
                       type="button"
@@ -1095,7 +995,7 @@ export default function PaycheckModal({
                         setCustomBuckets(customBuckets.filter((_, i) => i !== idx));
                       }}
                       className="p-1.5 rounded-lg text-zinc-400 hover:text-coralFall transition cursor-pointer"
-                      title="Hapus Pos"
+                      aria-label={`Hapus alokasi ${b.account || idx + 1}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -1105,21 +1005,38 @@ export default function PaycheckModal({
             </div>
 
             {/* Validation sum */}
-            <div className="pt-2 flex justify-between items-center text-xs">
-              <span className="text-zinc-400">Total Persentase:</span>
-              <span
-                className={`font-sans font-semibold ${
-                  Math.round(customBuckets.reduce((acc, b) => acc + (b.percentage || 0), 0)) === 100
-                    ? "text-mintRise"
-                    : "text-amberGold"
-                }`}
-              >
-                {customBuckets.reduce((acc, b) => acc + (b.percentage || 0), 0).toFixed(1)}% / 100%
+            <div className="flex flex-wrap justify-between gap-2 border-t border-luma-smokeline pt-3 text-xs tabular-nums" aria-live="polite">
+              <span>Total pembagian {allocationPercent}%</span>
+              <span className={unallocatedPercent === 0 ? "text-mintRise" : "text-amberGold"}>
+                {unallocatedPercent === 0 ? "Sudah terbagi semua" :
+                  unallocatedPercent > 0 ? `Belum terbagi ${unallocatedPercent}%` : `Lebih ${Math.abs(unallocatedPercent)}%`}
               </span>
             </div>
           </div>
 
-          {/* Action Row */}
+          <fieldset className="space-y-3 rounded-2xl border border-luma-smokeline p-4">
+            <legend className="px-1 text-sm font-semibold">Opsi transfer</legend>
+            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={customConfig.use_gate}
+                onChange={(event) => setCustomConfig({ ...customConfig, use_gate: event.target.checked })}
+              />
+              Pakai perantara transfer
+            </label>
+            {customConfig.use_gate && (
+              <label className="block space-y-1 text-sm">
+                <span>Nama perantara</span>
+                <input
+                  type="text"
+                  className="w-full"
+                  value={customConfig.gate_name}
+                  onChange={(event) => setCustomConfig({ ...customConfig, gate_name: event.target.value })}
+                />
+              </label>
+            )}
+          </fieldset>
+
           <div className="pt-3 flex justify-end gap-3 border-t border-luma-smokeline">
             <button
               type="button"
@@ -1134,7 +1051,7 @@ export default function PaycheckModal({
               disabled={loading}
               className="px-5 py-2.5 text-xs sm:text-sm font-semibold bg-mintRise text-slate-950 hover:brightness-110 rounded-2xl transition cursor-pointer"
             >
-              {loading ? "Menyiapkan..." : "Simpan Pengaturan Alur"}
+              {loading ? "Menyiapkan..." : "Simpan alokasi"}
             </button>
           </div>
         </div>
