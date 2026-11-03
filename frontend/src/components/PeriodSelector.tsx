@@ -125,13 +125,13 @@ export function PeriodSelector({
 
       {/* Floating Modal Popover */}
       {isOpen && (
-        <div id={popupId} aria-label="Pilih periode" className="luma-period-popup absolute left-0 mt-2 z-[90] bg-obsidian-card border border-luma-smokeline rounded-2xl shadow-2xl p-3.5">
+        <div id={popupId} aria-label="Pilih periode" className="luma-period-popup absolute left-0 mt-2 z-[90] bg-obsidian-card border border-luma-smokeline rounded-[var(--ai7-radius-panel)] shadow-2xl p-3.5">
           {/* Header Type Tabs */}
-          <div className="grid grid-cols-4 gap-1 p-1 bg-obsidian-panel rounded-full border border-luma-smokeline mb-3">
+          <div className="ai7-tab-group grid grid-cols-4 gap-1 bg-obsidian-panel border border-luma-smokeline mb-3">
             <button
               type="button"
               onClick={() => setActiveTab("cycle")}
-              className={`py-1.5 text-xs font-semibold rounded-full transition-all flex items-center justify-center gap-1 ${
+              className={`py-1.5 text-xs font-semibold rounded-[var(--ai7-radius-control)] transition-all flex items-center justify-center gap-1 ${
                 activeTab === "cycle"
                   ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                   : "text-slateText-secondary hover:text-white"
@@ -143,7 +143,7 @@ export function PeriodSelector({
             <button
               type="button"
               onClick={() => setActiveTab("week")}
-              className={`py-1.5 text-xs font-semibold rounded-full transition-all flex items-center justify-center gap-1 ${
+              className={`py-1.5 text-xs font-semibold rounded-[var(--ai7-radius-control)] transition-all flex items-center justify-center gap-1 ${
                 activeTab === "week"
                   ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                   : "text-slateText-secondary hover:text-white"
@@ -155,7 +155,7 @@ export function PeriodSelector({
             <button
               type="button"
               onClick={() => setActiveTab("month")}
-              className={`py-1.5 text-xs font-semibold rounded-full transition-all flex items-center justify-center gap-1 ${
+              className={`py-1.5 text-xs font-semibold rounded-[var(--ai7-radius-control)] transition-all flex items-center justify-center gap-1 ${
                 activeTab === "month"
                   ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                   : "text-slateText-secondary hover:text-white"
@@ -167,7 +167,7 @@ export function PeriodSelector({
             <button
               type="button"
               onClick={() => setActiveTab("custom")}
-              className={`py-1.5 text-xs font-semibold rounded-full transition-all flex items-center justify-center gap-1 ${
+              className={`py-1.5 text-xs font-semibold rounded-[var(--ai7-radius-control)] transition-all flex items-center justify-center gap-1 ${
                 activeTab === "custom"
                   ? "bg-amberGold text-slate-950 font-semibold shadow-xs"
                   : "text-slateText-secondary hover:text-white"
@@ -200,7 +200,7 @@ export function PeriodSelector({
                           onSelectPeriod(opt);
                           setIsOpen(false);
                         }}
-                        className={`w-full px-3 py-2 rounded-2xl text-left text-xs transition flex items-center justify-between gap-2 ${
+                        className={`w-full px-3 py-2 rounded-[var(--ai7-radius-control)] text-left text-xs transition flex items-center justify-between gap-2 ${
                           isSelected
                             ? "bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold"
                             : "hover:bg-obsidian-hover border border-transparent text-slateText-primary"
@@ -235,7 +235,7 @@ export function PeriodSelector({
                         onSelectPeriod(opt);
                         setIsOpen(false);
                       }}
-                      className={`w-full px-3 py-2 rounded-2xl text-left text-xs transition flex items-center justify-between gap-2 ${
+                      className={`w-full px-3 py-2 rounded-[var(--ai7-radius-control)] text-left text-xs transition flex items-center justify-between gap-2 ${
                         isSelected
                           ? "bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold"
                           : "hover:bg-obsidian-hover border border-transparent text-slateText-primary"
@@ -269,7 +269,7 @@ export function PeriodSelector({
                         onSelectPeriod(opt);
                         setIsOpen(false);
                       }}
-                      className={`w-full px-3 py-2 rounded-2xl text-left text-xs transition flex items-center justify-between gap-2 ${
+                      className={`w-full px-3 py-2 rounded-[var(--ai7-radius-control)] text-left text-xs transition flex items-center justify-between gap-2 ${
                         isSelected
                           ? "bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold"
                           : "hover:bg-obsidian-hover border border-transparent text-slateText-primary"
@@ -319,7 +319,7 @@ export function PeriodSelector({
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2 bg-amberGold text-slate-950 font-semibold text-xs rounded-full hover:bg-amber-400 transition"
+                  className="w-full py-2 bg-amberGold text-slate-950 font-semibold text-xs rounded-[var(--ai7-radius-control)] hover:bg-amber-400 transition"
                 >
                   Terapkan Rentang
                 </button>

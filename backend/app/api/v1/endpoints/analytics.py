@@ -100,30 +100,41 @@ def get_available_periods(
             "type": "cycle",
             "start": str(default_start),
             "end": str(default_end),
-            "label": f"{label_prefix} ({default_start.strftime('%d %b')} – {default_end.strftime('%d %b %Y')}) (Aktif)",
-            "is_current": True
+            "label": f"{label_prefix} ({default_start.strftime('%d %b')} – {default_end.strftime('%d %b %Y')})",
+            "is_current": False
         })
     else:
-        for idx, paycheck_date in enumerate(paycheck_dates):
+        seen_starts = set()
+        for paycheck_date in paycheck_dates:
             cycle_label = label_prefix
             if paycheck_date in cycle_ends:
                 c_start, c_end = paycheck_date, cycle_ends[paycheck_date]
-                cycle_label = f"Siklus {(c_end - c_start).days + 1} Hari"
             elif cycle_type == "monthly_date":
                 c_start, c_end = get_monthly_date_bounds(paycheck_date, paycheck_day)
             else:
                 c_start = paycheck_date
                 c_end = c_start + timedelta(days=cycle_days - 1)
-            is_cur = (c_start <= today_wib <= c_end) or (idx == 0 and today_wib >= c_start)
-            status_text = " (Aktif)" if is_cur else ""
+            if c_start in cycle_ends:
+                c_end = cycle_ends[c_start]
+                cycle_label = f"Siklus {(c_end - c_start).days + 1} Hari"
+            if c_start in seen_starts:
+                continue
+            seen_starts.add(c_start)
             cycles.append({
                 "id": f"cycle_{c_start}",
                 "type": "cycle",
                 "start": str(c_start),
                 "end": str(c_end),
-                "label": f"{cycle_label} ({c_start.strftime('%d %b')} – {c_end.strftime('%d %b %Y')}){status_text}",
-                "is_current": is_cur
+                "label": f"{cycle_label} ({c_start.strftime('%d %b')} – {c_end.strftime('%d %b %Y')})",
+                "is_current": False
             })
+
+    cycles.sort(key=lambda cycle: cycle["start"], reverse=True)
+    today_key = today_wib.isoformat()
+    current_cycle = next((cycle for cycle in cycles if cycle["start"] <= today_key <= cycle["end"]), None)
+    if current_cycle:
+        current_cycle["is_current"] = True
+        current_cycle["label"] += " (Aktif)"
 
     # 2. Minggu ini & minggu lalu
     this_week_start = today_wib - timedelta(days=today_wib.weekday())

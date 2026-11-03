@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 
 import pytest
 from fastapi import FastAPI
@@ -55,6 +55,30 @@ def create(client, kind, amount, account="Bank"):
                            "category": "Test", "description": "Data uji", "date": "2026-11-02"})
     assert response.status_code == 200, response.text
     return response.json()
+
+
+@pytest.mark.parametrize("cycle_type, expected_count", [("monthly_date", 1), ("biweekly", 2)])
+def test_picker_lists_unique_cycles_and_only_one_active(ledger, cycle_type, expected_count):
+    client, db = ledger
+    today = datetime.now(analytics.WIB).date()
+    cfg = paycheck.get_or_seed_config(db, 1)
+    cfg.cycle_type = cycle_type
+    cfg.cycle_days = 14
+    cfg.paycheck_day = today.day
+    for day in (today, today + timedelta(days=1)):
+        db.add(Transaction(user_id=1, account="Bank", type="income", amount=100,
+                           category="Gaji", description="Gaji", date=day))
+    if cycle_type == "biweekly":
+        db.add(Transaction(user_id=1, account="Bank", type="income", amount=100,
+                           category="Gaji", description="Gaji", date=today - timedelta(days=1)))
+        expected_count += 1
+    db.commit()
+
+    response = client.get("/analytics/periods")
+    assert response.status_code == 200
+    cycles = response.json()["cycles"]
+    assert len({cycle["id"] for cycle in cycles}) == len(cycles) == expected_count
+    assert [cycle["start"] for cycle in cycles if cycle["is_current"]] == [today.isoformat()]
 
 
 def test_salary_is_recorded_once_and_allocation_is_a_paired_transfer(ledger):
