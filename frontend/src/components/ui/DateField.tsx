@@ -27,6 +27,7 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
   const input = useRef<HTMLInputElement>(null);
   const field = useRef<HTMLDivElement>(null);
   const popup = useRef<HTMLDivElement>(null);
+  const calendarBody = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState(value);
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState(() => new Date());
@@ -42,6 +43,9 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
   useEffect(() => { setDraft(value); }, [value]);
   useEffect(() => { input.current?.setCustomValidity(error); }, [error]);
   useEffect(() => {
+    if (calendarBody.current) calendarBody.current.scrollTop = 0;
+  }, [view, decade, month]);
+  useEffect(() => {
     if (!open) return;
     function placeCalendar() {
       const rect = field.current?.getBoundingClientRect();
@@ -52,7 +56,7 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
       const upward = below < 360 && above > below;
       const height = Math.min(360, Math.max(0, upward ? above : below));
       setPosition({
-        left: Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)),
+        left: Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8)),
         top: upward ? rect.top - 6 : rect.bottom + 6,
         width,
         maxHeight: height,
@@ -122,11 +126,11 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
       {touched && error && <p id={`${uid}-error`} className="mt-1 text-xs text-luma-coral">{error}</p>}
       {open && position && createPortal(
         <div ref={popup} id={uid} className="tillfold-calendar" style={position} role="group" aria-label="Kalender">
-          <div className="flex items-center justify-between gap-1">
+          <div className="tillfold-calendar-toolbar">
             <button type="button" aria-label={view === "years" ? "Sepuluh tahun sebelumnya" : view === "months" ? "Tahun sebelumnya" : "Bulan sebelumnya"}
               disabled={view === "years" && decade === 0}
               onClick={() => view === "years" ? setDecade(decade - 10) : shiftMonth(view === "months" ? -12 : -1)}><ChevronLeft size={16} aria-hidden="true" /></button>
-            <div className="flex min-w-0 items-center gap-1">
+            <div className="tillfold-calendar-switch">
               <button type="button" className="tillfold-calendar-heading" aria-label={`Pilih bulan: ${monthLabels[monthIndex]}`}
                 aria-pressed={view === "months"} onClick={() => setView(view === "months" ? "days" : "months")}>
                 {monthLabels[monthIndex]} <ChevronDown size={12} aria-hidden="true" />
@@ -143,6 +147,7 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
               disabled={view === "years" && decade === 9990}
               onClick={() => view === "years" ? setDecade(decade + 10) : shiftMonth(view === "months" ? 12 : 1)}><ChevronRight size={16} aria-hidden="true" /></button>
           </div>
+          <div ref={calendarBody} className="tillfold-calendar-body">
           {view === "years" && (
             <div className="grid grid-cols-3 gap-1 text-center" aria-label="Daftar tahun" role="group">
               {Array.from({ length: 10 }, (_, index) => decade + index).filter(Boolean).map((option) => (
@@ -180,6 +185,7 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
                 }}>{day}</button>;
             })}
           </div>}
+          </div>
         </div>,
         field.current?.closest('[role="dialog"]') || document.body
       )}

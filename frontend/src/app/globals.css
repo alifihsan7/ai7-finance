@@ -165,13 +165,29 @@ input[type="number"] {
   color: var(--luma-ivory);
   cursor: pointer;
 }
-.tillfold-date-field button, .tillfold-calendar > div:first-child > button { width: 44px; min-height: 44px; flex: none; }
-.tillfold-calendar button.tillfold-calendar-heading { display: inline-flex; gap: 4px; padding-inline: 6px; font-weight: 600; }
+.tillfold-date-field button { width: 44px; min-height: 44px; flex: none; }
+.tillfold-calendar-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 4px; padding-bottom: 6px; flex: none; }
+.tillfold-calendar-toolbar > button { width: 36px; min-height: 36px; flex: none; }
+.tillfold-calendar-switch { display: flex; min-width: 0; gap: 4px; }
+.tillfold-calendar button.tillfold-calendar-heading {
+  display: inline-flex;
+  gap: 5px;
+  min-height: 36px;
+  padding-inline: 8px;
+  font-weight: 600;
+  background: var(--luma-coal);
+  border: 1px solid var(--luma-smokeline);
+}
+.tillfold-calendar button.tillfold-calendar-heading[aria-pressed="true"] { background: var(--ai7-selected); color: var(--luma-ivory); }
+.tillfold-calendar-body { min-height: 0; overflow-y: auto; }
 .tillfold-calendar {
   position: fixed;
   z-index: 100;
-  overflow-y: auto;
-  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  height: 360px;
+  overflow: hidden;
+  padding: 8px;
   background: var(--luma-panel-surface);
   border: 1px solid var(--luma-smokeline);
   border-radius: var(--ai7-radius-control);
