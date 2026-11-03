@@ -167,13 +167,16 @@ input[type="number"] {
 }
 .tillfold-date-field button, .tillfold-calendar > div:first-child button { width: 44px; min-height: 44px; flex: none; }
 .tillfold-calendar {
-  margin-top: 6px;
+  position: fixed;
+  z-index: 100;
+  overflow-y: auto;
   padding: 6px;
   background: var(--luma-panel-surface);
   border: 1px solid var(--luma-smokeline);
   border-radius: var(--ai7-radius-control);
+  box-shadow: 0 12px 28px rgb(0 0 0 / .22);
 }
-.tillfold-calendar button { font-size: 12px; }
+.tillfold-calendar button { min-height: 40px; font-size: 12px; }
 .tillfold-calendar button:not(:disabled):hover, .tillfold-date-field button:hover { background: var(--luma-coal); }
 .tillfold-calendar button[aria-pressed="true"] { background: var(--luma-ivory); color: var(--luma-charcoal); }
 .tillfold-calendar button:disabled { opacity: .4; cursor: not-allowed; }

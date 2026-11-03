@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Props {
@@ -23,10 +24,13 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
   const uid = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLInputElement>(null);
+  const field = useRef<HTMLDivElement>(null);
+  const popup = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState(value);
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState(() => new Date());
   const [touched, setTouched] = useState(false);
+  const [position, setPosition] = useState<{ left: number; top: number; width: number; maxHeight: number; transform?: string }>();
 
   const inRange = (date: string) => (!min || date >= min) && (!max || date <= max);
   const error = draft && (!validDate(draft) || !inRange(draft))
@@ -34,6 +38,37 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
     : "";
   useEffect(() => { setDraft(value); }, [value]);
   useEffect(() => { input.current?.setCustomValidity(error); }, [error]);
+  useEffect(() => {
+    if (!open) return;
+    function placeCalendar() {
+      const rect = field.current?.getBoundingClientRect();
+      if (!rect) return;
+      const width = Math.min(320, window.innerWidth - 16);
+      const below = window.innerHeight - rect.bottom - 14;
+      const above = rect.top - 14;
+      const upward = below < 360 && above > below;
+      const height = Math.min(360, Math.max(0, upward ? above : below));
+      setPosition({
+        left: Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)),
+        top: upward ? rect.top - 6 : rect.bottom + 6,
+        width,
+        maxHeight: height,
+        transform: upward ? "translateY(-100%)" : undefined,
+      });
+    }
+    function closeOutside(event: PointerEvent) {
+      if (event.target instanceof Node && !field.current?.contains(event.target) && !popup.current?.contains(event.target)) setOpen(false);
+    }
+    placeCalendar();
+    window.addEventListener("resize", placeCalendar);
+    window.addEventListener("scroll", placeCalendar, true);
+    document.addEventListener("pointerdown", closeOutside);
+    return () => {
+      window.removeEventListener("resize", placeCalendar);
+      window.removeEventListener("scroll", placeCalendar, true);
+      document.removeEventListener("pointerdown", closeOutside);
+    };
+  }, [open]);
 
   const shiftMonth = (amount: number) => {
     const next = new Date(month);
@@ -47,7 +82,7 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
   const offset = (first.getUTCDay() + 6) % 7;
 
   return (
-    <div className="tillfold-date" onKeyDown={(event) => {
+    <div ref={field} className="tillfold-date" onKeyDown={(event) => {
       if (event.key === "Escape" && open) {
         event.stopPropagation();
         setOpen(false);
@@ -72,8 +107,8 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
           }}><Calendar size={16} aria-hidden="true" /></button>
       </div>
       {touched && error && <p id={`${uid}-error`} className="mt-1 text-xs text-luma-coral">{error}</p>}
-      {open && (
-        <div id={uid} className="tillfold-calendar" role="group" aria-label="Kalender">
+      {open && position && createPortal(
+        <div ref={popup} id={uid} className="tillfold-calendar" style={position} role="group" aria-label="Kalender">
           <div className="flex items-center justify-between gap-1">
             <button type="button" aria-label="Bulan sebelumnya" onClick={() => shiftMonth(-1)}><ChevronLeft size={16} aria-hidden="true" /></button>
             <span className="text-xs font-medium text-center" aria-live="polite">{monthName.format(month)}</span>
@@ -96,7 +131,8 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
                 }}>{day}</button>;
             })}
           </div>
-        </div>
+        </div>,
+        field.current?.closest('[role="dialog"]') || document.body
       )}
     </div>
   );
