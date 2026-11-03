@@ -314,13 +314,12 @@ def test_jago_pockets_auto_deduction_and_balance(client, db_session, test_user):
 
     # Kantong Utama: target is dynamic sisa penampung:
     # other targets sum = 225k + 75k + 50k + 50k = 400k.
-    # total Jago balance = 575,000.
-    # Dynamic target for Utama = max(0, 575,000 - 400,000) = 175,000.
-    # Spent = 50,000 -> remaining = 125,000.
-    assert slugs["utama"]["target_amount"] == 175_000
+    # Add back the 425,000 in expenses before allocating the 575,000 ledger balance.
+    assert slugs["utama"]["target_amount"] == 600_000
     assert slugs["utama"]["spent_amount"] == 50_000
-    assert slugs["utama"]["remaining_amount"] == 125_000
-    assert round(slugs["utama"]["percentage_spent"], 1) == 28.6
+    assert slugs["utama"]["remaining_amount"] == 550_000
+    assert slugs["utama"]["percentage_spent"] == 8.3
+    assert data["total_remaining_amount"] == data["total_jago_balance"]
 
 
 def test_jago_pockets_put_updates(client, db_session, test_user):

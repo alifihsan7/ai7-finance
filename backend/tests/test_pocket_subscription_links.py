@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -6,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from app.api.deps import get_current_user
-from app.api.v1.endpoints import jago_pockets, subscriptions
+from app.api.v1.endpoints import jago_pockets, subscriptions, transactions
 from app.db.pocket_schema import ensure_pocket_subscription_schema
 from app.db.session import Base, get_db
 from app.models.account import Account
@@ -29,6 +31,7 @@ def linked_client():
         app = FastAPI()
         app.include_router(jago_pockets.router, prefix="/pockets")
         app.include_router(subscriptions.router, prefix="/subscriptions")
+        app.include_router(transactions.router, prefix="/transactions")
         app.dependency_overrides[get_db] = lambda: db
         app.dependency_overrides[get_current_user] = lambda: db.get(User, 1)
         with TestClient(app) as client:
@@ -60,6 +63,46 @@ def test_explicit_link_follows_amount_and_unlink_keeps_last_target(linked_client
     assert item["target_amount"] == 450000
     assert client.put("/pockets/1", json={"target_amount": 500000}).status_code == 200
     assert db.get(JagoPocket, 1).target_amount == 500000
+
+
+def test_linked_bill_payment_and_operating_expense_are_each_deducted_once(linked_client):
+    client, db = linked_client
+    db.get(Account, 1).initial_balance = 2_000_000
+    db.get(JagoPocket, 1).name = "Gym"
+    db.add(JagoPocket(user_id=1, account_id=1, name="Kantong Utama", slug="utama", target_amount=0))
+    db.commit()
+
+    assert client.put("/pockets/1/subscription", json={"subscription_id": 1}).status_code == 200
+    assert client.put("/subscriptions/1", json={"amount": 450_000}).status_code == 200
+    today = date.today().isoformat()
+
+    def summary():
+        response = client.get(f"/pockets?account_id=1&cycle_start={today}&cycle_end={today}")
+        assert response.status_code == 200
+        return response.json()
+
+    def record(kind, amount, description):
+        assert client.post("/transactions", json={
+            "type": kind, "amount": amount, "account": "Bank A",
+            "category": "Lainnya", "description": description, "date": today,
+        }).status_code == 200
+
+    assert summary()["total_pocket_balance"] == 2_000_000
+    record("income", 2_000_000, "Saldo awal")
+    record("expense", 450_000, "Bayar Gym")
+    record("expense", 200_000, "Belanja")
+
+    data = summary()
+    pockets = {item["name"]: item for item in data["pockets"]}
+    assert pockets["Gym"]["target_amount"] == 450_000
+    assert pockets["Gym"]["spent_amount"] == 450_000
+    assert pockets["Gym"]["remaining_amount"] == 0
+    assert pockets["Kantong Utama"]["remaining_amount"] == 650_000
+    assert data["total_remaining_amount"] == data["total_pocket_balance"] == 1_350_000
+
+    record("expense", 1_350_000, "Belanja lanjutan")
+    data = summary()
+    assert data["total_remaining_amount"] == data["total_pocket_balance"] == 0
 
 
 @pytest.mark.parametrize("pocket_id,bill_id,expected", [(1, 2, 400), (1, 3, 404), (1, 4, 400), (4, 1, 404), (999, 1, 404), (1, 999, 404), (1, -1, 422)])

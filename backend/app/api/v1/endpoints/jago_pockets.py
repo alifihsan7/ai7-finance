@@ -270,34 +270,33 @@ def ensure_default_pockets(db: Session, user_id: int, account_id: Optional[int] 
     return list(existing_map.values())
 
 
-def get_jago_account_balance(db: Session, user_id: int) -> int:
-    """Calculates all-time ledger balance for pocket / Bank Jago accounts."""
-    pocket_names = get_target_pocket_account_names(db, user_id)
+def _get_ledger_balance(db: Session, user_id: int, account_names: List[str]) -> Optional[int]:
     tx_balance = db.query(
-        func.coalesce(
-            func.sum(
-                case(
-                    (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                    (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
-                    else_=0,
-                )
+        func.sum(
+            case(
+                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
+                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                else_=0,
             ),
-            0,
         )
     ).filter(
         Transaction.user_id == user_id,
-        func.lower(Transaction.account).in_(pocket_names),
+        func.lower(Transaction.account).in_(account_names),
     ).scalar()
+    return int(tx_balance) if tx_balance is not None else None
 
-    balance = int(tx_balance or 0)
-    if balance == 0:
-        pocket_acc = db.query(Account).filter(
-            Account.user_id == user_id,
-            func.lower(Account.name).in_(pocket_names),
-        ).first()
-        if pocket_acc and pocket_acc.initial_balance > 0:
-            balance = int(pocket_acc.initial_balance)
-    return balance
+
+def get_jago_account_balance(db: Session, user_id: int) -> int:
+    """Calculates all-time ledger balance for pocket / Bank Jago accounts."""
+    pocket_names = get_target_pocket_account_names(db, user_id)
+    balance = _get_ledger_balance(db, user_id, pocket_names)
+    if balance is not None:
+        return balance
+    pocket_acc = db.query(Account).filter(
+        Account.user_id == user_id,
+        func.lower(Account.name).in_(pocket_names),
+    ).first()
+    return max(0, int(pocket_acc.initial_balance)) if pocket_acc else 0
 
 
 get_pocket_account_balance = get_jago_account_balance
@@ -386,7 +385,8 @@ def classify_pocket_transaction_for_account(tx: Transaction, pockets: List[JagoP
             return tagihan_p.slug
 
     # 3. Fallback to Utama or first operasional pocket
-    fallback_p = next((p for p in pockets if "utama" in p.slug.lower() or p.role == "operasional"), pockets[0])
+    main_pocket = next((p for p in pockets if p.slug.startswith("utama")), None)
+    fallback_p = main_pocket or next((p for p in pockets if p.role == "operasional"), pockets[0])
     return fallback_p.slug
 
 
@@ -448,26 +448,9 @@ def compute_pockets_summary(
             if p.slug not in slug_order and p not in ordered_pockets:
                 ordered_pockets.append(p)
 
-    # Balance from transactions
-    tx_balance = db.query(
-        func.coalesce(
-            func.sum(
-                case(
-                    (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                    (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
-                    else_=0,
-                )
-            ),
-            0,
-        )
-    ).filter(
-        Transaction.user_id == user_id,
-        func.lower(Transaction.account).in_(target_account_names),
-    ).scalar()
-
-    total_balance = int(tx_balance or 0)
-    if total_balance == 0 and acc and acc.initial_balance > 0:
-        total_balance = int(acc.initial_balance)
+    total_balance = _get_ledger_balance(db, user_id, target_account_names)
+    if total_balance is None:
+        total_balance = max(0, int(acc.initial_balance)) if acc else 0
 
     expenses = db.query(Transaction).filter(
         Transaction.user_id == user_id,
@@ -500,6 +483,8 @@ def compute_pockets_summary(
             link_states[pocket.id] = state
         targets[pocket.id] = target
     sum_other_targets = sum(targets[p.id] for p in ordered_pockets if not p.slug.startswith("utama"))
+    # The ledger already subtracts expenses. Add back the ones deducted from pocket targets below.
+    allocated_spending = sum(spent_by_slug.get(p.slug, 0) for p in ordered_pockets)
 
     items: List[JagoPocketItemResponse] = []
     total_target = 0
@@ -508,7 +493,7 @@ def compute_pockets_summary(
     for p in ordered_pockets:
         target = targets[p.id]
         if p.slug.startswith("utama") and target == 0 and not p.subscription_id:
-            target = max(0, total_balance - sum_other_targets)
+            target = max(0, total_balance + allocated_spending - sum_other_targets)
 
         spent = spent_by_slug.get(p.slug, 0)
         remaining = target - spent
