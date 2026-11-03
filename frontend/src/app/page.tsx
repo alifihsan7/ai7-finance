@@ -340,10 +340,12 @@ export default function FinanceDashboard() {
   const [planSubTab, setPlanSubTab] = useState<"target" | "tagihan">("target");
   const [settingsSubTab, setSettingsSubTab] = useState<"rekening" | "kantong" | "kategori" | "profil">("rekening");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarMotion, setSidebarMotion] = useState(false);
   useEffect(() => {
     setSidebarCollapsed(localStorage.getItem("ai7_sidebar_collapsed") === "true");
   }, []);
   const toggleSidebar = () => {
+    setSidebarMotion(true);
     setSidebarCollapsed((collapsed) => {
       const next = !collapsed;
       localStorage.setItem("ai7_sidebar_collapsed", String(next));
@@ -1075,7 +1077,7 @@ export default function FinanceDashboard() {
 
   return (
     <div className="luma-app bg-luma-charcoal text-luma-ivory flex flex-col md:flex-row antialiased font-sans overflow-hidden">
-      <aside id="desktop-sidebar" aria-label="Sidebar" data-collapsed={sidebarCollapsed} className="luma-sidebar hidden md:flex shrink-0 bg-luma-charcoal p-5 flex-col justify-between overflow-y-auto">
+      <aside id="desktop-sidebar" aria-label="Sidebar" data-collapsed={sidebarCollapsed} data-motion={sidebarMotion} className="luma-sidebar hidden md:flex shrink-0 bg-luma-charcoal p-5 flex-col justify-between overflow-x-hidden overflow-y-auto">
         <div>
           <div className="luma-sidebar-heading flex items-center justify-between gap-1">
             <div className="luma-sidebar-copy">

@@ -622,6 +622,19 @@ textarea:focus-visible,
 
 /* Overview motion draws attention to the balance and how its bars compare. */
 @media (prefers-reduced-motion: no-preference) {
+  .luma-sidebar[data-motion="true"] {
+    transition: width 220ms ease, padding-inline 220ms ease;
+  }
+
+  .luma-sidebar[data-motion="true"][data-collapsed="false"] .luma-sidebar-copy {
+    animation: luma-sidebar-label-enter 140ms ease-out 80ms both;
+  }
+
+  @keyframes luma-sidebar-label-enter {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
   .luma-overview-grid .luma-balance-body {
     animation: luma-balance-enter 220ms ease-out both;
   }
