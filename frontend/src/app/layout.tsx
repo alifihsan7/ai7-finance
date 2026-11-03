@@ -25,17 +25,17 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "ai7.finance · Financial System",
-  description: "Bi-weekly paycheck allocation & personal finance dashboard",
+  title: "Tillfold · Catatan keuangan pribadi",
+  description: "Catat transaksi, bagi gaji, dan pantau anggaran.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "AI7 Finance",
+    title: "Tillfold",
   },
   icons: {
     icon: [
-      { url: "/ai7-icon-rounded.svg", type: "image/svg+xml" },
+      { url: "/tillfold.svg", type: "image/svg+xml" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],

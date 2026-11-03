@@ -88,7 +88,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
       isOpen={isOpen}
       onClose={onClose}
       title="Tambah rekening / akun baru"
-      subtitle="Daftarkan rekening bank, e-wallet, atau pos investasi baru ke ekosistem AI7 Finance"
+      subtitle="Tambahkan rekening bank, dompet digital, atau rekening investasi."
       icon={<Wallet className="w-5 h-5" />}
     >
       <form onSubmit={handleSubmit} className="space-y-4">

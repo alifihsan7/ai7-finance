@@ -1,11 +1,11 @@
 {
-  "name": "AI7 Finance",
-  "short_name": "AI7 Finance",
+  "name": "Tillfold",
+  "short_name": "Tillfold",
   "description": "Sistem Manajemen Keuangan Pribadi",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0B0D11",
-  "theme_color": "#0B0D11",
+  "background_color": "#18181b",
+  "theme_color": "#18181b",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -21,7 +21,7 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/ai7-icon-rounded.svg",
+      "src": "/tillfold.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

@@ -1082,8 +1082,9 @@ export default function FinanceDashboard() {
         <div>
           <div className="luma-sidebar-heading flex items-center justify-between gap-1">
             <div className="luma-sidebar-copy">
-              <div className="font-semibold text-base tracking-tight text-luma-ivory leading-none whitespace-nowrap">
-                ai7<span className="text-luma-ember">.</span>finance
+              <div className="flex items-center gap-2 font-semibold text-base tracking-tight text-luma-ivory leading-none whitespace-nowrap">
+                <img src="/tillfold.svg" width={28} height={28} alt="" />
+                Tillfold
               </div>
               <div className="text-xs text-luma-smoke mt-2">
                 Catatan keuangan pribadi
@@ -1198,9 +1199,10 @@ export default function FinanceDashboard() {
       {/* MOBILE STICKY TOP APP BAR */}
       <header className="luma-mobile-header md:hidden sticky top-0 z-30 w-full bg-luma-charcoal border-b border-luma-smokeline/60 px-3.5 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 min-w-0">
+          <img src="/tillfold.svg" width={28} height={28} alt="" className="shrink-0" />
           <div className="min-w-0">
             <div className="font-semibold text-sm tracking-tight text-luma-ivory leading-none truncate">
-              ai7<span className="text-luma-ember">.</span>finance
+              Tillfold
             </div>
             <div className="text-xs text-luma-smoke mt-1 truncate">
               {activeNav}
@@ -1266,9 +1268,10 @@ export default function FinanceDashboard() {
               {/* Header with Close */}
               <div className="flex items-center justify-between pb-4 border-b border-luma-smokeline">
                 <div className="flex items-center gap-2.5">
+                  <img src="/tillfold.svg" width={28} height={28} alt="" />
                   <div>
                     <div className="font-semibold text-base tracking-tight text-luma-ivory leading-none">
-                      ai7<span className="text-luma-ember">.</span>finance
+                      Tillfold
                     </div>
                   </div>
                 </div>

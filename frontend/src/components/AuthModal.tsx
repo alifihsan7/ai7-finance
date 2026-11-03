@@ -233,7 +233,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title={mode === "login" ? "Masuk ke AI7 Finance" : "Daftar Akun Baru"}
+      title={mode === "login" ? "Masuk ke Tillfold" : "Daftar akun Tillfold"}
       subtitle="Masuk untuk membuka catatan keuangan Anda."
       icon={<Shield className="w-4 h-4 text-amberGold" />}
       accent="amber"
