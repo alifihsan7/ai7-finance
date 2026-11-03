@@ -10,6 +10,7 @@ export interface SelectOption {
 }
 
 interface CustomSelectProps {
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   options: SelectOption[];
@@ -20,6 +21,7 @@ interface CustomSelectProps {
 }
 
 export function CustomSelect({
+  label,
   value,
   onChange,
   options,
@@ -148,6 +150,7 @@ export function CustomSelect({
         disabled={disabled}
         onClick={handleToggle}
         aria-expanded={isOpen}
+        aria-label={label ? `${label}: ${selectedOption?.label || placeholder}` : undefined}
         className={`ai7-select-trigger w-full border px-3.5 py-2.5 min-h-[44px] text-left text-sm flex items-center justify-between gap-2 select-none cursor-pointer ${
           disabled
             ? "opacity-50 cursor-not-allowed border-luma-smokeline"

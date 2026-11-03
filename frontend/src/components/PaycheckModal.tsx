@@ -1,5 +1,6 @@
 "use client";
 
+import { DateField } from "@/components/ui/DateField";
 import React, { useState, useEffect, useMemo } from "react";
 import {
   ArrowDownLeft,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import { CustomModal } from "./ui/CustomModal";
 import { CurrencyInput } from "./ui/CurrencyInput";
+import { CustomSelect } from "./ui/CustomSelect";
 import { authFetch } from "@/lib/api";
 
 interface PaycheckConfig {
@@ -466,50 +468,47 @@ export default function PaycheckModal({
                   Tanggal gajian
                 </label>
               </div>
-              <input
+              <DateField
                 id="paycheck-cycle-date"
-                type="date"
                 value={cycleDate}
-                onChange={(e) => setCycleDate(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-2xl bg-obsidian-panel border border-luma-smokeline text-sm text-white focus:outline-none focus:border-mintRise focus:ring-1 focus:ring-mintRise/30 transition [color-scheme:dark]"
+                onChange={(dateValue) => setCycleDate(dateValue)}
               />
             </div>
           </div>
 
           <fieldset className="space-y-3 rounded-2xl border border-luma-smokeline p-4">
             <legend className="px-1 text-sm font-semibold">Siklus anggaran</legend>
-            <label className="block space-y-1 text-sm">
+            <div className="space-y-1 text-sm">
               <span>Durasi</span>
-              <select
-                className="w-full"
+              <CustomSelect
+                label="Durasi siklus"
                 value={cycleChoice}
-                onChange={(event) => {
-                  setCycleChoice(event.target.value);
+                onChange={(value) => {
+                  setCycleChoice(value);
                   setSaveCycleDefault(false);
                   setCustomCycleEnd("");
                 }}
-              >
-                <option value="">Default ({config.cycle_type === "monthly_date" ? "bulanan, tanggal tetap" : `${config.cycle_days || 14} hari`})</option>
-                <option value="weekly">Mingguan · 7 hari</option>
-                <option value="biweekly">Dua mingguan · 14 hari</option>
-                <option value="monthly">Bulanan · 30 hari</option>
-                <option value="custom">Kustom</option>
-              </select>
-            </label>
+                options={[
+                  { value: "", label: `Default · ${config.cycle_type === "monthly_date" ? "Bulanan" : `${config.cycle_days || 14} hari`}` },
+                  { value: "weekly", label: "Mingguan · 7 hari" },
+                  { value: "biweekly", label: "Dua mingguan · 14 hari" },
+                  { value: "monthly", label: "Bulanan · 30 hari" },
+                  { value: "custom", label: "Kustom" },
+                ]}
+              />
+            </div>
             {cycleType === "custom" && (
-              <label className="block space-y-1 text-sm">
-                <span>Tanggal akhir</span>
-                <input
-                  className="w-full"
-                  type="date"
+              <div className="space-y-1 text-sm">
+                <label htmlFor="paycheck-cycle-end">Tanggal akhir</label>
+                <DateField id="paycheck-cycle-end"
                   min={cycleDate}
                   value={customCycleEnd || (cycleValid ? new Date(endTime).toISOString().slice(0, 10) : "")}
-                  onChange={(event) => {
-                    if (event.target.value) setCycleChoice("custom");
-                    setCustomCycleEnd(event.target.value);
+                  onChange={(dateValue) => {
+                    if (dateValue) setCycleChoice("custom");
+                    setCustomCycleEnd(dateValue);
                   }}
                 />
-              </label>
+              </div>
             )}
             {endDate && <p className="text-xs text-luma-smoke">Berakhir {endDate} · {cycleDays} hari</p>}
             {cycleChoice && (

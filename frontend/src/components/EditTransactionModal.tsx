@@ -1,5 +1,6 @@
 "use client";
 
+import { DateField } from "@/components/ui/DateField";
 import React, { useState, useEffect } from "react";
 import { CustomModal } from "./ui/CustomModal";
 import { CurrencyInput } from "./ui/CurrencyInput";
@@ -159,12 +160,10 @@ export function EditTransactionModal({
           <label className="block text-xs font-sans text-zinc-400 mb-1.5">
             Tanggal transaksi
           </label>
-          <input
-            type="date"
+          <DateField label="Tanggal transaksi"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(dateValue) => setDate(dateValue)}
             required
-            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amberGold transition font-sans"
           />
         </div>
 

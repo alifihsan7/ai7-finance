@@ -1,8 +1,10 @@
 "use client";
 
+import { DateField } from "@/components/ui/DateField";
 import { useEffect, useRef, useState } from "react";
 import { authFetch } from "@/lib/api";
 import { CurrencyInput } from "./ui/CurrencyInput";
+import { CustomSelect } from "./ui/CustomSelect";
 import { CustomModal } from "./ui/CustomModal";
 
 interface Receipt {
@@ -162,17 +164,16 @@ export function RecordPaycheckModal({ isOpen, accounts, onClose, onSuccess, onCo
               <label htmlFor="paycheck-amount" className="mb-1 block">Nominal gaji</label>
               <CurrencyInput id="paycheck-amount" value={amount} onChange={setAmount} placeholder="0" required />
             </div>
-            <label className="block space-y-1 text-sm">
+            <div className="space-y-1 text-sm">
               <span>Rekening penerima</span>
-              <select className="w-full" value={selectedAccount} required onChange={(event) => setAccount(event.target.value)}>
-                {!accounts.length && <option value="">Tambahkan rekening dulu</option>}
-                {accounts.map((name) => <option key={name}>{name}</option>)}
-              </select>
-            </label>
-            <label className="block space-y-1 text-sm">
-              <span>Tanggal gaji masuk</span>
-              <input className="w-full" type="date" value={date} required max={today()} onChange={(event) => setDate(event.target.value)} />
-            </label>
+              <CustomSelect label="Rekening penerima" value={selectedAccount} onChange={setAccount}
+                disabled={!accounts.length} placeholder="Tambahkan rekening dulu"
+                options={accounts.map((name) => ({ value: name, label: name }))} />
+            </div>
+            <div className="space-y-1 text-sm">
+              <label htmlFor="paycheck-received-date">Tanggal gaji masuk</label>
+              <DateField id="paycheck-received-date" value={date} required max={today()} onChange={setDate} />
+            </div>
             <div className="luma-matte space-y-2 p-3">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm">{cycleSummary}</span>
@@ -187,16 +188,18 @@ export function RecordPaycheckModal({ isOpen, accounts, onClose, onSuccess, onCo
                   </label>
                   {startCycle && (
                     <>
-                      <label className="block space-y-1 text-sm">
+                      <div className="space-y-1 text-sm">
                         <span>Durasi siklus</span>
-                        <select className="w-full" value={cycleType} onChange={(event) => { setCycleType(event.target.value); setSaveDefault(false); }}>
-                          <option value="">Default · {cycleLabel}</option>
-                          <option value="weekly">Mingguan · 7 hari</option>
-                          <option value="biweekly">Dua mingguan · 14 hari</option>
-                          <option value="monthly">Bulanan · 30 hari</option>
-                          <option value="custom">Kustom</option>
-                        </select>
-                      </label>
+                        <CustomSelect label="Durasi siklus" value={cycleType}
+                          onChange={(value) => { setCycleType(value); setSaveDefault(false); }}
+                          options={[
+                            { value: "", label: `Default · ${cycleLabel}` },
+                            { value: "weekly", label: "Mingguan · 7 hari" },
+                            { value: "biweekly", label: "Dua mingguan · 14 hari" },
+                            { value: "monthly", label: "Bulanan · 30 hari" },
+                            { value: "custom", label: "Kustom" },
+                          ]} />
+                      </div>
                       {cycleType === "custom" && <label className="block space-y-1 text-sm">
                         <span>Jumlah hari</span>
                         <input className="w-full" type="number" required min={1} max={365} value={cycleDays}

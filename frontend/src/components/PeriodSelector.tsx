@@ -1,3 +1,4 @@
+import { DateField } from "@/components/ui/DateField";
 import React, { useState, useEffect, useRef, useId } from "react";
 import { Calendar, ChevronDown, Check, Clock, CalendarDays, SlidersHorizontal } from "lucide-react";
 import { authFetch } from "@/lib/api";
@@ -296,24 +297,20 @@ export function PeriodSelector({
                 <div className="space-y-2">
                   <div>
                     <label htmlFor={`${popupId}-start`} className="block text-xs text-slateText-muted mb-1">Tanggal Mulai</label>
-                    <input
+                    <DateField
                       id={`${popupId}-start`}
-                      type="date"
                       required
                       value={customStart}
-                      onChange={(e) => setCustomStart(e.target.value)}
-                      className="w-full bg-obsidian-panel border border-luma-smokeline rounded-[var(--ai7-radius-control)] px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-luma-smoke"
+                      onChange={(dateValue) => setCustomStart(dateValue)}
                     />
                   </div>
                   <div>
                     <label htmlFor={`${popupId}-end`} className="block text-xs text-slateText-muted mb-1">Tanggal Selesai</label>
-                    <input
+                    <DateField
                       id={`${popupId}-end`}
-                      type="date"
                       required
                       value={customEnd}
-                      onChange={(e) => setCustomEnd(e.target.value)}
-                      className="w-full bg-obsidian-panel border border-luma-smokeline rounded-[var(--ai7-radius-control)] px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-luma-smoke"
+                      onChange={(dateValue) => setCustomEnd(dateValue)}
                     />
                   </div>
                 </div>

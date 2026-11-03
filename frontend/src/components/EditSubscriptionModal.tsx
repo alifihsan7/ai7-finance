@@ -1,5 +1,6 @@
 "use client";
 
+import { DateField } from "@/components/ui/DateField";
 import React, { useState, useEffect } from "react";
 import { Calendar, Clock, Sparkles } from "lucide-react";
 import { CustomModal } from "./ui/CustomModal";
@@ -243,12 +244,10 @@ export function EditSubscriptionModal({
                   </button>
                 </div>
               </div>
-              <input
-                type="date"
+              <DateField label="Tanggal jatuh tempo"
                 required
                 value={exactDueDate}
-                onChange={(e) => setExactDueDate(e.target.value)}
-                className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
+                onChange={(dateValue) => setExactDueDate(dateValue)}
               />
             </div>
           )}

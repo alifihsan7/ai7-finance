@@ -1,3 +1,4 @@
+import { DateField } from "@/components/ui/DateField";
 import React, { useState } from "react";
 import { ArrowLeftRight, CheckCircle2 } from "lucide-react";
 import { CustomModal } from "@/components/ui/CustomModal";
@@ -160,11 +161,9 @@ export function TransferModal({ isOpen, onClose, onSuccess, accountOptions }: Tr
           <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
             Tanggal transaksi
           </label>
-          <input
-            type="date"
+          <DateField label="Tanggal transaksi"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-cyanHub transition font-sans"
+            onChange={(dateValue) => setDate(dateValue)}
           />
         </div>
 

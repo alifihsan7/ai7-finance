@@ -137,25 +137,82 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Date picker indicator icons */
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.8) hue-rotate(180deg) brightness(0.9);
+.tillfold-date { min-width: 0; width: 100%; }
+.tillfold-date-field {
+  display: flex;
+  align-items: center;
+  background: var(--obsidian-card);
+  border: 1px solid var(--ai7-field-border);
+  border-radius: var(--ai7-radius-control);
+}
+.tillfold-date-field:focus-within { border-color: var(--luma-ember); }
+.tillfold-date .tillfold-date-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--ai7-radius-control);
+  color: var(--luma-ivory);
+  font-size: 16px;
+  font-weight: 400;
+}
+.tillfold-date-field button, .tillfold-calendar button {
+  display: inline-grid;
+  place-items: center;
+  min-width: 0;
+  border-radius: var(--ai7-radius-control);
+  color: var(--luma-ivory);
   cursor: pointer;
-  border-radius: 4px;
-  padding: 2px;
 }
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
-  filter: invert(1) brightness(1.2);
+.tillfold-date-field button, .tillfold-calendar > div:first-child button { width: 44px; min-height: 44px; flex: none; }
+.tillfold-calendar {
+  margin-top: 6px;
+  padding: 6px;
+  background: var(--luma-panel-surface);
+  border: 1px solid var(--luma-smokeline);
+  border-radius: var(--ai7-radius-control);
 }
+.tillfold-calendar button { font-size: 12px; }
+.tillfold-calendar button:not(:disabled):hover, .tillfold-date-field button:hover { background: var(--luma-coal); }
+.tillfold-calendar button[aria-pressed="true"] { background: var(--luma-ivory); color: var(--luma-charcoal); }
+.tillfold-calendar button:disabled { opacity: .4; cursor: not-allowed; }
 
-.light input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: none;
-  opacity: 0.7;
+input[type="checkbox"] {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  border: 1px solid var(--ai7-field-border);
+  border-radius: 4px;
+  background: var(--obsidian-card);
+  cursor: pointer;
 }
-.light input[type="date"]::-webkit-calendar-picker-indicator:hover {
-  filter: none;
-  opacity: 1;
+input[type="checkbox"]:checked { background: var(--luma-ivory); color: var(--luma-charcoal); }
+input[type="checkbox"]:checked::after {
+  content: "";
+  width: 5px;
+  height: 9px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-1px) rotate(45deg);
 }
+.luma-dialog-panel input[type="checkbox"] { min-height: 0; }
+input[type="range"].tillfold-range { appearance: none; min-height: 44px; border: 0; background: transparent; }
+.tillfold-range::-webkit-slider-runnable-track { height: 6px; border-radius: 8px; background: var(--ai7-selected); }
+.tillfold-range::-moz-range-track { height: 6px; border-radius: 8px; background: var(--ai7-selected); }
+.tillfold-range::-webkit-slider-thumb {
+  appearance: none;
+  margin-top: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--luma-ivory);
+}
+.tillfold-range::-moz-range-thumb { width: 18px; height: 18px; border: 0; border-radius: 50%; background: var(--luma-ivory); }
 
 /* Selection highlight */
 ::selection {
@@ -557,9 +614,6 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   font-weight: 400;
   line-height: 1.4;
 }
-.payroll-form input[type="date"] { color-scheme: dark; }
-.light .payroll-form input[type="date"] { color-scheme: light; }
-.payroll-form input[type="checkbox"] { accent-color: var(--luma-ember); width: 16px; height: 16px; min-height: 0; }
 .payroll-form fieldset { min-width: 0; border-radius: var(--ai7-radius-panel); }
 .ai7-amount-preset { color: var(--luma-smoke); border-color: var(--ai7-field-border); background: transparent; }
 .ai7-amount-preset:hover { background: var(--luma-coal); color: var(--luma-ivory); }

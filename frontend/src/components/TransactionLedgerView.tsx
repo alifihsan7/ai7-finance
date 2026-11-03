@@ -1,3 +1,4 @@
+import { DateField } from "@/components/ui/DateField";
 import React, { useState, useMemo } from "react";
 import {
   Search,
@@ -511,25 +512,21 @@ export function TransactionLedgerView({
               <Calendar className="w-4 h-4 text-amberGold shrink-0" />
               <span className="font-medium">Rentang Tanggal Kustom:</span>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
+            <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-start">
+              <DateField label="Tanggal mulai"
                 value={customStartDate}
-                onChange={(e) => {
-                  setCustomStartDate(e.target.value);
+                onChange={(dateValue) => {
+                  setCustomStartDate(dateValue);
                   setCurrentPage(1);
                 }}
-                className="bg-obsidian-panel border border-luma-smokeline rounded-xl px-3 py-1.5 text-xs text-white font-sans focus:outline-none focus:border-amberGold"
               />
               <span className="text-zinc-400 text-xs">s/d</span>
-              <input
-                type="date"
+              <DateField label="Tanggal selesai"
                 value={customEndDate}
-                onChange={(e) => {
-                  setCustomEndDate(e.target.value);
+                onChange={(dateValue) => {
+                  setCustomEndDate(dateValue);
                   setCurrentPage(1);
                 }}
-                className="bg-obsidian-panel border border-luma-smokeline rounded-xl px-3 py-1.5 text-xs text-white font-sans focus:outline-none focus:border-amberGold"
               />
             </div>
           </div>

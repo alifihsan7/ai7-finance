@@ -1,5 +1,6 @@
 "use client";
 
+import { DateField } from "@/components/ui/DateField";
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   Plus,
@@ -2630,12 +2631,10 @@ export default function FinanceDashboard() {
                 <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
                   {subBillingType === "yearly" ? "Tanggal tagihan tahunan" : "Tanggal jatuh tempo"}
                 </label>
-                <input
-                  type="date"
+                <DateField label="Tanggal jatuh tempo"
                   required
                   value={subExactDueDate}
-                  onChange={(e) => setSubExactDueDate(e.target.value)}
-                  className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-sans focus:outline-none focus:border-amberGold transition"
+                  onChange={(dateValue) => setSubExactDueDate(dateValue)}
                 />
               </div>
             )}

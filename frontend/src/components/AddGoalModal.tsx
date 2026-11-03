@@ -1,3 +1,4 @@
+import { DateField } from "@/components/ui/DateField";
 import React, { useState } from "react";
 import {
   Target,
@@ -283,11 +284,9 @@ export function AddGoalModal({ isOpen, onClose, onSuccess, availableAccounts }: 
             <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
               Target tanggal (opsional)
             </label>
-            <input
-              type="date"
+            <DateField label="Target tanggal"
               value={targetDate}
-              onChange={(e) => setTargetDate(e.target.value)}
-              className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm font-sans text-white focus:outline-none focus:border-amberGold transition"
+              onChange={(dateValue) => setTargetDate(dateValue)}
             />
           </div>
 
