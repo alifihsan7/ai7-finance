@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Props {
   id?: string;
@@ -12,7 +12,8 @@ interface Props {
   required?: boolean;
 }
 
-const monthName = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" });
+const monthName = new Intl.DateTimeFormat("id-ID", { month: "long", timeZone: "UTC" });
+const monthLabels = Array.from({ length: 12 }, (_, index) => monthName.format(new Date(Date.UTC(2020, index, 1))));
 const iso = (date: Date) => date.toISOString().slice(0, 10);
 const validDate = (value: string) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -29,6 +30,8 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
   const [draft, setDraft] = useState(value);
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState(() => new Date());
+  const [view, setView] = useState<"days" | "months" | "years">("days");
+  const [decade, setDecade] = useState(2020);
   const [touched, setTouched] = useState(false);
   const [position, setPosition] = useState<{ left: number; top: number; width: number; maxHeight: number; transform?: string }>();
 
@@ -80,6 +83,13 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
   const first = new Date(month);
   first.setUTCDate(1);
   const offset = (first.getUTCDay() + 6) % 7;
+  const year = month.getUTCFullYear();
+  const monthIndex = month.getUTCMonth();
+  const jump = (nextYear: number, nextMonth: number) => {
+    const date = new Date(month);
+    date.setUTCFullYear(nextYear, nextMonth, 1);
+    setMonth(date);
+  };
 
   return (
     <div ref={field} className="tillfold-date" onKeyDown={(event) => {
@@ -102,7 +112,10 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
         <button ref={trigger} type="button" aria-label="Pilih tanggal" title="Pilih tanggal"
           aria-expanded={open} aria-controls={open ? uid : undefined}
           onClick={() => {
-            if (!open) setMonth(new Date(validDate(value) ? value : new Date().toISOString().slice(0, 10)));
+            if (!open) {
+              setMonth(new Date(validDate(value) ? value : new Date().toISOString().slice(0, 10)));
+              setView("days");
+            }
             setOpen(!open);
           }}><Calendar size={16} aria-hidden="true" /></button>
       </div>
@@ -110,11 +123,47 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
       {open && position && createPortal(
         <div ref={popup} id={uid} className="tillfold-calendar" style={position} role="group" aria-label="Kalender">
           <div className="flex items-center justify-between gap-1">
-            <button type="button" aria-label="Bulan sebelumnya" onClick={() => shiftMonth(-1)}><ChevronLeft size={16} aria-hidden="true" /></button>
-            <span className="text-xs font-medium text-center" aria-live="polite">{monthName.format(month)}</span>
-            <button type="button" aria-label="Bulan berikutnya" onClick={() => shiftMonth(1)}><ChevronRight size={16} aria-hidden="true" /></button>
+            <button type="button" aria-label={view === "years" ? "Sepuluh tahun sebelumnya" : view === "months" ? "Tahun sebelumnya" : "Bulan sebelumnya"}
+              disabled={view === "years" && decade === 0}
+              onClick={() => view === "years" ? setDecade(decade - 10) : shiftMonth(view === "months" ? -12 : -1)}><ChevronLeft size={16} aria-hidden="true" /></button>
+            <div className="flex min-w-0 items-center gap-1">
+              <button type="button" className="tillfold-calendar-heading" aria-label={`Pilih bulan: ${monthLabels[monthIndex]}`}
+                aria-pressed={view === "months"} onClick={() => setView(view === "months" ? "days" : "months")}>
+                {monthLabels[monthIndex]} <ChevronDown size={12} aria-hidden="true" />
+              </button>
+              <button type="button" className="tillfold-calendar-heading" aria-label={`Pilih tahun: ${year}`}
+                aria-pressed={view === "years"} onClick={() => {
+                  setDecade(Math.floor(year / 10) * 10);
+                  setView(view === "years" ? "days" : "years");
+                }}>
+                {year} <ChevronDown size={12} aria-hidden="true" />
+              </button>
+            </div>
+            <button type="button" aria-label={view === "years" ? "Sepuluh tahun berikutnya" : view === "months" ? "Tahun berikutnya" : "Bulan berikutnya"}
+              disabled={view === "years" && decade === 9990}
+              onClick={() => view === "years" ? setDecade(decade + 10) : shiftMonth(view === "months" ? 12 : 1)}><ChevronRight size={16} aria-hidden="true" /></button>
           </div>
-          <div className="grid grid-cols-7 gap-px text-center">
+          {view === "years" && (
+            <div className="grid grid-cols-3 gap-1 text-center" aria-label="Daftar tahun" role="group">
+              {Array.from({ length: 10 }, (_, index) => decade + index).filter(Boolean).map((option) => (
+                <button key={option} type="button" aria-pressed={year === option} onClick={() => {
+                  jump(option, monthIndex);
+                  setView("months");
+                }}>{option}</button>
+              ))}
+            </div>
+          )}
+          {view === "months" && (
+            <div className="grid grid-cols-3 gap-1 text-center" aria-label="Daftar bulan" role="group">
+              {monthLabels.map((name, index) => (
+                <button key={name} type="button" aria-pressed={monthIndex === index} onClick={() => {
+                  jump(year, index);
+                  setView("days");
+                }}>{name}</button>
+              ))}
+            </div>
+          )}
+          {view === "days" && <div className="grid grid-cols-7 gap-px text-center">
             {["Sn", "Sl", "Rb", "Km", "Jm", "Sb", "Mg"].map((day) => <span key={day} aria-hidden="true" className="py-1 text-[10px] text-luma-smoke">{day}</span>)}
             {Array.from({ length: offset }, (_, index) => <span key={`blank-${index}`} />)}
             {Array.from({ length: days.getUTCDate() }, (_, index) => {
@@ -130,7 +179,7 @@ export function DateField({ id, label, value, onChange, min, max, required }: Pr
                   trigger.current?.focus();
                 }}>{day}</button>;
             })}
-          </div>
+          </div>}
         </div>,
         field.current?.closest('[role="dialog"]') || document.body
       )}

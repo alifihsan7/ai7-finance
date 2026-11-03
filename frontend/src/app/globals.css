@@ -165,7 +165,8 @@ input[type="number"] {
   color: var(--luma-ivory);
   cursor: pointer;
 }
-.tillfold-date-field button, .tillfold-calendar > div:first-child button { width: 44px; min-height: 44px; flex: none; }
+.tillfold-date-field button, .tillfold-calendar > div:first-child > button { width: 44px; min-height: 44px; flex: none; }
+.tillfold-calendar button.tillfold-calendar-heading { display: inline-flex; gap: 4px; padding-inline: 6px; font-weight: 600; }
 .tillfold-calendar {
   position: fixed;
   z-index: 100;
