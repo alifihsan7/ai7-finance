@@ -82,28 +82,28 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
   };
 
   return (
-    <section aria-label={`Laju belanja siklus ${cycleDays} hari`} className="luma-glass p-6 sm:p-7 space-y-6">
+    <section aria-label={`Laju belanja siklus ${cycleDays} hari`} className="luma-glass p-4 sm:p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-luma-ember" aria-hidden="true" />
             <h2 className="ai7-type-section text-luma-ivory tracking-tight">
-              Laju Belanja Siklus ({cycleDays} Hari)
+              Belanja kumulatif
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-luma-smoke mt-0.5 tabular-nums">
-            Monitoring akumulasi belanja {pocketAccount} harian vs batas ideal anggaran {formatRupiah(maxBudget)}
+            {pocketAccount} · Anggaran {formatRupiah(maxBudget)}
           </p>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-sans">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-sans">
           <span className="flex items-center gap-1.5 text-luma-smoke">
             <span className="w-2.5 h-2.5 rounded-full bg-luma-ember inline-block" aria-hidden="true"></span>
-            Kumulatif Riil
+            Aktual
           </span>
           <span className="flex items-center gap-1.5 text-luma-smoke">
             <span className="w-2.5 h-0.5 bg-luma-smoke inline-block" aria-hidden="true"></span>
-            Batas Target Ideal
+            Target
           </span>
         </div>
       </div>

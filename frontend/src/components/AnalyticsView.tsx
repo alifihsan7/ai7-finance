@@ -1,16 +1,4 @@
 import React from "react";
-import {
-  TrendingUp,
-  PiggyBank,
-  Wallet,
-  ArrowUpRight,
-  ArrowDownRight,
-  ShieldCheck,
-  Flame,
-  CheckCircle2,
-  AlertTriangle,
-  Lightbulb,
-} from "lucide-react";
 import { BurnRateChart } from "./BurnRateChart";
 import { Skeleton } from "./ui/Skeleton";
 
@@ -81,329 +69,132 @@ interface AnalyticsViewProps {
   loading?: boolean;
 }
 
+const shortDate = new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", timeZone: "UTC" });
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "—" : shortDate.format(date);
+}
+
 export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewProps) {
   const safe = summary.safe_to_spend;
-  const cycleDays = safe?.cycle_days || 14;
-  const dayOfCycle = safe?.day_of_cycle || 1;
-  const daysRemaining = safe?.days_remaining || 0;
-  const pocketBudget = safe?.pocket_budget || 825000;
-  const pocketSpent = safe?.pocket_spent || 0;
-  const safeDaily = safe?.safe_daily || 0;
-  const paceStatus = safe?.pace_status || "on_track";
-
-  // Calculate actual daily average spend for elapsed days
-  const actualDailyAvg = dayOfCycle > 0 ? Math.round(pocketSpent / dayOfCycle) : 0;
-  const idealDailyAvg = cycleDays > 0 ? Math.round(pocketBudget / cycleDays) : 0;
-
-  // Format date helper
-  const formatDateIndo = (dateStr?: string) => {
-    if (!dateStr) return "-";
-    try {
-      const parts = dateStr.split("-").map(Number);
-      if (parts.length === 3) {
-        const [, m, d] = parts;
-        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-        return `${d} ${months[m - 1] || ""}`;
-      }
-      return dateStr;
-    } catch {
-      return dateStr;
-    }
-  };
-
-  // Find peak daily spend
-  const peakDay = summary.daily_trend.reduce(
-    (max, cur) => (cur.expense > max.expense ? cur : max),
-    { date: "", expense: 0, income: 0 }
-  );
+  const daily = summary.daily_trend;
+  const maxDaily = daily.reduce((max, day) => Math.max(max, day.income, day.expense), 1);
+  const categories = [...summary.categories].sort((a, b) => b.total - a.total);
+  const metrics = [
+    { label: "Pemasukan", amount: summary.income, color: "text-mintRise" },
+    { label: "Pengeluaran", amount: summary.expense, color: "text-coralFall" },
+    { label: "Selisih", amount: summary.net, color: summary.net < 0 ? "text-coralFall" : "text-luma-ivory" },
+  ];
+  const money = (amount: number) => amount < 0 ? `-${formatRupiah(Math.abs(amount))}` : formatRupiah(amount);
 
   return (
-    <div className="space-y-6 sm:space-y-8 animate-fadeIn">
-      {/* 1. TOP METRICS KPI CARDS (Financial Health Matrix) */}
-      <div className="ai7-metric-grid grid gap-4">
-        {/* Card 1: Total Pemasukan */}
-        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-400 font-medium">Total pemasukan Siklus</span>
-            <div className="w-8 h-8 rounded-full bg-mintRise/10 border border-mintRise/20 flex items-center justify-center text-mintRise">
-              <ArrowDownRight className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            {loading ? (
-              <Skeleton className="h-7 w-32 rounded-full" />
-            ) : (
-              <div className="ai7-type-metric text-white tracking-tight">
-                {formatRupiah(summary.income)}
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-sans">
-              <span className="w-1.5 h-1.5 rounded-full bg-mintRise"></span>
-              <span>100% basis alokasi</span>
-            </div>
-          </div>
-          <div className="pt-2 border-t border-luma-smokeline flex items-center justify-between text-xs text-zinc-400">
-            <span>Periode aktif</span>
-            <span className="font-sans text-zinc-300">{formatDateIndo(summary.start_date)} – {formatDateIndo(summary.end_date)}</span>
-          </div>
+    <div className="space-y-6 sm:space-y-8" aria-busy={loading}>
+      <section aria-labelledby="report-totals" className="luma-matte p-4 sm:p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 id="report-totals" className="ai7-type-section">Ringkasan periode</h2>
+          <p className="text-sm text-luma-smoke">{formatDate(summary.start_date)} – {formatDate(summary.end_date)}</p>
         </div>
-
-        {/* Card 2: Total Pengeluaran */}
-        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-400 font-medium">Total pengeluaran</span>
-            <div className="w-8 h-8 rounded-full bg-coralFall/10 border border-coralFall/20 flex items-center justify-center text-coralFall">
-              <ArrowUpRight className="w-4 h-4" />
+        <dl className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-3">
+          {metrics.map(({ label, amount, color }) => (
+            <div key={label} className="min-w-0 border-t border-luma-smokeline pt-3 max-sm:flex max-sm:flex-wrap max-sm:items-baseline max-sm:justify-between max-sm:gap-x-4">
+              <dt className="text-sm text-luma-smoke">{label}</dt>
+              <dd className={`ai7-type-metric sm:mt-1 ${color}`}>
+                {loading ? <Skeleton className="h-7 w-24 max-w-full" /> : money(amount)}
+              </dd>
             </div>
-          </div>
-          <div>
-            {loading ? (
-              <Skeleton className="h-7 w-32 rounded-full" />
-            ) : (
-              <div className="ai7-type-metric text-coralFall tracking-tight">
-                {formatRupiah(summary.expense)}
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-sans">
-              <span>Rasio belanja:</span>
-              <strong className="text-white">
-                {summary.income > 0 ? ((summary.expense / summary.income) * 100).toFixed(1) : 0}%
-              </strong>
-            </div>
-          </div>
-          <div className="pt-2 border-t border-luma-smokeline flex items-center justify-between text-xs text-zinc-400">
-            <span>Rata-rata / hari</span>
-            <span className="font-sans text-zinc-300">{formatRupiah(actualDailyAvg)} / hari</span>
-          </div>
-        </div>
-
-        {/* Card 3: Net Cashflow / Sisa */}
-        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-400 font-medium">Net Surplus Dana</span>
-            <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${
-              summary.net >= 0
-                ? "bg-mintRise/10 border-mintRise/20 text-mintRise"
-                : "bg-coralFall/10 border-coralFall/20 text-coralFall"
-            }`}>
-              <Wallet className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            {loading ? (
-              <Skeleton className="h-7 w-32 rounded-full" />
-            ) : (
-              <div className={`ai7-type-metric tracking-tight ${
-                summary.net >= 0 ? "text-mintRise" : "text-coralFall"
-              }`}>
-                {summary.net < 0 ? `-${formatRupiah(Math.abs(summary.net))}` : formatRupiah(summary.net)}
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-sans">
-              <span>Status arus kas:</span>
-              <strong className={summary.net >= 0 ? "text-mintRise" : "text-coralFall"}>
-                {summary.net >= 0 ? "Surplus Positif" : "Defisit Terjadi"}
-              </strong>
-            </div>
-          </div>
-          <div className="pt-2 border-t border-luma-smokeline flex items-center justify-between text-xs text-zinc-400">
-            <span>Sisa kuota harian</span>
-            <span className="font-sans text-amberGold font-semibold">{formatRupiah(safeDaily)} / hari</span>
-          </div>
-        </div>
-
-        {/* Card 4: Savings & Investment Rate */}
-        <div className="bg-obsidian-card border border-luma-smokeline rounded-2xl p-5 sm:p-6 space-y-3 relative overflow-hidden group hover:border-white/[0.16] transition shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-400 font-medium">Savings & Portfolio Rate</span>
-            <div className="w-8 h-8 rounded-full bg-amberGold/10 border border-amberGold/20 flex items-center justify-center text-amberGold">
-              <PiggyBank className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            {loading ? (
-              <Skeleton className="h-7 w-24 rounded-full" />
-            ) : (
-              <div className="ai7-type-metric text-amberGold tracking-tight">
-                {summary.savings_rate.toFixed(1)}%
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 font-sans">
-              <span className="w-1.5 h-1.5 rounded-full bg-amberGold"></span>
-              {summary.savings_rate >= 20 ? "Target tercapai (≥20%)" : "Di bawah target (target 20%)"}
-            </div>
-          </div>
-          <div className="pt-2 border-t border-luma-smokeline flex items-center justify-between text-xs text-zinc-400">
-            <span>Benchmark sehat</span>
-            <span className="font-sans text-zinc-300">≥ 20% Income</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. BURN-RATE TRAJECTORY CHART (Integrated interactive component) */}
-      <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
-
-      {/* 3. DAILY SPENDING ACTIVITY & PULSE */}
-      <div className="bg-obsidian-panel border border-luma-smokeline rounded-3xl p-6 sm:p-7 space-y-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-mintRise" />
-              <h3 className="ai7-type-card text-white">
-                Aktivitas Belanja Harian (Daily Spend Pulse)
-              </h3>
-            </div>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
-              Distribusi pengeluaran per hari sepanjang periode untuk mendeteksi lonjakan biaya
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 text-xs font-sans shrink-0">
-            {peakDay.expense > 0 && (
-              <span className="px-3 py-1 rounded-full bg-coralFall/10 border border-coralFall/30 text-coralFall">
-                Puncak: {formatDateIndo(peakDay.date)} ({formatRupiah(peakDay.expense)})
-              </span>
-            )}
-            <span className="px-3 py-1 rounded-full bg-obsidian-card border border-luma-smokeline text-zinc-400">
-              Ideal: {formatRupiah(idealDailyAvg)}/hari
-            </span>
-          </div>
-        </div>
-
-        {summary.daily_trend.length === 0 ? (
-          <div className="text-center py-10 text-xs sm:text-sm text-zinc-400 font-sans">
-            Belum ada aktivitas transaksi pada rentang periode ini.
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Visual Bars Container */}
-            <div className="flex items-end gap-1.5 sm:gap-2 h-36 pt-6 px-1 border-b border-luma-smokeline overflow-visible relative">
-              {summary.daily_trend.map((d, idx) => {
-                const maxVal = Math.max(...summary.daily_trend.map((t) => t.expense), idealDailyAvg, 1);
-                const heightPct = Math.min(100, Math.max(8, Math.round((d.expense / maxVal) * 100)));
-                const isOver = d.expense > idealDailyAvg * 1.25;
-                const isZero = d.expense === 0;
-
-                // Smart tooltip alignment to prevent edge clipping
-                const isLeftEdge = idx <= 1;
-                const isRightEdge = idx >= summary.daily_trend.length - 2;
-                const alignClass = isLeftEdge ? "left-0" : isRightEdge ? "right-0" : "left-1/2 -translate-x-1/2";
-
-                return (
-                  <div
-                    key={d.date}
-                    className="flex-1 flex flex-col items-center group relative h-full justify-end"
-                  >
-                    {/* Tooltip on hover */}
-                    <div className={`opacity-0 group-hover:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${alignClass} w-44 p-3 bg-obsidian-card/95 backdrop-blur-md border border-luma-smokeline rounded-2xl shadow-xl text-xs font-sans space-y-1 transition-opacity`}>
-                      <div className="font-semibold text-white border-b border-luma-smokeline pb-1">
-                        {formatDateIndo(d.date)}
-                      </div>
-                      <div className="flex justify-between text-zinc-400">
-                        <span>Pengeluaran:</span>
-                        <span className={`font-semibold ${isOver ? "text-coralFall font-semibold" : "text-white"}`}>
-                          {formatRupiah(d.expense)}
-                        </span>
-                      </div>
-                      {d.income > 0 && (
-                        <div className="flex justify-between text-mintRise">
-                          <span>Pemasukan:</span>
-                          <span className="font-semibold">+{formatRupiah(d.income)}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Bar */}
-                    <div
-                      style={{ height: `${heightPct}%` }}
-                      className={`w-full rounded-t transition-all duration-300 ${
-                        isZero
-                          ? "bg-obsidian-card border border-luma-smokeline"
-                          : isOver
-                          ? "bg-coralFall/80 group-hover:bg-coralFall"
-                          : "bg-amberGold/80 group-hover:bg-amberGold"
-                      }`}
-                    ></div>
-
-                    {/* Date label */}
-                    <div className="mt-2 text-center select-none">
-                      <span className="text-xs sm:text-xs font-sans text-zinc-400 block">
-                        {d.date.slice(8)}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            <div className="flex items-center justify-between text-xs font-sans text-zinc-400 pt-1">
-              <span>Awal Siklus ({formatDateIndo(summary.start_date)})</span>
-              <span>Akhir Siklus ({formatDateIndo(summary.end_date)})</span>
-            </div>
-          </div>
+          ))}
+        </dl>
+        {!loading && summary.income > 0 && (
+          <p className="mt-4 text-xs text-luma-smoke">Selisih dari pemasukan: {summary.savings_rate.toFixed(1)}%</p>
         )}
+      </section>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <section aria-labelledby="report-flow" className="luma-matte min-w-0 p-4 sm:p-6">
+          <h2 id="report-flow" className="ai7-type-section">Arus kas harian</h2>
+          {daily.length === 0 ? (
+            <p className="mt-3 text-sm text-luma-smoke">Belum ada transaksi di periode ini.</p>
+          ) : (
+            <>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-luma-smoke">
+                <span><span className="mr-1.5 inline-block size-2 rounded-sm bg-mintRise" aria-hidden="true" />Pemasukan</span>
+                <span><span className="mr-1.5 inline-block size-2 rounded-sm bg-coralFall" aria-hidden="true" />Pengeluaran</span>
+              </div>
+              <div className="mt-4 flex h-32 items-end gap-px border-b border-luma-smokeline sm:gap-1" aria-hidden="true">
+                {daily.map(({ date, income, expense }) => (
+                  <div key={date} className="flex h-full min-w-0 flex-1 items-end justify-center gap-px"
+                    title={`${formatDate(date)} · Masuk ${money(income)} · Keluar ${money(expense)}`}>
+                    <div className="w-full max-w-3 rounded-t-sm bg-mintRise" style={{ height: `${income / maxDaily * 100}%` }} />
+                    <div className="w-full max-w-3 rounded-t-sm bg-coralFall" style={{ height: `${expense / maxDaily * 100}%` }} />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 flex justify-between gap-2 text-xs text-luma-smoke" aria-hidden="true">
+                <span>{formatDate(daily[0].date)}</span>
+                <span>{formatDate(daily[daily.length - 1].date)}</span>
+              </div>
+              <details className="mt-3 text-sm">
+                <summary className="flex min-h-11 cursor-pointer items-center text-luma-ivory underline underline-offset-4">Lihat angka per hari</summary>
+                <dl className="space-y-2">
+                  {daily.map(({ date, income, expense }) => (
+                    <div key={date} className="flex flex-wrap justify-between gap-x-3 border-t border-luma-smokeline pt-2">
+                      <dt>{formatDate(date)}</dt>
+                      <dd className="text-luma-smoke">Masuk {money(income)} · Keluar {money(expense)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </details>
+            </>
+          )}
+        </section>
+
+        <section aria-labelledby="report-categories" className="luma-matte min-w-0 p-4 sm:p-6">
+          <h2 id="report-categories" className="ai7-type-section">Pengeluaran terbesar</h2>
+          {categories.length === 0 ? (
+            <p className="mt-3 text-sm text-luma-smoke">Belum ada pengeluaran di periode ini.</p>
+          ) : (
+            <ol className="mt-3 space-y-3">
+              {categories.slice(0, 5).map(({ category, total, percentage }) => (
+                <li key={category} className="border-t border-luma-smokeline pt-2">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm">
+                    <span className="min-w-0 break-words">{category}</span>
+                    <strong className="tabular-nums">{money(total)}</strong>
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <div className="luma-flow-track min-w-0 flex-1" aria-hidden="true">
+                      <div className="bg-coralFall" style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }} />
+                    </div>
+                    <span className="text-xs tabular-nums text-luma-smoke">{percentage.toFixed(1)}%</span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
       </div>
 
-      {/* 4. SMART FINANCIAL INSIGHTS & PACING ADVISORY */}
-      <div className="bg-obsidian-panel border border-luma-smokeline rounded-3xl p-6 sm:p-7 space-y-4 shadow-sm">
-        <div className="flex items-center gap-2">
-          <Lightbulb className="w-5 h-5 text-amberGold" />
-          <h3 className="ai7-type-card text-white">
-            Evaluasi & Insight Cerdas Siklus
-          </h3>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Box 1: Pacing Assessment */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-obsidian-card border border-luma-smokeline space-y-2">
-            <div className="flex items-center gap-2">
-              {paceStatus === "ahead" ? (
-                <CheckCircle2 className="w-4 h-4 text-mintRise" />
-              ) : paceStatus === "on_track" ? (
-                <ShieldCheck className="w-4 h-4 text-amberGold" />
-              ) : (
-                <AlertTriangle className="w-4 h-4 text-coralFall" />
-              )}
-              <span className="text-xs font-semibold text-white font-sans ">
-                Status Kecepatan Belanja: {paceStatus.replace("_", " ")}
-              </span>
+      <section aria-labelledby="report-pace" className="space-y-3">
+        <h2 id="report-pace" className="ai7-type-section">Laju belanja dan batas harian</h2>
+        {safe && (safe.pocket_budget ?? 0) > 0 ? (
+          <>
+            <div className="luma-matte flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 p-4 sm:p-6">
+              <p className="text-sm text-luma-smoke">
+                {safe.pace_status === "ahead" ? "Belanja di bawah target" :
+                  safe.pace_status === "on_track" ? "Belanja sesuai rencana" : "Belanja melewati target"}
+              </p>
+              <p className="text-sm tabular-nums">
+                {safe.days_remaining > 0
+                  ? <><strong>{money(safe.safe_daily)} per hari</strong> <span className="text-luma-smoke">· {safe.days_remaining} hari tersisa</span></>
+                  : "Siklus selesai"}
+              </p>
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              {paceStatus === "ahead"
-                ? `Belanja (${formatRupiah(pocketSpent)}) masih di bawah target (${formatRupiah(safe?.ideal_pace_today || 0)}).`
-                : paceStatus === "on_track"
-                ? `Belanja sesuai rencana. Batas harian: ${formatRupiah(safeDaily)} untuk ${daysRemaining} hari ke depan.`
-                : `Belanja melewati target. Batasi belanja tambahan agar ${formatRupiah(safeDaily)} per hari cukup sampai siklus berakhir.`}
-            </p>
-          </div>
-
-          {/* Box 2: Dominant Category & Efficiency */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-obsidian-card border border-luma-smokeline space-y-2">
-            <div className="flex items-center gap-2">
-              <Flame className="w-4 h-4 text-amberGold" />
-              <span className="text-xs font-semibold text-white font-sans ">
-                Sorotan Beban Anggaran
-              </span>
-            </div>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              {summary.categories.length > 0 ? (
-                <>
-                  Pos pengeluaran terbesar periode ini adalah{" "}
-                  <strong className="text-white">
-                    {summary.categories[0].category}
-                  </strong>{" "}
-                  dengan total {formatRupiah(summary.categories[0].total)} (
-                  {summary.categories[0].percentage.toFixed(1)}% dari seluruh belanja).
-                  {summary.categories[0].percentage > 40 &&
-                    " Pos ini mendominasi proporsi anggaran, pastikan alokasi harian tetap terjaga."}
-                </>
-              ) : (
-                "Belum ada data transaksi yang cukup untuk mengevaluasi kategori dominan."
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
+            <BurnRateChart summary={summary} formatRupiah={formatRupiah} />
+          </>
+        ) : (
+          <p className="luma-matte p-4 text-sm text-luma-smoke sm:p-6">Anggaran siklus belum diatur.</p>
+        )}
+      </section>
     </div>
   );
 }
