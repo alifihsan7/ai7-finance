@@ -135,7 +135,7 @@ export function AnalyticsView({ summary, formatRupiah, loading }: AnalyticsViewP
                 <span>{formatDate(daily[daily.length - 1].date)}</span>
               </div>
               <details className="mt-3 text-sm">
-                <summary className="flex min-h-11 cursor-pointer items-center text-luma-ivory underline underline-offset-4">Lihat angka per hari</summary>
+                <summary className="luma-text-action cursor-pointer">Lihat angka per hari</summary>
                 <dl className="space-y-2">
                   {daily.map(({ date, income, expense }) => (
                     <div key={date} className="flex flex-wrap justify-between gap-x-3 border-t border-luma-smokeline pt-2">

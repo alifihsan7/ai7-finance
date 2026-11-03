@@ -110,15 +110,15 @@ export function PeriodSelector({
         aria-label={currentPeriod.label || "Pilih periode"}
         title={currentPeriod.label || "Pilih periode"}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full min-w-0 min-h-11 py-2 px-3.5 rounded-xl text-xs font-medium bg-obsidian-card border border-luma-smokeline hover:border-amberGold/50 text-slateText-primary hover:bg-obsidian-hover transition inline-flex items-center gap-2 group"
+        className="w-full min-w-0 min-h-11 py-2 px-3.5 rounded-[var(--ai7-radius-control)] text-xs font-medium bg-obsidian-card border border-luma-smokeline hover:border-luma-smoke text-slateText-primary hover:bg-obsidian-hover transition inline-flex items-center gap-2 group"
       >
-        <Calendar className="w-3.5 h-3.5 text-amberGold shrink-0 group-hover:scale-105 transition-transform" />
+        <Calendar className="w-3.5 h-3.5 text-luma-ivory shrink-0 group-hover:scale-105 transition-transform" />
         <span className="min-w-0 flex-1 text-left truncate">
           {currentPeriod.label || "Pilih Periode"}
         </span>
         <ChevronDown
           className={`w-3.5 h-3.5 text-slateText-muted shrink-0 transition-transform duration-200 ${
-            isOpen ? "rotate-180 text-amberGold" : ""
+            isOpen ? "rotate-180 text-luma-ivory" : ""
           }`}
         />
       </button>
@@ -202,7 +202,7 @@ export function PeriodSelector({
                         }}
                         className={`w-full px-3 py-2 rounded-[var(--ai7-radius-control)] text-left text-xs transition flex items-center justify-between gap-2 ${
                           isSelected
-                            ? "bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold"
+                            ? "bg-luma-coal border border-luma-smokeline text-luma-ivory font-semibold"
                             : "hover:bg-obsidian-hover border border-transparent text-slateText-primary"
                         }`}
                       >
@@ -212,7 +212,7 @@ export function PeriodSelector({
                             {opt.start} s/d {opt.end}
                           </div>
                         </div>
-                        {isSelected && <Check className="w-4 h-4 text-amberGold shrink-0" />}
+                        {isSelected && <Check className="w-4 h-4 text-luma-ivory shrink-0" />}
                       </button>
                     );
                   })
@@ -237,7 +237,7 @@ export function PeriodSelector({
                       }}
                       className={`w-full px-3 py-2 rounded-[var(--ai7-radius-control)] text-left text-xs transition flex items-center justify-between gap-2 ${
                         isSelected
-                          ? "bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold"
+                          ? "bg-luma-coal border border-luma-smokeline text-luma-ivory font-semibold"
                           : "hover:bg-obsidian-hover border border-transparent text-slateText-primary"
                       }`}
                     >
@@ -247,7 +247,7 @@ export function PeriodSelector({
                           {opt.start} s/d {opt.end}
                         </div>
                       </div>
-                      {isSelected && <Check className="w-4 h-4 text-amberGold shrink-0" />}
+                      {isSelected && <Check className="w-4 h-4 text-luma-ivory shrink-0" />}
                     </button>
                   );
                 })}
@@ -271,7 +271,7 @@ export function PeriodSelector({
                       }}
                       className={`w-full px-3 py-2 rounded-[var(--ai7-radius-control)] text-left text-xs transition flex items-center justify-between gap-2 ${
                         isSelected
-                          ? "bg-amberGold/15 border border-amberGold/30 text-amberGold font-semibold"
+                          ? "bg-luma-coal border border-luma-smokeline text-luma-ivory font-semibold"
                           : "hover:bg-obsidian-hover border border-transparent text-slateText-primary"
                       }`}
                     >
@@ -281,7 +281,7 @@ export function PeriodSelector({
                           {opt.start} s/d {opt.end}
                         </div>
                       </div>
-                      {isSelected && <Check className="w-4 h-4 text-amberGold shrink-0" />}
+                      {isSelected && <Check className="w-4 h-4 text-luma-ivory shrink-0" />}
                     </button>
                   );
                 })}
@@ -302,7 +302,7 @@ export function PeriodSelector({
                       required
                       value={customStart}
                       onChange={(e) => setCustomStart(e.target.value)}
-                      className="w-full bg-obsidian-panel border border-luma-smokeline rounded-xl px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-amberGold"
+                      className="w-full bg-obsidian-panel border border-luma-smokeline rounded-[var(--ai7-radius-control)] px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-luma-smoke"
                     />
                   </div>
                   <div>
@@ -313,13 +313,13 @@ export function PeriodSelector({
                       required
                       value={customEnd}
                       onChange={(e) => setCustomEnd(e.target.value)}
-                      className="w-full bg-obsidian-panel border border-luma-smokeline rounded-xl px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-amberGold"
+                      className="w-full bg-obsidian-panel border border-luma-smokeline rounded-[var(--ai7-radius-control)] px-2.5 py-1.5 text-xs text-slateText-primary focus:outline-none focus:border-luma-smoke"
                     />
                   </div>
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2 bg-amberGold text-slate-950 font-semibold text-xs rounded-[var(--ai7-radius-control)] hover:bg-amber-400 transition"
+                  className="luma-action-primary w-full"
                 >
                   Terapkan Rentang
                 </button>

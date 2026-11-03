@@ -460,7 +460,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-dialog-panel input:focus-visible { outline: 2px solid var(--luma-ember); outline-offset: 2px; }
 .light .luma-guest-guide dl > div + div { border-color: var(--luma-smokeline); }
 .luma-app button:not(:disabled):active { transform: translateY(1px); }
-.luma-topbar button, .luma-topbar [role=menu], .luma-sidebar > div:last-child > button { border-radius: 10px; font-weight: 400; }
+.luma-topbar button, .luma-sidebar > div:last-child > button { border-radius: var(--ai7-radius-control); font-weight: 400; }
+.luma-topbar [role=menu] { border-radius: var(--ai7-radius-panel); font-weight: 400; }
 .luma-topbar [role=menu] { background: var(--luma-panel-surface, #3b3835); backdrop-filter: none; }
 @layer base {
   button:not(:disabled), a[href], summary, select:not(:disabled), label[for], [role=button], input[type=checkbox]:not(:disabled), input[type=radio]:not(:disabled) { cursor: pointer; }

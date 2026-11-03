@@ -119,13 +119,13 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
             return (
               <div
                 key={b.day}
-                className={`flex flex-col items-center group relative rounded-xl p-1 transition-all ${
+                className={`flex flex-col items-center group relative rounded-[var(--ai7-radius-control)] p-1 transition-all ${
                   isToday
                     ? "bg-luma-ember/10 border border-luma-ember/40"
-                    : "hover:bg-white/[0.04] border border-transparent"
+                    : "hover:bg-luma-coal border border-transparent"
                 }`}
               >
-                <div className={`opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${getTooltipAlignClass(b.day, chartData.length)} w-48 sm:w-52 p-3 bg-[#2B2825]/95 backdrop-blur-md border border-luma-smokeline rounded-2xl shadow-2xl text-xs font-sans space-y-2 transition-opacity`}>
+                <div className={`opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-events-none absolute bottom-full mb-2 z-30 ${getTooltipAlignClass(b.day, chartData.length)} w-48 sm:w-52 p-3 bg-obsidian-card border border-luma-smokeline rounded-[var(--ai7-radius-control)] shadow-lg text-xs font-sans space-y-2 transition-opacity`}>
                   <div className="flex items-center justify-between border-b border-luma-smokeline pb-1.5">
                     <span className="font-semibold text-luma-ivory">Hari ke-{b.day}</span>
                     <span className="text-xs text-luma-smoke font-medium">({formatTooltipDate(b.date)})</span>
@@ -152,7 +152,7 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
                   </div>
                 </div>
 
-                <div className="w-full h-28 sm:h-32 bg-black/25 rounded-xl flex items-end relative overflow-hidden border border-luma-smokeline">
+                <div className="w-full h-28 sm:h-32 bg-luma-coal rounded-[var(--ai7-radius-badge)] flex items-end relative overflow-hidden border border-luma-smokeline">
                   <div
                     style={{ bottom: `${idealHeight}%` }}
                     className="absolute left-0 right-0 border-b border-dashed border-luma-smoke/60 z-10"
@@ -160,7 +160,7 @@ export function BurnRateChart({ summary, formatRupiah }: BurnRateChartProps) {
                   {isPastOrToday && (
                     <div
                       style={{ height: `${actualHeight}%` }}
-                      className={`w-full transition-all duration-500 rounded-b-xl ${
+                      className={`w-full transition-all duration-500 ${
                         actualHeight > idealHeight
                           ? "bg-luma-coral/80 group-hover:bg-luma-coral"
                           : "bg-luma-ember/80 group-hover:bg-luma-ember"
