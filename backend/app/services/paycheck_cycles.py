@@ -2,7 +2,8 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from app.models.paycheck import PaycheckCycle, PaycheckSession
+from app.models.paycheck import PaycheckCycle, PaycheckReceipt, PaycheckSession
+from app.models.transaction import Transaction
 
 
 def recorded_cycle_ends(db: Session, user_id: int) -> dict[date, date]:
@@ -13,4 +14,11 @@ def recorded_cycle_ends(db: Session, user_id: int) -> dict[date, date]:
         .order_by(PaycheckSession.id)
         .all()
     )
-    return dict(rows)
+    receipts = (
+        db.query(Transaction.date, PaycheckReceipt.cycle_end)
+        .join(Transaction, Transaction.id == PaycheckReceipt.transaction_id)
+        .filter(PaycheckReceipt.user_id == user_id, PaycheckReceipt.cycle_end.is_not(None))
+        .order_by(Transaction.id)
+        .all()
+    )
+    return dict([*rows, *receipts])

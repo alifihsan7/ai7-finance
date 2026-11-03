@@ -4,10 +4,12 @@ from datetime import datetime, date as dt_date, timedelta
 from typing import List, Optional, Dict
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.db.session import get_db
 from app.core.config import settings
-from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckSession, PaycheckCycle
+from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckSession, PaycheckCycle, PaycheckReceipt
+from app.models.account import Account
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.api.deps import get_current_user
@@ -21,9 +23,146 @@ from app.schemas.paycheck import (
     PaycheckStep,
     PaycheckSessionOut,
     PaycheckStartRequest,
+    PaycheckRecordRequest,
 )
+from app.api.v1.endpoints.transactions import add_transfer_pair
 
 router = APIRouter()
+
+
+def receipt_out(db: Session, receipt: PaycheckReceipt):
+    tx = db.get(Transaction, receipt.transaction_id)
+    accounts = {a.id: a.name for a in db.query(Account).filter(Account.user_id == receipt.user_id)}
+    return {
+        "id": tx.id, "account": tx.account, "amount": tx.amount, "date": tx.date,
+        "cycle_end": receipt.cycle_end,
+        "allocations": [
+            {**item, "account": accounts.get(item["account_id"])}
+            for item in json.loads(receipt.allocations_json)
+        ],
+    }
+
+
+@router.get("/record/latest")
+def latest_paycheck_receipt(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    receipts = db.query(PaycheckReceipt).join(Transaction, Transaction.id == PaycheckReceipt.transaction_id).filter(
+        PaycheckReceipt.user_id == current_user.id, Transaction.type == "income",
+    ).order_by(PaycheckReceipt.transaction_id.desc())
+    account_ids = {account.id for account in db.query(Account.id).filter(Account.user_id == current_user.id)}
+    for receipt in receipts:
+        if any(not item["transfer_id"] and item["account_id"] in account_ids
+               for item in json.loads(receipt.allocations_json)):
+            return receipt_out(db, receipt)
+    return None
+
+
+@router.post("/record", status_code=201)
+def record_paycheck(
+    payload: PaycheckRecordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_id = current_user.id
+    request_key = str(payload.request_key)
+    receipts = db.query(PaycheckReceipt).filter(
+        PaycheckReceipt.user_id == user_id, PaycheckReceipt.request_key == request_key,
+    )
+    receipt = receipts.first()
+    if receipt:
+        return receipt_out(db, receipt)
+
+    accounts = {a.name: a for a in db.query(Account).filter(Account.user_id == user_id)}
+    if payload.account not in accounts:
+        raise HTTPException(400, "Pilih rekening penerima yang tersedia.")
+    if payload.date > datetime.now(WIB).date():
+        raise HTTPException(400, "Tanggal gaji masuk belum terjadi.")
+
+    cfg = get_or_seed_config(db, user_id)
+    buckets = get_or_seed_buckets(db, cfg.id)
+    end_date = None
+    if payload.start_cycle:
+        days = {"weekly": 7, "biweekly": 14, "monthly": 30, "custom": payload.cycle_days}.get(
+            payload.cycle_type, cfg.cycle_days,
+        )
+        if not days or days < 1:
+            raise HTTPException(400, "Isi durasi siklus.")
+        try:
+            if not payload.cycle_type and cfg.cycle_type == "monthly_date":
+                from app.api.v1.endpoints.analytics import get_monthly_date_bounds
+
+                _, end_date = get_monthly_date_bounds(payload.date, payload.date.day)
+            else:
+                end_date = payload.date + timedelta(days=days - 1)
+        except (OverflowError, ValueError):
+            raise HTTPException(400, "Tanggal akhir siklus tidak valid.")
+        if payload.save_cycle_default and payload.cycle_type:
+            cfg.cycle_type = payload.cycle_type
+            cfg.cycle_days = days
+
+    amounts = compute_bucket_amounts(payload.total_amount, buckets)
+    remaining = payload.total_amount
+    allocations = []
+    for account, amount in amounts.items():
+        if account != payload.account and account in accounts and amount > 0 and remaining > 0:
+            amount = min(amount, remaining)
+            allocations.append({"account_id": accounts[account].id, "amount": amount, "transfer_id": None})
+            remaining -= amount
+
+    label = "Gaji" if payload.start_cycle else "Gaji tambahan"
+    tx = Transaction(user_id=user_id, account=payload.account, type="income", amount=payload.total_amount,
+                     category=label, description=label, date=payload.date)
+    try:
+        db.add(tx)
+        db.flush()
+        receipt = PaycheckReceipt(transaction_id=tx.id, user_id=user_id, request_key=request_key,
+                                  cycle_end=end_date, allocations_json=json.dumps(allocations))
+        db.add(receipt)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        receipt = receipts.first()
+        if receipt is None:
+            raise
+    return receipt_out(db, receipt)
+
+
+@router.post("/record/{receipt_id}/transfer/{account_id}")
+def confirm_paycheck_transfer(
+    receipt_id: int,
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    receipt = db.query(PaycheckReceipt).filter(
+        PaycheckReceipt.user_id == current_user.id, PaycheckReceipt.transaction_id == receipt_id,
+    ).with_for_update().first()
+    if receipt is None:
+        raise HTTPException(404, "Catatan gaji tidak ditemukan.")
+    allocations = json.loads(receipt.allocations_json)
+    item = next((row for row in allocations if row["account_id"] == account_id), None)
+    if item is None:
+        raise HTTPException(404, "Alokasi tidak ditemukan.")
+    if item["transfer_id"]:
+        return receipt_out(db, receipt)
+
+    tx = db.get(Transaction, receipt_id)
+    if tx is None:
+        raise HTTPException(404, "Catatan gaji tidak ditemukan.")
+    target = db.get(Account, account_id)
+    source = db.query(Account.id).filter(Account.user_id == current_user.id, Account.name == tx.account).first()
+    if not source or not target or target.user_id != current_user.id or tx.account == target.name or tx.type != "income":
+        raise HTTPException(409, "Rekening atau catatan gaji sudah berubah.")
+    if sum(row["amount"] for row in allocations if row["transfer_id"]) + item["amount"] > tx.amount:
+        raise HTTPException(409, "Total alokasi melebihi nominal gaji.")
+    tx_out, tx_in = add_transfer_pair(
+        db, current_user.id, tx.account, target.name, item["amount"], datetime.now(WIB).date(), "Pembagian gaji",
+    )
+    tx_in.raw_text += f" [paycheck_receipt:{receipt_id}]"
+    tx_out.raw_text += f" [paycheck_receipt:{receipt_id}]"
+    item["transfer_id"] = tx_in.id
+    receipt.allocations_json = json.dumps(allocations)
+    db.commit()
+    return receipt_out(db, receipt)
 
 def get_or_seed_config(db: Session, user_id: int = 1) -> PaycheckConfig:
     cfg = db.query(PaycheckConfig).filter(PaycheckConfig.user_id == user_id).first()

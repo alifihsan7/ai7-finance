@@ -120,35 +120,9 @@ def execute_transfer(
     tx_date = payload.date or now_wib.date()
     desc = payload.description or f"Transfer {payload.from_account} -> {payload.to_account}"
 
-    tx_out = Transaction(
-        user_id=current_user.id,
-        type="transfer_out",
-        amount=payload.amount,
-        account=payload.from_account,
-        category="Transfer",
-        description=f"Transfer ke {payload.to_account}: {desc}",
-        raw_text=f"transfer out: {payload.from_account} -> {payload.to_account} ({desc})",
-        date=tx_date
+    tx_out, tx_in = add_transfer_pair(
+        db, current_user.id, payload.from_account, payload.to_account, payload.amount, tx_date, desc,
     )
-    tx_in = Transaction(
-        user_id=current_user.id,
-        type="transfer_in",
-        amount=payload.amount,
-        account=payload.to_account,
-        category="Transfer",
-        description=f"Transfer dari {payload.from_account}: {desc}",
-        raw_text=f"transfer in: {payload.from_account} -> {payload.to_account} ({desc})",
-        date=tx_date
-    )
-
-    db.add(tx_out)
-    db.add(tx_in)
-    db.flush()
-
-    # Link both records explicitly via raw_text tag for unambiguous paired operations
-    tx_out.raw_text = f"{tx_out.raw_text} [pair_id:{tx_in.id}]"
-    tx_in.raw_text = f"{tx_in.raw_text} [pair_id:{tx_out.id}]"
-
     db.commit()
     db.refresh(tx_out)
     db.refresh(tx_in)
@@ -162,6 +136,39 @@ def execute_transfer(
         in_transaction_id=tx_in.id,
         date=tx_date
     )
+
+
+def add_transfer_pair(db, user_id, from_account, to_account, amount, tx_date, desc):
+    tx_out = Transaction(
+        user_id=user_id,
+        type="transfer_out",
+        amount=amount,
+        account=from_account,
+        category="Transfer",
+        description=f"Transfer ke {to_account}: {desc}",
+        raw_text=f"transfer out: {from_account} -> {to_account} ({desc})",
+        date=tx_date
+    )
+    tx_in = Transaction(
+        user_id=user_id,
+        type="transfer_in",
+        amount=amount,
+        account=to_account,
+        category="Transfer",
+        description=f"Transfer dari {from_account}: {desc}",
+        raw_text=f"transfer in: {from_account} -> {to_account} ({desc})",
+        date=tx_date
+    )
+
+    db.add(tx_out)
+    db.add(tx_in)
+    db.flush()
+
+    # Link both records explicitly via raw_text tag for unambiguous paired operations
+    tx_out.raw_text = f"{tx_out.raw_text} [pair_id:{tx_in.id}]"
+    tx_in.raw_text = f"{tx_in.raw_text} [pair_id:{tx_out.id}]"
+
+    return tx_out, tx_in
 
 @router.post("/paycheck", response_model=PaycheckResponse)
 def execute_paycheck_split(

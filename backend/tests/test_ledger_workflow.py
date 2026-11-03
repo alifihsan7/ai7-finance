@@ -57,6 +57,36 @@ def create(client, kind, amount, account="Bank"):
     return response.json()
 
 
+def test_salary_is_recorded_once_and_allocation_is_a_paired_transfer(ledger):
+    client, db = ledger
+    payload = {
+        "request_key": "f73dd60b-c10a-4634-9e67-87808d01b9f8",
+        "total_amount": 1_000_000, "date": date.today().isoformat(),
+        "account": "Bank", "cycle_type": "biweekly",
+    }
+    first = client.post("/paycheck/record", json=payload)
+    assert first.status_code == 201, first.text
+    data = first.json()
+    assert client.post("/paycheck/record", json=payload).json()["id"] == data["id"]
+    assert balances(client)["Bank"] == 1_000_000
+    assert client.get("/paycheck/record/latest").json()["id"] == data["id"]
+
+    allocation = data["allocations"][0]
+    url = f"/paycheck/record/{data['id']}/transfer/{allocation['account_id']}"
+    assert client.post(url).status_code == 200
+    assert client.post(url).status_code == 200
+    assert balances(client)["Bank"] == 500_000
+    assert balances(client)["Cash"] == 500_000
+    assert sorted(tx.type for tx in db.query(Transaction).all()) == ["income", "transfer_in", "transfer_out"]
+    assert client.get("/paycheck/record/latest").json() is None
+
+    payload.update(request_key="b401d1cf-4d31-49c6-a4fc-8a9a13f4daf4", start_cycle=False)
+    supplemental = client.post("/paycheck/record", json=payload)
+    assert supplemental.status_code == 201
+    assert supplemental.json()["cycle_end"] is None
+    assert db.get(Transaction, supplemental.json()["id"]).category == "Gaji tambahan"
+
+
 def test_paycheck_cycle_override_and_saved_default(ledger):
     client, db = ledger
     first = client.post("/paycheck/session/start", json={

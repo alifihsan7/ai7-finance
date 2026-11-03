@@ -52,6 +52,7 @@ import { EditSubscriptionModal } from "@/components/EditSubscriptionModal";
 import { ManageCategoriesModal, CategoryItem } from "@/components/ManageCategoriesModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import PaycheckModal from "@/components/PaycheckModal";
+import { RecordPaycheckModal } from "@/components/RecordPaycheckModal";
 import { AccountItem } from "@/components/AccountGrid";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { CustomSelect, SelectOption } from "@/components/ui/CustomSelect";
@@ -353,6 +354,7 @@ export default function FinanceDashboard() {
   const dashboardRequestRef = useRef(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaycheckModalOpen, setIsPaycheckModalOpen] = useState(false);
+  const [isPayrollSettingsOpen, setIsPayrollSettingsOpen] = useState(false);
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
@@ -1507,9 +1509,9 @@ export default function FinanceDashboard() {
                       <ArrowDownLeft className="w-4 h-4 shrink-0" />
                       <div className="text-left">
                         <div className="font-semibold text-xs">
-                          Gajian masuk
+                          Catat gaji
                         </div>
-                        <div className="text-xs text-luma-smoke">Checklist distribusi gajian</div>
+                        <div className="text-xs text-luma-smoke">Catat pemasukan gaji</div>
                       </div>
                     </button>
                     <button
@@ -2649,10 +2651,30 @@ export default function FinanceDashboard() {
         </form>
       </CustomModal>
 
-      {/* GAJIAN STEP-BY-STEP CHECKLIST MODAL */}
-      <PaycheckModal
-        isOpen={isPaycheckModalOpen}
+      <RecordPaycheckModal
+        isOpen={isPaycheckModalOpen && !activePaycheckSession && !isPayrollSettingsOpen}
+        accounts={customAccounts.map(({ name }) => name)}
         onClose={() => setIsPaycheckModalOpen(false)}
+        onSuccess={(cycle) => {
+          if (!cycle) {
+            void fetchData();
+            return;
+          }
+          setSelectedPeriod({
+            id: `cycle_${cycle.start}`, type: "cycle",
+            label: `Siklus (${cycle.start} – ${cycle.end})`,
+            start: cycle.start, end: cycle.end, is_current: true,
+          });
+        }}
+        onConfigure={() => setIsPayrollSettingsOpen(true)}
+      />
+      <PaycheckModal
+        isOpen={isPaycheckModalOpen && (!!activePaycheckSession || isPayrollSettingsOpen)}
+        settingsOnly={isPayrollSettingsOpen}
+        onClose={() => {
+          if (isPayrollSettingsOpen) setIsPayrollSettingsOpen(false);
+          else setIsPaycheckModalOpen(false);
+        }}
         onSuccess={fetchData}
       />
 

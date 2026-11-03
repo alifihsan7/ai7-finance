@@ -79,7 +79,7 @@ export function LumaOverview({ totalBalance, income, expense, accountCount, safe
         <p className="text-xs text-luma-ivory/70">Tersimpan di {accountCount} rekening Anda</p>
         <div className="luma-balance-actions">
           <button type="button" className="luma-action-primary" onClick={onAddTransaction}><Plus size={16} aria-hidden="true" /> Catat transaksi</button>
-          <button type="button" className="luma-action-secondary" onClick={onOpenPaycheck}>Checklist gajian</button>
+          <button type="button" className="luma-action-secondary" onClick={onOpenPaycheck}>Catat gaji</button>
         </div>
       </div>
       <div className="luma-balance-stats">

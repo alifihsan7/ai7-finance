@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import Column, Integer, BigInteger, Float, String, Boolean, DateTime, Date, Text, ForeignKey, func
+from sqlalchemy import Column, Integer, BigInteger, Float, String, Boolean, DateTime, Date, Text, ForeignKey, UniqueConstraint, func
 from app.db.session import Base
 from app.models.user import User
 
@@ -66,3 +66,14 @@ class PaycheckCycle(Base):
 
     session_id = Column(Integer, ForeignKey("paycheck_sessions.id", ondelete="CASCADE"), primary_key=True)
     end_date = Column(Date, nullable=False)
+
+
+class PaycheckReceipt(Base):
+    __tablename__ = "paycheck_receipts"
+    __table_args__ = (UniqueConstraint("user_id", "request_key"),)
+
+    transaction_id = Column(Integer, ForeignKey("transactions.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    request_key = Column(String(36), nullable=False)
+    cycle_end = Column(Date, nullable=True)
+    allocations_json = Column(Text, nullable=False)

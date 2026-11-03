@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Literal
 from datetime import date as dt_date, datetime
+from uuid import UUID
 
 class PaycheckConfigOut(BaseModel):
     id: int
@@ -78,6 +79,17 @@ class PaycheckStartRequest(BaseModel):
     date: Optional[dt_date] = None
     note: Optional[str] = "Alokasi Gajian Siklus"
     allocations: Optional[Dict[str, int]] = None  # Custom adjusted amounts: {"Mandiri": 825000, ...}
+    cycle_type: Optional[Literal["weekly", "biweekly", "monthly", "custom"]] = None
+    cycle_days: Optional[int] = Field(default=None, ge=1, le=365)
+    save_cycle_default: bool = False
+
+
+class PaycheckRecordRequest(BaseModel):
+    request_key: UUID
+    total_amount: int = Field(gt=0, le=9_000_000_000_000_000)
+    account: str
+    date: dt_date
+    start_cycle: bool = True
     cycle_type: Optional[Literal["weekly", "biweekly", "monthly", "custom"]] = None
     cycle_days: Optional[int] = Field(default=None, ge=1, le=365)
     save_cycle_default: bool = False

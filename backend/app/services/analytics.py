@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 from typing import List, Optional, Set
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import case, func
 
 from app.models.account import Account
 from app.models.jago_pocket import JagoPocket
@@ -121,19 +121,25 @@ def compute_safe_to_spend_metrics(
 
     pocket_account = resolve_pocket_account(db, user_id, user_accs=accounts_list, cfg=cfg)
 
-    # Calculate allocated pocket budget from direct income into pocket_account
-    pocket_income_row = db.query(
-        func.coalesce(func.sum(Transaction.amount), 0).label("inc")
+    pocket_income, pocket_entries = db.query(
+        func.coalesce(func.sum(case(
+            (Transaction.type == "transfer_out", -Transaction.amount),
+            else_=Transaction.amount,
+        )), 0),
+        func.count(Transaction.id),
     ).filter(
         Transaction.user_id == user_id,
         Transaction.account == pocket_account,
-        Transaction.type == "income",
+        (Transaction.type == "income") | (
+            Transaction.type.in_(["transfer_in", "transfer_out"])
+            & Transaction.raw_text.contains("[paycheck_receipt:")
+        ),
         Transaction.date >= cycle_start,
         Transaction.date <= cycle_end
-    ).first()
+    ).one()
 
-    base_pocket_budget = int(pocket_income_row.inc) if pocket_income_row and pocket_income_row.inc > 0 else 0
-    if base_pocket_budget == 0 and cfg:
+    base_pocket_budget = max(0, int(pocket_income))
+    if pocket_entries == 0 and cfg:
         p_bucket = db.query(PaycheckBucket).filter(
             PaycheckBucket.config_id == cfg.id,
             PaycheckBucket.account == pocket_account

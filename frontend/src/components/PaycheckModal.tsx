@@ -69,12 +69,14 @@ interface PaycheckModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  settingsOnly?: boolean;
 }
 
 export default function PaycheckModal({
   isOpen,
   onClose,
   onSuccess,
+  settingsOnly = false,
 }: PaycheckModalProps) {
   // Modal Views: 'setup' | 'checklist' | 'customize'
   const [view, setView] = useState<"setup" | "checklist" | "customize">("setup");
@@ -148,7 +150,7 @@ export default function PaycheckModal({
           initAmounts(0, data.buckets);
         }
       }
-      setView("setup");
+      setView(settingsOnly ? "customize" : "setup");
     } catch (err) {
       console.error("Error fetching paycheck data:", err);
       setErrorMsg("Gagal memuat pengaturan alokasi gajian.");
@@ -384,7 +386,8 @@ export default function PaycheckModal({
 
       // Re-init amounts
       initAmounts(numTotal, savedBuckets);
-      setView("setup");
+      if (settingsOnly) onClose();
+      else setView("setup");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Gagal menyimpan perubahan alur";
       setErrorMsg(msg);
@@ -1030,7 +1033,7 @@ export default function PaycheckModal({
           <div className="pt-3 flex justify-end gap-3 border-t border-luma-smokeline">
             <button
               type="button"
-              onClick={() => setView("setup")}
+              onClick={() => settingsOnly ? onClose() : setView("setup")}
               className="px-4 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white border border-luma-smokeline rounded-2xl transition cursor-pointer"
             >
               Batal
