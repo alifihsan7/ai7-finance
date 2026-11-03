@@ -193,6 +193,26 @@ def test_daily_budget_uses_funded_payroll_allocation(ledger):
     assert pockets.json()["total_pocket_balance"] == safe["pocket_remaining"]
 
 
+def test_default_change_preserves_legacy_cycle_dates(ledger):
+    client, db = ledger
+    cfg = paycheck.get_or_seed_config(db, 1)
+    cfg.cycle_type = "monthly_date"
+    cfg.paycheck_day = 25
+    for day in (date(2025, 10, 25), date(2025, 11, 1)):
+        db.add(Transaction(user_id=1, account="Bank", type="income", amount=100,
+                           category="Gaji", description="Gaji", date=day))
+    db.commit()
+
+    config = client.get("/paycheck/config").json()["config"]
+    config.update(cycle_type="weekly", cycle_days=7)
+    assert client.put("/paycheck/config", json=config).status_code == 200
+    cycles = client.get("/analytics/periods").json()["cycles"]
+    assert [(cycle["start"], cycle["end"]) for cycle in cycles] == [("2025-10-25", "2025-11-24")]
+    summary = client.get("/analytics/summary", params={"period_type": "cycle", "start": "2025-10-25"}).json()
+    assert summary["end_date"] == "2025-11-24"
+    assert summary["income"] == 200
+
+
 def test_paycheck_cycle_override_and_saved_default(ledger):
     client, db = ledger
     first = client.post("/paycheck/session/start", json={

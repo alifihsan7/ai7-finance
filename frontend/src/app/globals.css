@@ -360,8 +360,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .luma-action-primary, .luma-action-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: var(--ai7-radius-control); padding: 11px 16px; font-size: 14px; font-weight: 500; transition: background-color .15s; }
 .luma-action-primary { color: #222; background: #f4f1ec; }
 .luma-action-primary:hover { background: #fff; }
-.luma-action-secondary { color: #f4f1ec; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.12); }
-.luma-action-secondary:hover { background: rgba(255,255,255,.16); }
+.luma-action-secondary { color: var(--luma-ivory); background: var(--luma-coal); border: 1px solid var(--luma-smokeline); }
+.luma-action-secondary:hover:not(:disabled) { background: var(--ai7-selected); }
 .luma-balance-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 18px; margin: 0 -12px -12px; border-radius: var(--ai7-radius-panel); }
 .luma-balance-stats, .luma-guest-inset {
   background: var(--balance-inset);

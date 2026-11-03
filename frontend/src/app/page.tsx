@@ -1918,6 +1918,26 @@ export default function FinanceDashboard() {
         {/* ============================================================== */}
         {activeNav === "Anggaran" && (
           <div className="space-y-8 animate-fadeIn">
+            <section aria-labelledby="budget-daily-title" className="luma-matte space-y-3 p-4 sm:p-6" aria-busy={loading}>
+              <h2 id="budget-daily-title" className="ai7-type-section">Batas belanja harian</h2>
+              {loading ? (
+                <Skeleton className="h-8 w-40" />
+              ) : !summary.safe_to_spend ? (
+                <p className="text-sm text-luma-smoke">Anggaran periode belum tersedia.</p>
+              ) : summary.safe_to_spend.days_remaining === 0 ? (
+                <p className="text-sm text-luma-smoke">Siklus selesai.</p>
+              ) : (
+                <>
+                  <p className="ai7-type-metric">{formatRupiah(summary.safe_to_spend.safe_daily)} <span className="text-sm text-luma-smoke">/ hari</span></p>
+                  <p className="text-sm text-luma-smoke">
+                    {summary.safe_to_spend.pocket_budget <= 0 ? "Dana belanja belum tersedia" :
+                      summary.safe_to_spend.pocket_remaining <= 0 ? "Anggaran belanja habis" :
+                      `Sisa anggaran belanja ${formatRupiah(summary.safe_to_spend.pocket_remaining)}`}
+                    {" · "}{summary.safe_to_spend.days_remaining} hari tersisa
+                  </p>
+                </>
+              )}
+            </section>
             <StrataAllocationBar
               cycleType={summary.safe_to_spend?.cycle_type}
               cycleDays={summary.safe_to_spend?.cycle_days}
@@ -1936,7 +1956,7 @@ export default function FinanceDashboard() {
             />
 
             {/* Pos Tagihan & Utilitas */}
-            <div className="bg-obsidian-card border border-obsidian-border rounded-xl p-5 sm:p-6 space-y-5">
+            <div className="luma-matte p-5 sm:p-6 space-y-5">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -1960,7 +1980,7 @@ export default function FinanceDashboard() {
                   }}
                   className="luma-touch text-xs text-amberGold hover:underline font-medium shrink-0 whitespace-nowrap inline-flex items-center gap-1 group cursor-pointer min-h-[44px]"
                 >
-                  <span>Atur Tagihan ({subsData.items.length})</span>
+                  <span>Lihat tagihan ({subsData.items.length})</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>

@@ -10,7 +10,7 @@ from sqlalchemy import func, case, desc
 from app.db.session import get_db
 from app.models.transaction import Transaction
 from app.models.paycheck import PaycheckConfig, PaycheckBucket
-from app.services.paycheck_cycles import recorded_cycle_ends
+from app.services.paycheck_cycles import legacy_cycle_covers, recorded_cycle_ends
 from app.models.account import Account
 from app.models.user import User
 from app.api.deps import get_current_user
@@ -82,6 +82,7 @@ def get_available_periods(
     paycheck_rows = db.query(Transaction.date).filter(
         Transaction.user_id == current_user.id,
         Transaction.type == "income",
+        ~legacy_cycle_covers(db, current_user.id),
         Transaction.category.in_(["Gajian", "Gaji", "Pemasukan", "Uang Saku Ortu", "Income"]) | Transaction.description.ilike("%gajian%") | Transaction.description.ilike("%pemasukan%")
     ).order_by(Transaction.date.desc()).distinct().all()
 
@@ -207,6 +208,8 @@ def get_monthly_summary(
     paychecks = db.query(Transaction).filter(
         Transaction.user_id == current_user.id,
         Transaction.type == "income",
+        Transaction.date <= today_wib,
+        ~legacy_cycle_covers(db, current_user.id),
         Transaction.category.in_(["Gajian", "Gaji", "Pemasukan", "Uang Saku Ortu", "Income"]) | Transaction.description.ilike("%gajian%") | Transaction.description.ilike("%pemasukan%")
     ).order_by(desc(Transaction.date), desc(Transaction.id)).all()
 

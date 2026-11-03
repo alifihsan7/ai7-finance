@@ -182,9 +182,19 @@ export function JagoPockets({ accountId, accountName, cycleStart, cycleEnd, form
               {title}
             </span>
           </h2>
-          <p className="text-xs sm:text-sm text-luma-smoke mt-0.5 tabular-nums">
-            Saldo rekening {formatRupiah(totalBalance)} · Plafon kantong {formatRupiah(totalTarget)} · Terpakai {formatRupiah(totalSpent)} · Sisa alokasi {formatRupiah(totalRemaining)}
-          </p>
+          <dl className="mt-3 grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-4">
+            {[
+              { label: "Saldo rekening", amount: totalBalance },
+              { label: "Plafon kantong", amount: totalTarget },
+              { label: "Terpakai di periode ini", amount: totalSpent },
+              { label: "Sisa alokasi periode ini", amount: totalRemaining },
+            ].map(({ label, amount }) => (
+              <div key={label} className="min-w-0">
+                <dt className="text-xs text-luma-smoke">{label}</dt>
+                <dd className="text-sm font-medium tabular-nums [overflow-wrap:anywhere]">{formatRupiah(amount)}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
         {showActions && <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button
@@ -192,7 +202,7 @@ export function JagoPockets({ accountId, accountName, cycleStart, cycleEnd, form
             onClick={() => setLinkPocketId((pockets.find(pocket => pocket.role === "tagihan") || pockets[0]).id)}
             disabled={!!error || !parentName || pockets.length === 0}
             title="Pilih tagihan yang menentukan plafon kantong"
-            className="luma-touch min-w-[44px] px-4 py-2.5 rounded-full text-xs font-semibold bg-white/[0.06] text-luma-ivory border border-luma-smokeline hover:bg-white/[0.1] hover:border-white/[0.2] active:scale-95 transition inline-flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="luma-action-secondary cursor-pointer disabled:cursor-not-allowed"
           >
             <Link2 className="w-4 h-4" aria-hidden="true" />
             <span>Hubungkan tagihan</span>
@@ -202,12 +212,12 @@ export function JagoPockets({ accountId, accountName, cycleStart, cycleEnd, form
             onClick={() => setIsEditOpen(true)}
             disabled={!!error || pockets.length === 0}
             title="Ubah plafon kantong rekening ini"
-            className="luma-touch min-w-[44px] px-4 py-2.5 text-xs font-medium bg-white/[0.06] text-luma-ivory border border-luma-smokeline hover:bg-white/[0.1] transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
+            className="luma-action-secondary cursor-pointer disabled:cursor-not-allowed"
           >
             <Pencil className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            <span>Edit plafon</span>
+            <span>Ubah plafon</span>
           </button>
-          {accountId !== undefined && <button type="button" onClick={() => setIsAddOpen(true)} disabled={!!error} className="luma-touch px-4 py-2.5 bg-luma-ivory text-luma-charcoal inline-flex items-center gap-2">
+          {accountId !== undefined && <button type="button" onClick={() => setIsAddOpen(true)} disabled={!!error} className="luma-action-primary cursor-pointer disabled:cursor-not-allowed">
             <Plus className="w-4 h-4" aria-hidden="true" />Tambah kantong
           </button>}
         </div>}

@@ -26,7 +26,7 @@ from app.schemas.paycheck import (
     PaycheckRecordRequest,
 )
 from app.api.v1.endpoints.transactions import add_transfer_pair
-from app.services.paycheck_cycles import receipt_allocations
+from app.services.paycheck_cycles import preserve_legacy_cycles, receipt_allocations
 
 router = APIRouter()
 
@@ -97,6 +97,8 @@ def record_paycheck(
         except (OverflowError, ValueError):
             raise HTTPException(400, "Tanggal akhir siklus tidak valid.")
         if payload.save_cycle_default and payload.cycle_type:
+            if (cfg.cycle_type, cfg.cycle_days) != (payload.cycle_type, days):
+                preserve_legacy_cycles(db, cfg, datetime.now(WIB).date())
             cfg.cycle_type = payload.cycle_type
             cfg.cycle_days = days
 
@@ -449,6 +451,8 @@ def update_paycheck_config(
     cfg.source_account = payload.source_account
     cfg.use_gate = payload.use_gate
     cfg.gate_name = payload.gate_name
+    if (cfg.cycle_type, cfg.cycle_days, cfg.paycheck_day) != (payload.cycle_type, payload.cycle_days, payload.paycheck_day or cfg.paycheck_day):
+        preserve_legacy_cycles(db, cfg, datetime.now(WIB).date())
     cfg.cycle_type = payload.cycle_type
     cfg.cycle_days = payload.cycle_days
     if payload.paycheck_day:
@@ -567,6 +571,8 @@ def start_paycheck_session(
         db.flush()
         db.add(PaycheckCycle(session_id=session.id, end_date=cycle_end))
         if payload.save_cycle_default:
+            if (cfg.cycle_type, cfg.cycle_days) != (payload.cycle_type, cycle_days):
+                preserve_legacy_cycles(db, cfg, datetime.now(WIB).date())
             cfg.cycle_type = payload.cycle_type
             cfg.cycle_days = cycle_days
     db.commit()

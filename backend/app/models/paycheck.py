@@ -68,6 +68,14 @@ class PaycheckCycle(Base):
     end_date = Column(Date, nullable=False)
 
 
+class LegacyPaycheckCycle(Base):
+    __tablename__ = "legacy_paycheck_cycles"
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    start_date = Column(Date, primary_key=True)
+    end_date = Column(Date, nullable=False)
+
+
 class PaycheckReceipt(Base):
     __tablename__ = "paycheck_receipts"
     __table_args__ = (UniqueConstraint("user_id", "request_key"),)
