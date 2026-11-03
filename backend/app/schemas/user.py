@@ -79,6 +79,6 @@ class OnboardingRequest(BaseModel):
     cycle_start_date: Optional[date] = None
     source_account: str = "BCA"
     use_gate: bool = True
-    gate_name: Optional[str] = "Flip"
+    gate_name: Optional[str] = "Perantara transfer"
     pocket_account: str = "BCA"
     buckets: List[OnboardingBucketItem]

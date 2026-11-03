@@ -6,7 +6,7 @@ class SubscriptionBase(BaseModel):
     name: str
     amount: int = Field(gt=0)
     category: str = "Layanan Digital"
-    account: str = "Jago"
+    account: str = ""
     billing_cycle: str = "monthly"
     billing_day: Optional[int] = Field(1, ge=1, le=31)
     billing_type: str = "fixed_day"

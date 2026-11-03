@@ -10,7 +10,7 @@ class PaycheckConfig(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, default=1, index=True)
     source_account = Column(String(50), nullable=False, default="BRI 1")
     use_gate = Column(Boolean, nullable=False, default=True)
-    gate_name = Column(String(50), nullable=False, default="Flip")
+    gate_name = Column(String(50), nullable=False, default="Perantara transfer")
     cycle_type = Column(String(30), nullable=False, default="biweekly")
     cycle_days = Column(Integer, nullable=False, default=14)
     paycheck_day = Column(Integer, nullable=True, default=25)

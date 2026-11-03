@@ -61,7 +61,7 @@ def complete_onboarding(
                 user_id=user.id,
                 source_account=payload.source_account,
                 use_gate=payload.use_gate,
-                gate_name=payload.gate_name or "Direct Transfer",
+                gate_name=payload.gate_name or "Perantara transfer",
                 cycle_type=payload.cycle_type,
                 cycle_days=payload.cycle_days,
                 paycheck_day=payload.paycheck_day or (tx_date.day if tx_date else 25),
@@ -74,7 +74,7 @@ def complete_onboarding(
         else:
             cfg.source_account = payload.source_account
             cfg.use_gate = payload.use_gate
-            cfg.gate_name = payload.gate_name or "Direct Transfer"
+            cfg.gate_name = payload.gate_name or "Perantara transfer"
             cfg.cycle_type = payload.cycle_type
             cfg.cycle_days = payload.cycle_days
             cfg.paycheck_day = payload.paycheck_day or (tx_date.day if tx_date else 25)

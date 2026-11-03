@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
 from app.db.session import get_db
+from app.models.account import Account
 from app.models.subscription import Subscription
 from app.models.jago_pocket import JagoPocket
 from app.models.user import User
@@ -121,12 +122,19 @@ def create_subscription(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    account_name = sub_in.account.strip()
+    if not account_name:
+        account = db.query(Account).filter(Account.user_id == current_user.id).order_by(Account.id).first()
+        if account is None:
+            raise HTTPException(status_code=400, detail="Tambahkan rekening terlebih dahulu.")
+        account_name = account.name
+
     sub = Subscription(
         user_id=current_user.id,
         name=sub_in.name.strip(),
         amount=sub_in.amount,
         category=sub_in.category.strip(),
-        account=sub_in.account.strip(),
+        account=account_name,
         billing_cycle=sub_in.billing_cycle,
         billing_day=sub_in.billing_day or 1,
         billing_type=sub_in.billing_type or "fixed_day",

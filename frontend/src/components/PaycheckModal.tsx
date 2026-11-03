@@ -393,16 +393,6 @@ export default function PaycheckModal({
     }
   };
 
-  // Colors per account for visual polish
-  const getAccountDot = (acc: string) => {
-    if (acc === "Mandiri" || acc === "Saku Operasional" || acc === "Rekening Operasional") return "bg-amberGold";
-    if (acc === "Bank Jago" || acc === "Sub-Kantong Operasional" || acc === "Rekening Utama") return "bg-mintRise";
-    if (acc === "Bibit") return "bg-emerald-400";
-    if (acc === "BRI 1") return "bg-cyanHub";
-    if (acc === "BRI 2") return "bg-purpleLock";
-    return "bg-slate-400";
-  };
-
   // Group steps by phase for checklist view
   const groupedSteps = useMemo(() => {
     if (!activeSession) return {};
@@ -563,7 +553,7 @@ export default function PaycheckModal({
                     className="p-3.5 rounded-2xl bg-obsidian-card border border-luma-smokeline hover:border-white/[0.16] transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${getAccountDot(b.account)}`} />
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-luma-smoke" aria-hidden="true" />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-sm text-white truncate">

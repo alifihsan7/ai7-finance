@@ -125,7 +125,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
   // Step 3: Paycheck & Gate
   const [sourceAccount, setSourceAccount] = useState("Rekening Utama");
   const [useGate, setUseGate] = useState(false);
-  const gateName = "Direct Transfer";
+  const gateName = "Perantara transfer";
   const [buckets, setBuckets] = useState<BucketInput[]>(() => generateBucketsFromAccounts(DEFAULT_INITIAL_ACCOUNTS));
 
   const syncAccountsWithState = (updatedAccounts: InitialAccountInput[]) => {
@@ -400,7 +400,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                 type="text"
                 value={newAccName}
                 onChange={(e) => setNewAccName(e.target.value)}
-                placeholder="+ Tambah rekening lain (misal: BCA, Seabank)"
+                placeholder="Nama rekening"
                 className="flex-1 bg-obsidian-card border border-luma-smokeline text-white placeholder-zinc-400 rounded-2xl px-3 py-2 text-xs focus:outline-none focus:border-amberGold"
               />
               <div className="w-full sm:w-[150px]">
@@ -588,7 +588,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
             <div className="bg-obsidian-card p-4 rounded-2xl border border-luma-smokeline">
               <h4 className="text-xs font-semibold text-white mb-1 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-mintRise" />
-                Alur Distribusi Gajian & Gerbang Flip Bebas Admin
+                Pembagian gaji
               </h4>
               <p className="text-xs text-zinc-400">
                 Atur rekening penampung gaji utama dan apakah ingin mengaktifkan jembatan perantara bebas biaya transfer.
@@ -613,14 +613,14 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
 
               <div>
                 <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-                  Gunakan Gerbang Bebas Admin?
+                  Pakai perantara transfer?
                 </label>
                 <CustomSelect
                   value={useGate ? "yes" : "no"}
                   onChange={(val) => setUseGate(val === "yes")}
                   options={[
-                    { value: "yes", label: "Ya (Hemat Admin via Flip)" },
-                    { value: "no", label: "Tidak (Direct Transfer)" },
+                    { value: "yes", label: "Ya, lewat perantara" },
+                    { value: "no", label: "Tidak, transfer langsung" },
                   ]}
                   accent="mint"
                 />
@@ -704,7 +704,7 @@ export function OnboardingWizardModal({ isOpen, user, onClose, onComplete }: Onb
                 <span className="text-xs text-zinc-400 font-medium">Alur Gajian & Gate</span>
                 <p className="font-medium text-white">
                   Sumber: <span className="text-amberGold">{sourceAccount}</span> • Gerbang:{" "}
-                  <span className="text-mintRise">{useGate ? "Flip (Hemat Admin)" : "Direct"}</span>
+                  <span className="text-mintRise">{useGate ? "Lewat perantara" : "Transfer langsung"}</span>
                 </p>
               </div>
             </div>

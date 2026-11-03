@@ -28,7 +28,7 @@ export function EditSubscriptionModal({
   const [name, setName] = useState("");
   const [amount, setAmount] = useState<string>("");
   const [category, setCategory] = useState("Layanan Digital");
-  const [account, setAccount] = useState("Rekening Operasional");
+  const [account, setAccount] = useState("");
   const [billingType, setBillingType] = useState<"fixed_day" | "exact_date">("fixed_day");
   const [billingDay, setBillingDay] = useState("1");
   const [exactDueDate, setExactDueDate] = useState("");
@@ -41,7 +41,7 @@ export function EditSubscriptionModal({
       setName(subscription.name);
       setAmount(subscription.amount.toString());
       setCategory(subscription.category);
-      setAccount(subscription.account || "Rekening Operasional");
+      setAccount(subscription.account || "");
       setBillingType(subscription.billing_type || "fixed_day");
       setBillingDay(subscription.billing_day ? subscription.billing_day.toString() : "1");
       setExactDueDate(subscription.exact_due_date || subscription.next_billing_date || "");
@@ -263,7 +263,9 @@ export function EditSubscriptionModal({
             <CustomSelect
               value={account}
               onChange={setAccount}
-              options={accountOptions}
+              options={account && !accountOptions.some((option) => option.value === account)
+                ? [...accountOptions, { value: account, label: account }]
+                : accountOptions}
             />
           </div>
         </div>
@@ -276,7 +278,7 @@ export function EditSubscriptionModal({
             type="text"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Contoh: Membership Gym bulanan, paket data 50GB"
+            placeholder="Contoh: Paket bulanan"
             className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
           />
         </div>

@@ -147,12 +147,6 @@ const SUB_CATEGORY_OPTIONS = [
   { value: "Lainnya", label: "Lainnya" },
 ];
 
-const SUB_ACCOUNT_OPTIONS = [
-  { value: "Rekening Tagihan", label: "Rekening Tagihan (Autodebet)", color: "bg-purple-500" },
-  { value: "Rekening Utama", label: "Rekening Utama (Operasional)", color: "bg-blue-500" },
-  { value: "Kartu Kredit", label: "Kartu Kredit / PayLater", color: "bg-cyan-500" },
-];
-
 const NAV_SLUGS: Record<string, string> = {
   "Ringkasan": "#/overview",
   "Transaksi": "#/transactions",
@@ -425,7 +419,7 @@ export default function FinanceDashboard() {
   // Form state for new subscription
   const [subName, setSubName] = useState("");
   const [subAmount, setSubAmount] = useState("");
-  const [subCategory, setSubCategory] = useState("Gym & Fitness");
+  const [subCategory, setSubCategory] = useState("Lainnya");
   const [subAccount, setSubAccount] = useState("");
   const [subBillingType, setSubBillingType] = useState<"fixed_day" | "exact_date">("fixed_day");
   const [subBillingDay, setSubBillingDay] = useState("1");
@@ -437,14 +431,14 @@ export default function FinanceDashboard() {
   const [paycheckConfig, setPaycheckConfig] = useState<{ id?: number; total_salary?: number; pocket_account?: string; source_account?: string; cycle_days?: number; cycle_type?: string } | null>(null);
   const [paycheckBuckets, setPaycheckBuckets] = useState<{ account: string; percentage: number; purpose?: string }[]>([]);
 
+  const billAccountOptions = customAccounts.map(({ name }) => ({ value: name, label: name }));
+
   // Auto-sync subAccount to available accounts
   useEffect(() => {
-    if (availableAccountNames.length > 0) {
-      if (!subAccount || !availableAccountNames.includes(subAccount)) {
-        setSubAccount(availableAccountNames[0]);
-      }
-    }
-  }, [availableAccountNames, subAccount]);
+    setSubAccount((previous) =>
+      customAccounts.some((account) => account.name === previous) ? previous : customAccounts[0]?.name || ""
+    );
+  }, [customAccounts]);
 
   // SPA Hash Routing sync & browser Back/Forward navigation listener
   useEffect(() => {
@@ -894,7 +888,7 @@ export default function FinanceDashboard() {
     e.preventDefault();
     const numAmount = parseInt(subAmount.replace(/\D/g, ""), 10);
     const day = parseInt(subBillingDay, 10);
-    if (!numAmount || !subName.trim()) return;
+    if (!numAmount || !subName.trim() || !billAccountOptions.some(({ value }) => value === subAccount)) return;
     if (subBillingType === "fixed_day" && !day) return;
     if (subBillingType === "exact_date" && !subExactDueDate) return;
 
@@ -1641,7 +1635,7 @@ export default function FinanceDashboard() {
                       </span>
                     </div>
                     <p className="text-xs text-luma-smoke truncate mt-0.5">
-                      Total Rp {activePaycheckSession.total_amount.toLocaleString("id-ID")} • Selesaikan checklist transfer m-banking & gate Flip
+                      Total Rp {activePaycheckSession.total_amount.toLocaleString("id-ID")} · Lanjutkan checklist transfer
                     </p>
                   </div>
                 </div>
@@ -2461,7 +2455,7 @@ export default function FinanceDashboard() {
             <input
               type="text"
               required
-              placeholder="Contoh: Netflix, Spotify, Gym, ChatGPT, Listrik, Sewa"
+              placeholder="Contoh: Internet rumah atau sewa"
               value={subName}
               onChange={(e) => setSubName(e.target.value)}
               className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition"
@@ -2568,13 +2562,14 @@ export default function FinanceDashboard() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
-                Akun autodebet
+                Rekening pembayaran
               </label>
               <CustomSelect
                 value={subAccount}
                 onChange={setSubAccount}
-                options={SUB_ACCOUNT_OPTIONS}
+                options={billAccountOptions}
               />
+              {billAccountOptions.length === 0 && <p className="mt-1 text-xs text-luma-smoke">Tambahkan rekening terlebih dahulu.</p>}
             </div>
           </div>
 
@@ -2584,7 +2579,7 @@ export default function FinanceDashboard() {
             </label>
             <input
               type="text"
-              placeholder="Contoh: Share family plan / Kartu debit operasional"
+              placeholder="Contoh: Dibayar otomatis"
               value={subNotes}
               onChange={(e) => setSubNotes(e.target.value)}
               className="w-full bg-obsidian-panel border border-luma-smokeline rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amberGold transition placeholder:text-zinc-400"
@@ -2601,7 +2596,8 @@ export default function FinanceDashboard() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 text-xs sm:text-sm font-semibold bg-amberGold text-slate-950 hover:bg-amber-300 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer"
+              disabled={billAccountOptions.length === 0}
+              className="px-5 py-2.5 text-xs sm:text-sm font-semibold bg-amberGold text-slate-950 hover:bg-amber-300 rounded-2xl transition inline-flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50"
             >
               Simpan tagihan
             </button>
@@ -2679,7 +2675,7 @@ export default function FinanceDashboard() {
         onClose={() => setSubToEdit(null)}
         subscription={subToEdit}
         onSuccess={fetchData}
-        accountOptions={SUB_ACCOUNT_OPTIONS}
+        accountOptions={billAccountOptions}
         categoryOptions={SUB_CATEGORY_OPTIONS}
       />
 
