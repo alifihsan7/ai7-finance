@@ -162,6 +162,8 @@ export function SubscriptionsView({
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {subsData.items.map((sub) => {
             const isExact = sub.billing_type === "exact_date";
+            const isYearly = sub.billing_cycle === "yearly";
+            const missingDate = isYearly && !sub.next_billing_date;
             const days = sub.days_until_due ?? 99;
             const isExpired = isExact && days < 0;
             const isToday = days === 0;
@@ -207,6 +209,8 @@ export function SubscriptionsView({
                   >
                     {!sub.is_active
                       ? "Dijeda"
+                      : missingDate
+                      ? "Tanggal belum diatur"
                       : isExpired
                       ? `❌ Expired (${Math.abs(days)} hr lalu)`
                       : isToday
@@ -219,7 +223,7 @@ export function SubscriptionsView({
                   <div className="ai7-type-metric text-white tracking-tight truncate">
                     {formatRupiah(sub.amount)}
                     <span className="text-xs font-normal text-zinc-400 font-sans">
-                      {isExact ? " / periode" : " / bulan"}
+                      {isExact ? " / periode" : isYearly ? " / tahun" : " / bulan"}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-sans mt-1 truncate">
@@ -233,7 +237,9 @@ export function SubscriptionsView({
                     ) : (
                       <>
                         <Calendar className="w-3.5 h-3.5 text-amberGold shrink-0" />
-                        <span className="truncate">Setiap tanggal {sub.billing_day} ({sub.next_billing_date})</span>
+                      <span className="truncate">{isYearly
+                        ? (missingDate ? "Atur tanggal tahunan lewat Ubah" : `Jatuh tempo ${sub.next_billing_date}`)
+                        : `Setiap tanggal ${sub.billing_day} (${sub.next_billing_date})`}</span>
                       </>
                     )}
                   </div>

@@ -45,6 +45,27 @@ def pocket_summary(client, account=1):
     return {item["id"]: item for item in response.json()["pockets"]}
 
 
+def test_yearly_commitment_and_missing_anchor(linked_client):
+    client, _ = linked_client
+    assert client.put("/subscriptions/1", json={"billing_cycle": "yearly"}).status_code == 200
+    response = client.get("/subscriptions")
+    assert response.status_code == 200
+    summary = response.json()
+    assert summary["total_monthly_commitment"] == 325_000
+    yearly = next(item for item in summary["items"] if item["id"] == 1)
+    assert yearly["days_until_due"] is None
+    assert yearly["next_billing_date"] is None
+
+
+def test_yearly_due_clamps_leap_day_without_losing_original_date():
+    bill = Subscription(billing_cycle="yearly", billing_type="fixed_day", exact_due_date=date(2024, 2, 29))
+    assert subscriptions.compute_due_info(bill, date(2025, 2, 28)) == (0, "2025-02-28")
+    assert subscriptions.compute_due_info(bill, date(2025, 3, 1))[1] == "2026-02-28"
+    assert subscriptions.compute_due_info(bill, date(2028, 2, 28)) == (1, "2028-02-29")
+    bill.billing_type = "exact_date"
+    assert subscriptions.compute_due_info(bill, date(2025, 3, 1))[1] == "2024-02-29"
+
+
 def test_explicit_link_follows_amount_and_unlink_keeps_last_target(linked_client):
     client, db = linked_client
     response = client.put("/pockets/1/subscription", json={"subscription_id": 1})

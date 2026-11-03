@@ -639,7 +639,7 @@ def handle_subs(chat_id: int, db: Session, user: Optional[User] = None, bot_toke
         return
     user_id = user.id
     from app.models.subscription import Subscription
-    from app.api.v1.endpoints.subscriptions import compute_due_info
+    from app.api.v1.endpoints.subscriptions import compute_due_info, monthly_commitment_twelfths
 
     subs = db.query(Subscription).filter(Subscription.user_id == user_id, Subscription.is_active == True).all()
     if not subs:
@@ -658,9 +658,11 @@ def handle_subs(chat_id: int, db: Session, user: Optional[User] = None, bot_toke
     subs.sort(key=get_sort_key)
 
     for s in subs:
-        total += s.amount
+        total += monthly_commitment_twelfths(s)
         days_until, next_date = compute_due_info(s, now_date)
-        if s.billing_type == "exact_date" and s.exact_due_date:
+        if days_until is None:
+            due_str = "Atur tanggal tagihan tahunan"
+        elif s.billing_type == "exact_date" and s.exact_due_date:
             if days_until < 0:
                 due_str = f"❌ **Expired ({abs(days_until)} hari lalu)**"
             elif days_until == 0:
@@ -675,11 +677,12 @@ def handle_subs(chat_id: int, db: Session, user: Optional[User] = None, bot_toke
             elif days_until <= 3:
                 due_str = f"⚠️ Jatuh tempo {days_until} hari lagi (`{next_date}`)"
             else:
-                due_str = f"🗓️ Tgl {s.billing_day} ({days_until} hari lagi)"
+                due_str = f"🗓️ {next_date} ({days_until} hari lagi)"
 
-        lines.append(f"• **{s.name}**: {format_rp(s.amount)}/bln\n  └ {due_str} ({s.category})")
+        unit = "periode" if s.billing_type == "exact_date" else "tahun" if s.billing_cycle == "yearly" else "bulan"
+        lines.append(f"• **{s.name}**: {format_rp(s.amount)}/{unit}\n  └ {due_str} ({s.category})")
 
-    lines.append(f"\n💵 **Total Komitmen Bulanan:** {format_rp(total)}")
+    lines.append(f"\n💵 **Total Komitmen Bulanan:** {format_rp((total + 6) // 12)}")
     send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
 def handle_goals(chat_id: int, db: Session, user: Optional[User] = None, bot_token: Optional[str] = None):

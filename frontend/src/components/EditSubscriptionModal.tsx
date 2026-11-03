@@ -29,7 +29,7 @@ export function EditSubscriptionModal({
   const [amount, setAmount] = useState<string>("");
   const [category, setCategory] = useState("Layanan Digital");
   const [account, setAccount] = useState("");
-  const [billingType, setBillingType] = useState<"fixed_day" | "exact_date">("fixed_day");
+  const [billingType, setBillingType] = useState<"fixed_day" | "exact_date" | "yearly">("fixed_day");
   const [billingDay, setBillingDay] = useState("1");
   const [exactDueDate, setExactDueDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -42,7 +42,7 @@ export function EditSubscriptionModal({
       setAmount(subscription.amount.toString());
       setCategory(subscription.category);
       setAccount(subscription.account || "");
-      setBillingType(subscription.billing_type || "fixed_day");
+      setBillingType(subscription.billing_type === "exact_date" ? "exact_date" : subscription.billing_cycle === "yearly" ? "yearly" : "fixed_day");
       setBillingDay(subscription.billing_day ? subscription.billing_day.toString() : "1");
       setExactDueDate(subscription.exact_due_date || subscription.next_billing_date || "");
       setNotes(subscription.notes || "");
@@ -66,7 +66,7 @@ export function EditSubscriptionModal({
       return;
     }
 
-    if (billingType === "exact_date" && !exactDueDate) {
+    if (billingType !== "fixed_day" && !exactDueDate) {
       setError("Pilih tanggal jatuh tempo.");
       return;
     }
@@ -80,11 +80,12 @@ export function EditSubscriptionModal({
         amount: numAmount,
         category,
         account,
-        billing_type: billingType,
+        billing_type: billingType === "yearly" ? "fixed_day" : billingType,
+        billing_cycle: billingType === "yearly" || (billingType === "exact_date" && subscription.billing_type === "exact_date" && subscription.billing_cycle === "yearly") ? "yearly" : "monthly",
         notes: notes.trim() || null,
       };
 
-      if (billingType === "exact_date") {
+      if (billingType !== "fixed_day") {
         payload.exact_due_date = exactDueDate;
         // Also sync billing_day to match day of month
         const parsed = new Date(exactDueDate);
@@ -184,6 +185,14 @@ export function EditSubscriptionModal({
               <Calendar className="w-3.5 h-3.5 shrink-0" />
               <span>Tanggal tertentu</span>
             </button>
+            <button
+              type="button"
+              aria-pressed={billingType === "yearly"}
+              onClick={() => setBillingType("yearly")}
+              className={`col-span-2 rounded-xl px-2 py-2 text-xs font-semibold ${billingType === "yearly" ? "bg-amberGold text-slate-950" : "text-luma-smoke hover:text-luma-ivory"}`}
+            >
+              Tahunan
+            </button>
           </div>
         </div>
 
@@ -221,7 +230,7 @@ export function EditSubscriptionModal({
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="block text-xs font-semibold text-zinc-400 ">
-                  Tanggal jatuh tempo
+                  {billingType === "yearly" ? "Tanggal tagihan tahunan" : "Tanggal jatuh tempo"}
                 </label>
                 <div className="flex gap-1">
                   <button

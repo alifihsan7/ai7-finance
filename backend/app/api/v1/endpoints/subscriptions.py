@@ -1,5 +1,6 @@
 from typing import List, Optional
 from datetime import datetime, date, timedelta
+from calendar import monthrange
 import zoneinfo
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -37,6 +38,16 @@ def compute_due_info(sub_or_day, now_date: date, billing_type: str = "fixed_day"
         days_until = (e_date - now_date).days
         return days_until, str(e_date)
 
+    if isinstance(sub_or_day, Subscription) and sub_or_day.billing_cycle == "yearly":
+        if not e_date:
+            return None, None
+        year = max(e_date.year, now_date.year)
+        due = date(year, e_date.month, min(e_date.day, monthrange(year, e_date.month)[1]))
+        if due < now_date:
+            year += 1
+            due = date(year, e_date.month, min(e_date.day, monthrange(year, e_date.month)[1]))
+        return (due - now_date).days, str(due)
+
     # Determine next billing date for fixed_day
     year = now_date.year
     month = now_date.month
@@ -68,6 +79,10 @@ def compute_due_info(sub_or_day, now_date: date, billing_type: str = "fixed_day"
     days_until = (next_due - now_date).days
     return days_until, str(next_due)
 
+def monthly_commitment_twelfths(subscription: Subscription) -> int:
+    return subscription.amount if subscription.billing_cycle == "yearly" else subscription.amount * 12
+
+
 @router.get("", response_model=SubscriptionsSummary)
 def get_subscriptions(
     current_user: User = Depends(get_current_user),
@@ -77,16 +92,16 @@ def get_subscriptions(
     now_date = datetime.now(WIB).date()
 
     items = []
-    total_monthly = 0
+    monthly_twelfths = 0
     active_cnt = 0
     upcoming_week = 0
 
     for s in subs:
         days_until, next_date = compute_due_info(s, now_date)
         if s.is_active:
-            total_monthly += s.amount
+            monthly_twelfths += monthly_commitment_twelfths(s)
             active_cnt += 1
-            if 0 <= days_until <= 7:
+            if days_until is not None and 0 <= days_until <= 7:
                 upcoming_week += 1
 
         items.append(SubscriptionResponse(
@@ -107,10 +122,10 @@ def get_subscriptions(
         ))
 
     # Sort items: active first, then soonest days_until_due
-    items.sort(key=lambda x: (not x.is_active, x.days_until_due if x.days_until_due is not None else 999))
+    items.sort(key=lambda x: (not x.is_active, x.days_until_due is None, x.days_until_due or 0))
 
     return SubscriptionsSummary(
-        total_monthly_commitment=total_monthly,
+        total_monthly_commitment=(monthly_twelfths + 6) // 12,
         active_count=active_cnt,
         upcoming_this_week=upcoming_week,
         items=items

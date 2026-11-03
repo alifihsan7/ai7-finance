@@ -434,7 +434,7 @@ export default function FinanceDashboard() {
   const [subAmount, setSubAmount] = useState("");
   const [subCategory, setSubCategory] = useState("Lainnya");
   const [subAccount, setSubAccount] = useState("");
-  const [subBillingType, setSubBillingType] = useState<"fixed_day" | "exact_date">("fixed_day");
+  const [subBillingType, setSubBillingType] = useState<"fixed_day" | "exact_date" | "yearly">("fixed_day");
   const [subBillingDay, setSubBillingDay] = useState("1");
   const [subExactDueDate, setSubExactDueDate] = useState("");
   const [subNotes, setSubNotes] = useState("");
@@ -903,7 +903,7 @@ export default function FinanceDashboard() {
     const day = parseInt(subBillingDay, 10);
     if (!numAmount || !subName.trim() || !billAccountOptions.some(({ value }) => value === subAccount)) return;
     if (subBillingType === "fixed_day" && !day) return;
-    if (subBillingType === "exact_date" && !subExactDueDate) return;
+    if (subBillingType !== "fixed_day" && !subExactDueDate) return;
 
     setIsSubModalOpen(false);
     setSubName("");
@@ -918,11 +918,12 @@ export default function FinanceDashboard() {
         amount: numAmount,
         category: subCategory,
         account: subAccount,
-        billing_type: subBillingType,
+        billing_type: subBillingType === "yearly" ? "fixed_day" : subBillingType,
+        billing_cycle: subBillingType === "yearly" ? "yearly" : "monthly",
         notes: subNotes.trim() || undefined,
       };
 
-      if (subBillingType === "exact_date") {
+      if (subBillingType !== "fixed_day") {
         payload.exact_due_date = subExactDueDate;
         const parsed = new Date(subExactDueDate);
         if (!isNaN(parsed.getDate())) {
@@ -2534,6 +2535,14 @@ export default function FinanceDashboard() {
                 <Calendar className="w-3.5 h-3.5 shrink-0" />
                 <span>Tanggal tertentu</span>
               </button>
+              <button
+                type="button"
+                aria-pressed={subBillingType === "yearly"}
+                onClick={() => setSubBillingType("yearly")}
+                className={`col-span-2 rounded-xl px-2 py-2 text-xs font-semibold ${subBillingType === "yearly" ? "bg-amberGold text-slate-950" : "text-luma-smoke hover:text-luma-ivory"}`}
+              >
+                Tahunan
+              </button>
             </div>
           </div>
 
@@ -2571,7 +2580,7 @@ export default function FinanceDashboard() {
             ) : (
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
-                  Tanggal jatuh tempo
+                  {subBillingType === "yearly" ? "Tanggal tagihan tahunan" : "Tanggal jatuh tempo"}
                 </label>
                 <input
                   type="date"
