@@ -194,7 +194,11 @@ input[type="number"] {
   box-shadow: 0 12px 28px rgb(0 0 0 / .22);
 }
 .tillfold-calendar button { min-height: 40px; font-size: 12px; }
-.tillfold-calendar button:not(:disabled):hover, .tillfold-date-field button:hover { background: var(--luma-coal); }
+.tillfold-date-field button:hover { background: var(--luma-coal); }
+.tillfold-calendar button:not(:disabled):not([aria-pressed="true"]):hover {
+  background: var(--ai7-selected);
+  color: var(--luma-ivory);
+}
 .tillfold-calendar button[aria-pressed="true"] { background: var(--luma-ivory); color: var(--luma-charcoal); }
 .tillfold-calendar button:disabled { opacity: .4; cursor: not-allowed; }
 
