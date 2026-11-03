@@ -147,7 +147,7 @@ export function RecordPaycheckModal({ isOpen, accounts, onClose, onSuccess, onCo
             </div>
           </>
         ) : (
-          <form className="space-y-4" onSubmit={(event) => {
+          <form className="payroll-form space-y-4" onSubmit={(event) => {
             event.preventDefault();
             if (!selectedAccount || nominal <= 0) return;
             requestKey.current ||= crypto.randomUUID();
@@ -159,8 +159,8 @@ export function RecordPaycheckModal({ isOpen, accounts, onClose, onSuccess, onCo
             });
           }}>
             <div>
-              <p className="mb-1 text-sm font-medium">Nominal gaji</p>
-              <CurrencyInput value={amount} onChange={setAmount} placeholder="Nominal gaji" required />
+              <label htmlFor="paycheck-amount" className="mb-1 block">Nominal gaji</label>
+              <CurrencyInput id="paycheck-amount" value={amount} onChange={setAmount} placeholder="0" required />
             </div>
             <label className="block space-y-1 text-sm">
               <span>Rekening penerima</span>

@@ -866,7 +866,7 @@ export default function PaycheckModal({
 
 
       {view === "customize" && (
-        <div className="space-y-4">
+        <div className="payroll-form space-y-4">
           <fieldset className="grid gap-3 rounded-2xl border border-luma-smokeline p-4 sm:grid-cols-2">
             <legend className="px-1 text-sm font-semibold">Rekening</legend>
             <label className="block space-y-1 text-sm">
@@ -920,9 +920,11 @@ export default function PaycheckModal({
               {customBuckets.map((b, idx) => (
                 <div
                   key={idx}
-                  className="p-3.5 rounded-2xl bg-obsidian-card border border-luma-smokeline flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between shadow-xs"
+                  className="space-y-2 rounded-[var(--ai7-radius-control)] border border-luma-smokeline p-3"
                 >
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 flex-1 w-full">
+                  <div className="grid grid-cols-[minmax(0,1fr)_minmax(5.5rem,7rem)] gap-2 sm:grid-cols-[minmax(0,1.2fr)_6rem_minmax(0,1fr)]">
+                    <label className="block min-w-0 space-y-1">
+                      <span>Rekening</span>
                     <input
                       type="text"
                       value={b.account}
@@ -931,11 +933,13 @@ export default function PaycheckModal({
                         copy[idx].account = e.target.value;
                         setCustomBuckets(copy);
                       }}
-                      className="h-8 px-2.5 text-xs rounded-xl bg-obsidian-panel border border-luma-smokeline text-white font-semibold"
+                      className="w-full"
                       aria-label={`Rekening alokasi ${idx + 1}`}
                       placeholder="Nama rekening"
                     />
-                    <div className="flex items-center gap-1">
+                    </label>
+                    <label className="block min-w-0 space-y-1">
+                      <span>Porsi (%)</span>
                       <input
                         type="number"
                         step="0.1"
@@ -945,14 +949,15 @@ export default function PaycheckModal({
                           copy[idx].percentage = parseFloat(e.target.value) || 0;
                           setCustomBuckets(copy);
                         }}
-                        className="h-8 w-20 px-2 text-xs rounded-xl bg-obsidian-panel border border-luma-smokeline text-white font-sans"
+                        className="w-full tabular-nums"
                         min={0}
                         max={100}
                         aria-label={`Persentase alokasi ${idx + 1}`}
                         placeholder="%"
                       />
-                      <span className="text-xs text-zinc-400">%</span>
-                    </div>
+                    </label>
+                    <label className="col-span-2 block min-w-0 space-y-1 sm:col-span-1">
+                      <span>Keterangan</span>
                     <input
                       type="text"
                       value={b.purpose}
@@ -961,13 +966,14 @@ export default function PaycheckModal({
                         copy[idx].purpose = e.target.value;
                         setCustomBuckets(copy);
                       }}
-                      className="h-8 px-2.5 text-xs rounded-xl bg-obsidian-panel border border-luma-smokeline text-white col-span-2"
+                      className="w-full"
                       aria-label={`Keterangan alokasi ${idx + 1}`}
                       placeholder="Keterangan"
                     />
+                    </label>
                   </div>
 
-                  <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                  <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
                     {customConfig.use_gate && <label className="text-xs text-zinc-400 flex items-center gap-1 cursor-pointer">
                       <input
                         type="checkbox"

@@ -549,6 +549,18 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .ai7-currency-field:focus-within { border-color: var(--luma-ember); outline: 2px solid var(--luma-ember); outline-offset: 2px; }
 .ai7-currency-prefix { background: var(--luma-coal); color: var(--luma-smoke); border-color: var(--ai7-field-border); }
 .luma-form-scope .ai7-currency-field input { border: 0; background: transparent; border-radius: 0; outline: none; font-family: inherit; box-shadow: none; }
+.luma-dialog-panel .payroll-form :where(input:not([type="checkbox"]), select) {
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.payroll-form input[type="date"] { color-scheme: dark; }
+.light .payroll-form input[type="date"] { color-scheme: light; }
+.payroll-form input[type="checkbox"] { accent-color: var(--luma-ember); width: 16px; height: 16px; min-height: 0; }
+.payroll-form fieldset { min-width: 0; border-radius: var(--ai7-radius-panel); }
 .ai7-amount-preset { color: var(--luma-smoke); border-color: var(--ai7-field-border); background: transparent; }
 .ai7-amount-preset:hover { background: var(--luma-coal); color: var(--luma-ivory); }
 .ai7-account-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 16px; }
