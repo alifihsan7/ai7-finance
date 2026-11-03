@@ -125,6 +125,35 @@ def test_salary_is_recorded_once_and_allocation_is_a_paired_transfer(ledger, del
     assert db.get(Transaction, supplemental.json()["id"]).category == "Gaji tambahan"
 
 
+def test_salary_correction_preserves_paid_transfers_and_blocks_unsafe_delete(ledger):
+    client, db = ledger
+    db.add(Account(user_id=1, name="Tabungan", type="tabungan", initial_balance=0))
+    db.commit()
+    today = datetime.now(analytics.WIB).date().isoformat()
+    receipt = client.post("/paycheck/record", json={
+        "request_key": "b024d618-1c4f-463a-9f79-c82c46cd20b4", "total_amount": 900_000,
+        "date": today, "account": "Bank", "cycle_type": "weekly",
+    }).json()
+    url = f"/transactions/{receipt['id']}"
+    first, second = receipt["allocations"]
+    result = client.post(f"/paycheck/record/{receipt['id']}/transfer/{first['account_id']}")
+    assert result.status_code == 200
+    paid = result.json()["allocations"][0]
+
+    assert client.put(url, json={"amount": paid["amount"] - 1}).status_code == 409
+    assert client.put(f"/transactions/{paid['transfer_id']}", json={"amount": 1}).status_code == 409
+    assert client.delete(url).status_code == 409
+    assert client.put(url, json={"amount": 750_000}).status_code == 200
+    updated = client.get("/paycheck/record/latest").json()["allocations"]
+    assert updated[0]["amount"] == paid["amount"]
+    assert updated[1]["amount"] == second["amount"] * (750_000 - paid["amount"]) // (900_000 - paid["amount"])
+    assert client.delete(f"/transactions/{paid['transfer_id']}").status_code == 200
+    assert client.delete(url).status_code == 200
+    assert client.get("/paycheck/record/latest").json() is None
+    assert db.query(Transaction).count() == 0
+    assert all(amount == 0 for amount in balances(client).values())
+
+
 def test_paycheck_cycle_override_and_saved_default(ledger):
     client, db = ledger
     first = client.post("/paycheck/session/start", json={

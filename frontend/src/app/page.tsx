@@ -405,6 +405,7 @@ export default function FinanceDashboard() {
   } | null>(null);
   const [subToDelete, setSubToDelete] = useState<number | null>(null);
   const [txToDelete, setTxToDelete] = useState<Transaction | null>(null);
+  const [deleteTxError, setDeleteTxError] = useState("");
   const [txToEdit, setTxToEdit] = useState<Transaction | null>(null);
   const [goals, setGoals] = useState<GoalItem[]>([]);
   const [isAddGoalModalOpen, setIsAddGoalModalOpen] = useState(false);
@@ -977,13 +978,23 @@ export default function FinanceDashboard() {
 
   const handleConfirmDeleteTransaction = async () => {
     if (!txToDelete) return;
+    setDeleteTxError("");
     try {
       setDeleteLoading(true);
-      await authFetch(`/api/v1/transactions/${txToDelete.id}`, { method: "DELETE" });
-      await fetchData();
+      const response = await authFetch(`/api/v1/transactions/${txToDelete.id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(typeof data?.detail === "string" ? data.detail : "Transaksi gagal dihapus.");
+      }
+      if (selectedPeriod.type === "cycle" && selectedPeriod.start === txToDelete.date &&
+          txToDelete.type === "income" && txToDelete.category === "Gaji") {
+        setSelectedPeriod({ id: "cycle_current", type: "cycle", start: "", end: "", label: "Siklus aktif" });
+      } else {
+        await fetchData();
+      }
       setTxToDelete(null);
     } catch (err) {
-      console.error("Delete transaction error:", err);
+      setDeleteTxError(err instanceof Error ? err.message : "Transaksi gagal dihapus.");
     } finally {
       setDeleteLoading(false);
     }
@@ -2725,12 +2736,12 @@ export default function FinanceDashboard() {
       {/* Confirm Delete Transaction Modal */}
       <ConfirmModal
         isOpen={txToDelete !== null}
-        onClose={() => setTxToDelete(null)}
+        onClose={() => { setTxToDelete(null); setDeleteTxError(""); }}
         onConfirm={handleConfirmDeleteTransaction}
         title="Hapus transaksi?"
-        message={`Apakah kamu yakin ingin menghapus transaksi "${txToDelete?.description}" senilai ${
-          txToDelete ? formatRupiah(txToDelete.amount) : "Rp 0"
-        }? Saldo rekening terkait akan otomatis disesuaikan.`}
+        message={deleteTxError || (txToDelete?.type === "income" && ["Gaji", "Gaji tambahan"].includes(txToDelete.category)
+          ? `Hapus ${formatRupiah(txToDelete.amount)} dari saldo. Jika gaji memulai siklus, periode itu akan dihitung ulang. Hapus transfer pembagian yang masih tercatat terlebih dahulu.`
+          : `Hapus "${txToDelete?.description}" senilai ${formatRupiah(txToDelete?.amount || 0)}? Saldo rekening akan disesuaikan.`)}
         confirmText="Hapus transaksi"
         loading={deleteLoading}
       />

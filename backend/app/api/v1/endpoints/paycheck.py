@@ -26,6 +26,7 @@ from app.schemas.paycheck import (
     PaycheckRecordRequest,
 )
 from app.api.v1.endpoints.transactions import add_transfer_pair
+from app.services.paycheck_cycles import receipt_allocations
 
 router = APIRouter()
 
@@ -38,7 +39,7 @@ def receipt_out(db: Session, receipt: PaycheckReceipt):
         "cycle_end": receipt.cycle_end,
         "allocations": [
             {**item, "account": accounts.get(item["account_id"])}
-            for item in json.loads(receipt.allocations_json)
+            for item in receipt_allocations(db, receipt)
         ],
     }
 
@@ -50,8 +51,8 @@ def latest_paycheck_receipt(current_user: User = Depends(get_current_user), db: 
     ).order_by(PaycheckReceipt.transaction_id.desc())
     account_ids = {account.id for account in db.query(Account.id).filter(Account.user_id == current_user.id)}
     for receipt in receipts:
-        if any(not item["transfer_id"] and item["account_id"] in account_ids
-               for item in json.loads(receipt.allocations_json)):
+        if any(item["amount"] > 0 and not item["transfer_id"] and item["account_id"] in account_ids
+               for item in receipt_allocations(db, receipt)):
             return receipt_out(db, receipt)
     return None
 
@@ -138,9 +139,9 @@ def confirm_paycheck_transfer(
     ).with_for_update().first()
     if receipt is None:
         raise HTTPException(404, "Catatan gaji tidak ditemukan.")
-    allocations = json.loads(receipt.allocations_json)
+    allocations = receipt_allocations(db, receipt)
     item = next((row for row in allocations if row["account_id"] == account_id), None)
-    if item is None:
+    if item is None or item["amount"] <= 0:
         raise HTTPException(404, "Alokasi tidak ditemukan.")
     if item["transfer_id"]:
         return receipt_out(db, receipt)

@@ -67,7 +67,7 @@ export function RecordPaycheckModal({ isOpen, accounts, onClose, onSuccess, onCo
 
   const selectedAccount = accounts.includes(account) ? account : accounts[0] || "";
   const nominal = Number(amount.replace(/\D/g, ""));
-  const canResume = previousReceipt?.allocations.some((item) => item.account && !item.transfer_id);
+  const canResume = previousReceipt?.allocations.some((item) => item.account && item.amount > 0 && !item.transfer_id);
   const cycleSummary = !startCycle ? "Pakai siklus berjalan" :
     cycleType === "custom" ? `Siklus ${cycleDays} hari` :
     cycleType === "weekly" ? "Siklus 7 hari" : cycleType === "biweekly" ? "Siklus 14 hari" :
@@ -122,7 +122,7 @@ export function RecordPaycheckModal({ isOpen, accounts, onClose, onSuccess, onCo
               <>
                 <p className="text-sm text-luma-smoke">Catat transfer setelah uang dipindahkan.</p>
                 <ul className="space-y-2">
-                  {receipt.allocations.map((item) => (
+                  {receipt.allocations.filter((item) => item.amount > 0).map((item) => (
                     <li key={item.account_id} className="flex flex-wrap items-center justify-between gap-2 border-b border-luma-smokeline py-2">
                       <div className="min-w-0">
                         <p>{item.account || "Rekening tidak tersedia"}</p>

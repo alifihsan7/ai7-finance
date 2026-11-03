@@ -29,6 +29,7 @@ from app.schemas.transaction import (
 )
 from app.core.config import settings
 from app.core.transfer import find_paired_transfer
+from app.services.paycheck_cycles import receipt_allocations
 
 router = APIRouter()
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
@@ -271,6 +272,14 @@ def execute_paycheck_split(
         created_transactions=created_txs
     )
 
+def lock_paycheck_receipt(db: Session, tx: Transaction):
+    receipt_tag = re.search(r"\[paycheck_receipt:(\d+)\]$", tx.raw_text or "")
+    receipt_id = int(receipt_tag.group(1)) if receipt_tag else tx.id
+    return db.query(PaycheckReceipt).filter(
+        PaycheckReceipt.transaction_id == receipt_id, PaycheckReceipt.user_id == tx.user_id,
+    ).with_for_update().first()
+
+
 @router.put("/{tx_id}", response_model=TransactionOut)
 def update_transaction(
     tx_id: int,
@@ -285,7 +294,27 @@ def update_transaction(
     update_data = payload.model_dump(exclude_unset=True)
     transfer_types = ("transfer_out", "transfer_in")
     requested_type = update_data.get("type") or tx.type
+    receipt = lock_paycheck_receipt(db, tx)
+    if receipt and receipt.transaction_id == tx.id:
+        if any(update_data.get(field) not in (None, getattr(tx, field))
+               for field in ("type", "account", "category", "date")):
+            raise HTTPException(409, "Catatan gaji hanya bisa diubah nominal dan keterangannya.")
+        new_amount = update_data.get("amount")
+        if new_amount is not None and new_amount != tx.amount:
+            allocations = receipt_allocations(db, receipt)
+            transferred = sum(item["amount"] for item in allocations if item["transfer_id"])
+            if new_amount < transferred:
+                raise HTTPException(409, f"Nominal gaji tidak boleh kurang dari Rp{transferred:,} yang sudah dibagi.".replace(",", "."))
+            pending = [item for item in allocations if not item["transfer_id"]]
+            old_remaining = max(tx.amount - transferred, sum(item["amount"] for item in pending))
+            if old_remaining > 0:
+                new_remaining = new_amount - transferred
+                for item in pending:
+                    item["amount"] = item["amount"] * new_remaining // old_remaining
+            receipt.allocations_json = json.dumps(allocations)
     if tx.type in transfer_types:
+        if receipt and any(update_data.get(field) not in (None, getattr(tx, field)) for field in ("amount", "account")):
+            raise HTTPException(409, "Untuk mengubah nominal atau rekening, hapus transfer ini lalu catat ulang pembagian gaji.")
         if requested_type != tx.type:
             raise HTTPException(status_code=400, detail="Tipe transfer tidak dapat diubah menjadi transaksi biasa")
         pair = find_paired_transfer(db, tx)
@@ -318,22 +347,20 @@ def delete_transaction(
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
+    receipt = lock_paycheck_receipt(db, tx)
+    if receipt and receipt.transaction_id == tx.id:
+        if any(item["transfer_id"] for item in receipt_allocations(db, receipt)):
+            raise HTTPException(409, "Hapus transfer pembagian gaji terlebih dahulu. Saldo rekening dan siklus belum berubah.")
+        db.delete(receipt)
+
     deleted_ids = [tx.id]
     if tx.type in ("transfer_out", "transfer_in"):
-        receipt_tag = re.search(r"\[paycheck_receipt:(\d+)\]$", tx.raw_text or "")
-        receipt = None
-        if receipt_tag:
-            receipt = db.query(PaycheckReceipt).filter(
-                PaycheckReceipt.transaction_id == int(receipt_tag.group(1)),
-                PaycheckReceipt.user_id == current_user.id,
-            ).with_for_update().first()
-
+        allocations = receipt_allocations(db, receipt) if receipt else []
         pair = find_paired_transfer(db, tx)
         if pair:
             db.delete(pair)
             deleted_ids.append(pair.id)
         if receipt:
-            allocations = json.loads(receipt.allocations_json)
             for item in allocations:
                 if item["transfer_id"] in deleted_ids:
                     item["transfer_id"] = None
