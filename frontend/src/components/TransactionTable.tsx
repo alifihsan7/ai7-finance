@@ -121,11 +121,11 @@ export function TransactionTable({
                             <button
                               type="button"
                               onClick={() => onEdit(tx)}
-                              title="Edit transaksi"
-                              aria-label={`Edit transaksi ${tx.description}`}
-                              className="luma-touch min-w-[44px] inline-flex items-center justify-center rounded-full text-luma-smoke hover:text-luma-gold hover:bg-luma-gold/10 border border-transparent hover:border-luma-gold/25 transition cursor-pointer"
+                              title="Ubah transaksi"
+                              aria-label={`Ubah transaksi ${tx.description}`}
+                              className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-smoke hover:text-luma-ivory hover:bg-luma-coal transition cursor-pointer"
                             >
-                              <Edit2 size={15} />
+                              <Edit2 size={16} aria-hidden="true" />
                             </button>
                           )}
                           {onDelete && (
@@ -134,9 +134,9 @@ export function TransactionTable({
                               onClick={() => onDelete(tx)}
                               title="Hapus transaksi"
                               aria-label={`Hapus transaksi ${tx.description}`}
-                              className="luma-touch min-w-[44px] inline-flex items-center justify-center rounded-full text-luma-smoke hover:text-luma-coral hover:bg-luma-coral/10 border border-transparent hover:border-luma-coral/25 transition cursor-pointer"
+                              className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-coral hover:bg-luma-coral/10 transition cursor-pointer"
                             >
-                              <Trash2 size={15} />
+                              <Trash2 size={16} aria-hidden="true" />
                             </button>
                           )}
                         </div>

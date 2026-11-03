@@ -2119,7 +2119,7 @@ export default function FinanceDashboard() {
                   <button
                     type="button"
                     onClick={() => setIsAddGoalModalOpen(true)}
-                    className="luma-touch min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-luma-ivory text-luma-charcoal font-semibold rounded-full hover:brightness-95 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
+                    className="luma-action-primary cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Tambah target</span>
@@ -2128,7 +2128,7 @@ export default function FinanceDashboard() {
                   <button
                     type="button"
                     onClick={() => setIsSubModalOpen(true)}
-                    className="luma-touch min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-amberGold text-slate-950 font-semibold rounded-full hover:bg-yellow-300 transition text-xs sm:text-sm shrink-0 whitespace-nowrap cursor-pointer active:scale-95 shadow-sm"
+                    className="luma-action-primary cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Tambah tagihan</span>
@@ -2297,15 +2297,15 @@ export default function FinanceDashboard() {
                   <button
                     type="button"
                     onClick={() => setIsTransferModalOpen(true)}
-                    className="luma-touch min-h-[44px] py-2 px-3.5 text-xs font-semibold rounded-xl bg-cyanHub/15 text-cyanHub border border-cyanHub/40 hover:bg-cyanHub/25 transition inline-flex items-center justify-center gap-1.5 shadow-xs shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+                    className="luma-action-secondary cursor-pointer"
                   >
-                    <ArrowLeftRight className="w-3.5 h-3.5 text-cyanHub shrink-0" />
+                    <ArrowLeftRight size={16} aria-hidden="true" />
                     <span>Transfer antar rekening</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsAddAccountModalOpen(true)}
-                    className="luma-touch min-h-[44px] py-2 px-3.5 sm:px-4 text-xs font-semibold rounded-xl bg-amberGold text-slate-950 hover:bg-yellow-300 transition inline-flex items-center justify-center gap-1.5 shadow-sm shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+                    className="luma-action-primary cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                     <span>Tambah rekening</span>

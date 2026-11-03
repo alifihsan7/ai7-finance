@@ -306,8 +306,8 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                   {acc.id && onEditAccount && (
                     <button
                       type="button"
-                      title={`Edit rekening ${acc.name}`}
-                      aria-label={`Edit rekening ${acc.name}`}
+                      title={`Ubah rekening ${acc.name}`}
+                      aria-label={`Ubah rekening ${acc.name}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         const found = customAccounts.find((c) => c.id === acc.id);
@@ -322,9 +322,9 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                           }
                         );
                       }}
-                      className="luma-touch min-w-[44px] inline-flex items-center justify-center rounded-full text-luma-smoke hover:text-luma-gold hover:bg-luma-gold/10 transition-colors cursor-pointer"
+                      className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-smoke hover:text-luma-ivory hover:bg-luma-coal transition-colors cursor-pointer"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 size={16} aria-hidden="true" />
                     </button>
                   )}
                   {acc.id && onAccountDeleted && (
@@ -336,9 +336,9 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                         e.stopPropagation();
                         setConfirmDelete({ id: acc.id!, name: acc.name });
                       }}
-                      className="luma-touch min-w-[44px] inline-flex items-center justify-center rounded-full text-luma-smoke hover:text-luma-coral hover:bg-luma-coral/10 transition-colors cursor-pointer"
+                      className="luma-touch min-w-[44px] inline-flex items-center justify-center text-luma-coral hover:bg-luma-coral/10 transition-colors cursor-pointer"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 size={16} aria-hidden="true" />
                     </button>
                   )}
                 </div>
