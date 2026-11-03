@@ -615,7 +615,37 @@ textarea:focus-visible,
   outline-offset: 2px;
 }
 
-/* Calm motion: respect reduced-motion preferences */
+/* Overview motion draws attention to the balance and how its bars compare. */
+@media (prefers-reduced-motion: no-preference) {
+  .luma-overview-grid .luma-balance-body {
+    animation: luma-balance-enter 220ms ease-out both;
+  }
+
+  .luma-flow-track > div, .luma-quota-track > div {
+    transform-origin: left center;
+    animation: luma-meter-enter 420ms ease-out both;
+    transition: width 240ms ease-out;
+  }
+
+  .luma-overview-grid :is(.luma-action-primary, .luma-action-secondary) {
+    transition: background-color 150ms ease, transform 120ms ease-out;
+  }
+
+  .luma-overview-grid :is(.luma-action-primary, .luma-action-secondary):active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  @keyframes luma-balance-enter {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes luma-meter-enter {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fadeIn {
     animation: none;
