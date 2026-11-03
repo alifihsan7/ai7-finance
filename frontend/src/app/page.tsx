@@ -320,6 +320,19 @@ const SLUG_TO_NAV: Record<string, string> = {
   "preferensi": "Pengaturan",
 };
 
+function handleTabArrowKeys(event: React.KeyboardEvent<HTMLDivElement>) {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="tab"]'));
+  const current = tabs.findIndex((tab) => tab === event.target);
+  if (current < 0) return;
+
+  event.preventDefault();
+  const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 :
+    (current + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+  tabs[next].focus();
+  tabs[next].click();
+}
+
 export default function FinanceDashboard() {
   const googleSheetUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL;
   const [activeNav, setActiveNav] = useState<string>("Ringkasan");
@@ -2007,11 +2020,14 @@ export default function FinanceDashboard() {
           <div className="space-y-6 animate-fadeIn">
             {/* Sub-tab Navigation */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-luma-smokeline">
-              <div className="ai7-tab-group inline-flex bg-white/[0.04] border border-luma-smokeline" role="tablist" aria-label="Sub navigasi Rencana">
+              <div className="ai7-tab-group inline-flex bg-white/[0.04] border border-luma-smokeline" role="tablist" aria-label="Rencana" onKeyDown={handleTabArrowKeys}>
                 <button
                   type="button"
                   role="tab"
                   aria-selected={planSubTab === "target"}
+                  id="plan-tab-target"
+                  aria-controls="plan-tab-content"
+                  tabIndex={planSubTab === "target" ? 0 : -1}
                   onClick={() => {
                     setPlanSubTab("target");
                     window.location.hash = "#/plan";
@@ -2032,6 +2048,9 @@ export default function FinanceDashboard() {
                   type="button"
                   role="tab"
                   aria-selected={planSubTab === "tagihan"}
+                  id="plan-tab-tagihan"
+                  aria-controls="plan-tab-content"
+                  tabIndex={planSubTab === "tagihan" ? 0 : -1}
                   onClick={() => {
                     setPlanSubTab("tagihan");
                     window.location.hash = "#/tagihan";
@@ -2074,6 +2093,7 @@ export default function FinanceDashboard() {
               </div>
             </div>
 
+            <div role="tabpanel" id="plan-tab-content" aria-labelledby={`plan-tab-${planSubTab}`} tabIndex={0}>
             {planSubTab === "target" && (
               <GoalsView
                 goals={goals}
@@ -2096,6 +2116,7 @@ export default function FinanceDashboard() {
                 loading={loading}
               />
             )}
+            </div>
           </div>
         )}
 
@@ -2134,11 +2155,14 @@ export default function FinanceDashboard() {
           <div className="space-y-6 animate-fadeIn">
             {/* Sub-tab Navigation */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-luma-smokeline">
-              <div className="ai7-tab-group inline-flex bg-white/[0.04] border border-luma-smokeline overflow-x-auto" role="tablist" aria-label="Sub navigasi Pengaturan">
+              <div className="ai7-tab-group inline-flex bg-white/[0.04] border border-luma-smokeline overflow-x-auto" role="tablist" aria-label="Pengaturan" onKeyDown={handleTabArrowKeys}>
                 <button
                   type="button"
                   role="tab"
                   aria-selected={settingsSubTab === "rekening"}
+                  id="settings-tab-rekening"
+                  aria-controls="settings-tab-content"
+                  tabIndex={settingsSubTab === "rekening" ? 0 : -1}
                   onClick={() => {
                     setSettingsSubTab("rekening");
                     window.location.hash = "#/settings";
@@ -2159,6 +2183,9 @@ export default function FinanceDashboard() {
                   type="button"
                   role="tab"
                   aria-selected={settingsSubTab === "kantong"}
+                  id="settings-tab-kantong"
+                  aria-controls="settings-tab-content"
+                  tabIndex={settingsSubTab === "kantong" ? 0 : -1}
                   onClick={() => {
                     setSettingsSubTab("kantong");
                     window.location.hash = "#/pockets";
@@ -2179,6 +2206,9 @@ export default function FinanceDashboard() {
                   type="button"
                   role="tab"
                   aria-selected={settingsSubTab === "kategori"}
+                  id="settings-tab-kategori"
+                  aria-controls="settings-tab-content"
+                  tabIndex={settingsSubTab === "kategori" ? 0 : -1}
                   onClick={() => {
                     setSettingsSubTab("kategori");
                     window.location.hash = "#/categories";
@@ -2199,6 +2229,9 @@ export default function FinanceDashboard() {
                   type="button"
                   role="tab"
                   aria-selected={settingsSubTab === "profil"}
+                  id="settings-tab-profil"
+                  aria-controls="settings-tab-content"
+                  tabIndex={settingsSubTab === "profil" ? 0 : -1}
                   onClick={() => {
                     setSettingsSubTab("profil");
                     window.location.hash = "#/profile";
@@ -2239,6 +2272,7 @@ export default function FinanceDashboard() {
 
             </div>
 
+            <div role="tabpanel" id="settings-tab-content" aria-labelledby={`settings-tab-${settingsSubTab}`} tabIndex={0}>
             {/* Sub-tab 1: Rekening */}
             {settingsSubTab === "rekening" && (
               <div className="space-y-4 animate-fadeIn">
@@ -2397,6 +2431,7 @@ export default function FinanceDashboard() {
               </div>
             )}
 
+            </div>
             {/* Seksi 3: Navigasi CTA ke Transaksi */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-luma-smokeline bg-obsidian-panel/60 backdrop-blur-xs">
               <div className="text-sm text-zinc-400">

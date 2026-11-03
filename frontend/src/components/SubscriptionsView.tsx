@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Trash2, Calendar, Edit2, Clock } from "lucide-react";
+import { Plus, Trash2, Calendar, Edit2, Clock, Pause, Play } from "lucide-react";
 import { Skeleton } from "./ui/Skeleton";
 
 export interface SubscriptionItem {
@@ -206,7 +206,7 @@ export function SubscriptionsView({
                     }`}
                   >
                     {!sub.is_active
-                      ? "Di-pause"
+                      ? "Dijeda"
                       : isExpired
                       ? `❌ Expired (${Math.abs(days)} hr lalu)`
                       : isToday
@@ -245,27 +245,34 @@ export function SubscriptionsView({
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-3 border-t border-luma-smokeline text-xs font-sans">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-luma-smokeline">
+                  {onEdit && (
                     <button
-                      onClick={() => onEdit?.(sub)}
-                      className="text-amberGold hover:text-amber-300 font-medium flex items-center gap-1 transition cursor-pointer"
+                      type="button"
+                      onClick={() => onEdit(sub)}
+                      aria-label={`Ubah tagihan ${sub.name}`}
+                      className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 px-2 text-luma-ivory hover:bg-luma-coal"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 size={16} aria-hidden="true" />
                       <span>Ubah</span>
                     </button>
-                    <button
-                      onClick={() => onToggleActive(sub)}
-                      className="text-zinc-400 hover:text-white transition cursor-pointer"
-                    >
-                      {sub.is_active ? "Pause" : "Aktifkan"}
-                    </button>
-                  </div>
+                  )}
                   <button
-                    onClick={() => onDelete(sub.id)}
-                    className="text-coralFall/80 hover:text-coralFall flex items-center gap-1 transition cursor-pointer"
+                    type="button"
+                    onClick={() => onToggleActive(sub)}
+                    aria-label={`${sub.is_active ? "Jeda" : "Aktifkan"} tagihan ${sub.name}`}
+                    className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 px-2 text-luma-ivory hover:bg-luma-coal"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    {sub.is_active ? <Pause size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}
+                    <span>{sub.is_active ? "Jeda" : "Aktifkan"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(sub.id)}
+                    aria-label={`Hapus tagihan ${sub.name}`}
+                    className="ml-auto inline-flex min-h-11 cursor-pointer items-center gap-1.5 px-2 text-luma-coral hover:bg-luma-coal"
+                  >
+                    <Trash2 size={16} aria-hidden="true" />
                     <span>Hapus</span>
                   </button>
                 </div>
