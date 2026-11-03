@@ -3,6 +3,7 @@
 import React from "react";
 import { Wallet } from "lucide-react";
 import { Skeleton } from "./ui/Skeleton";
+import { HiddenAmount } from "./ui/HiddenAmount";
 import { getAccountRoleBadge } from "./AccountGrid";
 
 export interface LumaAccountSummary {
@@ -15,6 +16,7 @@ interface LumaAccountStripProps {
   accounts: LumaAccountSummary[];
   formatRupiah: (val: number) => string;
   loading?: boolean;
+  hideBalance?: boolean;
   onOpenAccounts: () => void;
 }
 
@@ -22,7 +24,7 @@ interface LumaAccountStripProps {
  * LumaAccountStrip — airy horizontal cash-account summary for Ringkasan.
  * Names never clip to "Reke..." — full wrap with tabular balances.
  */
-export function LumaAccountStrip({ accounts, formatRupiah, loading, onOpenAccounts }: LumaAccountStripProps) {
+export function LumaAccountStrip({ accounts, formatRupiah, loading, hideBalance, onOpenAccounts }: LumaAccountStripProps) {
   if (loading) {
     return (
       <section aria-label="Ringkasan rekening kas" className="luma-accounts space-y-4">
@@ -77,7 +79,7 @@ export function LumaAccountStrip({ accounts, formatRupiah, loading, onOpenAccoun
               )}
             </div>
             <p className="text-lg font-medium text-luma-ivory mt-2 tabular-nums break-words">
-              {formatRupiah(acc.balance)}
+              {hideBalance ? <HiddenAmount /> : formatRupiah(acc.balance)}
             </p>
           </div>
         ))}

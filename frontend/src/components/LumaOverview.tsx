@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Plus, ArrowUpRight, Eye, EyeOff, ArrowDownLeft } from "lucide-react";
 import { Skeleton } from "./ui/Skeleton";
+import { HiddenAmount } from "./ui/HiddenAmount";
 
 interface LumaOverviewProps {
   totalBalance: number;
@@ -26,17 +27,18 @@ interface LumaOverviewProps {
   onSignIn?: () => void;
   onAddTransaction: () => void;
   onOpenPaycheck: () => void;
+  hideBalance?: boolean;
+  onToggleBalance?: () => void;
 }
 
 export function LumaOverview({ totalBalance, income, expense, accountCount, safeDaily,
   pocketAccount, pocketRemaining, pocketBudget, dayOfCycle, cycleDays, daysRemaining,
   paceStatus, periodEnded, formatRupiah, loading, isGuest, error, onRetry, onSignIn,
-  onAddTransaction, onOpenPaycheck }: LumaOverviewProps) {
-  const [hideBalance, setHideBalance] = useState(false);
+  onAddTransaction, onOpenPaycheck, hideBalance = false, onToggleBalance }: LumaOverviewProps) {
   const flowMax = Math.max(income, expense, 1);
   const remainingPct = pocketBudget && pocketBudget > 0
     ? Math.min(100, Math.max(0, pocketRemaining / pocketBudget * 100)) : null;
-  const privateAmount = (amount: number) => hideBalance ? "Rp •••••••" : formatRupiah(amount);
+  const privateAmount = (amount: number) => hideBalance ? <HiddenAmount /> : formatRupiah(amount);
 
   if (loading) return <div className="luma-overview-grid" aria-busy="true" aria-label="Memuat ringkasan">
     <span className="sr-only" role="status">Memuat saldo dan transaksi Anda.</span>
@@ -69,8 +71,8 @@ export function LumaOverview({ totalBalance, income, expense, accountCount, safe
     <section className="luma-balance-panel" aria-label="Total saldo kas">
       <div className="luma-balance-top">
         <h2 className="luma-panel-label">Total saldo kas</h2>
-        <button type="button" className="luma-icon-button" onClick={() => setHideBalance(!hideBalance)}
-          aria-label={hideBalance ? "Tampilkan saldo" : "Sembunyikan saldo"} aria-pressed={hideBalance}>
+        <button type="button" className="luma-icon-button" onClick={onToggleBalance}
+          aria-label="Sembunyikan saldo" title={hideBalance ? "Tampilkan saldo" : "Sembunyikan saldo"} aria-pressed={hideBalance}>
           {hideBalance ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
         </button>
       </div>

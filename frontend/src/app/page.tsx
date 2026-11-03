@@ -340,6 +340,7 @@ export default function FinanceDashboard() {
   const [planSubTab, setPlanSubTab] = useState<"target" | "tagihan">("target");
   const [settingsSubTab, setSettingsSubTab] = useState<"rekening" | "kantong" | "kategori" | "profil">("rekening");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [hideOverviewBalances, setHideOverviewBalances] = useState(false);
   const [sidebarMotion, setSidebarMotion] = useState(false);
   useEffect(() => {
     setSidebarCollapsed(localStorage.getItem("ai7_sidebar_collapsed") === "true");
@@ -1701,10 +1702,13 @@ export default function FinanceDashboard() {
               onSignIn={() => setIsAuthModalOpen(true)}
               onAddTransaction={() => setIsModalOpen(true)}
               onOpenPaycheck={() => setIsPaycheckModalOpen(true)}
+              hideBalance={hideOverviewBalances}
+              onToggleBalance={() => setHideOverviewBalances((hidden) => !hidden)}
             />
 
             {currentUser && !overviewError && <>
             <LumaAccountStrip
+              hideBalance={hideOverviewBalances}
               accounts={(summary.accounts || []).map((a) => {
                 const found = customAccounts.find((c) => c.name.toLowerCase() === a.account.toLowerCase());
                 return {
