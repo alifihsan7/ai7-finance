@@ -6,7 +6,7 @@ from sqlalchemy import case, func
 from app.models.account import Account
 from app.models.jago_pocket import JagoPocket
 from app.models.transaction import Transaction
-from app.models.paycheck import PaycheckConfig, PaycheckBucket
+from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckReceipt
 from app.schemas.transaction import CycleBurnDay, SafeToSpendInfo
 
 SUPPORTED_ACCOUNT_TYPES: Set[str] = {
@@ -155,6 +155,9 @@ def compute_safe_to_spend_metrics(
             ).filter(
                 Transaction.user_id == user_id,
                 Transaction.type == "income",
+                ~db.query(PaycheckReceipt.transaction_id).filter(
+                    PaycheckReceipt.transaction_id == Transaction.id,
+                ).exists(),
                 Transaction.date >= cycle_start,
                 Transaction.date <= cycle_end
             ).scalar() or 0

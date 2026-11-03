@@ -25,6 +25,8 @@ import type { AccountItem } from "./AccountGrid";
 interface JagoPocketsProps {
   accountId?: number;
   accountName?: string;
+  cycleStart?: string;
+  cycleEnd?: string;
   formatRupiah: (val: number) => string;
   refreshSignal?: number;
   onToast?: (msg: string) => void;
@@ -81,7 +83,7 @@ function statusFor(tone: ReturnType<typeof getPocketStatus>["tone"]): {
   };
 }
 
-export function JagoPockets({ accountId, accountName, formatRupiah, refreshSignal = 0, onToast, onDataLoaded, showActions = true }: JagoPocketsProps) {
+export function JagoPockets({ accountId, accountName, cycleStart, cycleEnd, formatRupiah, refreshSignal = 0, onToast, onDataLoaded, showActions = true }: JagoPocketsProps) {
   const onDataLoadedRef = useRef(onDataLoaded);
   useEffect(() => { onDataLoadedRef.current = onDataLoaded; }, [onDataLoaded]);
   const [data, setData] = useState<JagoPocketsSummaryResponse | null>(null);
@@ -98,7 +100,7 @@ export function JagoPockets({ accountId, accountName, formatRupiah, refreshSigna
     setError(null);
     setData(null);
     try {
-      const res = await getJagoPockets(accountId);
+      const res = await getJagoPockets(accountId, cycleStart, cycleEnd);
       if (version !== requestVersion.current) return;
       setData(res);
       onDataLoadedRef.current?.(res);
@@ -109,7 +111,7 @@ export function JagoPockets({ accountId, accountName, formatRupiah, refreshSigna
     } finally {
       if (version === requestVersion.current) setLoading(false);
     }
-  }, [accountId]);
+  }, [accountId, cycleStart, cycleEnd]);
 
   useEffect(() => {
     fetchPockets();
@@ -117,10 +119,8 @@ export function JagoPockets({ accountId, accountName, formatRupiah, refreshSigna
   }, [fetchPockets, refreshSignal]);
 
 
-  const handleEditSuccess = (updated: JagoPocketsSummaryResponse) => {
-    setData(updated);
-    onDataLoadedRef.current?.(updated);
-    setError(null);
+  const handleEditSuccess = () => {
+    void fetchPockets();
     onToast?.("Plafon kantong berhasil diperbarui");
   };
 
@@ -332,9 +332,8 @@ export function JagoPockets({ accountId, accountName, formatRupiah, refreshSigna
         void fetchPockets();
         onToast?.("Kantong berhasil ditambahkan");
       }} />}
-      {linkPocketId !== null && parentName && <LinkPocketBillModal pockets={pockets} initialPocketId={linkPocketId} accountName={parentName} formatRupiah={formatRupiah} onClose={() => setLinkPocketId(null)} onSuccess={updated => {
-        setData(updated);
-        onDataLoadedRef.current?.(updated);
+      {linkPocketId !== null && parentName && <LinkPocketBillModal pockets={pockets} initialPocketId={linkPocketId} accountName={parentName} formatRupiah={formatRupiah} onClose={() => setLinkPocketId(null)} onSuccess={() => {
+        void fetchPockets();
         onToast?.("Hubungan tagihan berhasil disimpan");
       }} />}
     </section>

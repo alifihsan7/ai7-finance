@@ -154,6 +154,45 @@ def test_salary_correction_preserves_paid_transfers_and_blocks_unsafe_delete(led
     assert all(amount == 0 for amount in balances(client).values())
 
 
+def test_daily_budget_uses_funded_payroll_allocation(ledger):
+    client, db = ledger
+    today = datetime.now(analytics.WIB).date().isoformat()
+    cfg = paycheck.get_or_seed_config(db, 1)
+    cfg.pocket_account = "Cash"
+    db.commit()
+    record = client.post("/paycheck/record", json={
+        "request_key": "b026d619-1c4f-463a-9f79-c82c46cd20b4", "total_amount": 1_000_000,
+        "date": today, "account": "Bank", "cycle_type": "biweekly",
+    })
+    assert record.status_code == 201, record.text
+    receipt = record.json()
+
+    def report():
+        response = client.get("/analytics/summary", params={"period_type": "cycle", "start": today})
+        assert response.status_code == 200, response.text
+        return response.json()
+
+    assert report()["safe_to_spend"]["pocket_budget"] == 0
+    allocation = receipt["allocations"][0]
+    assert client.post(f"/paycheck/record/{receipt['id']}/transfer/{allocation['account_id']}").status_code == 200
+    expense = client.post("/transactions", json={
+        "type": "expense", "amount": 100_000, "account": "Cash",
+        "category": "Lainnya", "description": "Belanja", "date": today,
+    })
+    assert expense.status_code == 200
+    result = report()
+    safe = result["safe_to_spend"]
+    assert result["income"] == 1_000_000
+    assert (safe["pocket_budget"], safe["pocket_spent"], safe["pocket_remaining"]) == (500_000, 100_000, 400_000)
+    assert safe["safe_daily"] == 400_000 // 14
+    assert balances(client)["Cash"] == 400_000
+    pockets = client.get(f"/accounts/{allocation['account_id']}/pockets", params={
+        "cycle_start": today, "cycle_end": receipt["cycle_end"],
+    })
+    assert pockets.status_code == 200
+    assert pockets.json()["total_pocket_balance"] == safe["pocket_remaining"]
+
+
 def test_paycheck_cycle_override_and_saved_default(ledger):
     client, db = ledger
     first = client.post("/paycheck/session/start", json={

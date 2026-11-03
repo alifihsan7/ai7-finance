@@ -121,8 +121,14 @@ async function parseJagoResponse(res: Response, action: string): Promise<JagoPoc
   return (await res.json()) as JagoPocketsSummaryResponse;
 }
 
-export async function getJagoPockets(accountId?: number): Promise<JagoPocketsSummaryResponse> {
-  const res = await authFetch(`/api/v1/jago-pockets${accountId ? `?account_id=${accountId}` : ""}`);
+export async function getJagoPockets(accountId?: number, cycleStart?: string, cycleEnd?: string): Promise<JagoPocketsSummaryResponse> {
+  const query = new URLSearchParams();
+  if (accountId) query.set("account_id", String(accountId));
+  if (cycleStart && cycleEnd) {
+    query.set("cycle_start", cycleStart);
+    query.set("cycle_end", cycleEnd);
+  }
+  const res = await authFetch(`/api/v1/jago-pockets${query.size ? `?${query}` : ""}`);
   return parseJagoResponse(res, "memuat");
 }
 

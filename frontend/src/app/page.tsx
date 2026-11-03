@@ -1869,6 +1869,8 @@ export default function FinanceDashboard() {
 
             {/* 7. Sub-Kantong Operasional */}
             <JagoPockets
+              cycleStart={summary.start_date}
+              cycleEnd={summary.end_date}
               accountId={(customAccounts.find(account => account.name === summary.safe_to_spend?.pocket_account) || customAccounts.find(account => account.type === "operasional") || customAccounts[0])?.id}
               formatRupiah={formatRupiah}
               refreshSignal={jagoRefreshSignal}
@@ -1925,6 +1927,8 @@ export default function FinanceDashboard() {
               loading={loading}
             />
             <AccountPockets
+              cycleStart={summary.start_date}
+              cycleEnd={summary.end_date}
               accounts={customAccounts}
               formatRupiah={formatRupiah}
               refreshSignal={jagoRefreshSignal}
@@ -2319,6 +2323,8 @@ export default function FinanceDashboard() {
             {settingsSubTab === "kantong" && (
               <div className="space-y-4 animate-fadeIn">
                 <AccountPockets
+                  cycleStart={summary.start_date}
+                  cycleEnd={summary.end_date}
                   accounts={customAccounts}
                   formatRupiah={formatRupiah}
                   refreshSignal={jagoRefreshSignal}
