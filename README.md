@@ -1,8 +1,8 @@
-# ai7.finance 💸
+# Tillfold 💸
 
 > **Production-ready, multi-tenant personal finance ecosystem** engineered for friction-free daily expense capture via Telegram and deep analytical budgeting via a modern dark-themed web dashboard.
 >
-> 🌐 **Live Production:** [ai7finance.alifihsan.my.id](https://ai7finance.alifihsan.my.id)
+> 🌐 **Live Production:** [tillfold.alifihsan.my.id](https://tillfold.alifihsan.my.id)
 
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?logo=next.js&logoColor=white)](https://nextjs.org)
@@ -24,7 +24,7 @@
 - **📉 Burn-Rate Trajectory & Pacing:** Real-time safe-to-spend velocity meter (`Rp/hari`), pacing status indicators (🟢 Pace Aman vs 🔴 Agak Boros), and ideal cumulative pace lines.
 - **📦 Envelope Budgeting (Strata Allocation):** Dynamic percentage-based distribution across customizable buckets (Operational Saku, Fixed Bills, Investments, Emergency Reserve) connected directly to live account balances.
 - **🧾 AI Receipt & Voice Extractor:** Optional multimodal integration with OpenAI-compatible vision/audio models to ingest physical paper receipts and Telegram voice notes.
-- **💻 Responsive Slate Dark UI:** PWA-ready dashboard styled in slate dark tones, custom React Portal dropdowns (`CustomSelect`), and currency formatting (`CurrencyInput`).
+- **📅 Tillfold Calendar & Controls:** Custom month-and-year picker popover, accessible form controls (`CustomSelect`, `CurrencyInput`), high-contrast dark/light mode, and unassigned salary preservation.
 
 ---
 
@@ -78,8 +78,8 @@
 ### 1. Clone & Set Up Python Environment
 
 ```bash
-git clone https://github.com/alifihsan7/ai7-finance.git
-cd ai7-finance
+git clone https://github.com/alifihsan7/tillfold.git
+cd tillfold
 
 # Create and activate virtual environment
 python3 -m venv venv
@@ -160,9 +160,13 @@ The bot parses natural language strings instantly with zero LLM token costs:
 
 ### Supported Bot Commands
 - `/start` — Check authorization or link Telegram account with a 6-digit sync code from the web.
-- `/balance` — View real-time wallet balances across all registered accounts.
-- `/cycle` — View safe-to-spend pacing and days remaining in the active paycheck cycle.
-- `/report` — Get a summary of current period income, expenses, and savings rate.
+- `/menu` — Interactive keyboard with quick access to all bot features.
+- `/saldo` — View real-time wallet balances and Bank Jago pocket mappings.
+- `/transfer` — Transfer balance between pockets or bank accounts.
+- `/pacing` — View safe-to-spend pacing and days remaining in the active paycheck cycle.
+- `/gajian` — Log paycheck income and execute percentage-based envelope allocations.
+- `/subs` — View and manage fixed commitments, monthly and annual subscriptions.
+- `/rekap` — Get a summary of current period income, expenses, and savings rate.
 - `/help` — Display syntax examples and usage guide.
 
 ---
@@ -175,8 +179,8 @@ Untuk panduan deployment langkah-demi-langkah di server Linux (Ubuntu/Debian), k
 
 Ringkasan cepat operasi 24/7 di server Linux:
 1. **Layanan Background:** Dikelola melalui unit systemd `ai7-finance-web.service` (FastAPI backend & web dashboard di port 8080) dan `ai7-finance.service` (Telegram companion bot).
-2. **Reverse Proxy & SSL:** Menggunakan reverse proxy standar (seperti Nginx atau Caddy) untuk meneruskan lalu lintas HTTPS (port 443) ke backend lokal (`http://127.0.0.1:8080`).
-3. **Autentikasi Google:** Daftarkan origin domain publik di Google Cloud Console (*Authorized JavaScript origins* & *Authorized redirect URIs*).
+2. **Reverse Proxy & SSL:** Menggunakan Cloudflare Tunnel atau reverse proxy standar (seperti Nginx atau Caddy) untuk meneruskan lalu lintas HTTPS ke backend lokal (`http://127.0.0.1:8080`).
+3. **Autentikasi Google:** Daftarkan origin domain publik (`https://tillfold.alifihsan.my.id`) di Google Cloud Console (*Authorized JavaScript origins* & *Authorized redirect URIs*).
 
 ---
 
