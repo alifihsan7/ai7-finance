@@ -30,7 +30,7 @@ class PaycheckConfigUpdate(BaseModel):
 
 class PaycheckBucketBase(BaseModel):
     account: str
-    percentage: float
+    percentage: float = Field(ge=0, le=100, allow_inf_nan=False)
     fixed_amount: Optional[int] = None
     via_gate: bool = False
     via_secondary: Optional[str] = None

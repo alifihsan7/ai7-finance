@@ -1,6 +1,7 @@
 import json
 import zoneinfo
 from datetime import datetime, date as dt_date, timedelta
+from decimal import Decimal, ROUND_FLOOR, ROUND_HALF_UP
 from typing import List, Optional, Dict
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -243,15 +244,22 @@ def compute_bucket_amounts(total_amount: int, buckets: List[PaycheckBucket], ove
             result[b.account] = int(override.get(b.account, 0))
         return result
 
-    # Dynamic percentage calculation
-    allocated_sum = 0
-    for idx, b in enumerate(buckets):
-        if idx == len(buckets) - 1:
-            amt = total_amount - allocated_sum
-        else:
-            amt = int(round(total_amount * (b.percentage / 100.0)))
-            allocated_sum += amt
-        result[b.account] = max(0, amt)
+    percentages = [Decimal(str(b.percentage)) for b in buckets]
+    if any(not pct.is_finite() or pct < 0 or pct > 100 for pct in percentages):
+        raise HTTPException(400, "Persentase alokasi harus antara 0 dan 100.")
+    total_pct = sum(percentages, Decimal(0))
+    if total_pct > 100:
+        raise HTTPException(400, "Total pembagian tidak boleh melebihi 100%.")
+    if len({b.account for b in buckets}) != len(buckets):
+        raise HTTPException(400, "Setiap rekening hanya boleh memiliki satu alokasi.")
+    exact = [Decimal(total_amount) * pct / 100 for pct in percentages]
+    amounts = [int(amount.to_integral_value(rounding=ROUND_FLOOR)) for amount in exact]
+    target = int((Decimal(total_amount) * total_pct / 100).to_integral_value(rounding=ROUND_HALF_UP))
+    # Distribute rounding rupiah by fractional share without allocating the unassigned percentage.
+    order = sorted(range(len(buckets)), key=lambda i: exact[i] - amounts[i], reverse=True)
+    for i in order[:target - sum(amounts)]:
+        amounts[i] += 1
+    result = {b.account: amount for b, amount in zip(buckets, amounts)}
     return result
 
 def generate_steps(config: PaycheckConfig, buckets: List[PaycheckBucket], amounts: Dict[str, int]) -> List[PaycheckStep]:
@@ -470,6 +478,14 @@ def update_paycheck_buckets(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    names = [bucket.account for bucket in payload]
+    if len(set(names)) != len(names):
+        raise HTTPException(400, "Setiap rekening hanya boleh memiliki satu alokasi.")
+    if sum(Decimal(str(bucket.percentage)) for bucket in payload) > 100:
+        raise HTTPException(400, "Total pembagian tidak boleh melebihi 100%.")
+    owned = {name for (name,) in db.query(Account.name).filter(Account.user_id == current_user.id)}
+    if any(name not in owned for name in names):
+        raise HTTPException(400, "Pilih rekening alokasi yang tersedia.")
     cfg = get_or_seed_config(db, current_user.id)
     # Clear existing and replace
     db.query(PaycheckBucket).filter(PaycheckBucket.config_id == cfg.id).delete()

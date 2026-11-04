@@ -193,6 +193,62 @@ def test_daily_budget_uses_funded_payroll_allocation(ledger):
     assert pockets.json()["total_pocket_balance"] == safe["pocket_remaining"]
 
 
+@pytest.mark.parametrize("percentages, expected", [
+    ((0, 25), (0, 250_000)),
+    ((25, 0), (250_000, 0)),
+])
+def test_partial_paycheck_allocation_keeps_unassigned_salary(ledger, percentages, expected):
+    client, db = ledger
+    cfg = paycheck.get_or_seed_config(db, 1)
+    cfg.pocket_account = "Cash"
+    db.add_all([PaycheckBucket(config_id=cfg.id, account=name, percentage=pct,
+                              purpose="Test", sort_order=i)
+                for i, (name, pct) in enumerate(zip(("Bank", "Cash"), percentages))])
+    db.commit()
+    today = datetime.now(analytics.WIB).date().isoformat()
+    response = client.post("/paycheck/record", json={
+        "request_key": "4b6abb4c-079f-454b-b8b8-80d260f846b5", "total_amount": 1_000_000,
+        "date": today, "account": "Bank", "cycle_type": "weekly",
+    })
+    assert response.status_code == 201, response.text
+    receipt = response.json()
+    assert sum(item["amount"] for item in receipt["allocations"]) == expected[1]
+    for item in receipt["allocations"]:
+        url = f"/paycheck/record/{receipt['id']}/transfer/{item['account_id']}"
+        assert client.post(url).status_code == 200
+        assert client.post(url).status_code == 200
+    assert balances(client) == {"Bank": 1_000_000 - expected[1], "Cash": expected[1]}
+    result = client.get("/analytics/summary", params={"period_type": "cycle", "start": today}).json()
+    assert result["income"] == 1_000_000
+    assert result["safe_to_spend"]["pocket_budget"] == expected[1]
+
+
+def test_paycheck_rounding_never_funds_a_zero_percent_bucket():
+    buckets = [PaycheckBucket(account=name, percentage=pct)
+               for name, pct in (("Bank", 50), ("Cash", 50), ("Zero", 0))]
+    amounts = paycheck.compute_bucket_amounts(3, buckets)
+    assert sum(amounts.values()) == 3
+    assert amounts["Zero"] == 0
+    assert sorted((amounts["Bank"], amounts["Cash"])) == [1, 2]
+
+
+@pytest.mark.parametrize("rows, status", [
+    ([("Bank", -1)], 422),
+    ([("Bank", 101)], 422),
+    ([("Bank", 60), ("Cash", 50)], 400),
+    ([("Cash", 20), ("Cash", 30)], 400),
+    ([("Other user's bank", 50)], 400),
+])
+def test_invalid_salary_allocation_does_not_replace_saved_plan(ledger, rows, status):
+    client, db = ledger
+    original = client.get("/paycheck/config").json()["buckets"]
+    response = client.put("/paycheck/buckets", json=[
+        {"account": name, "percentage": pct, "purpose": "Test"} for name, pct in rows
+    ])
+    assert response.status_code == status, response.text
+    assert client.get("/paycheck/config").json()["buckets"] == original
+
+
 def test_default_change_preserves_legacy_cycle_dates(ledger):
     client, db = ledger
     cfg = paycheck.get_or_seed_config(db, 1)
