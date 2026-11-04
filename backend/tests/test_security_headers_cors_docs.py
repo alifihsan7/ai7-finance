@@ -84,6 +84,22 @@ async def main():
     assert legit_acao == "https://ai7finance.alifihsan.my.id", "Legitimate origin was not allowed!"
     print("PASS: Legitimate production origin allowed correctly.")
 
+    print("\n[SEC-03] Testing CORS with legitimate Origin (https://tillfold.alifihsan.my.id)...")
+    status, headers, _ = await asgi_request(
+        app,
+        "OPTIONS",
+        "/health",
+        headers={
+            "Origin": "https://tillfold.alifihsan.my.id",
+            "Access-Control-Request-Method": "GET"
+        }
+    )
+    tillfold_acao = headers.get("access-control-allow-origin")
+    print(f"Tillfold Origin response status: {status}")
+    print(f"Tillfold Origin access-control-allow-origin header: {tillfold_acao}")
+    assert tillfold_acao == "https://tillfold.alifihsan.my.id", "Tillfold origin was not allowed!"
+    print("PASS: Tillfold production origin allowed correctly.")
+
     # -------------------------------------------------------------
     # SEC-05: Missing Security Headers
     # -------------------------------------------------------------
@@ -107,6 +123,8 @@ async def main():
     csp = headers.get("content-security-policy")
     print(f"Header 'content-security-policy': {csp}")
     assert csp is not None and "default-src 'self'" in csp, "CSP header missing or incomplete!"
+    assert "https://ai7finance.alifihsan.my.id" in csp, "ai7finance origin missing from connect-src!"
+    assert "https://tillfold.alifihsan.my.id" in csp, "tillfold origin missing from connect-src!"
     print("PASS: All required security headers successfully present.")
 
     # -------------------------------------------------------------
@@ -139,6 +157,9 @@ async def main():
     print("PASS: Non-existent API route returns 404 JSON (no soft-404 HTML fallthrough).")
 
     print("\n=== ALL MAIN SECURITY TESTS (SEC-03, SEC-05, SEC-06, SEC-07) PASSED SUCCESSFULLY ===")
+
+def test_security_headers_cors_docs():
+    asyncio.run(main())
 
 if __name__ == "__main__":
     asyncio.run(main())

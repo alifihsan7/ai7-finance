@@ -51,6 +51,7 @@ app = FastAPI(
 # Enable CORS with strict origin allowlist
 ALLOWED_ORIGINS = [
     "https://ai7finance.alifihsan.my.id",
+    "https://tillfold.alifihsan.my.id",
 ]
 if not IS_PROD:
     ALLOWED_ORIGINS.extend([
@@ -83,7 +84,7 @@ async def add_security_headers(request: Request, call_next):
         "style-src 'self' 'unsafe-inline' https://accounts.google.com; "
         "img-src 'self' data: https:; "
         "font-src 'self' data:; "
-        "connect-src 'self' https://accounts.google.com https://ai7finance.alifihsan.my.id;"
+        "connect-src 'self' https://accounts.google.com https://ai7finance.alifihsan.my.id https://tillfold.alifihsan.my.id;"
     )
     return response
 
