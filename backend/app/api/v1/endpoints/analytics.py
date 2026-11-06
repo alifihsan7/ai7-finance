@@ -33,7 +33,8 @@ def get_monthly_date_bounds(ref_date: date, payday: int) -> tuple[date, date]:
     Returns (cycle_start, cycle_end) for a recurring payday (1-31).
     Clamps day to max days of month if necessary.
     """
-    if ref_date.day >= payday:
+    last_day = calendar.monthrange(ref_date.year, ref_date.month)[1]
+    if ref_date.day >= min(payday, last_day):
         start_year, start_month = ref_date.year, ref_date.month
     else:
         if ref_date.month == 1:
@@ -229,10 +230,18 @@ def get_monthly_summary(
         except Exception:
             raise HTTPException(status_code=400, detail="Invalid start/end date format, use YYYY-MM-DD")
     elif period_type == "week":
-        # Minggu ini (Senin - Minggu)
-        start_date = today_wib - timedelta(days=today_wib.weekday())
-        end_date = start_date + timedelta(days=6)
-        period_label = f"Minggu Ini ({start_date.strftime('%d %b')} – {end_date.strftime('%d %b %Y')})"
+        this_week_start = today_wib - timedelta(days=today_wib.weekday())
+        try:
+            start_date = date.fromisoformat(start) if start else this_week_start
+            end_date = start_date + timedelta(days=6)
+        except (ValueError, OverflowError):
+            raise HTTPException(status_code=400, detail="Tanggal awal minggu tidak valid.")
+        week_label = "Minggu"
+        if start_date == this_week_start:
+            week_label = "Minggu Ini"
+        elif start_date == this_week_start - timedelta(days=7):
+            week_label = "Minggu Lalu"
+        period_label = f"{week_label} ({start_date.strftime('%d %b')} – {end_date.strftime('%d %b %Y')})"
     elif period_type == "month":
         if month:
             try:

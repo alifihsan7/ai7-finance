@@ -81,6 +81,54 @@ def test_picker_lists_unique_cycles_and_only_one_active(ledger, cycle_type, expe
     assert [cycle["start"] for cycle in cycles if cycle["is_current"]] == [today.isoformat()]
 
 
+def test_previous_week_summary_matches_selected_transactions(ledger):
+    client, db = ledger
+    today = datetime.now(analytics.WIB).date()
+    this_monday = today - timedelta(days=today.weekday())
+    last_monday = this_monday - timedelta(days=7)
+    last_sunday = this_monday - timedelta(days=1)
+    db.add_all([
+        Transaction(user_id=1, account="Bank", type=kind, amount=amount,
+                    category="Test", description="Data uji", date=day)
+        for kind, amount, day in [
+            ("income", 400, last_monday), ("expense", 100, last_sunday),
+            ("income", 900, this_monday),
+        ]
+    ])
+    db.commit()
+
+    selected = client.get("/analytics/periods").json()["weeks"][1]
+    response = client.get("/analytics/summary", params={
+        "period_type": "week", "start": selected["start"], "end": selected["end"],
+    })
+    assert response.status_code == 200, response.text
+    report = response.json()
+    assert (report["start_date"], report["end_date"]) == (selected["start"], selected["end"])
+    assert (report["income"], report["expense"]) == (400, 100)
+    assert report["total_balance"] == 1200
+    assert [row["date"] for row in report["daily_trend"]] == [selected["start"], selected["end"]]
+    assert client.get("/analytics/summary", params={"period_type": "week"}).json()["income"] == 900
+
+
+def test_short_month_payday_starts_cycle_on_last_day(ledger):
+    from app.api.v1.endpoints.jago_pockets import get_current_cycle_bounds
+
+    client, db = ledger
+    cfg = paycheck.get_or_seed_config(db, 1)
+    cfg.cycle_type = "monthly_date"
+    cfg.paycheck_day = 31
+    db.add(Transaction(user_id=1, account="Bank", type="income", amount=400,
+                       category="Gaji", description="Gaji", date=date(2026, 2, 28)))
+    db.commit()
+
+    cycles = client.get("/analytics/periods").json()["cycles"]
+    assert [(cycle["start"], cycle["end"]) for cycle in cycles] == [("2026-02-28", "2026-03-30")]
+    report = client.get("/analytics/summary", params={"period_type": "cycle", "start": "2026-02-28"}).json()
+    assert report["end_date"] == "2026-03-30"
+    assert report["income"] == 400
+    assert get_current_cycle_bounds(db, 1, date(2026, 2, 28)) == (date(2026, 2, 28), date(2026, 3, 30))
+
+
 @pytest.mark.parametrize("delete_side", ["transfer_out", "transfer_in"])
 def test_salary_is_recorded_once_and_allocation_is_a_paired_transfer(ledger, delete_side):
     client, db = ledger

@@ -67,29 +67,6 @@ DEFAULT_POCKET_SPECS = [
 ]
 
 
-def get_monthly_date_bounds(ref_date: date, payday: int) -> tuple[date, date]:
-    """Calculate (cycle_start, cycle_end) for monthly cycle anchored to payday."""
-    if ref_date.day >= payday:
-        start_year, start_month = ref_date.year, ref_date.month
-    else:
-        if ref_date.month == 1:
-            start_year, start_month = ref_date.year - 1, 12
-        else:
-            start_year, start_month = ref_date.year, ref_date.month - 1
-
-    _, max_days_start = calendar.monthrange(start_year, start_month)
-    start_date = date(start_year, start_month, min(payday, max_days_start))
-
-    if start_month == 12:
-        next_year, next_month = start_year + 1, 1
-    else:
-        next_year, next_month = start_year, start_month + 1
-
-    _, max_days_next = calendar.monthrange(next_year, next_month)
-    end_date = date(next_year, next_month, min(payday, max_days_next)) - timedelta(days=1)
-    return start_date, end_date
-
-
 def get_current_cycle_bounds(db: Session, user_id: int, ref_date: Optional[date] = None) -> tuple[date, date]:
     """Deterministically determine the active financial cycle date range for user."""
     if ref_date is None:
@@ -109,6 +86,8 @@ def get_current_cycle_bounds(db: Session, user_id: int, ref_date: Optional[date]
     paycheck_day = cfg.paycheck_day if cfg and cfg.paycheck_day else (anchor_start.day if anchor_start else 25)
 
     if cycle_type == "monthly_date":
+        from app.api.v1.endpoints.analytics import get_monthly_date_bounds
+
         return get_monthly_date_bounds(ref_date, paycheck_day)
     elif anchor_start:
         cycle_start = anchor_start
