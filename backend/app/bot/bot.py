@@ -32,7 +32,7 @@ from app.services.analytics import compute_safe_to_spend_metrics, resolve_pocket
 from app.services.paycheck_cycles import recorded_cycle_ends, receipt_allocations
 from app.api.v1.endpoints.analytics import get_monthly_date_bounds
 
-API_BASE = f"https://api.telegram.org/bot{settings.BOT_TOKEN}"
+API_BASE = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}"
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
 
 def format_rp(amount: int) -> str:
@@ -226,7 +226,7 @@ def setup_bot_commands():
             print(f"Error registering bot menu button: {e}")
 
 def send_message(chat_id: int, text: str, parse_mode: Optional[str] = "Markdown", reply_to_message_id: Optional[int] = None, reply_markup: Optional[dict] = None, bot_token: Optional[str] = None):
-    token = bot_token or settings.BOT_TOKEN
+    token = bot_token or settings.TELEGRAM_BOT_TOKEN
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = {
         "chat_id": chat_id,
@@ -253,7 +253,7 @@ def send_message(chat_id: int, text: str, parse_mode: Optional[str] = "Markdown"
         return None
 
 def handle_menu(chat_id: int, bot_token: Optional[str] = None):
-    msg = "📱 **Menu Navigasi AI7 Finance**\n\nGunakan tombol di bawah untuk akses cepat, atau ketik langsung pengeluaran lo (contoh: `makan siang 25k`)."
+    msg = "📱 **Menu Tillfold**\n\nGunakan tombol di bawah atau ketik pengeluaran lo, misalnya `makan siang 25k`."
     send_message(chat_id, msg, reply_markup=get_main_keyboard(), bot_token=bot_token)
 
 def send_dashboard_link(chat_id: int, bot_token: Optional[str] = None):
@@ -265,14 +265,14 @@ def send_dashboard_link(chat_id: int, bot_token: Optional[str] = None):
                 [{"text": "🔗 Buka di Browser Luar", "url": url}]
             ]
         }
-        msg = f"🌐 **Web Dashboard AI7 Finance:**\n`{url}`\n\nKlik tombol di bawah untuk membuka dashboard langsung di dalam Telegram!"
+        msg = f"🌐 **Dashboard Tillfold**\n`{url}`\n\nBuka dashboard lewat tombol di bawah."
     else:
         inline_kb = {
             "inline_keyboard": [
                 [{"text": "🚀 Buka Web Dashboard", "url": url}]
             ]
         }
-        msg = f"🌐 **Web Dashboard AI7 Finance:**\n`{url}`\n\nAkses aman via Cloudflare Tunnel untuk review bulanan & detail transaksi."
+        msg = f"🌐 **Dashboard Tillfold**\n`{url}`\n\nLihat laporan dan detail transaksi."
     send_message(chat_id, msg, reply_markup=inline_kb, bot_token=bot_token)
 
 def handle_start(chat_id: int, user: Optional[User] = None, bot_token: Optional[str] = None):
@@ -280,9 +280,9 @@ def handle_start(chat_id: int, user: Optional[User] = None, bot_token: Optional[
         send_message(chat_id, "⚠️ Pengguna tidak ditemukan atau belum terdaftar.", bot_token=bot_token)
         return
     user_name = user.full_name or "Kawan"
-    msg = f"""👋 **Halo, {user_name}! Selamat datang di AI7 Finance Bot.**
+    msg = f"""👋 **Halo, {user_name}! Selamat datang di Tillfold.**
 
-Bot ini terintegrasi langsung dengan Web Dashboard AI7 Finance lo.
+Bot ini terhubung ke akun Tillfold lo.
 
 💡 **Cara Input Praktis:**
 • ✍️ **Ketik Teks Bebas:** `nasi padang 25k`, `kopi tuku 22k`, `laundry 35rb`, `isi galon 8k`
@@ -700,14 +700,14 @@ def handle_goals(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
     send_message(chat_id, "\n".join(lines), bot_token=bot_token)
 
 def send_chat_action(chat_id: int, action: str = "typing", bot_token: Optional[str] = None):
-    token = bot_token or settings.BOT_TOKEN
+    token = bot_token or settings.TELEGRAM_BOT_TOKEN
     try:
         requests.post(f"https://api.telegram.org/bot{token}/sendChatAction", json={"chat_id": chat_id, "action": action}, timeout=5)
     except Exception:
         pass
 
 def download_telegram_file(file_id: str, bot_token: Optional[str] = None):
-    token = bot_token or settings.BOT_TOKEN
+    token = bot_token or settings.TELEGRAM_BOT_TOKEN
     try:
         url = f"https://api.telegram.org/bot{token}/getFile?file_id={file_id}"
         resp = requests.get(url, timeout=15)
@@ -1087,7 +1087,7 @@ Contoh: `/gajian 5.000.000` atau `/gajian 5jt`
 {distrib_str}
 
 ℹ️ _Pemasukan gaji dicatat utuh di rekening `{source_account}`. Alokasi transfer ke rekening/pos lain dapat dieksekusi terpisah via `/transfer` atau Checklist Dashboard._
-🌐 [Buka Web Dashboard AI7 Finance]({settings.APP_BASE_URL}){sheet_info}"""
+🌐 [Buka dashboard Tillfold]({settings.APP_BASE_URL}){sheet_info}"""
 
     send_message(chat_id, msg, bot_token=bot_token)
 
@@ -1585,63 +1585,36 @@ def process_update(update: dict, bot_token: Optional[str] = None, user_override:
     text = (message.get("text") or "").strip()
     message_id = message.get("message_id")
 
-    print(f"[{datetime.now()}] Update received: chat_id={chat_id}, user={tg_user.get('username')}, text={text}")
+    logger.info("Telegram update received: chat_id=%s", chat_id)
 
     if not chat_id:
         return
 
+    # Financial commands are only accepted from the sender's private conversation.
+    if message.get("chat", {}).get("type") != "private" or tg_user.get("id") != chat_id or tg_user.get("is_bot"):
+        return
+    if bot_token or user_override:
+        return
+
     db = SessionLocal()
     try:
-        user = None
-        if user_override:
-            sender_id = None
-            try:
-                sender_id = int(chat_id)
-            except (ValueError, TypeError):
-                pass
+        if text.startswith("/start link_"):
+            from app.services.telegram_link import consume_link
 
-            owner = db.query(User).filter(User.id == user_override.id).first() or user_override
-            owner_chat_id = owner.telegram_chat_id
-
-            if sender_id is None or owner_chat_id is None or sender_id != int(owner_chat_id):
-                logger.warning(
-                    f"[BYOB Guard] Unauthorized access attempt: sender chat_id={chat_id} "
-                    f"attempted to access custom bot owned by user_id={owner.id} "
-                    f"({owner.username}, expected chat_id={owner_chat_id})"
-                )
-                unauthorized_msg = (
-                    "⛔ **Akses Ditolak**\n\n"
-                    "Bot ini dikonfigurasi secara privat (BYOB) dan hanya dapat digunakan oleh pemilik bot yang terdaftar."
-                )
-                send_message(chat_id, unauthorized_msg, bot_token=bot_token)
-                return
-            user = owner
-        else:
-            # Look up user by telegram_chat_id
-            try:
-                tg_id_int = int(chat_id)
-                user = db.query(User).filter(User.telegram_chat_id == tg_id_int).first()
-            except (ValueError, TypeError):
-                user = None
-            if not user and chat_id == settings.ALLOWED_USER_ID:
-                user = db.query(User).filter(User.id == 1).first()
-
-        # If user is not recognized and this is Shared Bot
+            linked = consume_link(db, text[len("/start link_"):], int(chat_id))
+            reply = ("Telegram terhubung ke Tillfold. Ketik /menu untuk mulai."
+                     if linked else "Tautan tidak valid, kedaluwarsa, atau Telegram sudah terhubung ke akun lain. Buat tautan baru dari profil Tillfold.")
+            send_message(chat_id, reply, parse_mode=None)
+            return
+        user = db.query(User).filter(
+            User.telegram_chat_id == chat_id, User.is_active == True, User.telegram_mode == "shared",
+        ).first()
         if not user:
-            lower_text = text.lower()
-            unlinked_msg = f"""👋 **Selamat Datang di AI7 Finance Bot!**
+            unlinked_msg = f"""Selamat datang di Tillfold.
 
-🆔 **Chat ID Telegram Kamu:**
-`{chat_id}`
+Buka {settings.APP_BASE_URL}, masuk ke akun kamu, lalu pilih Profil → Integrasi Telegram → Hubungkan Telegram.
 
-📌 **Langkah Menghubungkan Akun:**
-1️⃣ Salin Chat ID di atas: `{chat_id}`
-2️⃣ Buka [AI7 Finance Web Dashboard]({settings.APP_BASE_URL})
-3️⃣ Buka modal **Profil Pengguna** ➔ Tab **Integrasi Telegram**
-4️⃣ Pilih mode **Shared Bot** dan tempelkan Chat ID kamu
-5️⃣ Klik **Hubungkan Telegram**
-
-Setelah terhubung, kamu bisa langsung mencatat pengeluaran, struk kasir, QRIS, dan voice note di sini! 🚀"""
+Tekan Start di bot dari tautan tersebut untuk menyelesaikan koneksi."""
             send_message(chat_id, unlinked_msg, bot_token=bot_token)
             return
 
@@ -1694,7 +1667,7 @@ def main():
     Base.metadata.create_all(bind=engine)
     print("Setting up Telegram bot commands menu...")
     setup_bot_commands()
-    print("AI7 Finance Bot (PostgreSQL) started listening...")
+    print("Tillfold shared bot started listening...")
 
     offset = 0
     while True:

@@ -1,6 +1,6 @@
 import pytest
 from datetime import date
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, MagicMock, mock_open
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -132,7 +132,7 @@ def test_f01_bot_handlers_no_crash(db_session, test_user):
     db_session.commit()
 
     with patch("app.bot.bot.send_message") as mock_send, \
-         patch("os.makedirs"):
+         patch("os.makedirs"), patch("builtins.open", mock_open()):
         handle_pacing(chat_id=111111, db=db_session, user=test_user)
         assert mock_send.called
 
@@ -186,10 +186,9 @@ def test_f01_analytics_dashboard_zero_income_no_crash(db_session, test_user):
 # F-02: Non-blocking Webhook Event Loop Remediation Tests
 # ============================================================================
 
-def test_f02_webhook_offloads_to_threadpool(db_session, test_user):
+def test_retired_webhook_rejects_previously_valid_secret(db_session, test_user):
     """
-    Verify telegram_bot_webhook dispatches process_update via run_in_threadpool
-    so the asyncio event loop is never frozen by synchronous blocking I/O.
+    A stored custom-bot secret no longer permits dispatch.
     """
     app.dependency_overrides[get_db] = lambda: db_session
 
@@ -205,29 +204,23 @@ def test_f02_webhook_offloads_to_threadpool(db_session, test_user):
             }
         }
 
-        with patch("app.api.v1.endpoints.bot_webhook.run_in_threadpool", new_callable=AsyncMock) as mock_threadpool:
-            mock_threadpool.return_value = None
+        with patch("app.bot.bot.process_update") as mock_process:
             response = client.post(
                 f"/api/v1/bot/webhook/{test_user.telegram_webhook_secret}",
                 json=payload
             )
-            assert response.status_code == 200
-            assert response.json() == {"ok": True}
-            mock_threadpool.assert_awaited_once()
-            # Verify process_update was passed as the callable
-            from app.bot.bot import process_update
-            assert mock_threadpool.call_args[0][0] == process_update
+            assert response.status_code == 410
+            mock_process.assert_not_called()
     finally:
         app.dependency_overrides.clear()
 
 def test_f02_webhook_rejects_unknown_secret(db_session):
-    """Verify webhook gracefully returns ok:False on unknown secret."""
+    """Retired webhooks reject unknown secrets too."""
     app.dependency_overrides[get_db] = lambda: db_session
     try:
         client = TestClient(app)
         response = client.post("/api/v1/bot/webhook/invalid_secret_key", json={"update_id": 1})
-        assert response.status_code == 200
-        assert response.json()["ok"] is False
+        assert response.status_code == 410
     finally:
         app.dependency_overrides.clear()
 

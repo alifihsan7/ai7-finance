@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, BigInteger
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, BigInteger, ForeignKey
 from sqlalchemy.sql import func
 from app.db.session import Base
 
@@ -27,3 +27,11 @@ class User(Base):
     def decrypted_bot_token(self) -> Optional[str]:
         from app.core.security import decrypt_token
         return decrypt_token(self.telegram_bot_token)
+
+
+class TelegramLink(Base):
+    __tablename__ = "telegram_links"
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    token_hash = Column(String(64), unique=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)

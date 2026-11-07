@@ -121,25 +121,16 @@ def test_byob_webhook_unauthorized_sender_rejected(user_one):
 
         process_update(update, bot_token=user_one.telegram_bot_token, user_override=user_one)
 
-        # Must send access denied message to the attacker's chat_id
-        mock_send.assert_called_once()
-        call_args = mock_send.call_args
-        assert call_args[0][0] == 999999
-        assert "Akses Ditolak" in call_args[0][1]
-
-        # Must log warning
-        mock_warn.assert_called_once()
-        assert "BYOB Guard" in mock_warn.call_args[0][0] or "Unauthorized" in mock_warn.call_args[0][0]
+        mock_send.assert_not_called()
 
     # Verify no transactions were created in DB
     db = TestingSessionLocal()
     assert db.query(Transaction).count() == 0
     db.close()
 
-def test_byob_webhook_authorized_sender_accepted(user_one):
+def test_retired_custom_bot_rejects_even_its_owner(user_one):
     """
-    Update arriving at a BYOB bot from the legitimate owner (user_one.telegram_chat_id)
-    must be authorized and processed.
+    Custom bot credentials are retired even for the former owner.
     """
     update = {
         "update_id": 101,
@@ -156,10 +147,7 @@ def test_byob_webhook_authorized_sender_accepted(user_one):
 
         process_update(update, bot_token=user_one.telegram_bot_token, user_override=user_one)
 
-        mock_send.assert_called_once()
-        call_args = mock_send.call_args
-        assert call_args[0][0] == 111111
-        assert "Akses Ditolak" not in call_args[0][1]
+        mock_send.assert_not_called()
 
 
 # ============================================================================
@@ -268,9 +256,9 @@ def test_sync_cycle_snapshot_tenant_isolation(db_session, user_one, user_two):
 # SEC-TENANT-06: deleteWebhook execution on delete_my_account
 # ============================================================================
 
-def test_delete_my_account_triggers_delete_webhook_for_custom_bot(db_session, user_one):
+def test_delete_my_account_ignores_retired_custom_bot(db_session, user_one):
     """
-    When deleting an account that has a custom bot token, deleteWebhook must be called.
+    Account deletion does not contact retired custom bots.
     """
     assert user_one.telegram_bot_token is not None
 
@@ -281,9 +269,7 @@ def test_delete_my_account_triggers_delete_webhook_for_custom_bot(db_session, us
         res = delete_my_account(current_user=user_one, db=db_session)
         assert res["success"] is True
 
-        mock_post.assert_called_once()
-        called_url = mock_post.call_args[0][0]
-        assert f"https://api.telegram.org/bot{user_one.telegram_bot_token}/deleteWebhook" == called_url
+        mock_post.assert_not_called()
 
     # User must be deleted
     assert db_session.query(User).filter(User.id == user_one.id).first() is None

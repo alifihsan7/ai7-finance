@@ -12,7 +12,6 @@ class UserCreate(BaseModel):
     email: Optional[str] = None
     full_name: str
     password: str = Field(..., min_length=8, description="Password minimal 8 karakter")
-    telegram_chat_id: Optional[int] = None
 
 class UserLogin(BaseModel):
     username_or_email: str
@@ -49,13 +48,6 @@ class GoogleAuthRequest(BaseModel):
 
 class TelegramWebAppAuthRequest(BaseModel):
     init_data: str
-
-class LinkTelegramRequest(BaseModel):
-    telegram_chat_id: int
-
-class LinkTelegramCustomRequest(BaseModel):
-    bot_token: str
-    telegram_chat_id: Optional[int] = None
 
 class OnboardingAccountItem(BaseModel):
     name: str

@@ -92,13 +92,13 @@ def capture_messages(monkeypatch):
 def test_bot_start_and_menu(bot_user, capture_messages):
     handle_start(chat_id=bot_user.telegram_chat_id, user=bot_user)
     assert len(capture_messages) == 1
-    assert "Selamat datang di AI7 Finance Bot" in capture_messages[0]["text"]
+    assert "Selamat datang di Tillfold" in capture_messages[0]["text"]
     assert "/pacing" in capture_messages[0]["text"]
     assert "/saldo" in capture_messages[0]["text"]
 
     handle_menu(chat_id=bot_user.telegram_chat_id)
     assert len(capture_messages) == 2
-    assert "Menu Navigasi AI7 Finance" in capture_messages[1]["text"]
+    assert "Menu Tillfold" in capture_messages[1]["text"]
     kb = capture_messages[1]["kwargs"].get("reply_markup", {}).get("keyboard", [])
     flat_kb = [btn["text"] for row in kb for btn in row]
     assert "🎯 Pacing" in flat_kb
@@ -420,12 +420,12 @@ def test_bot_process_update_command_routing(db_session, bot_user, capture_messag
         "update_id": 1,
         "message": {
             "message_id": 101,
-            "chat": {"id": bot_user.telegram_chat_id},
+            "chat": {"id": bot_user.telegram_chat_id, "type": "private"},
             "from": {"id": bot_user.telegram_chat_id},
             "text": "/pacing",
         },
     }
-    process_update(payload_pacing, user_override=bot_user)
+    process_update(payload_pacing)
     assert len(capture_messages) == 1
     assert "Status Pacing Belanja" in capture_messages[0]["text"]
 
@@ -433,11 +433,11 @@ def test_bot_process_update_command_routing(db_session, bot_user, capture_messag
         "update_id": 2,
         "message": {
             "message_id": 102,
-            "chat": {"id": bot_user.telegram_chat_id},
+            "chat": {"id": bot_user.telegram_chat_id, "type": "private"},
             "from": {"id": bot_user.telegram_chat_id},
             "text": "💳 Saldo",
         },
     }
-    process_update(payload_saldo, user_override=bot_user)
+    process_update(payload_saldo)
     assert len(capture_messages) == 2
     assert "Estimasi Saldo per Rekening" in capture_messages[1]["text"]

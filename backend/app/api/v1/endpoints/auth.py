@@ -14,7 +14,8 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
 from app.db.session import get_db
-from app.models.user import User
+from app.models.user import User, TelegramLink
+from app.services.telegram_link import create_link
 from app.models.account import Account
 from app.models.transaction import Transaction
 from app.models.subscription import Subscription
@@ -27,12 +28,10 @@ from app.schemas.user import (
     UserUpdate,
     UserResponse,
     TokenResponse,
-    LinkTelegramRequest,
-    LinkTelegramCustomRequest,
     GoogleAuthRequest,
     TelegramWebAppAuthRequest,
 )
-from app.core.security import hash_password, verify_password, create_access_token, encrypt_token, decrypt_token
+from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
 from app.core.rate_limit import login_limiter, register_limiter, auth_limiter
 from app.api.deps import get_strict_current_user
@@ -64,7 +63,7 @@ def register(payload: UserCreate, request: Request, db: Session = Depends(get_db
         email=payload.email.strip() if payload.email else None,
         full_name=payload.full_name.strip(),
         hashed_password=hashed_pw,
-        telegram_chat_id=payload.telegram_chat_id,
+        telegram_chat_id=None,
         is_active=True,
         is_onboarded=False,
     )
@@ -141,154 +140,38 @@ def update_profile(
     db.refresh(user)
     return UserResponse.from_orm(user)
 
-@router.post("/link-telegram", response_model=UserResponse)
+@router.post("/link-telegram")
 def link_telegram_chat(
-    payload: LinkTelegramRequest,
     user: User = Depends(get_strict_current_user),
     db: Session = Depends(get_db)
 ):
-    # Check if chat ID already linked to another user
-    tg_id = int(payload.telegram_chat_id)
-    existing = db.query(User).filter(User.telegram_chat_id == tg_id, User.id != user.id).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Telegram Chat ID ini sudah ditautkan ke akun lain")
-    
-    user.telegram_chat_id = tg_id
-    user.telegram_mode = "shared"
-    db.commit()
-    db.refresh(user)
-
-    # Kirim salam konfirmasi ke bot shared jika berhasil terhubung
+    if not settings.TELEGRAM_BOT_TOKEN:
+        raise HTTPException(503, "Bot Telegram belum dikonfigurasi di server.")
     try:
-        from app.bot.bot import send_message
-        greeting = f"""🎉 **Akun AI7 Finance Berhasil Terhubung!**
-
-Halo, **{user.full_name or user.username}**! Akun Telegram kamu kini telah terhubung ke AI7 Finance Dashboard dalam mode **Shared Bot**.
-
-Kamu bisa langsung mencatat pengeluaran di sini:
-• `makan siang warteg 25k`
-• `kopi 25k saku`
-• `tf 100k utama ke tabungan`
-• Kirim foto struk kasir / QRIS
-• Kirim voice note pengeluaran
-
-Ketik `/menu` atau buka tombol keyboard untuk navigasi cepat!"""
-        send_message(payload.telegram_chat_id, greeting)
-    except Exception as e:
-        print(f"Warning: gagal kirim pesan konfirmasi shared bot: {e}")
-
-    return UserResponse.from_orm(user)
-
-@router.post("/link-telegram-custom", response_model=UserResponse)
-def link_telegram_custom_bot(
-    payload: LinkTelegramCustomRequest,
-    user: User = Depends(get_strict_current_user),
-    db: Session = Depends(get_db)
-):
-    token = payload.bot_token.strip()
-    if not token or ":" not in token:
-        raise HTTPException(status_code=400, detail="Format token bot Telegram tidak valid. Contoh format: 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ")
-
-    # 1. Validasi token ke Telegram API
-    try:
-        me_resp = requests.get(f"https://api.telegram.org/bot{token}/getMe", timeout=10)
-        me_data = me_resp.json()
-        if not me_data.get("ok"):
-            err_desc = me_data.get("description", "Token bot ditolak oleh Telegram API.")
-            raise HTTPException(status_code=400, detail=f"Token tidak valid: {err_desc}")
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Gagal menghubungi Telegram API: {str(e)}")
-
-    bot_info = me_data.get("result", {})
-    bot_username = bot_info.get("username", "")
-
-    # 2. Siapkan webhook secret unik
-    secret = user.telegram_webhook_secret or secrets.token_urlsafe(32)
-    webhook_url = f"{settings.APP_BASE_URL.rstrip('/')}/api/v1/bot/webhook/{secret}"
-
-    # 3. Daftarkan webhook ke Telegram API
-    try:
-        wh_resp = requests.post(
-            f"https://api.telegram.org/bot{token}/setWebhook",
-            json={
-                "url": webhook_url,
-                "drop_pending_updates": True,
-                "allowed_updates": ["message"]
-            },
-            timeout=10
+        response = requests.get(
+            f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/getMe", timeout=10,
         )
-        wh_data = wh_resp.json()
-        if not wh_data.get("ok"):
-            raise HTTPException(status_code=400, detail=f"Gagal mendaftarkan Webhook Telegram: {wh_data.get('description')}")
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Gagal setup webhook bot: {str(e)}")
+        data = response.json()
+        username = data.get("result", {}).get("username") if data.get("ok") else None
+        if not username:
+            raise ValueError("Missing bot username")
+    except (requests.RequestException, ValueError):
+        raise HTTPException(503, "Bot Telegram belum tersedia. Coba lagi nanti.")
+    token = create_link(db, user)
+    return {"url": f"https://t.me/{username}?start=link_{token}", "expires_in": 600}
 
-    # 4. Daftarkan menu commands pada custom bot
-    try:
-        commands = [
-            {"command": "saldo", "description": "Lihat rincian saldo semua rekening & net worth"},
-            {"command": "rekap", "description": "Ringkasan pengeluaran & pacing belanja"},
-            {"command": "goals", "description": "Target finansial & milestone tabungan"},
-            {"command": "subs", "description": "Daftar tagihan rutin & langganan aktif"},
-            {"command": "transaksi", "description": "Riwayat transaksi terakhir"},
-            {"command": "transfer", "description": "Catat transfer antar rekening"},
-            {"command": "batal", "description": "Batalkan transaksi terakhir"},
-            {"command": "menu", "description": "Buka papan tombol navigasi cepat"},
-            {"command": "help", "description": "Panduan & format pencatatan keuangan"}
-        ]
-        requests.post(f"https://api.telegram.org/bot{token}/setMyCommands", json={"commands": commands}, timeout=10)
-    except Exception as e:
-        print(f"Warning: gagal setMyCommands pada custom bot: {e}")
 
-    # 5. Simpan ke database user
-    user.telegram_bot_token = encrypt_token(token)
-    user.telegram_bot_username = bot_username
-    user.telegram_webhook_secret = secret
-    user.telegram_mode = "custom"
-    if payload.telegram_chat_id:
-        user.telegram_chat_id = int(payload.telegram_chat_id)
+@router.post("/link-telegram-custom")
+def retired_custom_bot_registration():
+    raise HTTPException(410, "Gunakan bot Tillfold melalui pengaturan integrasi Telegram.")
 
-    db.commit()
-    db.refresh(user)
-
-    # 6. Kirim pesan pengujian jika chat ID tersedia
-    if user.telegram_chat_id:
-        try:
-            from app.bot.bot import send_message
-            greeting = f"""🎉 **Bot Pribadi Berhasil Terhubung!**
-
-Halo, **{user.full_name or user.username}**! Bot `@{bot_username}` kini terhubung langsung ke akun AI7 Finance kamu.
-
-Semua pencatatan transaksi melalui bot ini bersifat eksklusif untuk akun kamu:
-• `kopi 25k saku`
-• `tf 100k utama ke tabungan`
-• Foto struk / screenshot QRIS
-• Voice note pengeluaran
-
-Ketik `/menu` atau buka tombol keyboard untuk mulai! 🚀"""
-            send_message(int(user.telegram_chat_id), greeting, bot_token=token)
-        except Exception as e:
-            print(f"Warning: gagal kirim pesan tes ke custom bot: {e}")
-
-    return UserResponse.from_orm(user)
 
 @router.post("/unlink-telegram", response_model=UserResponse)
 def unlink_telegram(
     user: User = Depends(get_strict_current_user),
     db: Session = Depends(get_db)
 ):
-    bot_token = decrypt_token(user.telegram_bot_token)
-    if bot_token:
-        # Hapus webhook dari Telegram API jika memakai custom bot
-        try:
-            requests.post(f"https://api.telegram.org/bot{bot_token}/deleteWebhook", timeout=10)
-        except Exception as e:
-            print(f"Warning: gagal deleteWebhook: {e}")
-
+    db.query(TelegramLink).filter(TelegramLink.user_id == user.id).delete()
     user.telegram_chat_id = None
     user.telegram_bot_token = None
     user.telegram_bot_username = None
@@ -424,24 +307,7 @@ def telegram_webapp_auth(payload: TelegramWebAppAuthRequest, request: Request, d
             detail="Telegram Bot Token belum dikonfigurasi di server",
         )
 
-    # 1. Coba verifikasi dengan shared bot token
     validated = verify_telegram_init_data(payload.init_data, settings.TELEGRAM_BOT_TOKEN)
-
-    # 2. Jika gagal, parsing unverified payload HANYA untuk mencari kandidat user pemilik bot
-    if not validated:
-        try:
-            raw_pairs = dict(parse_qsl(payload.init_data, keep_blank_values=True))
-            if "user" in raw_pairs:
-                raw_user = json.loads(raw_pairs["user"])
-                candidate_tg_id = int(raw_user.get("id"))
-                target_user = db.query(User).filter(User.telegram_chat_id == candidate_tg_id).first()
-                # Custom bot token HANYA boleh memverifikasi akun pemilik bot itu sendiri
-                if target_user and target_user.telegram_bot_token:
-                    plain_bot_token = decrypt_token(target_user.telegram_bot_token)
-                    if plain_bot_token:
-                        validated = verify_telegram_init_data(payload.init_data, plain_bot_token)
-        except Exception:
-            validated = None
 
     if not validated or "user" not in validated:
         raise HTTPException(
@@ -500,13 +366,7 @@ def delete_my_account(
 ):
     user_id = current_user.id
 
-    # Hapus webhook Telegram jika pengguna memiliki custom bot aktif
-    bot_token = decrypt_token(current_user.telegram_bot_token)
-    if bot_token:
-        try:
-            requests.post(f"https://api.telegram.org/bot{bot_token}/deleteWebhook", timeout=10)
-        except Exception as e:
-            print(f"Warning: gagal deleteWebhook saat delete_my_account: {e}")
+    db.query(TelegramLink).filter(TelegramLink.user_id == user_id).delete()
 
     # Hapus seluruh relasi data pengguna secara permanen
     db.query(Transaction).filter(Transaction.user_id == user_id).delete()

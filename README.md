@@ -17,9 +17,7 @@
 - **⚡ Zero-Friction Telegram Capture:** Log expenses in under a second using regex natural language parsing (`kopi 25k bca`, `bensin 50rb cash`, `gaji 5jt`).
 - **📱 Telegram Mini App (TMA):** Access the entire Next.js financial dashboard natively within Telegram via the persistent "📊 Dashboard" menu button, featuring zero-click cryptographic auto-login (HMAC-SHA256 Single Sign-On).
 - **🔐 Multi-Tenant Architecture:** Built from the ground up with secure user isolation, Argon2/Bcrypt password hashing, JWT bearer tokens, and Google OAuth 2.0 Sign-In.
-- **🤖 Dual-Mode Telegram Engine:**
-  - **Shared Bot Mode:** One central companion bot securely routes transactions to users based on verified Telegram IDs.
-  - **BYOB (Bring Your Own Bot):** Users can link their own private Telegram bot token directly from their profile settings.
+- **🤖 Shared Telegram Bot:** All users connect to the server-managed bot from Profile → Integrasi Telegram. A one-time link expires after 10 minutes and links the private Telegram sender to their Tillfold account. Run one polling worker with `run_bot.sh` using `BOT_TOKEN` (or `TELEGRAM_BOT_TOKEN`). Restart both the API and polling worker after upgrading. Existing custom-bot users reconnect through their profile.
 - **🔄 Dynamic Budget Cycles:** Flexible budget periods tailored to your actual paycheck cycle—**Weekly (7 Days)**, **Bi-Weekly (14 Days)**, or **Monthly (30 Days)**—with automated cycle rollover and historical tracking.
 - **📉 Burn-Rate Trajectory & Pacing:** Real-time safe-to-spend velocity meter (`Rp/hari`), pacing status indicators (🟢 Pace Aman vs 🔴 Agak Boros), and ideal cumulative pace lines.
 - **📦 Envelope Budgeting (Strata Allocation):** Dynamic percentage-based distribution across customizable buckets (Operational Saku, Fixed Bills, Investments, Emergency Reserve) connected directly to live account balances.
@@ -32,7 +30,7 @@
 
 - 🏛️ **[Spesifikasi Arsitektur Sistem (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)** — Penjelasan mendalam mengenai isolasi multi-tenant, ERD database PostgreSQL, formula matematika *Safe-to-Spend* dan burn-rate trajectory, spesifikasi engine parser regex, verifikasi kriptografis Telegram Mini App, serta katalog REST API lengkap.
 - 🚀 **[Panduan Production Deployment (docs/DEPLOYMENT.md)](docs/DEPLOYMENT.md)** — Panduan operasi server Linux 24/7 dengan systemd services, setup PostgreSQL, environment variables, reverse proxy, dan konfigurasi Google OAuth 2.0.
-- 📕 **[Buku Panduan Pengguna PDF (docs/Panduan_Pengguna_AI7_Finance.pdf)](docs/Panduan_Pengguna_AI7_Finance.pdf)** — E-book panduan praktis 8 halaman (format A4) siap cetak/baca untuk pengguna baru: panduan onboarding dashboard, integrasi Telegram Mini App, menghubungkan Telegram bot (Shared/BYOB), tabel sintaks input cepat, dan FAQ troubleshooting.
+- 📕 **[Buku Panduan Pengguna PDF (docs/Panduan_Pengguna_AI7_Finance.pdf)](docs/Panduan_Pengguna_AI7_Finance.pdf)** — Panduan lama. Bagian Shared/BYOB sudah digantikan alur satu bot melalui Profil → Integrasi Telegram.
 
 ---
 
@@ -47,7 +45,7 @@
                                               v
                                 +---------------------------+
                                 |    Telegram Bot Engine    |
-                                |    (Shared Bot / BYOB)    |
+                                |       (Shared Bot)        |
                                 +-------------+-------------+
                                               |
                                               v

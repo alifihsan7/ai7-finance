@@ -269,8 +269,8 @@ def test_login_failure_logs_real_client_ip(client, caplog):
 # 4. BOT TOKEN ENCRYPTION IN TELEGRAM INTEGRATION FLOWS
 # ============================================================================
 
-def test_link_telegram_custom_encrypts_token_in_db(client, db_session):
-    """Endpoint link-telegram-custom saves encrypted bot token to database."""
+def test_custom_bot_registration_is_retired(client, db_session):
+    """The shared-bot flow never stores user-provided bot tokens."""
     user = User(
         username="custom_bot_user",
         full_name="Custom Bot User",
@@ -299,19 +299,14 @@ def test_link_telegram_custom_encrypts_token_in_db(client, db_session):
             "/api/v1/auth/link-telegram-custom",
             json={"bot_token": plain_token, "telegram_chat_id": 555444},
         )
-        assert resp.status_code == 200
+        assert resp.status_code == 410
 
     db_session.refresh(user)
-    # The token in DB must be encrypted
-    assert user.telegram_bot_token != plain_token
-    assert plain_token not in user.telegram_bot_token
-    # And decrypts back to plain token
-    assert decrypt_token(user.telegram_bot_token) == plain_token
-    assert user.decrypted_bot_token == plain_token
+    assert user.telegram_bot_token is None
 
 
-def test_telegram_webhook_decrypts_bot_token(db_session, client):
-    """Webhook endpoint decrypts the user's bot token before calling process_update."""
+def test_legacy_webhook_never_dispatches_custom_credentials(db_session, client):
+    """Stored legacy credentials cannot dispatch through the retired webhook."""
     plain_token = "333333:CUSTOM_BOT_FOR_WEBHOOK"
     encrypted = encrypt_token(plain_token)
     webhook_secret = "webhook_secret_998877"
@@ -332,10 +327,5 @@ def test_telegram_webhook_decrypts_bot_token(db_session, client):
 
     with patch("app.bot.bot.process_update") as mock_process:
         resp = client.post(f"/api/v1/bot/webhook/{webhook_secret}", json=payload)
-        assert resp.status_code == 200
-        assert resp.json()["ok"] is True
-
-        mock_process.assert_called_once()
-        _, kwargs = mock_process.call_args
-        # process_update must have received the decrypted plain token!
-        assert kwargs["bot_token"] == plain_token
+        assert resp.status_code == 410
+        mock_process.assert_not_called()
