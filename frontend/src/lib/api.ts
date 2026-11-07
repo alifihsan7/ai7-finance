@@ -52,10 +52,14 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
   if (token && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${token}`);
   }
-  return fetch(url, {
+  const response = await fetch(url, {
     ...options,
     headers,
   });
+  if (response.headers.get("content-type")?.toLowerCase().includes("text/html")) {
+    throw new Error("Layanan data belum tersedia. Muat ulang halaman atau coba lagi nanti.");
+  }
+  return response;
 }
 
 // ---------------------------------------------------------------------------
