@@ -67,6 +67,7 @@ import { AuthModal } from "@/components/AuthModal";
 import { OnboardingWizardModal } from "@/components/OnboardingWizardModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserProfileModal } from "@/components/UserProfileModal";
+import { BackupModal } from "@/components/BackupModal";
 import {
   authFetch,
   getAuthToken,
@@ -390,6 +391,7 @@ export default function FinanceDashboard() {
   const [loading, setLoading] = useState(true);
 
   // Period filter state
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption>({
     id: "cycle_current",
     type: "cycle",
@@ -1551,6 +1553,14 @@ export default function FinanceDashboard() {
                         <div className="text-xs text-luma-smoke">Seluruh histori ledger</div>
                       </div>
                     </button>
+
+                    {currentUser && <button type="button" role="menuitem" onClick={() => {
+                      setIsBackupModalOpen(true);
+                      setIsExportMenuOpen(false);
+                    }} className="luma-touch w-full flex items-center gap-2.5 rounded-[var(--ai7-radius-control)] px-3 py-2 text-left text-luma-ivory hover:bg-white/[0.06] cursor-pointer">
+                      <Download className="h-4 w-4 shrink-0" />
+                      <span className="text-xs font-semibold">Backup &amp; restore</span>
+                    </button>}
 
                     {currentUser?.id === 1 && googleSheetUrl && (
                       <a
@@ -2846,6 +2856,13 @@ export default function FinanceDashboard() {
       />
 
       {/* User Profile & Account Settings Modal */}
+      {currentUser && <BackupModal isOpen={isBackupModalOpen} onClose={() => setIsBackupModalOpen(false)}
+        onRestored={() => {
+          setCurrentUser({ ...currentUser, is_onboarded: true });
+          setStoredUser({ ...currentUser, is_onboarded: true });
+          setIsOnboardingModalOpen(false);
+          fetchData();
+        }} />}
       {currentUser && (
         <UserProfileModal
           isOpen={isProfileModalOpen}

@@ -23,6 +23,7 @@
 - **📦 Envelope Budgeting (Strata Allocation):** Dynamic percentage-based distribution across customizable buckets (Operational Saku, Fixed Bills, Investments, Emergency Reserve) connected directly to live account balances.
 - **🧾 AI Receipt & Voice Extractor:** Optional multimodal integration with OpenAI-compatible vision/audio models to ingest physical paper receipts and Telegram voice notes.
 - **📅 Tillfold Calendar & Controls:** Custom month-and-year picker popover, accessible form controls (`CustomSelect`, `CurrencyInput`), high-contrast dark/light mode, and unassigned salary preservation.
+- **Backup & restore:** Open **Utilitas → Backup & restore** to download a versioned JSON file containing accounts, transactions, categories, pockets, bills, goals, and paycheck settings/history. Restore previews the counts and total balance, then imports atomically into an account with empty financial data. Existing financial data blocks restore. Maximum file size is 25 MB. Login credentials, Telegram links, and server settings are excluded.
 
 ---
 

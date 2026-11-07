@@ -1,7 +1,9 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints import transactions, analytics, subscriptions, accounts, goals, paycheck, auth, onboarding, bot_webhook, categories, jago_pockets
+from app.api.v1.endpoints import backup
 
 api_router = APIRouter()
+api_router.include_router(backup.router, prefix="/backup", tags=["backup"])
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(onboarding.router, prefix="/onboarding", tags=["onboarding"])
 api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
