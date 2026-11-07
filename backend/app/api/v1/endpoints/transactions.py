@@ -291,6 +291,8 @@ def update_transaction(
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
     
+    if tx.type in ("adjustment_in", "adjustment_out"):
+        raise HTTPException(409, "Catatan penyesuaian disimpan sebagai riwayat. Gunakan rekonsiliasi baru untuk koreksi.")
     update_data = payload.model_dump(exclude_unset=True)
     transfer_types = ("transfer_out", "transfer_in")
     requested_type = update_data.get("type") or tx.type
@@ -347,6 +349,8 @@ def delete_transaction(
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
+    if tx.type in ("adjustment_in", "adjustment_out"):
+        raise HTTPException(409, "Catatan penyesuaian disimpan sebagai riwayat. Gunakan rekonsiliasi baru untuk koreksi.")
     receipt = lock_paycheck_receipt(db, tx)
     if receipt and receipt.transaction_id == tx.id:
         if any(item["transfer_id"] for item in receipt_allocations(db, receipt)):

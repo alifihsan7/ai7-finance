@@ -18,6 +18,7 @@ from app.models.jago_pocket import JagoPocket, Pocket
 from app.models.paycheck import PaycheckConfig
 from app.models.subscription import Subscription
 from app.models.transaction import Transaction
+from app.core.ledger import POSITIVE_TYPES, NEGATIVE_TYPES
 from app.models.user import User
 from app.schemas.jago_pocket import (
     JagoPocketCreate,
@@ -260,8 +261,8 @@ def _get_ledger_balance(db: Session, user_id: int, account_names: List[str]) -> 
     tx_balance = db.query(
         func.sum(
             case(
-                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                 else_=0,
             ),
         )

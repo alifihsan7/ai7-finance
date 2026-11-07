@@ -10,6 +10,7 @@ from sqlalchemy import func, case, desc
 
 from app.core.config import settings
 from app.models.transaction import Transaction
+from app.core.ledger import POSITIVE_TYPES, NEGATIVE_TYPES
 from app.models.account import Account
 from app.models.paycheck import PaycheckConfig, PaycheckBucket
 
@@ -196,8 +197,8 @@ def sync_cycle_snapshot(
         Transaction.account,
         func.sum(
             case(
-                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                 else_=0
             )
         ).label("balance")
@@ -206,8 +207,8 @@ def sync_cycle_snapshot(
     ).group_by(Transaction.account).order_by(
         func.sum(
             case(
-                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                 else_=0
             )
         ).desc()
@@ -339,7 +340,7 @@ def sync_cycle_snapshot(
     rows.append(["", "Tanggal", "Keterangan", "Kategori", "Rekening", "Tipe", "Nominal"])
     sec4_data_start = len(rows)
     for tx in tx_rows:
-        num_val = tx.amount if tx.type in ["income", "transfer_in"] else -tx.amount
+        num_val = tx.amount if tx.type in POSITIVE_TYPES else -tx.amount
         rows.append([
             "",
             str(tx.date),

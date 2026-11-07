@@ -107,6 +107,7 @@ def sync_transaction_categories(db: Session, user_id: int) -> int:
         db.query(Transaction.category, Transaction.type)
         .filter(
             Transaction.user_id == user_id,
+            Transaction.type.notin_(["adjustment_in", "adjustment_out"]),
             Transaction.category.isnot(None),
             func.trim(Transaction.category) != "",
         )

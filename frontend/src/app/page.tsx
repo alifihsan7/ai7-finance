@@ -2348,6 +2348,7 @@ export default function FinanceDashboard() {
                   formatRupiah={formatRupiah}
                   loading={loading}
                   onAccountDeleted={fetchData}
+                  onReconciled={fetchData}
                   onEditAccount={(acc) => setAccountToEdit(acc)}
                 />
               </div>

@@ -10,15 +10,81 @@ from app.db.session import get_db
 from app.models.account import Account
 from app.models.jago_pocket import JagoPocket
 from app.models.transaction import Transaction
+from app.core.ledger import POSITIVE_TYPES, NEGATIVE_TYPES
 from app.models.user import User
 from app.models.paycheck import PaycheckConfig, PaycheckBucket
 from app.schemas.account import AccountCreate, AccountResponse, AccountUpdate, PocketBreakdownItem
 from app.schemas.jago_pocket import JagoPocketsSummaryResponse
 from app.api.deps import get_current_user
 from app.core.config import settings
+from app.core.ledger import signed_amount
+from pydantic import BaseModel, Field
+from uuid import UUID
 
 router = APIRouter()
 WIB = zoneinfo.ZoneInfo(settings.TIMEZONE)
+
+
+class ReconcileRequest(BaseModel):
+    request_key: UUID
+    actual_balance: int = Field(ge=-9_000_000_000_000_000, le=9_000_000_000_000_000)
+    expected_balance: int = Field(ge=-9_000_000_000_000_000, le=9_000_000_000_000_000)
+    latest_transaction_id: int = Field(ge=0)
+    note: str = Field(min_length=1, max_length=120)
+
+
+def reconciliation_snapshot(db: Session, user_id: int, name: str):
+    balance, latest = db.query(
+        func.coalesce(func.sum(signed_amount()), 0), func.coalesce(func.max(Transaction.id), 0),
+    ).filter(Transaction.user_id == user_id, Transaction.account == name).one()
+    return {"balance": int(balance), "latest_transaction_id": int(latest)}
+
+
+@router.get("/{account_id}/reconciliation")
+def reconciliation_preview(account_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    account = db.query(Account).filter(Account.id == account_id, Account.user_id == current_user.id).first()
+    if account is None:
+        raise HTTPException(404, "Rekening tidak ditemukan.")
+    return {"account": account.name, **reconciliation_snapshot(db, current_user.id, account.name)}
+
+
+@router.post("/{account_id}/reconciliation")
+def reconcile_account(account_id: int, payload: ReconcileRequest,
+                      current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    account = db.query(Account).filter(
+        Account.id == account_id, Account.user_id == current_user.id,
+    ).with_for_update().first()
+    if account is None:
+        raise HTTPException(404, "Rekening tidak ditemukan.")
+    marker = f"reconciliation:{payload.request_key}"
+    existing = db.query(Transaction).filter(
+        Transaction.user_id == current_user.id, Transaction.account == account.name,
+        Transaction.raw_text == marker, Transaction.type.in_(["adjustment_in", "adjustment_out"]),
+    ).first()
+    if existing:
+        return {"transaction_id": existing.id, "difference": existing.amount if existing.type == "adjustment_in" else -existing.amount}
+    snapshot = reconciliation_snapshot(db, current_user.id, account.name)
+    if snapshot["balance"] != payload.expected_balance or snapshot["latest_transaction_id"] != payload.latest_transaction_id:
+        raise HTTPException(409, "Saldo berubah. Muat ulang saldo lalu periksa selisihnya lagi.")
+    difference = payload.actual_balance - snapshot["balance"]
+    if not difference:
+        return {"transaction_id": None, "difference": 0}
+    if abs(difference) > 9_000_000_000_000_000:
+        raise HTTPException(400, "Selisih saldo terlalu besar.")
+    note = payload.note.strip()
+    if not note:
+        raise HTTPException(400, "Isi catatan penyesuaian.")
+    tx = Transaction(
+        user_id=current_user.id, account=account.name,
+        type="adjustment_in" if difference > 0 else "adjustment_out",
+        amount=abs(difference), category="Penyesuaian saldo",
+        description=f"Saldo {snapshot['balance']} → {payload.actual_balance}. {note}",
+        raw_text=marker, date=datetime.now(WIB).date(),
+    )
+    db.add(tx)
+    db.commit()
+    db.refresh(tx)
+    return {"transaction_id": tx.id, "difference": difference}
 
 DEFAULT_ACCOUNTS = [
     {"name": "Rekening Utama", "type": "operasional", "tag": "Saku Operasional", "color": "amberGold", "initial_balance": 0},
@@ -56,8 +122,8 @@ def get_accounts(
         Transaction.account,
         func.sum(
             case(
-                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                 else_=0
             )
         ).label("balance")
@@ -255,8 +321,8 @@ def update_account(
     bal = db.query(
         func.sum(
             case(
-                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                 else_=0
             )
         )

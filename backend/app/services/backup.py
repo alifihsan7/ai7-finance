@@ -8,6 +8,7 @@ from sqlalchemy import Boolean, Date, DateTime, Float, Integer, String
 from sqlalchemy.orm import Session
 
 from app.core.transfer import find_paired_transfer
+from app.core.ledger import POSITIVE_TYPES, NEGATIVE_TYPES
 from app.models.account import Account
 from app.models.category import Category
 from app.models.goal import Goal
@@ -73,7 +74,7 @@ def export_backup(db: Session, user_id: int):
                         row["raw_text"] = f"[pair_id:{pair.id}] {raw}"
             rows.append(row)
         data[name] = rows
-    return {"format": "tillfold-backup", "version": 1,
+    return {"format": "tillfold-backup", "version": 2,
             "exported_at": datetime.now(timezone.utc).isoformat(), "data": data}
 
 
@@ -125,7 +126,7 @@ def json_rows(value):
 
 
 def validate_backup(payload):
-    if not isinstance(payload, dict) or payload.get("format") != "tillfold-backup" or type(payload.get("version")) is not int or payload["version"] != 1:
+    if not isinstance(payload, dict) or payload.get("format") != "tillfold-backup" or type(payload.get("version")) is not int or payload["version"] not in (1, 2):
         invalid()
     data = payload.get("data")
     if not isinstance(data, dict) or set(data) != set(MODELS):
@@ -173,7 +174,7 @@ def validate_backup(payload):
     if len(linked) != len(set(linked)):
         invalid()
     for row in parsed["transactions"]:
-        if row["type"] not in ("income", "expense", "transfer_in", "transfer_out"):
+        if row["type"] not in (*POSITIVE_TYPES, *NEGATIVE_TYPES):
             invalid()
     for row in parsed["paycheck_sessions"]:
         for step in json_rows(row["steps_json"]):
@@ -207,7 +208,7 @@ def validate_backup(payload):
 def summary(data):
     balances = {row["name"]: 0 for row in data["accounts"]}
     for row in data["transactions"]:
-        sign = 1 if row["type"] in ("income", "transfer_in") else -1
+        sign = 1 if row["type"] in POSITIVE_TYPES else -1
         balances[row["account"]] = balances.get(row["account"], 0) + sign * row["amount"]
     return {"counts": {name: len(rows) for name, rows in data.items()},
             "total_balance": sum(balances.values()), "balances": balances}

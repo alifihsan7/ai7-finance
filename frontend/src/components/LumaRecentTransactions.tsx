@@ -6,7 +6,7 @@ import { Skeleton } from "./ui/Skeleton";
 
 export interface LumaTransaction {
   id: number;
-  type: "income" | "expense" | "transfer_in" | "transfer_out";
+  type: "income" | "expense" | "transfer_in" | "transfer_out" | "adjustment_in" | "adjustment_out";
   amount: number;
   account: string;
   category: string;
@@ -26,6 +26,9 @@ interface LumaRecentTransactionsProps {
 }
 
 function TxIcon({ type }: { type: LumaTransaction["type"] }) {
+  if (type === "adjustment_in" || type === "adjustment_out") {
+    return <ArrowLeftRight className="h-4 w-4 text-luma-smoke" aria-hidden="true" />;
+  }
   if (type === "income" || type === "transfer_in") {
     return <ArrowUpRight className="w-4 h-4 text-luma-sage shrink-0" aria-hidden="true" />;
   }
@@ -91,9 +94,10 @@ export function LumaRecentTransactions({
         ) : (
           <ul className="divide-y divide-white/[0.06]">
             {transactions.map((tx) => {
-              const isPositive = tx.type === "income" || tx.type === "transfer_in";
+              const isAdjustment = tx.type === "adjustment_in" || tx.type === "adjustment_out";
+              const isPositive = tx.type === "income" || tx.type === "transfer_in" || tx.type === "adjustment_in";
               const isTransfer = tx.type === "transfer_in" || tx.type === "transfer_out";
-              const amountClass = isPositive
+              const amountClass = isAdjustment ? "text-luma-ivory" : isPositive
                 ? "text-luma-sage"
                 : isTransfer
                   ? "text-luma-gold"
@@ -122,7 +126,7 @@ export function LumaRecentTransactions({
                   >
                     {isPositive ? "+" : "-"} {formatRupiah(tx.amount)}
                   </div>
-                  {(onEdit || onDelete) && (
+                  {(onEdit || onDelete) && !isAdjustment && (
                     <div className="flex items-center gap-1 shrink-0 ml-auto">
                       {onEdit && (
                         <button

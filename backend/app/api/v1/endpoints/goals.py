@@ -9,6 +9,7 @@ import zoneinfo
 from app.db.session import get_db
 from app.models.goal import Goal
 from app.models.transaction import Transaction
+from app.core.ledger import POSITIVE_TYPES, NEGATIVE_TYPES
 from app.models.user import User
 from app.models.paycheck import PaycheckConfig
 from app.api.deps import get_current_user
@@ -30,8 +31,8 @@ def get_account_balance(account_name: str, user_id: int, db: Session) -> int:
         func.coalesce(
             func.sum(
                 case(
-                    (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                    (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                    (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                    (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                     else_=0
                 )
             ),

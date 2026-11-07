@@ -21,6 +21,7 @@ from app.core.parser import parse_transaction, parse_multi_transactions, parse_a
 from app.core.transfer import find_paired_transfer
 from app.db.session import SessionLocal, Base, engine
 from app.models.transaction import Transaction
+from app.core.ledger import POSITIVE_TYPES, NEGATIVE_TYPES
 from app.models.account import Account
 from app.models.jago_pocket import JagoPocket
 from app.models.paycheck import PaycheckConfig, PaycheckBucket, PaycheckReceipt, PaycheckCycle
@@ -379,8 +380,8 @@ def handle_saldo(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
         Transaction.account,
         func.sum(
             case(
-                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                 else_=0
             )
         ).label("balance")
@@ -528,8 +529,8 @@ def handle_obsidian(chat_id: int, db: Session, user: Optional[User] = None, bot_
         Transaction.account,
         func.sum(
             case(
-                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                 else_=0
             )
         ).label("balance")
@@ -599,6 +600,8 @@ def handle_transaksi(chat_id: int, db: Session, user: Optional[User] = None, bot
     for t in recent:
         icon = "💰" if t.type == "income" else "💸"
         time_str = t.created_at.astimezone(WIB).strftime("%Y-%m-%d %H:%M") if t.created_at else str(t.date)
+        if t.type in ("adjustment_in", "adjustment_out"):
+            icon = "Penyesuaian (+)" if t.type == "adjustment_in" else "Penyesuaian (-)"
         lines.append(f"{icon} **{t.description}** ({t.category})\n   {format_rp(t.amount)} via `{t.account}` • _{time_str}_\n")
 
     send_message(chat_id, "\n".join(lines), bot_token=bot_token)
@@ -726,8 +729,8 @@ def get_acc_balance(acc_name: str, db: Session, user_id: int) -> int:
         func.coalesce(
             func.sum(
                 case(
-                    (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                    (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                    (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                    (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                     else_=0
                 )
             ), 0
@@ -870,6 +873,10 @@ def handle_batal(chat_id: int, db: Session, user: Optional[User] = None, bot_tok
     last = db.query(Transaction).filter(Transaction.user_id == user_id).order_by(desc(Transaction.id)).first()
     if not last:
         send_message(chat_id, "⚠️ Tidak ada transaksi yang bisa dibatalkan.", bot_token=bot_token)
+        return
+
+    if last.type in ("adjustment_in", "adjustment_out"):
+        send_message(chat_id, "Catatan penyesuaian disimpan sebagai riwayat. Gunakan rekonsiliasi baru di dashboard untuk koreksi.", bot_token=bot_token)
         return
 
     deleted_info = {

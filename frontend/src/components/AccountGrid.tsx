@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { CreditCard, Trash2, AlertTriangle, X, Edit2 } from "lucide-react";
 import { Skeleton } from "./ui/Skeleton";
 import { authFetch } from "@/lib/api";
+import { ReconcileAccountModal } from "./ReconcileAccountModal";
 
 export interface AccountItem {
   id?: number;
@@ -30,6 +31,7 @@ interface AccountGridProps {
   loading?: boolean;
   onAccountDeleted?: () => void;
   onEditAccount?: (acc: AccountItem) => void;
+  onReconciled?: () => void;
 }
 
 const ACCOUNT_COLOR_DOTS: Record<string, string> = {
@@ -106,7 +108,8 @@ export function getDefaultTagForType(type?: string): string {
   }
 }
 
-export function AccountGrid({ summary, customAccounts = [], formatRupiah, loading, onAccountDeleted, onEditAccount }: AccountGridProps) {
+export function AccountGrid({ summary, customAccounts = [], formatRupiah, loading, onAccountDeleted, onEditAccount, onReconciled }: AccountGridProps) {
+  const [reconcileId, setReconcileId] = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -429,12 +432,16 @@ export function AccountGrid({ summary, customAccounts = [], formatRupiah, loadin
                   </span>
                 </div>
               )}
+              {acc.id && onReconciled && <button type="button" onClick={() => setReconcileId(acc.id!)}
+                aria-label={"Cocokkan saldo " + acc.name} className="luma-action-secondary mt-3 w-full">Cocokkan saldo</button>}
             </div>
           </div>
         );
       })}
 
       {/* Modal Konfirmasi Hapus Rekening — Luma smoked glass */}
+      {reconcileId !== null && <ReconcileAccountModal key={reconcileId} accountId={reconcileId}
+        onClose={() => setReconcileId(null)} onSuccess={() => onReconciled?.()} />}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn" role="dialog" aria-modal="true" aria-label="Hapus rekening">
           <div className="luma-hero max-w-md w-full p-6 space-y-4">

@@ -24,6 +24,7 @@
 - **🧾 AI Receipt & Voice Extractor:** Optional multimodal integration with OpenAI-compatible vision/audio models to ingest physical paper receipts and Telegram voice notes.
 - **📅 Tillfold Calendar & Controls:** Custom month-and-year picker popover, accessible form controls (`CustomSelect`, `CurrencyInput`), high-contrast dark/light mode, and unassigned salary preservation.
 - **Backup & restore:** Open **Utilitas → Backup & restore** to download a versioned JSON file containing accounts, transactions, categories, pockets, bills, goals, and paycheck settings/history. Restore previews the counts and total balance, then imports atomically into an account with empty financial data. Existing financial data blocks restore. Maximum file size is 25 MB. Login credentials, Telegram links, and server settings are excluded.
+- **Balance reconciliation:** Open **Pengaturan → Rekening → Cocokkan saldo**, enter the actual balance and a note, then review the difference. Adjustments change balances without counting as income or expenses. The history is retained, so subsequent corrections use another reconciliation. Backup format 2 includes adjustments and the current importer also accepts format 1.
 
 ---
 

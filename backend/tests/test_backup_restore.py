@@ -143,7 +143,7 @@ def test_invalid_backup_never_writes_data(recovery, damage):
     client, db, users, current = recovery
     payload = download(client)
     if damage == "version":
-        payload["version"] = 2
+        payload["version"] = 99
     elif damage == "owner":
         payload["data"]["accounts"][0]["user_id"] = 3
     elif damage == "foreign_key":
@@ -221,3 +221,27 @@ def test_oversize_and_non_json_uploads_are_rejected_before_restore(recovery, mon
     monkeypatch.setattr(backup, "MAX_BYTES", 10)
     assert client.post("/backup/restore", content="x" * 11).status_code == 413
     assert db.query(Account).filter_by(user_id=2).count() == 0
+
+
+@pytest.mark.parametrize("kind, expected", [("adjustment_in", 1_000_000), ("adjustment_out", 900_000)])
+def test_backup_restore_preserves_reconciliation_records(recovery, kind, expected):
+    client, db, users, current = recovery
+    db.add(Transaction(user_id=1, type=kind, amount=50_000, account="Bank", category="Penyesuaian saldo",
+                       description="Cocokkan saldo bank", raw_text="reconciliation:test-key", date=date(2026, 11, 2)))
+    db.commit()
+    payload = download(client)
+    current[0] = users[1]
+    result = client.post("/backup/restore", json=payload)
+    assert result.status_code == 200, result.text
+    assert result.json()["total_balance"] == expected
+    adjustment = db.query(Transaction).filter_by(user_id=2, type=kind).one()
+    assert adjustment.amount == 50_000
+    assert client.delete(f"/transactions/{adjustment.id}").status_code == 409
+
+
+def test_previous_backup_format_still_restores(recovery):
+    client, db, users, current = recovery
+    payload = download(client)
+    payload["version"] = 1
+    current[0] = users[1]
+    assert client.post("/backup/restore", json=payload).status_code == 200

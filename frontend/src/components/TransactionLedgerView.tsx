@@ -80,6 +80,7 @@ export function TransactionLedgerView({
   // Type filter options
   const typeOptions: SelectOption[] = [
     { value: "all", label: "Semua tipe transaksi" },
+    { value: "adjustment", label: "Penyesuaian saldo" },
     { value: "expense", label: "Pengeluaran Saja (-)" },
     { value: "income", label: "Pemasukan Saja (+)" },
     { value: "transfer", label: "Transfer antar rekening (⇄)" },
@@ -152,6 +153,7 @@ export function TransactionLedgerView({
 
       // 3. Type Filter
       if (typeFilter !== "all") {
+        if (typeFilter === "adjustment" && tx.type !== "adjustment_in" && tx.type !== "adjustment_out") return false;
         if (typeFilter === "expense" && tx.type !== "expense") return false;
         if (typeFilter === "income" && tx.type !== "income") return false;
         if (
@@ -235,9 +237,9 @@ export function TransactionLedgerView({
     let expense = 0;
 
     filteredTransactions.forEach((tx) => {
-      if (tx.type === "income" || tx.type === "transfer_in") {
+      if (tx.type === "income") {
         income += tx.amount;
-      } else if (tx.type === "expense" || tx.type === "transfer_out") {
+      } else if (tx.type === "expense") {
         expense += tx.amount;
       }
     });

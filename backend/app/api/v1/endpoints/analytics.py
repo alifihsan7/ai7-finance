@@ -9,6 +9,7 @@ from sqlalchemy import func, case, desc
 
 from app.db.session import get_db
 from app.models.transaction import Transaction
+from app.core.ledger import POSITIVE_TYPES, NEGATIVE_TYPES
 from app.models.paycheck import PaycheckConfig, PaycheckBucket
 from app.services.paycheck_cycles import legacy_cycle_covers, recorded_cycle_ends
 from app.models.account import Account
@@ -384,16 +385,16 @@ def get_monthly_summary(
         Transaction.account,
         func.sum(
             case(
-                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                 else_=0
             )
         ).label("balance")
     ).filter(Transaction.user_id == current_user.id).group_by(Transaction.account).order_by(
         func.sum(
             case(
-                (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-                (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+                (Transaction.type.in_(POSITIVE_TYPES), Transaction.amount),
+                (Transaction.type.in_(NEGATIVE_TYPES), -Transaction.amount),
                 else_=0
             )
         ).desc()

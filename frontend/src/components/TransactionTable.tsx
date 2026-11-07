@@ -5,7 +5,7 @@ import { getCategoryBadgeClasses } from "@/lib/categoryColors";
 
 export interface Transaction {
   id: number;
-  type: "income" | "expense" | "transfer_in" | "transfer_out";
+  type: "income" | "expense" | "transfer_in" | "transfer_out" | "adjustment_in" | "adjustment_out";
   amount: number;
   account: string;
   category: string;
@@ -82,7 +82,8 @@ export function TransactionTable({
                 const isIncome = tx.type === "income";
                 const isTransferIn = tx.type === "transfer_in";
                 const isTransferOut = tx.type === "transfer_out";
-                const isPositive = isIncome || isTransferIn;
+                const isAdjustment = tx.type === "adjustment_in" || tx.type === "adjustment_out";
+                const isPositive = isIncome || isTransferIn || tx.type === "adjustment_in";
                 const isTransfer = isTransferIn || isTransferOut;
 
                 return (
@@ -96,7 +97,7 @@ export function TransactionTable({
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                       <span
                         className={`inline-block px-3 py-1 rounded-badge text-xs font-sans font-medium border whitespace-nowrap ${
-                          isTransfer
+                          isAdjustment ? "bg-white/[0.04] border-luma-smokeline text-luma-smoke" : isTransfer
                             ? "bg-luma-gold/10 border-luma-gold/30 text-luma-gold"
                             : getCategoryBadgeClasses(tx.category)
                         }`}
@@ -109,7 +110,7 @@ export function TransactionTable({
                     </td>
                     <td
                       className={`ai7-type-amount py-4 px-4 sm:px-6 text-right whitespace-nowrap ${
-                        isPositive ? "text-luma-sage" : isTransferOut ? "text-luma-gold" : "text-luma-coral"
+                        isAdjustment ? "text-luma-ivory" : isPositive ? "text-luma-sage" : isTransferOut ? "text-luma-gold" : "text-luma-coral"
                       }`}
                     >
                       {isPositive ? "+" : "-"} {formatRupiah(tx.amount)}
@@ -117,7 +118,8 @@ export function TransactionTable({
                     {showActions && (
                       <td className="py-4 px-4 sm:px-6 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-1 opacity-80 group-hover:opacity-100 transition">
-                          {onEdit && (
+                          {isAdjustment && <span className="text-xs text-luma-smoke">Rekonsiliasi</span>}
+                          {onEdit && !isAdjustment && (
                             <button
                               type="button"
                               onClick={() => onEdit(tx)}
@@ -128,7 +130,7 @@ export function TransactionTable({
                               <Edit2 size={16} aria-hidden="true" />
                             </button>
                           )}
-                          {onDelete && (
+                          {onDelete && !isAdjustment && (
                             <button
                               type="button"
                               onClick={() => onDelete(tx)}
